@@ -434,8 +434,8 @@ jobs:
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
-            # Latest commit on the aws-encryption-sdk-python master branch, as of Feb 25, 2026.
-            REF: 5e0aed7aa0426bbb87d7154e690218c4b0734dd2
+            # Latest commit on the aws-encryption-sdk-python master branch, as of Feb 27, 2026.
+            REF: 51089773be9578ef844dd208c119acd54b2d8a14
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: aws-dynamodb-encryption-python
             REPO: awslabs/aws-dynamodb-encryption-python
@@ -444,8 +444,8 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Feb 14, 2026.
-            REF: ff281d48a8db6052d2ae7426553bcd1609ca410f
+            # Latest commit on the certbot main branch, as of Feb 27, 2026.
+            REF: 15e73753a66b276d2dc5c5abbe399300e5a2ab73
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -459,13 +459,13 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Feb 24, 2026.
-            REF: 5c3fe1cd3f28e2d57fdae94158568b186981b2ff
+            # Latest commit on the scapy master branch, as of Feb 27, 2026.
+            REF: c3c62ecc3d51a2bbed1b3074dc50ce74488f3c65
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Feb 25, 2026.
-            REF: c13cc1045da49ca32f9ecb2ec033be3b0b3e6aa2
+            # Latest commit on the sigstore-python main branch, as of Feb 27, 2026.
+            REF: 53a58be9a61fcccb28c629317f772fd5ef35ce0a
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
