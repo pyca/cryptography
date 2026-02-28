@@ -345,7 +345,9 @@ impl Suite {
 
         let (enc, ct) = ct_bytes.split_at(kem_params::X25519_NENC);
 
-        let shared_secret = self.decap(py, enc, private_key)?;
+        let shared_secret = self
+            .decap(py, enc, private_key)
+            .map_err(|_| CryptographyError::from(exceptions::InvalidTag::new_err(())))?;
         let (key, base_nonce) = self.key_schedule(py, shared_secret.as_bytes(), info_bytes)?;
 
         let aesgcm = AesGcm::new(py, pyo3::types::PyBytes::new(py, &key).unbind().into_any())?;

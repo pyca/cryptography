@@ -173,6 +173,50 @@ class TestHPKE:
         with pytest.raises(InvalidTag):
             suite.decrypt(b"\x00", sk_r)
 
+    @pytest.mark.parametrize(
+        "small_order_point",
+        [
+            # All 8 known small-order points on Curve25519
+            bytes(32),  # Zero point (order 1)
+            bytes([1] + [0] * 31),  # Order 4
+            bytes.fromhex(
+                "ecffffffffffffffffffffffffffffffffffff"
+                "ffffffffffffffffffffffffffff7f"
+            ),  # Order 8
+            bytes.fromhex(
+                "5f9c95bca3508c24b1d0b1559c83ef5b04445cc"
+                "4581c8e86d8224eddd09f1157"
+            ),  # Order 8
+            bytes.fromhex(
+                "e0eb7a7c3b41b8ae1656e3faf19fc46ada098deb"
+                "9c32b1fd866205165f49b800"
+            ),  # Order 2
+            bytes.fromhex(
+                "0000000000000000000000000000000000000000"
+                "000000000000000000000080"
+            ),  # p (order 1)
+            bytes.fromhex(
+                "0100000000000000000000000000000000000000"
+                "000000000000000000000080"
+            ),  # p+1 (order 4)
+            bytes.fromhex(
+                "edffffffffffffffffffffffffffffffffffff"
+                "ffffffffffffffffffffffffffff"
+            ),  # p-1 (order 1)
+        ],
+    )
+    def test_small_order_enc_raises_invalid_tag(self, small_order_point):
+        """Small-order X25519 enc points must raise InvalidTag,
+        not ValueError, to avoid leaking an error oracle."""
+        suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
+        sk_r = x25519.X25519PrivateKey.generate()
+
+        # Build a fake ciphertext: small-order enc (32 bytes) + fake ct
+        fake_ciphertext = small_order_point + b"\x00" * 32
+
+        with pytest.raises(InvalidTag):
+            suite.decrypt(fake_ciphertext, sk_r)
+
     def test_vector_decryption(self, subtests):
         vectors = load_vectors_from_file(
             os.path.join("HPKE", "test-vectors.json"),
