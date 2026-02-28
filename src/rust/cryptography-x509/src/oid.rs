@@ -3,7 +3,7 @@
 // for complete details.
 
 // X.509v3 extensions
-pub const EXTENSION_REQUEST: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 14);
+pub const EXTENSION_REQUEST_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 14);
 pub const MS_EXTENSION_REQUEST: asn1::ObjectIdentifier =
     asn1::oid!(1, 3, 6, 1, 4, 1, 311, 2, 1, 14);
 pub const MS_CERTIFICATE_TEMPLATE: asn1::ObjectIdentifier =
@@ -19,6 +19,7 @@ pub const SUBJECT_INFORMATION_ACCESS_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 3, 6, 1, 5, 5, 7, 1, 11);
 pub const TLS_FEATURE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 1, 24);
 pub const CP_CPS_URI_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 2, 1);
+pub const OCSP_BASIC_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 1);
 pub const CP_USER_NOTICE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 2, 2);
 pub const NONCE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 2);
 pub const OCSP_NO_CHECK_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 5);
