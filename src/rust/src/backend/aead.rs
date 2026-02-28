@@ -419,7 +419,7 @@ impl EvpAead {
 }
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.aead")]
-struct ChaCha20Poly1305 {
+pub(crate) struct ChaCha20Poly1305 {
     #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
     ctx: EvpAead,
     #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, CRYPTOGRAPHY_IS_LIBRESSL))]
@@ -436,7 +436,10 @@ struct ChaCha20Poly1305 {
 #[pyo3::pymethods]
 impl ChaCha20Poly1305 {
     #[new]
-    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<Self> {
+    pub(crate) fn new(
+        py: pyo3::Python<'_>,
+        key: pyo3::Py<pyo3::PyAny>,
+    ) -> CryptographyResult<Self> {
         let key_buf = key.extract::<CffiBuf<'_>>(py)?;
         if key_buf.as_bytes().len() != 32 {
             return Err(CryptographyError::from(
@@ -495,7 +498,7 @@ impl ChaCha20Poly1305 {
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
-    fn encrypt<'p>(
+    pub(crate) fn encrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         nonce: CffiBuf<'_>,
@@ -553,7 +556,7 @@ impl ChaCha20Poly1305 {
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
-    fn decrypt<'p>(
+    pub(crate) fn decrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         nonce: CffiBuf<'_>,

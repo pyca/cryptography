@@ -13,6 +13,7 @@ class KDF:
 
 class AEAD:
     AES_128_GCM: AEAD
+    CHACHA20_POLY1305: AEAD
 
 class Suite:
     def __init__(self, kem: KEM, kdf: KDF, aead: AEAD) -> None: ...

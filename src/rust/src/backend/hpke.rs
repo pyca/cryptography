@@ -4,7 +4,7 @@
 
 use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
-use crate::backend::aead::AesGcm;
+use crate::backend::aead::{AesGcm, ChaCha20Poly1305};
 use crate::backend::kdf::{hkdf_extract, HkdfExpand};
 use crate::backend::x25519;
 use crate::buf::CffiBuf;
@@ -29,6 +29,11 @@ mod aead_params {
     pub const AES_128_GCM_NK: usize = 16;
     pub const AES_128_GCM_NN: usize = 12;
     pub const AES_128_GCM_NT: usize = 16;
+
+    pub const CHACHA20_POLY1305_ID: u16 = 0x0003;
+    pub const CHACHA20_POLY1305_NK: usize = 32;
+    pub const CHACHA20_POLY1305_NN: usize = 12;
+    pub const CHACHA20_POLY1305_NT: usize = 16;
 }
 
 #[allow(clippy::upper_case_acronyms)]
@@ -70,10 +75,42 @@ pub(crate) enum KDF {
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub(crate) enum AEAD {
     AES_128_GCM,
+    CHACHA20_POLY1305,
+}
+
+impl AEAD {
+    fn id(&self) -> u16 {
+        match self {
+            AEAD::AES_128_GCM => aead_params::AES_128_GCM_ID,
+            AEAD::CHACHA20_POLY1305 => aead_params::CHACHA20_POLY1305_ID,
+        }
+    }
+
+    fn key_length(&self) -> usize {
+        match self {
+            AEAD::AES_128_GCM => aead_params::AES_128_GCM_NK,
+            AEAD::CHACHA20_POLY1305 => aead_params::CHACHA20_POLY1305_NK,
+        }
+    }
+
+    fn nonce_length(&self) -> usize {
+        match self {
+            AEAD::AES_128_GCM => aead_params::AES_128_GCM_NN,
+            AEAD::CHACHA20_POLY1305 => aead_params::CHACHA20_POLY1305_NN,
+        }
+    }
+
+    fn tag_length(&self) -> usize {
+        match self {
+            AEAD::AES_128_GCM => aead_params::AES_128_GCM_NT,
+            AEAD::CHACHA20_POLY1305 => aead_params::CHACHA20_POLY1305_NT,
+        }
+    }
 }
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.hpke")]
 pub(crate) struct Suite {
+    aead: AEAD,
     kem_suite_id: [u8; 5],
     hpke_suite_id: [u8; 10],
 }
@@ -235,6 +272,50 @@ impl Suite {
         self.hkdf_expand(py, prk, &labeled_info, length)
     }
 
+    fn aead_encrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        key: &pyo3::Bound<'_, pyo3::types::PyBytes>,
+        nonce: &pyo3::Bound<'_, pyo3::types::PyBytes>,
+        plaintext: CffiBuf<'_>,
+        aad: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let key_obj = key.clone().unbind().into_any();
+        let nonce_buf = CffiBuf::from_bytes(py, nonce.as_bytes());
+        match &self.aead {
+            AEAD::AES_128_GCM => {
+                let cipher = AesGcm::new(py, key_obj)?;
+                cipher.encrypt(py, nonce_buf, plaintext, aad)
+            }
+            AEAD::CHACHA20_POLY1305 => {
+                let cipher = ChaCha20Poly1305::new(py, key_obj)?;
+                cipher.encrypt(py, nonce_buf, plaintext, aad)
+            }
+        }
+    }
+
+    fn aead_decrypt<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        key: &pyo3::Bound<'_, pyo3::types::PyBytes>,
+        nonce: &pyo3::Bound<'_, pyo3::types::PyBytes>,
+        ciphertext: &[u8],
+        aad: Option<CffiBuf<'_>>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let key_obj = key.clone().unbind().into_any();
+        let nonce_buf = CffiBuf::from_bytes(py, nonce.as_bytes());
+        match &self.aead {
+            AEAD::AES_128_GCM => {
+                let cipher = AesGcm::new(py, key_obj)?;
+                cipher.decrypt(py, nonce_buf, CffiBuf::from_bytes(py, ciphertext), aad)
+            }
+            AEAD::CHACHA20_POLY1305 => {
+                let cipher = ChaCha20Poly1305::new(py, key_obj)?;
+                cipher.decrypt(py, nonce_buf, CffiBuf::from_bytes(py, ciphertext), aad)
+            }
+        }
+    }
+
     fn encrypt_inner<'p>(
         &self,
         py: pyo3::Python<'p>,
@@ -248,8 +329,7 @@ impl Suite {
         let (shared_secret, enc) = self.encap(py, public_key)?;
         let (key, base_nonce) = self.key_schedule(py, shared_secret.as_bytes(), info_bytes)?;
 
-        let aesgcm = AesGcm::new(py, pyo3::types::PyBytes::new(py, &key).unbind().into_any())?;
-        let ct = aesgcm.encrypt(py, CffiBuf::from_bytes(py, &base_nonce), plaintext, aad)?;
+        let ct = self.aead_encrypt(py, &key, &base_nonce, plaintext, aad)?;
 
         let enc_bytes = enc.as_bytes();
         let ct_bytes = ct.as_bytes();
@@ -273,7 +353,7 @@ impl Suite {
         aad: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let ct_bytes = ciphertext.as_bytes();
-        if ct_bytes.len() < kem_params::X25519_NENC + aead_params::AES_128_GCM_NT {
+        if ct_bytes.len() < kem_params::X25519_NENC + self.aead.tag_length() {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
 
@@ -286,23 +366,17 @@ impl Suite {
             .map_err(|_| CryptographyError::from(exceptions::InvalidTag::new_err(())))?;
         let (key, base_nonce) = self.key_schedule(py, shared_secret.as_bytes(), info_bytes)?;
 
-        let aesgcm = AesGcm::new(py, pyo3::types::PyBytes::new(py, &key).unbind().into_any())?;
-        aesgcm.decrypt(
-            py,
-            CffiBuf::from_bytes(py, &base_nonce),
-            CffiBuf::from_bytes(py, ct),
-            aad,
-        )
+        self.aead_decrypt(py, &key, &base_nonce, ct, aad)
     }
 
-    fn key_schedule(
+    fn key_schedule<'p>(
         &self,
-        py: pyo3::Python<'_>,
+        py: pyo3::Python<'p>,
         shared_secret: &[u8],
         info: &[u8],
     ) -> CryptographyResult<(
-        [u8; aead_params::AES_128_GCM_NK],
-        [u8; aead_params::AES_128_GCM_NN],
+        pyo3::Bound<'p, pyo3::types::PyBytes>,
+        pyo3::Bound<'p, pyo3::types::PyBytes>,
     )> {
         let psk_id_hash = self.hpke_labeled_extract(py, None, b"psk_id_hash", b"")?;
         let info_hash = self.hpke_labeled_extract(py, None, b"info_hash", info)?;
@@ -312,25 +386,20 @@ impl Suite {
 
         let secret = self.hpke_labeled_extract(py, Some(shared_secret), b"secret", b"")?;
 
-        let key_vec = self.hpke_labeled_expand(
+        let key = self.hpke_labeled_expand(
             py,
             &secret,
             b"key",
             &key_schedule_context,
-            aead_params::AES_128_GCM_NK,
+            self.aead.key_length(),
         )?;
-        let nonce_vec = self.hpke_labeled_expand(
+        let base_nonce = self.hpke_labeled_expand(
             py,
             &secret,
             b"base_nonce",
             &key_schedule_context,
-            aead_params::AES_128_GCM_NN,
+            self.aead.nonce_length(),
         )?;
-
-        let mut key = [0u8; aead_params::AES_128_GCM_NK];
-        let mut base_nonce = [0u8; aead_params::AES_128_GCM_NN];
-        key.copy_from_slice(key_vec.as_bytes());
-        base_nonce.copy_from_slice(nonce_vec.as_bytes());
 
         Ok((key, base_nonce))
     }
@@ -339,7 +408,7 @@ impl Suite {
 #[pyo3::pymethods]
 impl Suite {
     #[new]
-    fn new(_kem: KEM, _kdf: KDF, _aead: AEAD) -> CryptographyResult<Suite> {
+    fn new(_kem: KEM, _kdf: KDF, aead: AEAD) -> CryptographyResult<Suite> {
         // Build suite IDs
         let mut kem_suite_id = [0u8; 5];
         kem_suite_id[..3].copy_from_slice(b"KEM");
@@ -349,9 +418,10 @@ impl Suite {
         hpke_suite_id[..4].copy_from_slice(b"HPKE");
         hpke_suite_id[4..6].copy_from_slice(&kem_params::X25519_ID.to_be_bytes());
         hpke_suite_id[6..8].copy_from_slice(&kdf_params::HKDF_SHA256_ID.to_be_bytes());
-        hpke_suite_id[8..10].copy_from_slice(&aead_params::AES_128_GCM_ID.to_be_bytes());
+        hpke_suite_id[8..10].copy_from_slice(&aead.id().to_be_bytes());
 
         Ok(Suite {
+            aead,
             kem_suite_id,
             hpke_suite_id,
         })
