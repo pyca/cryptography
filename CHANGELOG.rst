@@ -10,6 +10,9 @@ Changelog
 
 * Support for Python 3.8 is deprecated and will be removed in the next
   ``cryptography`` release.
+* **BACKWARDS INCOMPATIBLE:** Support for binary elliptic curves
+  (``SECT*`` classes) has been removed. These curves are rarely used and
+  have additional security considerations that make them undesirable.
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.x has been removed.
   OpenSSL 3.0.0 or later is now required. LibreSSL, BoringSSL, and AWS-LC
   continue to be supported.

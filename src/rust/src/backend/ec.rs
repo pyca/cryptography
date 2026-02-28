@@ -47,19 +47,6 @@ fn curve_from_py_curve(
 
         "secp256k1" => openssl::nid::Nid::SECP256K1,
 
-        "sect233r1" => openssl::nid::Nid::SECT233R1,
-        "sect283r1" => openssl::nid::Nid::SECT283R1,
-        "sect409r1" => openssl::nid::Nid::SECT409R1,
-        "sect571r1" => openssl::nid::Nid::SECT571R1,
-
-        "sect163r2" => openssl::nid::Nid::SECT163R2,
-
-        "sect163k1" => openssl::nid::Nid::SECT163K1,
-        "sect233k1" => openssl::nid::Nid::SECT233K1,
-        "sect283k1" => openssl::nid::Nid::SECT283K1,
-        "sect409k1" => openssl::nid::Nid::SECT409K1,
-        "sect571k1" => openssl::nid::Nid::SECT571K1,
-
         #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
         "brainpoolP256r1" => openssl::nid::Nid::BRAINPOOL_P256R1,
         #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
@@ -249,9 +236,11 @@ impl ECPrivateKey {
 
         let len = deriver.len()?;
         Ok(pyo3::types::PyBytes::new_with(py, len, |b| {
-            let n = py.detach(|| deriver.derive(b)).map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err("Error computing shared key.")
-            })?;
+            // Previously it was possible to have derive return an error
+            // if a public key was in a subgroup. Now that we only
+            // support cofactor 1 curves this should be unreachable
+            // so we unwrap.
+            let n = py.detach(|| deriver.derive(b)).unwrap();
             assert_eq!(n, b.len());
             Ok(())
         })?)
@@ -389,7 +378,13 @@ impl ECPublicKey {
     ) -> CryptographyResult<ECPublicKey> {
         let ec = pkey.ec_key()?;
         check_key_infinity(&ec)?;
-
+        let mut bn_ctx = openssl::bn::BigNumContext::new()?;
+        let mut cofactor = openssl::bn::BigNum::new()?;
+        ec.group().cofactor(&mut cofactor, &mut bn_ctx)?;
+        let one = openssl::bn::BigNum::from_u32(1)?;
+        // We only support curves with a cofactor of 1.
+        // Any change here requires more careful key checking
+        assert_eq!(cofactor, one, "cofactor must be 1");
         Ok(ECPublicKey { pkey, curve })
     }
 }
