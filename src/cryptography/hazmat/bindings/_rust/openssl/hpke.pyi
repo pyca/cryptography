@@ -21,12 +21,25 @@ class Suite:
         plaintext: Buffer,
         public_key: x25519.X25519PublicKey,
         info: Buffer | None = None,
-        aad: Buffer | None = None,
     ) -> bytes: ...
     def decrypt(
         self,
         ciphertext: Buffer,
         private_key: x25519.X25519PrivateKey,
         info: Buffer | None = None,
-        aad: Buffer | None = None,
     ) -> bytes: ...
+
+def _encrypt_with_aad(
+    suite: Suite,
+    plaintext: Buffer,
+    public_key: x25519.X25519PublicKey,
+    info: Buffer | None = None,
+    aad: Buffer | None = None,
+) -> bytes: ...
+def _decrypt_with_aad(
+    suite: Suite,
+    ciphertext: Buffer,
+    private_key: x25519.X25519PrivateKey,
+    info: Buffer | None = None,
+    aad: Buffer | None = None,
+) -> bytes: ...

@@ -8,6 +8,7 @@ import os
 import pytest
 
 from cryptography.exceptions import InvalidTag
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives.asymmetric import x25519
 from cryptography.hazmat.primitives.hpke import (
     AEAD,
@@ -49,17 +50,13 @@ class TestHPKE:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        ciphertext = suite.encrypt(
-            b"Hello, HPKE!", pk_r, info=b"test", aad=b"additional data"
-        )
-        plaintext = suite.decrypt(
-            ciphertext, sk_r, info=b"test", aad=b"additional data"
-        )
+        ciphertext = suite.encrypt(b"Hello, HPKE!", pk_r, info=b"test")
+        plaintext = suite.decrypt(ciphertext, sk_r, info=b"test")
 
         assert plaintext == b"Hello, HPKE!"
 
     @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
-    def test_roundtrip_no_aad(self, kem, kdf, aead):
+    def test_roundtrip_no_info(self, kem, kdf, aead):
         suite = Suite(kem, kdf, aead)
 
         sk_r = x25519.X25519PrivateKey.generate()
@@ -88,10 +85,14 @@ class TestHPKE:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        ciphertext = suite.encrypt(b"Secret message", pk_r, aad=b"correct aad")
+        ciphertext = rust_openssl.hpke._encrypt_with_aad(
+            suite, b"Secret message", pk_r, aad=b"correct aad"
+        )
 
         with pytest.raises(InvalidTag):
-            suite.decrypt(ciphertext, sk_r, aad=b"wrong aad")
+            rust_openssl.hpke._decrypt_with_aad(
+                suite, ciphertext, sk_r, aad=b"wrong aad"
+            )
 
     def test_info_mismatch_fails(self):
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
@@ -248,6 +249,10 @@ class TestHPKE:
                 pt_expected = bytes.fromhex(encryption["pt"])
 
                 # Combine enc || ct for single-shot decrypt
+                # Use internal function with AAD for test vector
+                # validation
                 ciphertext = enc + ct
-                pt = suite.decrypt(ciphertext, sk_r, info=info, aad=aad)
+                pt = rust_openssl.hpke._decrypt_with_aad(
+                    suite, ciphertext, sk_r, info=info, aad=aad
+                )
                 assert pt == pt_expected
