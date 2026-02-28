@@ -2,14 +2,14 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use pyo3::types::{PyAnyMethods, PyBytesMethods};
+
 use crate::backend::aead::AesGcm;
 use crate::backend::kdf::{hkdf_extract, HkdfExpand};
 use crate::backend::x25519;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::exceptions;
-use crate::types;
-use pyo3::types::{PyAnyMethods, PyBytesMethods};
+use crate::{exceptions, types};
 
 const HPKE_VERSION: &[u8] = b"HPKE-v1";
 const HPKE_MODE_BASE: u8 = 0x00;
@@ -408,8 +408,8 @@ fn _decrypt_with_aad<'p>(
 
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod hpke {
+    // stable and nightly rustfmt disagree on import ordering
+    #[rustfmt::skip]
     #[pymodule_export]
-    use super::{Suite, AEAD, KDF, KEM};
-    #[pymodule_export]
-    use super::{_decrypt_with_aad, _encrypt_with_aad};
+    use super::{_decrypt_with_aad, _encrypt_with_aad, Suite, AEAD, KDF, KEM};
 }
