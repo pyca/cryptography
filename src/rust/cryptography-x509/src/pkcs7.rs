@@ -11,9 +11,9 @@ pub const PKCS7_ENCRYPTED_DATA_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 84
 
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
 pub struct ContentInfo<'a> {
-    pub _content_type: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
+    pub content_type: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
 
-    #[defined_by(_content_type)]
+    #[defined_by(content_type)]
     pub content: Content<'a>,
 }
 
@@ -39,21 +39,10 @@ pub struct SignedData<'a> {
     >,
     pub content_info: ContentInfo<'a>,
     #[implicit(0)]
-    pub certificates: Option<
-        common::Asn1ReadableOrWritable<
-            asn1::SetOf<'a, certificate::Certificate<'a>>,
-            asn1::SetOfWriter<'a, certificate::Certificate<'a>>,
-        >,
-    >,
+    pub certificates: Option<CertificateSet<'a>>,
 
-    // We don't ever supply any of these, so for now, don't fill out the fields.
     #[implicit(1)]
-    pub crls: Option<
-        common::Asn1ReadableOrWritable<
-            asn1::SetOf<'a, asn1::Sequence<'a>>,
-            asn1::SetOfWriter<'a, asn1::Sequence<'a>>,
-        >,
-    >,
+    pub crls: Option<RevocationInfoChoices<'a>>,
 
     pub signer_infos: common::Asn1ReadableOrWritable<
         asn1::SetOf<'a, SignerInfo<'a>>,
@@ -61,10 +50,53 @@ pub struct SignedData<'a> {
     >,
 }
 
+pub type CertificateSet<'a> = common::Asn1ReadableOrWritable<
+    asn1::SetOf<'a, CertificateChoices<'a>>,
+    asn1::SetOfWriter<'a, CertificateChoices<'a>, Vec<CertificateChoices<'a>>>,
+>;
+
+pub type RevocationInfoChoices<'a> = common::Asn1ReadableOrWritable<
+    asn1::SetOf<'a, RevocationInfoChoice<'a>>,
+    asn1::SetOfWriter<'a, RevocationInfoChoice<'a>, Vec<RevocationInfoChoice<'a>>>,
+>;
+
+#[allow(clippy::large_enum_variant)]
+#[derive(asn1::Asn1Write, asn1::Asn1Read)]
+pub enum CertificateChoices<'a> {
+    Certificate(certificate::Certificate<'a>),
+    #[implicit(0)]
+    ExtendedCertificate(asn1::Sequence<'a>),
+    #[implicit(1)]
+    V1AttrCert(asn1::Sequence<'a>),
+    #[implicit(2)]
+    V2AttrCert(asn1::Sequence<'a>),
+    #[implicit(3)]
+    OtherCertificate(OtherCertificateFormat<'a>),
+}
+
+#[derive(asn1::Asn1Write, asn1::Asn1Read)]
+pub struct OtherCertificateFormat<'a> {
+    pub other_cert_format: asn1::ObjectIdentifier,
+    pub other_cert: asn1::Tlv<'a>,
+}
+
+#[derive(asn1::Asn1Write, asn1::Asn1Read)]
+pub enum RevocationInfoChoice<'a> {
+    Crl(asn1::Sequence<'a>),
+    #[implicit(1)]
+    Other(OtherRevocationInfoFormat<'a>),
+}
+
+#[derive(asn1::Asn1Write, asn1::Asn1Read)]
+pub struct OtherRevocationInfoFormat<'a> {
+    pub other_rev_info_format: asn1::ObjectIdentifier,
+    pub other_rev_info: asn1::Tlv<'a>,
+}
+
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
 pub struct SignerInfo<'a> {
     pub version: u8,
-    pub issuer_and_serial_number: IssuerAndSerialNumber<'a>,
+    pub issuer_and_serial_number: SignerIdentifier<'a>,
     pub digest_algorithm: common::AlgorithmIdentifier<'a>,
     #[implicit(0)]
     pub authenticated_attributes: Option<csr::Attributes<'a>>,
@@ -74,6 +106,13 @@ pub struct SignerInfo<'a> {
 
     #[implicit(1)]
     pub unauthenticated_attributes: Option<csr::Attributes<'a>>,
+}
+
+#[derive(asn1::Asn1Write, asn1::Asn1Read)]
+pub enum SignerIdentifier<'a> {
+    IssuerAndSerialNumber(IssuerAndSerialNumber<'a>),
+    #[implicit(0)]
+    SubjectKeyIdentifier(&'a [u8]),
 }
 
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]

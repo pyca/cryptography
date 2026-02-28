@@ -61,25 +61,25 @@ fn serialize_certificates<'p>(
 
     let raw_certs = py_certs
         .iter()
-        .map(|c| c.raw.borrow_dependent().clone())
+        .map(|c| pkcs7::CertificateChoices::Certificate(c.raw.borrow_dependent().clone()))
         .collect::<Vec<_>>();
 
     let signed_data = pkcs7::SignedData {
         version: 1,
         digest_algorithms: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(&[])),
         content_info: pkcs7::ContentInfo {
-            _content_type: asn1::DefinedByMarker::marker(),
+            content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(None),
         },
         certificates: Some(common::Asn1ReadableOrWritable::new_write(
-            asn1::SetOfWriter::new(&raw_certs),
+            asn1::SetOfWriter::new(raw_certs),
         )),
         crls: None,
         signer_infos: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(&[])),
     };
 
     let content_info = pkcs7::ContentInfo {
-        _content_type: asn1::DefinedByMarker::marker(),
+        content_type: asn1::DefinedByMarker::marker(),
         content: pkcs7::Content::SignedData(asn1::Explicit::new(Box::new(signed_data))),
     };
     let content_info_bytes = asn1::write_single(&content_info)?;
@@ -173,7 +173,7 @@ fn encrypt_and_serialize<'p>(
     };
 
     let content_info = pkcs7::ContentInfo {
-        _content_type: asn1::DefinedByMarker::marker(),
+        content_type: asn1::DefinedByMarker::marker(),
         content: pkcs7::Content::EnvelopedData(asn1::Explicit::new(Box::new(enveloped_data))),
     };
     let ci_bytes = asn1::write_single(&content_info)?;
@@ -503,7 +503,7 @@ fn sign_and_serialize<'p>(
     let mut digest_algs = vec![];
     let mut certs = py_certs
         .iter()
-        .map(|p| p.raw.borrow_dependent().clone())
+        .map(|p| pkcs7::CertificateChoices::Certificate(p.raw.borrow_dependent().clone()))
         .collect::<Vec<_>>();
 
     let ka_vec = cryptography_keepalive::KeepAlive::new();
@@ -582,14 +582,18 @@ fn sign_and_serialize<'p>(
         if !digest_algs.contains(&digest_alg) {
             digest_algs.push(digest_alg.clone());
         }
-        certs.push(cert.raw.borrow_dependent().clone());
+        certs.push(pkcs7::CertificateChoices::Certificate(
+            cert.raw.borrow_dependent().clone(),
+        ));
 
         signer_infos.push(pkcs7::SignerInfo {
             version: 1,
-            issuer_and_serial_number: pkcs7::IssuerAndSerialNumber {
-                issuer: cert.raw.borrow_dependent().tbs_cert.issuer.clone(),
-                serial_number: cert.raw.borrow_dependent().tbs_cert.serial,
-            },
+            issuer_and_serial_number: pkcs7::SignerIdentifier::IssuerAndSerialNumber(
+                pkcs7::IssuerAndSerialNumber {
+                    issuer: cert.raw.borrow_dependent().tbs_cert.issuer.clone(),
+                    serial_number: cert.raw.borrow_dependent().tbs_cert.serial,
+                },
+            ),
             digest_algorithm: digest_alg,
             authenticated_attributes: authenticated_attrs,
             digest_encryption_algorithm: compute_pkcs7_signature_algorithm(
@@ -617,14 +621,14 @@ fn sign_and_serialize<'p>(
             &digest_algs,
         )),
         content_info: pkcs7::ContentInfo {
-            _content_type: asn1::DefinedByMarker::marker(),
+            content_type: asn1::DefinedByMarker::marker(),
             content: pkcs7::Content::Data(content.map(asn1::Explicit::new)),
         },
         certificates: if options.contains(types::PKCS7_NO_CERTS.get(py)?)? {
             None
         } else {
             Some(common::Asn1ReadableOrWritable::new_write(
-                asn1::SetOfWriter::new(&certs),
+                asn1::SetOfWriter::new(certs),
             ))
         },
         crls: None,
@@ -634,7 +638,7 @@ fn sign_and_serialize<'p>(
     };
 
     let content_info = pkcs7::ContentInfo {
-        _content_type: asn1::DefinedByMarker::marker(),
+        content_type: asn1::DefinedByMarker::marker(),
         content: pkcs7::Content::SignedData(asn1::Explicit::new(Box::new(signed_data))),
     };
     let ci_bytes = asn1::write_single(&content_info)?;
@@ -800,7 +804,9 @@ fn load_pkcs7_certificates_rust(
             ));
         };
         for c in certs.unwrap_read().clone() {
-            cb(c)?;
+            if let pkcs7::CertificateChoices::Certificate(cert) = c {
+                cb(cert)?;
+            }
         }
 
         Ok(())

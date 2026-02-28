@@ -6,10 +6,12 @@ use crate::{certificate, common, crl, extensions, name, ocsp_req};
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct OCSPResponse<'a> {
-    pub response_status: asn1::Enumerated,
+    pub response_status: OCSPResponseStatus,
     #[explicit(0)]
     pub response_bytes: Option<ResponseBytes<'a>>,
 }
+
+pub type OCSPResponseStatus = asn1::Enumerated;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct ResponseBytes<'a> {
