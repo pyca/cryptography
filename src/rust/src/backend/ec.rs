@@ -236,9 +236,11 @@ impl ECPrivateKey {
 
         let len = deriver.len()?;
         Ok(pyo3::types::PyBytes::new_with(py, len, |b| {
-            let n = py.detach(|| deriver.derive(b)).map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err("Error computing shared key.")
-            })?;
+            // Previously it was possible to have derive return an error
+            // if a public key was in a subgroup. Now that we only
+            // support cofactor 1 curves this should be unreachable
+            // so we unwrap.
+            let n = py.detach(|| deriver.derive(b)).unwrap();
             assert_eq!(n, b.len());
             Ok(())
         })?)
