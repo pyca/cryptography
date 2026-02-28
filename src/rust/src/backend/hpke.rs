@@ -409,5 +409,7 @@ fn _decrypt_with_aad<'p>(
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod hpke {
     #[pymodule_export]
-    use super::{Suite, _decrypt_with_aad, _encrypt_with_aad, AEAD, KDF, KEM};
+    use super::{Suite, AEAD, KDF, KEM};
+    #[pymodule_export]
+    use super::{_decrypt_with_aad, _encrypt_with_aad};
 }
