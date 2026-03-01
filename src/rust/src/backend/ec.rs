@@ -128,7 +128,7 @@ pub(crate) fn public_key_from_pkey(
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (curve, backend=None))]
-fn generate_private_key(
+pub(crate) fn generate_private_key(
     py: pyo3::Python<'_>,
     curve: pyo3::Bound<'_, pyo3::PyAny>,
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
@@ -171,7 +171,7 @@ fn derive_private_key(
 }
 
 #[pyo3::pyfunction]
-fn from_public_bytes(
+pub(crate) fn from_public_bytes(
     py: pyo3::Python<'_>,
     py_curve: pyo3::Bound<'_, pyo3::PyAny>,
     data: &[u8],
