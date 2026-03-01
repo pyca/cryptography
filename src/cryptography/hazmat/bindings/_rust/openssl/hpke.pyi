@@ -14,6 +14,7 @@ class KDF:
 
 class AEAD:
     AES_128_GCM: AEAD
+    AES_256_GCM: AEAD
     CHACHA20_POLY1305: AEAD
 
 class Suite:

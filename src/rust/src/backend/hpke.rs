@@ -31,6 +31,11 @@ mod aead_params {
     pub const AES_128_GCM_NN: usize = 12;
     pub const AES_128_GCM_NT: usize = 16;
 
+    pub const AES_256_GCM_ID: u16 = 0x0002;
+    pub const AES_256_GCM_NK: usize = 32;
+    pub const AES_256_GCM_NN: usize = 12;
+    pub const AES_256_GCM_NT: usize = 16;
+
     pub const CHACHA20_POLY1305_ID: u16 = 0x0003;
     pub const CHACHA20_POLY1305_NK: usize = 32;
     pub const CHACHA20_POLY1305_NN: usize = 12;
@@ -96,6 +101,7 @@ impl KDF {
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub(crate) enum AEAD {
     AES_128_GCM,
+    AES_256_GCM,
     CHACHA20_POLY1305,
 }
 
@@ -103,6 +109,7 @@ impl AEAD {
     fn id(&self) -> u16 {
         match self {
             AEAD::AES_128_GCM => aead_params::AES_128_GCM_ID,
+            AEAD::AES_256_GCM => aead_params::AES_256_GCM_ID,
             AEAD::CHACHA20_POLY1305 => aead_params::CHACHA20_POLY1305_ID,
         }
     }
@@ -110,6 +117,7 @@ impl AEAD {
     fn key_length(&self) -> usize {
         match self {
             AEAD::AES_128_GCM => aead_params::AES_128_GCM_NK,
+            AEAD::AES_256_GCM => aead_params::AES_256_GCM_NK,
             AEAD::CHACHA20_POLY1305 => aead_params::CHACHA20_POLY1305_NK,
         }
     }
@@ -117,6 +125,7 @@ impl AEAD {
     fn nonce_length(&self) -> usize {
         match self {
             AEAD::AES_128_GCM => aead_params::AES_128_GCM_NN,
+            AEAD::AES_256_GCM => aead_params::AES_256_GCM_NN,
             AEAD::CHACHA20_POLY1305 => aead_params::CHACHA20_POLY1305_NN,
         }
     }
@@ -124,6 +133,7 @@ impl AEAD {
     fn tag_length(&self) -> usize {
         match self {
             AEAD::AES_128_GCM => aead_params::AES_128_GCM_NT,
+            AEAD::AES_256_GCM => aead_params::AES_256_GCM_NT,
             AEAD::CHACHA20_POLY1305 => aead_params::CHACHA20_POLY1305_NT,
         }
     }
@@ -306,7 +316,7 @@ impl Suite {
         let key_obj = key.clone().unbind().into_any();
         let nonce_buf = CffiBuf::from_bytes(py, nonce.as_bytes());
         match &self.aead {
-            AEAD::AES_128_GCM => {
+            AEAD::AES_128_GCM | AEAD::AES_256_GCM => {
                 let cipher = AesGcm::new(py, key_obj)?;
                 cipher.encrypt(py, nonce_buf, plaintext, aad)
             }
@@ -328,7 +338,7 @@ impl Suite {
         let key_obj = key.clone().unbind().into_any();
         let nonce_buf = CffiBuf::from_bytes(py, nonce.as_bytes());
         match &self.aead {
-            AEAD::AES_128_GCM => {
+            AEAD::AES_128_GCM | AEAD::AES_256_GCM => {
                 let cipher = AesGcm::new(py, key_obj)?;
                 cipher.decrypt(py, nonce_buf, CffiBuf::from_bytes(py, ciphertext), aad)
             }

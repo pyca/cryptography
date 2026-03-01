@@ -9,9 +9,6 @@ HPKE is a standard for public key encryption that combines a Key Encapsulation
 Mechanism (KEM), a Key Derivation Function (KDF), and an Authenticated
 Encryption with Associated Data (AEAD) scheme. It is defined in :rfc:`9180`.
 
-This implementation supports Base mode with DHKEM(X25519, HKDF-SHA256),
-HKDF-SHA256, and either AES-128-GCM or ChaCha20Poly1305.
-
 HPKE provides authenticated encryption: the recipient can be certain that the
 message was encrypted by someone who knows the recipient's public key, but
 the sender is anonymous. Each call to :meth:`Suite.encrypt` generates a fresh
@@ -99,6 +96,10 @@ specifying auxiliary authenticated information.
     .. attribute:: AES_128_GCM
 
         AES-128-GCM
+
+    .. attribute:: AES_256_GCM
+
+        AES-256-GCM
 
     .. attribute:: CHACHA20_POLY1305
 

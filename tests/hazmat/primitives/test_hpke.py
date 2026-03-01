@@ -2,6 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+import itertools
 import json
 import os
 
@@ -21,11 +22,13 @@ from ...utils import load_vectors_from_file
 
 X25519_ENC_LENGTH = 32
 
-SUPPORTED_SUITES = [
-    (KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM),
-    (KEM.X25519, KDF.HKDF_SHA256, AEAD.CHACHA20_POLY1305),
-    (KEM.X25519, KDF.HKDF_SHA512, AEAD.AES_128_GCM),
-]
+SUPPORTED_SUITES = list(
+    itertools.product(
+        [KEM.X25519],
+        [KDF.HKDF_SHA256, KDF.HKDF_SHA512],
+        [AEAD.AES_128_GCM, AEAD.AES_256_GCM, AEAD.CHACHA20_POLY1305],
+    )
+)
 
 
 @pytest.mark.supported(
@@ -232,6 +235,7 @@ class TestHPKE:
         }
         aead_map = {
             0x0001: AEAD.AES_128_GCM,
+            0x0002: AEAD.AES_256_GCM,
             0x0003: AEAD.CHACHA20_POLY1305,
         }
 
