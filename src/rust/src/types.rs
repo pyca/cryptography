@@ -385,6 +385,19 @@ pub static ECDSA: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.asymmetric.ec", &["ECDSA"]);
 pub static ECDH: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.asymmetric.ec", &["ECDH"]);
+pub static SECP256R1: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.ec",
+    &["SECP256R1"],
+);
+
+pub static X25519_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.x25519",
+    &["X25519PublicKey"],
+);
+pub static X25519_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.x25519",
+    &["X25519PrivateKey"],
+);
 
 pub static ED25519_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.ed25519",

@@ -5,6 +5,7 @@
 use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 use crate::backend::aead::{AesGcm, ChaCha20Poly1305};
+use crate::backend::ec;
 use crate::backend::kdf::{hkdf_extract, HkdfExpand};
 use crate::backend::x25519;
 use crate::buf::CffiBuf;
@@ -18,6 +19,10 @@ mod kem_params {
     pub const X25519_ID: u16 = 0x0020;
     pub const X25519_NSECRET: usize = 32;
     pub const X25519_NENC: usize = 32;
+
+    pub const P256_ID: u16 = 0x0010;
+    pub const P256_NSECRET: usize = 32;
+    pub const P256_NENC: usize = 65;
 }
 
 mod kdf_params {
@@ -53,6 +58,170 @@ mod aead_params {
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub(crate) enum KEM {
     X25519,
+    P256,
+}
+
+impl KEM {
+    fn id(&self) -> u16 {
+        match self {
+            KEM::X25519 => kem_params::X25519_ID,
+            KEM::P256 => kem_params::P256_ID,
+        }
+    }
+
+    fn secret_length(&self) -> usize {
+        match self {
+            KEM::X25519 => kem_params::X25519_NSECRET,
+            KEM::P256 => kem_params::P256_NSECRET,
+        }
+    }
+
+    fn enc_length(&self) -> usize {
+        match self {
+            KEM::X25519 => kem_params::X25519_NENC,
+            KEM::P256 => kem_params::P256_NENC,
+        }
+    }
+
+    fn check_public_key(
+        &self,
+        py: pyo3::Python<'_>,
+        key: &pyo3::Bound<'_, pyo3::PyAny>,
+    ) -> CryptographyResult<()> {
+        match self {
+            KEM::X25519 => {
+                if !key.is_instance(&types::X25519_PUBLIC_KEY.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected X25519PublicKey for KEM.X25519",
+                        ),
+                    ));
+                }
+            }
+            KEM::P256 => {
+                if !key.is_instance(&types::ELLIPTIC_CURVE_PUBLIC_KEY.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePublicKey for KEM.P256",
+                        ),
+                    ));
+                }
+                let curve = key.getattr(pyo3::intern!(py, "curve"))?;
+                if !curve.is_instance(&types::SECP256R1.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePublicKey on secp256r1 for KEM.P256",
+                        ),
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn check_private_key(
+        &self,
+        py: pyo3::Python<'_>,
+        key: &pyo3::Bound<'_, pyo3::PyAny>,
+    ) -> CryptographyResult<()> {
+        match self {
+            KEM::X25519 => {
+                if !key.is_instance(&types::X25519_PRIVATE_KEY.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected X25519PrivateKey for KEM.X25519",
+                        ),
+                    ));
+                }
+            }
+            KEM::P256 => {
+                if !key.is_instance(&types::ELLIPTIC_CURVE_PRIVATE_KEY.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePrivateKey for KEM.P256",
+                        ),
+                    ));
+                }
+                let curve = key.getattr(pyo3::intern!(py, "curve"))?;
+                if !curve.is_instance(&types::SECP256R1.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePrivateKey on secp256r1 for KEM.P256",
+                        ),
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn generate_key<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        match self {
+            KEM::X25519 => Ok(pyo3::Bound::new(py, x25519::generate_key()?)?.into_any()),
+            KEM::P256 => {
+                let secp256r1 = types::SECP256R1.get(py)?.call0()?;
+                Ok(
+                    pyo3::Bound::new(py, ec::generate_private_key(py, secp256r1, None)?)?
+                        .into_any(),
+                )
+            }
+        }
+    }
+
+    fn serialize_public_key<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        pk: &pyo3::Bound<'p, pyo3::PyAny>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        match self {
+            KEM::X25519 => Ok(pk
+                .call_method0(pyo3::intern!(py, "public_bytes_raw"))?
+                .extract()?),
+            KEM::P256 => Ok(pk
+                .call_method1(
+                    pyo3::intern!(py, "public_bytes"),
+                    (
+                        crate::serialization::Encoding::X962,
+                        crate::serialization::PublicFormat::UncompressedPoint,
+                    ),
+                )?
+                .extract()?),
+        }
+    }
+
+    fn deserialize_public_key<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        data: &[u8],
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        match self {
+            KEM::X25519 => Ok(pyo3::Bound::new(py, x25519::from_public_bytes(data)?)?.into_any()),
+            KEM::P256 => {
+                let secp256r1 = types::SECP256R1.get(py)?.call0()?;
+                Ok(pyo3::Bound::new(py, ec::from_public_bytes(py, secp256r1, data)?)?.into_any())
+            }
+        }
+    }
+
+    fn exchange<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        private_key: &pyo3::Bound<'p, pyo3::PyAny>,
+        public_key: &pyo3::Bound<'p, pyo3::PyAny>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        match self {
+            KEM::X25519 => {
+                Ok(private_key.call_method1(pyo3::intern!(py, "exchange"), (public_key,))?)
+            }
+            KEM::P256 => {
+                let ecdh = types::ECDH.get(py)?.call0()?;
+                Ok(private_key.call_method1(pyo3::intern!(py, "exchange"), (&ecdh, public_key))?)
+            }
+        }
+    }
 }
 
 #[allow(clippy::upper_case_acronyms)]
@@ -142,6 +311,7 @@ impl AEAD {
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.hpke")]
 pub(crate) struct Suite {
     aead: AEAD,
+    kem: KEM,
     kem_suite_id: [u8; 5],
     hpke_suite_id: [u8; 10],
     kdf: KDF,
@@ -214,7 +384,7 @@ impl Suite {
             &eae_prk,
             b"shared_secret",
             kem_context,
-            kem_params::X25519_NSECRET,
+            self.kem.secret_length(),
         )
     }
 
@@ -226,22 +396,19 @@ impl Suite {
         pyo3::Bound<'p, pyo3::types::PyBytes>,
         pyo3::Bound<'p, pyo3::types::PyBytes>,
     )> {
-        let sk_e = pyo3::Bound::new(py, x25519::generate_key()?)?;
+        let sk_e = self.kem.generate_key(py)?;
         let pk_e = sk_e.call_method0(pyo3::intern!(py, "public_key"))?;
+        let pk_e_bytes = self.kem.serialize_public_key(py, &pk_e)?;
+        let pk_r_bytes = self.kem.serialize_public_key(py, pk_r)?;
 
-        let pk_e_bytes: pyo3::Bound<'p, pyo3::types::PyBytes> = pk_e
-            .call_method0(pyo3::intern!(py, "public_bytes_raw"))?
-            .extract()?;
-
-        let pk_r_bytes = pk_r.call_method0(pyo3::intern!(py, "public_bytes_raw"))?;
-        let pk_r_raw = pk_r_bytes.extract::<&[u8]>()?;
-
-        let dh_result = sk_e.call_method1(pyo3::intern!(py, "exchange"), (pk_r,))?;
+        let dh_result = self.kem.exchange(py, &sk_e, pk_r)?;
         let dh = dh_result.extract::<&[u8]>()?;
 
-        let mut kem_context = [0u8; 64];
-        kem_context[..32].copy_from_slice(pk_e_bytes.as_bytes());
-        kem_context[32..].copy_from_slice(pk_r_raw);
+        let mut kem_context =
+            Vec::with_capacity(pk_e_bytes.as_bytes().len() + pk_r_bytes.as_bytes().len());
+        kem_context.extend_from_slice(pk_e_bytes.as_bytes());
+        kem_context.extend_from_slice(pk_r_bytes.as_bytes());
+
         let shared_secret = self.extract_and_expand(py, dh, &kem_context)?;
         Ok((shared_secret, pk_e_bytes))
     }
@@ -252,19 +419,18 @@ impl Suite {
         enc: &[u8],
         sk_r: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        // Reconstruct pk_e from enc
-        let pk_e = pyo3::Bound::new(py, x25519::from_public_bytes(enc)?)?;
+        let pk_e = self.kem.deserialize_public_key(py, enc)?;
 
-        let dh_result = sk_r.call_method1(pyo3::intern!(py, "exchange"), (&pk_e,))?;
+        let dh_result = self.kem.exchange(py, sk_r, &pk_e)?;
         let dh = dh_result.extract::<&[u8]>()?;
 
         let pk_rm = sk_r.call_method0(pyo3::intern!(py, "public_key"))?;
-        let pk_rm_bytes = pk_rm.call_method0(pyo3::intern!(py, "public_bytes_raw"))?;
-        let pk_rm_raw = pk_rm_bytes.extract::<&[u8]>()?;
+        let pk_rm_bytes = self.kem.serialize_public_key(py, &pk_rm)?;
 
-        let mut kem_context = [0u8; 64];
-        kem_context[..32].copy_from_slice(enc);
-        kem_context[32..].copy_from_slice(pk_rm_raw);
+        let mut kem_context = Vec::with_capacity(enc.len() + pk_rm_bytes.as_bytes().len());
+        kem_context.extend_from_slice(enc);
+        kem_context.extend_from_slice(pk_rm_bytes.as_bytes());
+
         self.extract_and_expand(py, dh, &kem_context)
     }
 
@@ -357,6 +523,7 @@ impl Suite {
         info: Option<CffiBuf<'_>>,
         aad: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        self.kem.check_public_key(py, public_key)?;
         let info_bytes: &[u8] = info.as_ref().map(|b| b.as_bytes()).unwrap_or(b"");
 
         let (shared_secret, enc) = self.encap(py, public_key)?;
@@ -385,14 +552,15 @@ impl Suite {
         info: Option<CffiBuf<'_>>,
         aad: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        self.kem.check_private_key(py, private_key)?;
         let ct_bytes = ciphertext.as_bytes();
-        if ct_bytes.len() < kem_params::X25519_NENC + self.aead.tag_length() {
+        if ct_bytes.len() < self.kem.enc_length() + self.aead.tag_length() {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
 
         let info_bytes: &[u8] = info.as_ref().map(|b| b.as_bytes()).unwrap_or(b"");
 
-        let (enc, ct) = ct_bytes.split_at(kem_params::X25519_NENC);
+        let (enc, ct) = ct_bytes.split_at(self.kem.enc_length());
 
         let shared_secret = self
             .decap(py, enc, private_key)
@@ -441,20 +609,21 @@ impl Suite {
 #[pyo3::pymethods]
 impl Suite {
     #[new]
-    fn new(_kem: KEM, kdf: KDF, aead: AEAD) -> CryptographyResult<Suite> {
+    fn new(kem: KEM, kdf: KDF, aead: AEAD) -> CryptographyResult<Suite> {
         // Build suite IDs
         let mut kem_suite_id = [0u8; 5];
         kem_suite_id[..3].copy_from_slice(b"KEM");
-        kem_suite_id[3..].copy_from_slice(&kem_params::X25519_ID.to_be_bytes());
+        kem_suite_id[3..].copy_from_slice(&kem.id().to_be_bytes());
 
         let mut hpke_suite_id = [0u8; 10];
         hpke_suite_id[..4].copy_from_slice(b"HPKE");
-        hpke_suite_id[4..6].copy_from_slice(&kem_params::X25519_ID.to_be_bytes());
+        hpke_suite_id[4..6].copy_from_slice(&kem.id().to_be_bytes());
         hpke_suite_id[6..8].copy_from_slice(&kdf.id().to_be_bytes());
         hpke_suite_id[8..10].copy_from_slice(&aead.id().to_be_bytes());
 
         Ok(Suite {
             aead,
+            kem,
             kem_suite_id,
             hpke_suite_id,
             kdf,
