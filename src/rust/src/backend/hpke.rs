@@ -22,6 +22,7 @@ mod kem_params {
 
 mod kdf_params {
     pub const HKDF_SHA256_ID: u16 = 0x0001;
+    pub const HKDF_SHA512_ID: u16 = 0x0003;
 }
 
 mod aead_params {
@@ -61,6 +62,26 @@ pub(crate) enum KEM {
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub(crate) enum KDF {
     HKDF_SHA256,
+    HKDF_SHA512,
+}
+
+impl KDF {
+    fn id(&self) -> u16 {
+        match self {
+            KDF::HKDF_SHA256 => kdf_params::HKDF_SHA256_ID,
+            KDF::HKDF_SHA512 => kdf_params::HKDF_SHA512_ID,
+        }
+    }
+
+    fn hash_algorithm<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        match self {
+            KDF::HKDF_SHA256 => Ok(types::SHA256.get(py)?.call0()?),
+            KDF::HKDF_SHA512 => Ok(types::SHA512.get(py)?.call0()?),
+        }
+    }
 }
 
 #[allow(clippy::upper_case_acronyms)]
@@ -113,18 +134,17 @@ pub(crate) struct Suite {
     aead: AEAD,
     kem_suite_id: [u8; 5],
     hpke_suite_id: [u8; 10],
+    kdf: KDF,
 }
 
 impl Suite {
     fn hkdf_expand<'p>(
-        &self,
         py: pyo3::Python<'p>,
+        algorithm: pyo3::Bound<'_, pyo3::PyAny>,
         prk: &[u8],
         info: &[u8],
         length: usize,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let algorithm = types::SHA256.get(py)?.call0()?;
-
         let mut hkdf_expand = HkdfExpand::new(
             py,
             algorithm.unbind(),
@@ -167,7 +187,9 @@ impl Suite {
         labeled_info.extend_from_slice(&self.kem_suite_id);
         labeled_info.extend_from_slice(label);
         labeled_info.extend_from_slice(info);
-        self.hkdf_expand(py, prk, &labeled_info, length)
+
+        let algorithm = types::SHA256.get(py)?.call0()?;
+        Suite::hkdf_expand(py, algorithm, prk, &labeled_info, length)
     }
 
     fn extract_and_expand<'p>(
@@ -249,7 +271,7 @@ impl Suite {
         labeled_ikm.extend_from_slice(label);
         labeled_ikm.extend_from_slice(ikm);
 
-        let algorithm = types::SHA256.get(py)?.call0()?;
+        let algorithm = self.kdf.hash_algorithm(py)?;
         let buf = CffiBuf::from_bytes(py, &labeled_ikm);
         hkdf_extract(py, &algorithm.unbind(), salt, &buf)
     }
@@ -269,7 +291,8 @@ impl Suite {
         labeled_info.extend_from_slice(&self.hpke_suite_id);
         labeled_info.extend_from_slice(label);
         labeled_info.extend_from_slice(info);
-        self.hkdf_expand(py, prk, &labeled_info, length)
+        let algorithm = self.kdf.hash_algorithm(py)?;
+        Suite::hkdf_expand(py, algorithm, prk, &labeled_info, length)
     }
 
     fn aead_encrypt<'p>(
@@ -408,7 +431,7 @@ impl Suite {
 #[pyo3::pymethods]
 impl Suite {
     #[new]
-    fn new(_kem: KEM, _kdf: KDF, aead: AEAD) -> CryptographyResult<Suite> {
+    fn new(_kem: KEM, kdf: KDF, aead: AEAD) -> CryptographyResult<Suite> {
         // Build suite IDs
         let mut kem_suite_id = [0u8; 5];
         kem_suite_id[..3].copy_from_slice(b"KEM");
@@ -417,13 +440,14 @@ impl Suite {
         let mut hpke_suite_id = [0u8; 10];
         hpke_suite_id[..4].copy_from_slice(b"HPKE");
         hpke_suite_id[4..6].copy_from_slice(&kem_params::X25519_ID.to_be_bytes());
-        hpke_suite_id[6..8].copy_from_slice(&kdf_params::HKDF_SHA256_ID.to_be_bytes());
+        hpke_suite_id[6..8].copy_from_slice(&kdf.id().to_be_bytes());
         hpke_suite_id[8..10].copy_from_slice(&aead.id().to_be_bytes());
 
         Ok(Suite {
             aead,
             kem_suite_id,
             hpke_suite_id,
+            kdf,
         })
     }
 
