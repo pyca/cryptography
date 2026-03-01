@@ -10,6 +10,7 @@ class KEM:
 
 class KDF:
     HKDF_SHA256: KDF
+    HKDF_SHA512: KDF
 
 class AEAD:
     AES_128_GCM: AEAD
