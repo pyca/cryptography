@@ -23,6 +23,7 @@ X25519_ENC_LENGTH = 32
 
 SUPPORTED_SUITES = [
     (KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM),
+    (KEM.X25519, KDF.HKDF_SHA256, AEAD.CHACHA20_POLY1305),
 ]
 
 
@@ -224,18 +225,25 @@ class TestHPKE:
             lambda f: json.load(f),
         )
 
+        aead_map = {
+            0x0001: AEAD.AES_128_GCM,
+            0x0003: AEAD.CHACHA20_POLY1305,
+        }
+
         for vector in vectors:
-            # Currently support: mode 0 (Base), X25519, HKDF-SHA256, AES-GCM
+            # Support: mode 0 (Base), X25519, HKDF-SHA256,
+            # AES-128-GCM or ChaCha20Poly1305
             if not (
                 vector["mode"] == 0
                 and vector["kem_id"] == 0x0020
                 and vector["kdf_id"] == 0x0001
-                and vector["aead_id"] == 0x0001
+                and vector["aead_id"] in aead_map
             ):
                 continue
 
             with subtests.test():
-                suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
+                aead = aead_map[vector["aead_id"]]
+                suite = Suite(KEM.X25519, KDF.HKDF_SHA256, aead)
 
                 sk_r_bytes = bytes.fromhex(vector["skRm"])
                 sk_r = x25519.X25519PrivateKey.from_private_bytes(sk_r_bytes)
