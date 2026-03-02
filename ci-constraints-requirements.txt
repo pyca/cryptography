@@ -316,7 +316,7 @@ urllib3==2.2.3 ; python_full_version < '3.9'
     # via requests
 urllib3==2.6.3 ; python_full_version >= '3.9'
     # via requests
-uv==0.10.6
+uv==0.10.7
     # via nox
 virtualenv==21.1.0
     # via nox
