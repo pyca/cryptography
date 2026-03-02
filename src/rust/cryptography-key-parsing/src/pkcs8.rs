@@ -108,6 +108,9 @@ pub fn parse_private_key(
             )?)
         }
 
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        AlgorithmParameters::MlDsa65 => Ok(openssl::pkey::PKey::private_key_from_der(data)?),
+
         _ => Err(KeyParsingError::UnsupportedKeyType(
             k.algorithm.oid().clone(),
         )),
@@ -439,6 +442,10 @@ pub fn serialize_private_key(
             };
 
             (params, private_key_der)
+        }
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        id if id == openssl::pkey::Id::from_raw(cryptography_openssl::mldsa::NID_PQDSA) => {
+            return Ok(pkey.private_key_to_pkcs8()?);
         }
         _ => {
             unimplemented!("Unknown key type");

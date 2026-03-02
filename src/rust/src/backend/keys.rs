@@ -86,16 +86,24 @@ fn load_pem_private_key<'p>(
     let (data, mut password_used) = cryptography_key_parsing::pem::decrypt_pem(&p, password)?;
 
     let pkey = match p.tag() {
-        "PRIVATE KEY" => cryptography_key_parsing::pkcs8::parse_private_key(&data)?,
-        "RSA PRIVATE KEY" => cryptography_key_parsing::rsa::parse_pkcs1_private_key(&data).map_err(|e| {
-            CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
-        })?,
-        "EC PRIVATE KEY" => cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None).map_err(|e| {
-            CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
-        })?,
-        "DSA PRIVATE KEY" => cryptography_key_parsing::dsa::parse_pkcs1_private_key(&data).map_err(|e| {
-            CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
-        })?,
+        "PRIVATE KEY" => {
+            cryptography_key_parsing::pkcs8::parse_private_key(&data)?
+        }
+        "RSA PRIVATE KEY" => {
+            cryptography_key_parsing::rsa::parse_pkcs1_private_key(&data).map_err(|e| {
+                CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
+            })?
+        }
+        "EC PRIVATE KEY" => {
+            cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None).map_err(|e| {
+                CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
+            })?
+        }
+        "DSA PRIVATE KEY" => {
+            cryptography_key_parsing::dsa::parse_pkcs1_private_key(&data).map_err(|e| {
+                CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
+            })?
+        }
         _ => {
             assert_eq!(p.tag(), "ENCRYPTED PRIVATE KEY");
             password_used = true;
@@ -167,6 +175,19 @@ fn private_key_from_pkey<'p>(
         openssl::pkey::Id::DHX => Ok(crate::backend::dh::private_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        id if id == openssl::pkey::Id::from_raw(cryptography_openssl::mldsa::NID_PQDSA) => {
+            let pub_len = pkey.raw_public_key()?.len();
+            if pub_len == cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES {
+                Ok(crate::backend::mldsa65::private_key_from_pkey(pkey)
+                    .into_pyobject(py)?
+                    .into_any())
+            } else {
+                Err(CryptographyError::from(
+                    exceptions::UnsupportedAlgorithm::new_err("Unsupported ML-DSA variant."),
+                ))
+            }
+        }
         _ => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
         )),
@@ -294,6 +315,19 @@ fn public_key_from_pkey<'p>(
             .into_pyobject(py)?
             .into_any()),
 
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        id if id == openssl::pkey::Id::from_raw(cryptography_openssl::mldsa::NID_PQDSA) => {
+            let pub_len = pkey.raw_public_key()?.len();
+            if pub_len == cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES {
+                Ok(crate::backend::mldsa65::public_key_from_pkey(pkey)
+                    .into_pyobject(py)?
+                    .into_any())
+            } else {
+                Err(CryptographyError::from(
+                    exceptions::UnsupportedAlgorithm::new_err("Unsupported ML-DSA variant."),
+                ))
+            }
+        }
         _ => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
         )),
