@@ -161,10 +161,12 @@ class TestFernet:
         f = Fernet(Fernet.generate_key(), backend=backend)
         token = f.encrypt(b"valid message")
 
-        malformed = token + b"A"
+        raw = base64.urlsafe_b64decode(token)
+        malformed = raw + b"\x00"
+        malformed_token = base64.urlsafe_b64encode(malformed)
 
         with pytest.raises(InvalidToken):
-            f.decrypt(malformed)
+            f.decrypt(malformed_token)
 
 
 @pytest.mark.supported(
