@@ -23,16 +23,15 @@ pub(crate) fn load_der_ocsp_response(
 
     let response = raw.borrow_dependent();
     match response.response_status.value() {
-        SUCCESSFUL_RESPONSE => match response.response_bytes {
-            Some(ref _b) => {}
-            None => {
+        SUCCESSFUL_RESPONSE => {
+            if response.response_bytes.is_none() {
                 return Err(CryptographyError::from(
                     pyo3::exceptions::PyValueError::new_err(
                         "Successful OCSP response does not contain a BasicResponse",
                     ),
-                ))
+                ));
             }
-        },
+        }
         MALFORMED_REQUEST_RESPONSE
         | INTERNAL_ERROR_RESPONSE
         | TRY_LATER_RESPONSE

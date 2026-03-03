@@ -4,7 +4,6 @@
 
 use crate::oid::OCSP_BASIC_OID;
 use crate::{certificate, common, crl, extensions, name, ocsp_req};
-use asn1::Asn1DefinedByWritable;
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct OCSPResponse<'a> {
@@ -18,12 +17,6 @@ pub struct ResponseBytes<'a> {
     pub response_type: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
     #[defined_by(response_type)]
     pub response: Response<'a>,
-}
-
-impl ResponseBytes<'_> {
-    pub fn oid(&self) -> &asn1::ObjectIdentifier {
-        self.response.item()
-    }
 }
 
 #[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite)]
