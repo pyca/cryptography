@@ -280,7 +280,7 @@ pub(crate) fn create_x509_csr(
     )? {
         ext_bytes = asn1::write_single(&exts)?;
         attrs.push(Attribute {
-            type_id: (oid::EXTENSION_REQUEST).clone(),
+            type_id: (oid::EXTENSION_REQUEST_OID).clone(),
             values: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new([
                 asn1::parse_single(&ext_bytes)?,
             ])),
