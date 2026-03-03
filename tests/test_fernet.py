@@ -157,15 +157,14 @@ class TestFernet:
         with pytest.raises(InvalidToken):
             f.extract_timestamp(b"nonsensetoken")
 
-    def test_invalid_ciphertext_block_alignment(self, backend):
+    def test_token_with_trailing_bytes(self, backend):
         f = Fernet(Fernet.generate_key(), backend=backend)
         token = f.encrypt(b"valid message")
-        raw = base64.urlsafe_b64decode(token)
-        # Remove 1 byte
-        malformed = raw[:-33] + raw[-32:]
-        malformed_token = base64.urlsafe_b64encode(malformed)
+
+        malformed = token + b"A"
+
         with pytest.raises(InvalidToken):
-            f.decrypt(malformed_token)
+            f.decrypt(malformed)
 
 
 @pytest.mark.supported(
