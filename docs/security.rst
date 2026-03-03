@@ -48,6 +48,10 @@ Examples of things we wouldn't consider security issues:
 * Using a variable time comparison somewhere, if it's not possible to
   articulate any particular program in which this would result in problematic
   information disclosure.
+* An uncaught ``PanicException`` from ``pyo3``. In general, these
+  represent bugs that should be filed as regular issues, but they are not
+  security vulnerabilities because they do not cause memory unsafety or
+  undefined behavior -- the process remains in a well-defined state.
 
 In general, if you're unsure, we request that you to default to treating things
 as security issues and handling them sensitively, the worst thing that can
