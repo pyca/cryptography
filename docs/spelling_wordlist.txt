@@ -161,6 +161,7 @@ unencrypted
 unicode
 unpadded
 unpadding
+unsafety
 validator
 Ventura
 verifier
