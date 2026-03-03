@@ -88,7 +88,7 @@ humanize==4.15.0 ; python_full_version >= '3.10'
     # via nox
 idna==3.11
     # via requests
-imagesize==1.4.1
+imagesize==1.5.0
     # via sphinx
 importlib-metadata==8.5.0 ; python_full_version < '3.9'
     # via
