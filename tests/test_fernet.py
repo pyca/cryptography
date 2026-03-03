@@ -167,6 +167,7 @@ class TestFernet:
         with pytest.raises(InvalidToken):
             f.decrypt(malformed_token)
 
+
 @pytest.mark.supported(
     only_if=lambda backend: backend.cipher_supported(
         algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
