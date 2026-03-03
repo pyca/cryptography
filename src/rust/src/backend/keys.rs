@@ -372,4 +372,38 @@ mod tests {
             assert!(private_key_from_pkey(py, &pkey, false).is_err());
         });
     }
+
+    #[test]
+    #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+    fn test_private_key_from_pkey_unsupported_mldsa_variant() {
+        use super::private_key_from_pkey;
+
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            // Load an ML-DSA-44 private key from a Wycheproof PKCS8 DER.
+            // ML-DSA-44 is a PQDSA key that we don't support; its public key
+            // length differs from ML-DSA-65, hitting the "Unsupported ML-DSA
+            // variant" error branch.
+            let der = include_bytes!("../../test_data/mldsa44_priv.der");
+            let pkey = openssl::pkey::PKey::private_key_from_der(der).unwrap();
+            assert!(private_key_from_pkey(py, &pkey, false).is_err());
+        });
+    }
+
+    #[test]
+    #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+    fn test_public_key_from_pkey_unsupported_mldsa_variant() {
+        use super::public_key_from_pkey;
+
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            // Load an ML-DSA-44 public key from a Wycheproof SPKI DER.
+            let der = include_bytes!("../../test_data/mldsa44_pub.der");
+            let pub_pkey = openssl::pkey::PKey::public_key_from_der(der).unwrap();
+            let id = pub_pkey.id();
+            assert!(public_key_from_pkey(py, &pub_pkey, id).is_err());
+        });
+    }
 }

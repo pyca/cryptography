@@ -55,6 +55,11 @@ class TestMlDsa65:
         sig = key.sign(b"test data")
         key.public_key().verify(sig, b"test data")
 
+    def test_sign_verify_empty_message(self, backend):
+        key = MlDsa65PrivateKey.generate()
+        sig = key.sign(b"")
+        key.public_key().verify(sig, b"")
+
     @pytest.mark.parametrize(
         "ctx",
         [
@@ -96,10 +101,19 @@ class TestMlDsa65:
 
                 # Sigver: known-good signature verifies
                 pub = MlDsa65PublicKey.from_public_bytes(pk)
-                if ctx:
-                    pub.verify_with_context(expected_sig, msg, ctx)
-                else:
-                    pub.verify(expected_sig, msg)
+                pub.verify_with_context(expected_sig, msg, ctx)
+
+    def test_kat_verify_no_context(self, backend):
+        vectors = load_vectors_from_file(
+            os.path.join("asymmetric", "MLDSA", "kat_MLDSA_65_det_pure.rsp"),
+            load_nist_vectors,
+        )
+        vector = vectors[0]
+        xi = binascii.unhexlify(vector["xi"])
+        key = MlDsa65PrivateKey.from_seed_bytes(xi)
+        pub = key.public_key()
+        sig = key.sign(b"test")
+        pub.verify(sig, b"test")
 
     def test_private_bytes_raw_round_trip(self, backend):
         key = MlDsa65PrivateKey.generate()

@@ -160,3 +160,20 @@ pub fn verify(
 
     Ok(r == 1)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sign_with_context_too_long_returns_error() {
+        // ML-DSA context strings are limited to 255 bytes.
+        // Passing a 256-byte context to ml_dsa_65_sign triggers
+        // an FFI error return.
+        let seed = generate_seed().unwrap();
+        let pkey = new_raw_private_key(&seed).unwrap();
+        let long_ctx = [0x41u8; 256];
+        let result = sign(&pkey, b"test", &long_ctx);
+        assert!(result.is_err());
+    }
+}

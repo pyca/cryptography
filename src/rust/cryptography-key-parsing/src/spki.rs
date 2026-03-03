@@ -269,4 +269,15 @@ mod tests {
         // Expected to panic
         _ = serialize_public_key(&pkey);
     }
+
+    #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+    #[test]
+    #[should_panic(expected = "Unsupported ML-DSA variant")]
+    fn test_serialize_public_key_unsupported_mldsa_variant() {
+        // Load an ML-DSA-44 public key from a Wycheproof test vector DER.
+        let der = include_bytes!("../../test_data/mldsa44_pub.der");
+        let pub_pkey = openssl::pkey::PKey::public_key_from_der(der).unwrap();
+        // Expected to panic with "Unsupported ML-DSA variant"
+        _ = serialize_public_key(&pub_pkey);
+    }
 }

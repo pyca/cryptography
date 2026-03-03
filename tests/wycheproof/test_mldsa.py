@@ -98,7 +98,5 @@ def test_mldsa65_sign_seed(backend, wycheproof):
             pub.verify(sig, msg)
     else:
         with pytest.raises(ValueError):
-            if has_ctx:
-                key.sign_with_context(msg, ctx)
-            else:
-                key.sign(msg)
+            assert has_ctx
+            key.sign_with_context(msg, ctx)

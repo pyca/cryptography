@@ -58,7 +58,9 @@ fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<MlDsa65PublicKey> {
     Ok(MlDsa65PublicKey { pkey })
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl MlDsa65PrivateKey {
     fn sign<'p>(
         &self,
@@ -104,11 +106,7 @@ impl MlDsa65PrivateKey {
         let pkcs8_der = self.pkey.private_key_to_pkcs8()?;
         let pki =
             asn1::parse_single::<cryptography_key_parsing::pkcs8::PrivateKeyInfo<'_>>(&pkcs8_der)
-                .map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err(
-                    "Cannot extract seed from this ML-DSA-65 private key",
-                )
-            })?;
+                .unwrap();
         // The privateKey content is [0x80, 0x20, <32 bytes of seed>]
         // (context-specific tag 0, length 32)
         if pki.private_key.len() == 2 + cryptography_openssl::mldsa::MLDSA65_SEED_BYTES
@@ -117,11 +115,16 @@ impl MlDsa65PrivateKey {
         {
             Ok(pyo3::types::PyBytes::new(py, &pki.private_key[2..]))
         } else {
+            // NO-COVERAGE-START
+            // All supported ML-DSA variants use 32-byte seeds with the
+            // [0x80, 0x20, <seed>] encoding. This branch is purely
+            // defensive against future format changes.
             Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "Cannot extract seed from this ML-DSA-65 private key",
                 ),
             ))
+            // NO-COVERAGE-END
         }
     }
 
@@ -165,7 +168,9 @@ impl MlDsa65PrivateKey {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl MlDsa65PublicKey {
     fn verify(&self, signature: CffiBuf<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
         let valid = cryptography_openssl::mldsa::verify(
