@@ -97,6 +97,7 @@ class TestMlDsa65:
 
                 # Keygen: seed produces expected public key
                 key = MlDsa65PrivateKey.from_seed_bytes(xi)
+                assert key.private_bytes_raw() == xi
                 assert key.public_key().public_bytes_raw() == pk
 
                 # Sigver: known-good signature verifies

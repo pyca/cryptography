@@ -46,15 +46,17 @@ fn generate_key() -> CryptographyResult<MlDsa65PrivateKey> {
 
 #[pyo3::pyfunction]
 fn from_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa65PrivateKey> {
-    let pkey = cryptography_openssl::mldsa::new_raw_private_key(data.as_bytes())
-        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid ML-DSA-65 seed"))?;
+    let pkey = cryptography_openssl::mldsa::new_raw_private_key(data.as_bytes()).map_err(|_| {
+        pyo3::exceptions::PyValueError::new_err("An ML-DSA-65 seed is 32 bytes long")
+    })?;
     Ok(MlDsa65PrivateKey { pkey })
 }
 
 #[pyo3::pyfunction]
 fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<MlDsa65PublicKey> {
-    let pkey = cryptography_openssl::mldsa::new_raw_public_key(data)
-        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid ML-DSA-65 public key"))?;
+    let pkey = cryptography_openssl::mldsa::new_raw_public_key(data).map_err(|_| {
+        pyo3::exceptions::PyValueError::new_err("An ML-DSA-65 public key is 1952 bytes long")
+    })?;
     Ok(MlDsa65PublicKey { pkey })
 }
 
