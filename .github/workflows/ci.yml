@@ -449,8 +449,8 @@ jobs:
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
-            # Latest commit on the certbot-josepy main branch, as of Feb 12, 2026.
-            REF: 747709abb486b381bb93c7cc96e1432642f9eeb2
+            # Latest commit on the certbot-josepy main branch, as of Mar 04, 2026.
+            REF: 29bb4cb9aee5a19b223954a7904c8255ebcc156f
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
@@ -464,8 +464,8 @@ jobs:
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Feb 28, 2026.
-            REF: 90e02015b3e734df3e1d5f93bbe97ddb92ed6f71
+            # Latest commit on the sigstore-python main branch, as of Mar 04, 2026.
+            REF: 0f7356bae99ab6143e8b6a5552dd77a37e304e20
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
