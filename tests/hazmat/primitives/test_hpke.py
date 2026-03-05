@@ -7,6 +7,7 @@ from __future__ import annotations
 import itertools
 import json
 import os
+from typing import Union
 
 import pytest
 
@@ -22,8 +23,8 @@ from cryptography.hazmat.primitives.hpke import (
 
 from ...utils import load_vectors_from_file
 
-HPKEPrivateKey = x25519.X25519PrivateKey | ec.EllipticCurvePrivateKey
-HPKEPublicKey = x25519.X25519PublicKey | ec.EllipticCurvePublicKey
+HPKEPrivateKey = Union[x25519.X25519PrivateKey, ec.EllipticCurvePrivateKey]
+HPKEPublicKey = Union[x25519.X25519PublicKey, ec.EllipticCurvePublicKey]
 
 ENC_LENGTHS = {
     KEM.X25519: 32,
