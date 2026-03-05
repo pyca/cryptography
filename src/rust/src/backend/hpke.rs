@@ -126,33 +126,57 @@ impl KEM {
                     ));
                 }
             }
-            KEM::P256 | KEM::P384 | KEM::P521 => {
+            KEM::P256 => {
                 if !key.is_instance(&types::ELLIPTIC_CURVE_PUBLIC_KEY.get(py)?)? {
                     return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(format!(
-                            "Expected EllipticCurvePublicKey for KEM.{self:?}"
-                        )),
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePublicKey for KEM.P256",
+                        ),
                     ));
                 }
 
                 let curve = key.getattr(pyo3::intern!(py, "curve"))?;
-                let valid_curve = match self {
-                    KEM::P256 => curve.is_instance(&types::SECP256R1.get(py)?)?,
-                    KEM::P384 => curve.is_instance(&types::SECP384R1.get(py)?)?,
-                    KEM::P521 => curve.is_instance(&types::SECP521R1.get(py)?)?,
-                    KEM::X25519 => unreachable!(),
-                };
-                if !valid_curve {
+                if !curve.is_instance(&types::SECP256R1.get(py)?)? {
                     return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(format!(
-                            "Expected EllipticCurvePublicKey on {} for KEM.{self:?}",
-                            match self {
-                                KEM::P256 => "secp256r1",
-                                KEM::P384 => "secp384r1",
-                                KEM::P521 => "secp521r1",
-                                KEM::X25519 => unreachable!(),
-                            }
-                        )),
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePublicKey on secp256r1 for KEM.P256",
+                        ),
+                    ));
+                }
+            }
+            KEM::P384 => {
+                if !key.is_instance(&types::ELLIPTIC_CURVE_PUBLIC_KEY.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePublicKey for KEM.P384",
+                        ),
+                    ));
+                }
+
+                let curve = key.getattr(pyo3::intern!(py, "curve"))?;
+                if !curve.is_instance(&types::SECP384R1.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePublicKey on secp384r1 for KEM.P384",
+                        ),
+                    ));
+                }
+            }
+            KEM::P521 => {
+                if !key.is_instance(&types::ELLIPTIC_CURVE_PUBLIC_KEY.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePublicKey for KEM.P521",
+                        ),
+                    ));
+                }
+
+                let curve = key.getattr(pyo3::intern!(py, "curve"))?;
+                if !curve.is_instance(&types::SECP521R1.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePublicKey on secp521r1 for KEM.P521",
+                        ),
                     ));
                 }
             }
@@ -175,33 +199,57 @@ impl KEM {
                     ));
                 }
             }
-            KEM::P256 | KEM::P384 | KEM::P521 => {
+            KEM::P256 => {
                 if !key.is_instance(&types::ELLIPTIC_CURVE_PRIVATE_KEY.get(py)?)? {
                     return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(format!(
-                            "Expected EllipticCurvePrivateKey for KEM.{self:?}"
-                        )),
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePrivateKey for KEM.P256",
+                        ),
                     ));
                 }
 
                 let curve = key.getattr(pyo3::intern!(py, "curve"))?;
-                let valid_curve = match self {
-                    KEM::P256 => curve.is_instance(&types::SECP256R1.get(py)?)?,
-                    KEM::P384 => curve.is_instance(&types::SECP384R1.get(py)?)?,
-                    KEM::P521 => curve.is_instance(&types::SECP521R1.get(py)?)?,
-                    KEM::X25519 => unreachable!(),
-                };
-                if !valid_curve {
+                if !curve.is_instance(&types::SECP256R1.get(py)?)? {
                     return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(format!(
-                            "Expected EllipticCurvePrivateKey on {} for KEM.{self:?}",
-                            match self {
-                                KEM::P256 => "secp256r1",
-                                KEM::P384 => "secp384r1",
-                                KEM::P521 => "secp521r1",
-                                KEM::X25519 => unreachable!(),
-                            }
-                        )),
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePrivateKey on secp256r1 for KEM.P256",
+                        ),
+                    ));
+                }
+            }
+            KEM::P384 => {
+                if !key.is_instance(&types::ELLIPTIC_CURVE_PRIVATE_KEY.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePrivateKey for KEM.P384",
+                        ),
+                    ));
+                }
+
+                let curve = key.getattr(pyo3::intern!(py, "curve"))?;
+                if !curve.is_instance(&types::SECP384R1.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePrivateKey on secp384r1 for KEM.P384",
+                        ),
+                    ));
+                }
+            }
+            KEM::P521 => {
+                if !key.is_instance(&types::ELLIPTIC_CURVE_PRIVATE_KEY.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePrivateKey for KEM.P521",
+                        ),
+                    ));
+                }
+
+                let curve = key.getattr(pyo3::intern!(py, "curve"))?;
+                if !curve.is_instance(&types::SECP521R1.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected EllipticCurvePrivateKey on secp521r1 for KEM.P521",
+                        ),
                     ));
                 }
             }
@@ -215,13 +263,16 @@ impl KEM {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         match self {
             KEM::X25519 => Ok(pyo3::Bound::new(py, x25519::generate_key()?)?.into_any()),
-            KEM::P256 | KEM::P384 | KEM::P521 => {
-                let curve = match self {
-                    KEM::P256 => types::SECP256R1.get(py)?.call0()?,
-                    KEM::P384 => types::SECP384R1.get(py)?.call0()?,
-                    KEM::P521 => types::SECP521R1.get(py)?.call0()?,
-                    KEM::X25519 => unreachable!(),
-                };
+            KEM::P256 => {
+                let curve = types::SECP256R1.get(py)?.call0()?;
+                Ok(pyo3::Bound::new(py, ec::generate_private_key(py, curve, None)?)?.into_any())
+            }
+            KEM::P384 => {
+                let curve = types::SECP384R1.get(py)?.call0()?;
+                Ok(pyo3::Bound::new(py, ec::generate_private_key(py, curve, None)?)?.into_any())
+            }
+            KEM::P521 => {
+                let curve = types::SECP521R1.get(py)?.call0()?;
                 Ok(pyo3::Bound::new(py, ec::generate_private_key(py, curve, None)?)?.into_any())
             }
         }
@@ -255,13 +306,16 @@ impl KEM {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         match self {
             KEM::X25519 => Ok(pyo3::Bound::new(py, x25519::from_public_bytes(data)?)?.into_any()),
-            KEM::P256 | KEM::P384 | KEM::P521 => {
-                let curve = match self {
-                    KEM::P256 => types::SECP256R1.get(py)?.call0()?,
-                    KEM::P384 => types::SECP384R1.get(py)?.call0()?,
-                    KEM::P521 => types::SECP521R1.get(py)?.call0()?,
-                    KEM::X25519 => unreachable!(),
-                };
+            KEM::P256 => {
+                let curve = types::SECP256R1.get(py)?.call0()?;
+                Ok(pyo3::Bound::new(py, ec::from_public_bytes(py, curve, data)?)?.into_any())
+            }
+            KEM::P384 => {
+                let curve = types::SECP384R1.get(py)?.call0()?;
+                Ok(pyo3::Bound::new(py, ec::from_public_bytes(py, curve, data)?)?.into_any())
+            }
+            KEM::P521 => {
+                let curve = types::SECP521R1.get(py)?.call0()?;
                 Ok(pyo3::Bound::new(py, ec::from_public_bytes(py, curve, data)?)?.into_any())
             }
         }
