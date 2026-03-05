@@ -533,18 +533,20 @@ impl Suite {
         py: pyo3::Python<'p>,
         ikm: &[u8],
         label: &[u8],
-        info: &[u8],
+        context: &[u8],
         length: usize,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let ikm_len = u16_length_prefix(ikm.len(), "ikm")?;
-        let mut labeled_ikm =
-            Vec::with_capacity(2 + ikm.len() + HPKE_VERSION.len() + 10 + label.len() + info.len());
-        labeled_ikm.extend_from_slice(&ikm_len);
+        let label_len = u16_length_prefix(label.len(), "label")?;
+        let mut labeled_ikm = Vec::with_capacity(
+            ikm.len() + HPKE_VERSION.len() + 10 + 2 + label.len() + 2 + context.len(),
+        );
         labeled_ikm.extend_from_slice(ikm);
         labeled_ikm.extend_from_slice(HPKE_VERSION);
         labeled_ikm.extend_from_slice(&self.hpke_suite_id);
+        labeled_ikm.extend_from_slice(&label_len);
         labeled_ikm.extend_from_slice(label);
-        labeled_ikm.extend_from_slice(info);
+        labeled_ikm.extend_from_slice(&(length as u16).to_be_bytes());
+        labeled_ikm.extend_from_slice(context);
         self.kdf.derive(py, &labeled_ikm, length)
     }
 
