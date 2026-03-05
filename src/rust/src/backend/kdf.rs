@@ -57,8 +57,7 @@ impl Pbkdf2Hmac {
             self.iterations,
             self.md,
             output,
-        )
-        .unwrap();
+        )?;
 
         Ok(self.length)
     }

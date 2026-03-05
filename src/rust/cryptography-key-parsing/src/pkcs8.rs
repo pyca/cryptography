@@ -298,8 +298,7 @@ pub fn parse_encrypted_private_key(
                         iterations,
                         md,
                         &mut key,
-                    )
-                    .unwrap();
+                    )?;
                     key
                 }
                 #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
