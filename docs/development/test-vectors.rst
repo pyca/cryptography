@@ -298,6 +298,8 @@ Custom asymmetric vectors
   258. This is an invalid key.
 * ``asymmetric/PKCS8/enc-ec-sha1-128-rc4.pem`` a PKCS8 encoded ECDSA P-256 key
   encrypted with ``pbeWithSHA1And128BitRC4``. The password is ``password``.
+* ``asymmetric/PKCS8/enc-rsa-pkcs8-pbkdf2-0iter.pem`` a PKCS8 encoded
+  structure with an invalid PBKDF2 iteration count (zero).
 
 Key exchange
 ~~~~~~~~~~~~
