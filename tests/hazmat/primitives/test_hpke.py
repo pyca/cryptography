@@ -45,6 +45,19 @@ SUPPORTED_SUITES = list(
 )
 
 
+class _NoCurveSupportBackend:
+    def elliptic_curve_supported(self, _curve: ec.EllipticCurve) -> bool:
+        return False
+
+
+class _NamedCurveSupportBackend:
+    def __init__(self, supported_curve_names: set[str]) -> None:
+        self._supported_curve_names = supported_curve_names
+
+    def elliptic_curve_supported(self, curve: ec.EllipticCurve) -> bool:
+        return curve.name in self._supported_curve_names
+
+
 def _curve_for_kem(kem: KEM) -> ec.EllipticCurve | None:
     if kem == KEM.P256:
         return ec.SECP256R1()
@@ -108,6 +121,18 @@ class TestHPKE:
     def test_invalid_aead_type(self):
         with pytest.raises(TypeError):
             Suite(KEM.X25519, KDF.HKDF_SHA256, "not an aead")  # type: ignore[arg-type]
+
+    def test_skip_kem_if_unsupported_skips(self):
+        with pytest.raises(pytest.skip.Exception, match="secp256r1"):
+            _skip_kem_if_unsupported(_NoCurveSupportBackend(), KEM.P256)
+
+    def test_other_ec_curve_returns_none_when_no_other_supported(self):
+        assert _other_ec_curve(_NoCurveSupportBackend(), KEM.P256) is None
+
+    def test_other_ec_curve_checks_multiple_candidates(self):
+        backend = _NamedCurveSupportBackend({"secp521r1"})
+        curve = _other_ec_curve(backend, KEM.P384)
+        assert isinstance(curve, ec.SECP521R1)
 
     @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
     def test_roundtrip(self, kem, kdf, aead, backend):
@@ -177,6 +202,18 @@ class TestHPKE:
             suite.decrypt(ciphertext, wrong_curve_sk)
         with pytest.raises(TypeError):
             suite.encrypt(b"test", wrong_curve_sk.public_key())
+
+    def test_wrong_key_type_or_curve_skip_path(self, backend, monkeypatch):
+        _skip_kem_if_unsupported(backend, KEM.P256)
+        monkeypatch.setattr(
+            "tests.hazmat.primitives.test_hpke._other_ec_curve",
+            lambda _backend, _kem: None,
+        )
+
+        with pytest.raises(
+            pytest.skip.Exception, match="No alternate EC curve"
+        ):
+            self.test_wrong_key_type_or_curve(KEM.P256, backend)
 
     def test_wrong_aad_fails(self):
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
