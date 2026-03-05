@@ -12,6 +12,7 @@ import pytest
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, x25519
 from cryptography.hazmat.primitives.hpke import (
     AEAD,
@@ -33,12 +34,21 @@ SUPPORTED_SUITES = list(
     )
 )
 
+SUPPORTED_SHAKE128_AEADS = [
+    AEAD.AES_128_GCM,
+    AEAD.AES_256_GCM,
+    AEAD.CHACHA20_POLY1305,
+]
+
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.x25519_supported(),
     skip_message="Requires OpenSSL with X25519 support",
 )
 class TestHPKE:
+    def test_shake128_is_available(self):
+        assert isinstance(KDF.SHAKE128, KDF)
+
     def test_invalid_kem_type(self):
         with pytest.raises(TypeError):
             Suite("not a kem", KDF.HKDF_SHA256, AEAD.AES_128_GCM)  # type: ignore[arg-type]
@@ -358,3 +368,38 @@ class TestHPKE:
                     suite, ciphertext, sk_r, info=info, aad=aad
                 )
                 assert pt == pt_expected
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE128(digest_size=32)
+        ),
+        skip_message="Does not support SHAKE128",
+    )
+    @pytest.mark.parametrize("aead", SUPPORTED_SHAKE128_AEADS)
+    def test_roundtrip_shake128(self, aead):
+        suite = Suite(KEM.X25519, KDF.SHAKE128, aead)
+
+        sk_r = x25519.X25519PrivateKey.generate()
+        pk_r = sk_r.public_key()
+
+        ciphertext = suite.encrypt(b"Hello, HPKE!", pk_r, info=b"shake128")
+        plaintext = suite.decrypt(ciphertext, sk_r, info=b"shake128")
+
+        assert plaintext == b"Hello, HPKE!"
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE128(digest_size=32)
+        ),
+        skip_message="Does not support SHAKE128",
+    )
+    def test_info_mismatch_fails_shake128(self):
+        suite = Suite(KEM.X25519, KDF.SHAKE128, AEAD.AES_128_GCM)
+
+        sk_r = x25519.X25519PrivateKey.generate()
+        pk_r = sk_r.public_key()
+
+        ciphertext = suite.encrypt(b"Secret", pk_r, info=b"sender info")
+
+        with pytest.raises(InvalidTag):
+            suite.decrypt(ciphertext, sk_r, info=b"different info")

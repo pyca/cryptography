@@ -312,6 +312,8 @@ pub static SHA384: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.hashes", &["SHA384"]);
 pub static SHA512: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.hashes", &["SHA512"]);
+pub static SHAKE128: LazyPyImport =
+    LazyPyImport::new("cryptography.hazmat.primitives.hashes", &["SHAKE128"]);
 
 pub static NO_DIGEST_INFO: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.utils",

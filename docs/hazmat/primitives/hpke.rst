@@ -93,6 +93,10 @@ specifying auxiliary authenticated information.
 
         HKDF-SHA384
 
+    .. attribute:: SHAKE128
+
+        SHAKE-128
+
 .. class:: AEAD
 
     An enumeration of authenticated encryption algorithms.
