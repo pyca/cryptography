@@ -13,6 +13,18 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from ...utils import load_nist_vectors, load_vectors_from_file
 
 
+def test_pbkdf2_zero_iterations():
+    with pytest.raises(
+        ValueError, match="iterations must be greater than or equal to 1"
+    ):
+        PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=b"salt",
+            iterations=0,
+        )
+
+
 @pytest.mark.supported(
     only_if=lambda backend: backend.pbkdf2_hmac_supported(hashes.SHA1()),
     skip_message="Does not support SHA1 for PBKDF2HMAC",
