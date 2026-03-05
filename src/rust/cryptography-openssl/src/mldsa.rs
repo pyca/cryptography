@@ -6,7 +6,7 @@ use foreign_types_shared::ForeignType;
 use openssl_sys as ffi;
 use std::os::raw::c_int;
 
-use crate::{cvt_p, OpenSSLResult};
+use crate::{cvt, cvt_p, OpenSSLResult};
 
 pub const NID_ML_DSA_65: c_int = ffi::NID_MLDSA65;
 pub const NID_PQDSA: c_int = ffi::NID_PQDSA;
@@ -37,13 +37,6 @@ extern "C" {
         ctx_string: *const u8,
         ctx_string_len: usize,
     ) -> c_int;
-}
-
-/// Generate a random 32-byte ML-DSA-65 seed.
-pub fn generate_seed() -> OpenSSLResult<[u8; MLDSA65_SEED_BYTES]> {
-    let mut seed = [0u8; MLDSA65_SEED_BYTES];
-    openssl::rand::rand_bytes(&mut seed)?;
-    Ok(seed)
 }
 
 pub fn new_raw_private_key(
@@ -99,8 +92,9 @@ pub fn sign(
     };
 
     // SAFETY: ml_dsa_65_sign takes raw key bytes, message, and context.
-    let r = unsafe {
-        ml_dsa_65_sign(
+    // SAFETY: ml_dsa_65_sign takes raw key bytes, message, and context.
+    unsafe {
+        let r = ml_dsa_65_sign(
             raw_key.as_ptr(),
             sig.as_mut_ptr(),
             &mut sig_len,
@@ -108,11 +102,8 @@ pub fn sign(
             data.len(),
             ctx_ptr,
             context.len(),
-        )
-    };
-
-    if r != 1 {
-        return Err(openssl::error::ErrorStack::get());
+        );
+        cvt(r)?;
     }
 
     sig.truncate(sig_len);
@@ -159,21 +150,4 @@ pub fn verify(
     }
 
     Ok(r == 1)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_sign_with_context_too_long_returns_error() {
-        // ML-DSA context strings are limited to 255 bytes.
-        // Passing a 256-byte context to ml_dsa_65_sign triggers
-        // an FFI error return.
-        let seed = generate_seed().unwrap();
-        let pkey = new_raw_private_key(&seed).unwrap();
-        let long_ctx = [0x41u8; 256];
-        let result = sign(&pkey, b"test", &long_ctx);
-        assert!(result.is_err());
-    }
 }

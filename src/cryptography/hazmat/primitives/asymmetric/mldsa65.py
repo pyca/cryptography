@@ -43,17 +43,14 @@ class MlDsa65PublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def verify(self, signature: Buffer, data: Buffer) -> None:
-        """
-        Verify the signature.
-        """
-
-    @abc.abstractmethod
-    def verify_with_context(
-        self, signature: Buffer, data: Buffer, context: Buffer
+    def verify(
+        self,
+        signature: Buffer,
+        data: Buffer,
+        context: Buffer | None = None,
     ) -> None:
         """
-        Verify the signature with a context string.
+        Verify the signature.
         """
 
     @abc.abstractmethod
@@ -129,15 +126,11 @@ class MlDsa65PrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def sign(self, data: Buffer) -> bytes:
+    def sign(
+        self, data: Buffer, context: Buffer | None = None
+    ) -> bytes:
         """
         Signs the data.
-        """
-
-    @abc.abstractmethod
-    def sign_with_context(self, data: Buffer, context: Buffer) -> bytes:
-        """
-        Signs the data with a context string.
         """
 
     @abc.abstractmethod

@@ -39,7 +39,8 @@ pub(crate) fn public_key_from_pkey(
 
 #[pyo3::pyfunction]
 fn generate_key() -> CryptographyResult<MlDsa65PrivateKey> {
-    let seed = cryptography_openssl::mldsa::generate_seed()?;
+    let mut seed = [0u8; cryptography_openssl::mldsa::MLDSA65_SEED_BYTES];
+    openssl::rand::rand_bytes(&mut seed)?;
     let pkey = cryptography_openssl::mldsa::new_raw_private_key(&seed)?;
     Ok(MlDsa65PrivateKey { pkey })
 }
@@ -64,28 +65,20 @@ fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<MlDsa65PublicKey> {
 #[pyo3::pymethods]
 // NO-COVERAGE-END
 impl MlDsa65PrivateKey {
+    #[pyo3(signature = (data, context=None))]
     fn sign<'p>(
         &self,
         py: pyo3::Python<'p>,
         data: CffiBuf<'_>,
+        context: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let sig = cryptography_openssl::mldsa::sign(&self.pkey, data.as_bytes(), &[])?;
-        Ok(pyo3::types::PyBytes::new(py, &sig))
-    }
-
-    fn sign_with_context<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-        data: CffiBuf<'_>,
-        context: CffiBuf<'_>,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if context.as_bytes().len() > MAX_CONTEXT_BYTES {
+        let ctx_bytes = context.as_ref().map_or(&[][..], |c| c.as_bytes());
+        if ctx_bytes.len() > MAX_CONTEXT_BYTES {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("Context must be at most 255 bytes"),
             ));
         }
-        let sig =
-            cryptography_openssl::mldsa::sign(&self.pkey, data.as_bytes(), context.as_bytes())?;
+        let sig = cryptography_openssl::mldsa::sign(&self.pkey, data.as_bytes(), ctx_bytes)?;
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
@@ -174,31 +167,15 @@ impl MlDsa65PrivateKey {
 #[pyo3::pymethods]
 // NO-COVERAGE-END
 impl MlDsa65PublicKey {
-    fn verify(&self, signature: CffiBuf<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        let valid = cryptography_openssl::mldsa::verify(
-            &self.pkey,
-            signature.as_bytes(),
-            data.as_bytes(),
-            &[],
-        )
-        .unwrap_or(false);
-
-        if !valid {
-            return Err(CryptographyError::from(
-                exceptions::InvalidSignature::new_err(()),
-            ));
-        }
-
-        Ok(())
-    }
-
-    fn verify_with_context(
+    #[pyo3(signature = (signature, data, context=None))]
+    fn verify(
         &self,
         signature: CffiBuf<'_>,
         data: CffiBuf<'_>,
-        context: CffiBuf<'_>,
+        context: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<()> {
-        if context.as_bytes().len() > MAX_CONTEXT_BYTES {
+        let ctx_bytes = context.as_ref().map_or(&[][..], |c| c.as_bytes());
+        if ctx_bytes.len() > MAX_CONTEXT_BYTES {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("Context must be at most 255 bytes"),
             ));
@@ -207,7 +184,7 @@ impl MlDsa65PublicKey {
             &self.pkey,
             signature.as_bytes(),
             data.as_bytes(),
-            context.as_bytes(),
+            ctx_bytes,
         )
         .unwrap_or(false);
 

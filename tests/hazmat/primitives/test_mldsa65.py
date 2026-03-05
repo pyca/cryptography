@@ -69,16 +69,16 @@ class TestMlDsa65:
     )
     def test_sign_verify_with_context(self, backend, ctx):
         key = MlDsa65PrivateKey.generate()
-        sig = key.sign_with_context(b"test data", ctx)
-        key.public_key().verify_with_context(sig, b"test data", ctx)
+        sig = key.sign(b"test data", ctx)
+        key.public_key().verify(sig, b"test data", ctx)
 
     def test_empty_context_equivalence(self, backend):
         key = MlDsa65PrivateKey.generate()
         pub = key.public_key()
         data = b"test data"
         sig = key.sign(data)
-        pub.verify_with_context(sig, data, b"")
-        sig2 = key.sign_with_context(data, b"")
+        pub.verify(sig, data, b"")
+        sig2 = key.sign(data, b"")
         pub.verify(sig2, data)
 
     def test_kat_vectors(self, backend, subtests):
@@ -102,19 +102,7 @@ class TestMlDsa65:
 
                 # Sigver: known-good signature verifies
                 pub = MlDsa65PublicKey.from_public_bytes(pk)
-                pub.verify_with_context(expected_sig, msg, ctx)
-
-    def test_kat_verify_no_context(self, backend):
-        vectors = load_vectors_from_file(
-            os.path.join("asymmetric", "MLDSA", "kat_MLDSA_65_det_pure.rsp"),
-            load_nist_vectors,
-        )
-        vector = vectors[0]
-        xi = binascii.unhexlify(vector["xi"])
-        key = MlDsa65PrivateKey.from_seed_bytes(xi)
-        pub = key.public_key()
-        sig = key.sign(b"test")
-        pub.verify(sig, b"test")
+                pub.verify(expected_sig, msg, ctx)
 
     def test_private_bytes_raw_round_trip(self, backend):
         key = MlDsa65PrivateKey.generate()
@@ -213,16 +201,16 @@ class TestMlDsa65:
 
     def test_context_wrong_context(self, backend):
         key = MlDsa65PrivateKey.generate()
-        sig = key.sign_with_context(b"test data", b"ctx-a")
+        sig = key.sign(b"test data", b"ctx-a")
         with pytest.raises(InvalidSignature):
-            key.public_key().verify_with_context(sig, b"test data", b"ctx-b")
+            key.public_key().verify(sig, b"test data", b"ctx-b")
 
     def test_context_too_long(self, backend):
         key = MlDsa65PrivateKey.generate()
         with pytest.raises(ValueError):
-            key.sign_with_context(b"data", b"x" * 256)
+            key.sign(b"data", b"x" * 256)
         with pytest.raises(ValueError):
-            key.public_key().verify_with_context(b"sig", b"data", b"x" * 256)
+            key.public_key().verify(b"sig", b"data", b"x" * 256)
 
     def test_invalid_length_from_public_bytes(self, backend):
         with pytest.raises(ValueError):

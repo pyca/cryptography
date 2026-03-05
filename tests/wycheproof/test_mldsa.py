@@ -39,10 +39,7 @@ def test_mldsa65_verify(backend, wycheproof):
     ctx = binascii.unhexlify(wycheproof.testcase["ctx"]) if has_ctx else None
 
     if wycheproof.valid:
-        if has_ctx:
-            pub.verify_with_context(sig, msg, ctx)
-        else:
-            pub.verify(sig, msg)
+        pub.verify(sig, msg, ctx)
     else:
         with pytest.raises(
             (
@@ -50,10 +47,7 @@ def test_mldsa65_verify(backend, wycheproof):
                 InvalidSignature,
             )
         ):
-            if has_ctx:
-                pub.verify_with_context(sig, msg, ctx)
-            else:
-                pub.verify(sig, msg)
+            pub.verify(sig, msg, ctx)
 
 
 @pytest.mark.supported(
@@ -90,13 +84,9 @@ def test_mldsa65_sign_seed(backend, wycheproof):
     if wycheproof.valid or wycheproof.acceptable:
         # Sign and verify round-trip. We don't compare exact signature
         # bytes because some backends use hedged (randomized) signing.
-        if has_ctx:
-            sig = key.sign_with_context(msg, ctx)
-            pub.verify_with_context(sig, msg, ctx)
-        else:
-            sig = key.sign(msg)
-            pub.verify(sig, msg)
+        sig = key.sign(msg, ctx)
+        pub.verify(sig, msg, ctx)
     else:
         with pytest.raises(ValueError):
             assert has_ctx
-            key.sign_with_context(msg, ctx)
+            key.sign(msg, ctx)
