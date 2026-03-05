@@ -22,6 +22,7 @@ mod kem_params {
 
 mod kdf_params {
     pub const HKDF_SHA256_ID: u16 = 0x0001;
+    pub const HKDF_SHA384_ID: u16 = 0x0002;
     pub const HKDF_SHA512_ID: u16 = 0x0003;
 }
 
@@ -67,6 +68,7 @@ pub(crate) enum KEM {
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub(crate) enum KDF {
     HKDF_SHA256,
+    HKDF_SHA384,
     HKDF_SHA512,
 }
 
@@ -74,6 +76,7 @@ impl KDF {
     fn id(&self) -> u16 {
         match self {
             KDF::HKDF_SHA256 => kdf_params::HKDF_SHA256_ID,
+            KDF::HKDF_SHA384 => kdf_params::HKDF_SHA384_ID,
             KDF::HKDF_SHA512 => kdf_params::HKDF_SHA512_ID,
         }
     }
@@ -84,6 +87,7 @@ impl KDF {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         match self {
             KDF::HKDF_SHA256 => Ok(types::SHA256.get(py)?.call0()?),
+            KDF::HKDF_SHA384 => Ok(types::SHA384.get(py)?.call0()?),
             KDF::HKDF_SHA512 => Ok(types::SHA512.get(py)?.call0()?),
         }
     }
