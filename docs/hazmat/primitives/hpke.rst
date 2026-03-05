@@ -54,7 +54,7 @@ specifying auxiliary authenticated information.
 
         :param bytes plaintext: The message to encrypt.
         :param public_key: The recipient's public key.
-        :type public_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
+        :type public_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey` or :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
         :param bytes info: Application-specific context string for binding the
             encryption to a specific application or protocol.
         :returns: The encapsulated key concatenated with ciphertext (enc || ct).
@@ -66,7 +66,7 @@ specifying auxiliary authenticated information.
 
         :param bytes ciphertext: The enc || ct value from :meth:`encrypt`.
         :param private_key: The recipient's private key.
-        :type private_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`
+        :type private_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey` or :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
         :param bytes info: Application-specific context string (must match the
             value used during encryption).
         :returns: The decrypted plaintext.
@@ -81,6 +81,18 @@ specifying auxiliary authenticated information.
 
         DHKEM(X25519, HKDF-SHA256)
 
+    .. attribute:: P256
+
+        DHKEM(P-256, HKDF-SHA256)
+
+    .. attribute:: P384
+
+        DHKEM(P-384, HKDF-SHA384)
+
+    .. attribute:: P521
+
+        DHKEM(P-521, HKDF-SHA512)
+
 .. class:: KDF
 
     An enumeration of key derivation functions.
@@ -88,6 +100,14 @@ specifying auxiliary authenticated information.
     .. attribute:: HKDF_SHA256
 
         HKDF-SHA256
+
+    .. attribute:: HKDF_SHA384
+
+        HKDF-SHA384
+
+    .. attribute:: HKDF_SHA512
+
+        HKDF-SHA512
 
 .. class:: AEAD
 
