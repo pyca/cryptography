@@ -89,8 +89,8 @@ Changelog
   method for computing hashes.
 * Added :doc:`/hazmat/primitives/hpke` support implementing :rfc:`9180` for
   hybrid authenticated encryption.
-* Added support for ``KEM.P256``, ``KEM.P384``, and ``KEM.P521`` in
-  :doc:`/hazmat/primitives/hpke`, and added support for ``KDF.HKDF_SHA384``.
+* Added ``KDF.HKDF_SHA384`` support to
+  :doc:`/hazmat/primitives/hpke`.
 
 .. _v46-0-5:
 
