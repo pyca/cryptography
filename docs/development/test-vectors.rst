@@ -1133,6 +1133,9 @@ HPKE (Hybrid Public Key Encryption)
   (AES-128-GCM, AES-256-GCM, ChaCha20Poly1305).
 * HPKE post-quantum and hybrid vectors (including SHAKE and TurboSHAKE KDF IDs)
   from `hpkewg/hpke-pq test vectors`_.
+* HPKE SHAKE-128 (X25519, mode Base) vectors generated with Go primitives
+  using the one-stage HPKE key schedule defined in
+  `Go's crypto/hpke package`_.
 
 Key wrapping
 ~~~~~~~~~~~~
@@ -1282,3 +1285,4 @@ header format (substituting the correct information):
 .. _`OpenSSL's RFC 6979 test vectors`: https://github.com/openssl/openssl/blob/1dbe8a6e1c56d010c271a80eafb2c7fd1b92fbda/test/recipes/30-test_evp_data/evppkey_ecdsa_rfc6979.txt
 .. _`IETF CFRG HPKE repository`: https://github.com/cfrg/draft-irtf-cfrg-hpke
 .. _`hpkewg/hpke-pq test vectors`: https://github.com/hpkewg/hpke-pq/blob/main/test-vectors.json
+.. _`Go's crypto/hpke package`: https://github.com/golang/go/tree/master/src/crypto/hpke

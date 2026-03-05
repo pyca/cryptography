@@ -375,6 +375,57 @@ class TestHPKE:
         ),
         skip_message="Does not support SHAKE128",
     )
+    def test_shake128_vector_decryption(self, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join("HPKE", "go-shake128-vectors.json"),
+            lambda f: json.load(f),
+        )
+
+        kdf_map = {
+            0x0010: KDF.SHAKE128,
+        }
+        aead_map = {
+            0x0001: AEAD.AES_128_GCM,
+            0x0002: AEAD.AES_256_GCM,
+            0x0003: AEAD.CHACHA20_POLY1305,
+        }
+
+        for vector in vectors:
+            if not (
+                vector["mode"] == 0
+                and vector["kem_id"] == 0x0020
+                and vector["kdf_id"] in kdf_map
+                and vector["aead_id"] in aead_map
+            ):
+                continue
+
+            with subtests.test():
+                kdf = kdf_map[vector["kdf_id"]]
+                aead = aead_map[vector["aead_id"]]
+                suite = Suite(KEM.X25519, kdf, aead)
+
+                sk_r_bytes = bytes.fromhex(vector["skRm"])
+                sk_r = x25519.X25519PrivateKey.from_private_bytes(sk_r_bytes)
+                enc = bytes.fromhex(vector["enc"])
+                info = bytes.fromhex(vector["info"])
+
+                encryption = vector["encryptions"][0]
+                aad = bytes.fromhex(encryption["aad"])
+                ct = bytes.fromhex(encryption["ct"])
+                pt_expected = bytes.fromhex(encryption["pt"])
+
+                ciphertext = enc + ct
+                pt = rust_openssl.hpke._decrypt_with_aad(
+                    suite, ciphertext, sk_r, info=info, aad=aad
+                )
+                assert pt == pt_expected
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE128(digest_size=32)
+        ),
+        skip_message="Does not support SHAKE128",
+    )
     @pytest.mark.parametrize("aead", SUPPORTED_SHAKE128_AEADS)
     def test_roundtrip_shake128(self, aead):
         suite = Suite(KEM.X25519, KDF.SHAKE128, aead)
