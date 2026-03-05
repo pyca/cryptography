@@ -285,17 +285,20 @@ pub fn parse_encrypted_private_key(
                             ))
                         }
                     };
+                    let iterations: usize = pbkdf2_params
+                        .iteration_count
+                        .try_into()
+                        .map_err(|_| KeyParsingError::InvalidKey)?;
+                    if iterations < 1 {
+                        return Err(KeyParsingError::InvalidKey);
+                    }
                     openssl::pkcs5::pbkdf2_hmac(
                         password,
                         pbkdf2_params.salt,
-                        pbkdf2_params
-                            .iteration_count
-                            .try_into()
-                            .map_err(|_| KeyParsingError::InvalidKey)?,
+                        iterations,
                         md,
                         &mut key,
-                    )
-                    .unwrap();
+                    )?;
                     key
                 }
                 #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]

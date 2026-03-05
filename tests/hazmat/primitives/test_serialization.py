@@ -465,6 +465,17 @@ class TestDERSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"password")
 
+    def test_load_pkcs8_private_key_pbkdf2_zero_iterations(self):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", "enc-rsa-pkcs8-pbkdf2-0iter.pem"
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=b"baz")
+
     @pytest.mark.skip_fips(reason="3DES unsupported in FIPS")
     def test_load_pkcs8_pbes_long_salt(self):
         data = load_vectors_from_file(
