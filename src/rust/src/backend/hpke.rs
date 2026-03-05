@@ -265,12 +265,8 @@ impl KDF {
     }
 
     fn nh(&self) -> usize {
-        match self {
-            KDF::HKDF_SHA256 => 32,
-            KDF::HKDF_SHA384 => 48,
-            KDF::HKDF_SHA512 => 64,
-            KDF::SHAKE128 => kdf_params::SHAKE128_NH,
-        }
+        debug_assert!(self.is_one_stage());
+        kdf_params::SHAKE128_NH
     }
 
     fn is_one_stage(&self) -> bool {
@@ -281,16 +277,14 @@ impl KDF {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        match self {
-            KDF::HKDF_SHA256 => Ok(types::SHA256.get(py)?.call0()?),
-            KDF::HKDF_SHA384 => Ok(types::SHA384.get(py)?.call0()?),
-            KDF::HKDF_SHA512 => Ok(types::SHA512.get(py)?.call0()?),
-            KDF::SHAKE128 => Err(CryptographyError::from(
-                pyo3::exceptions::PyTypeError::new_err(
-                    "SHAKE128 does not support HKDF extract/expand.",
-                ),
-            )),
+        debug_assert!(!self.is_one_stage());
+        if *self == KDF::HKDF_SHA256 {
+            return Ok(types::SHA256.get(py)?.call0()?);
         }
+        if *self == KDF::HKDF_SHA384 {
+            return Ok(types::SHA384.get(py)?.call0()?);
+        }
+        Ok(types::SHA512.get(py)?.call0()?)
     }
 
     fn derive<'p>(
@@ -299,19 +293,11 @@ impl KDF {
         ikm: &[u8],
         length: usize,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        match self {
-            KDF::SHAKE128 => {
-                let algorithm = types::SHAKE128.get(py)?.call1((length,))?;
-                let mut hash = Hash::new(py, &algorithm, None)?;
-                hash.update_bytes(ikm)?;
-                hash.finalize(py)
-            }
-            _ => Err(CryptographyError::from(
-                pyo3::exceptions::PyTypeError::new_err(
-                    "KDF does not support one-stage derivation.",
-                ),
-            )),
-        }
+        debug_assert!(self.is_one_stage());
+        let algorithm = types::SHAKE128.get(py)?.call1((length,))?;
+        let mut hash = Hash::new(py, &algorithm, None)?;
+        hash.update_bytes(ikm)?;
+        hash.finalize(py)
     }
 }
 

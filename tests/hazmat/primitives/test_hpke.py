@@ -391,13 +391,12 @@ class TestHPKE:
         }
 
         for vector in vectors:
-            if not (
+            assert (
                 vector["mode"] == 0
                 and vector["kem_id"] == 0x0020
                 and vector["kdf_id"] in kdf_map
                 and vector["aead_id"] in aead_map
-            ):
-                continue
+            )
 
             with subtests.test():
                 kdf = kdf_map[vector["kdf_id"]]
@@ -454,3 +453,16 @@ class TestHPKE:
 
         with pytest.raises(InvalidTag):
             suite.decrypt(ciphertext, sk_r, info=b"different info")
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE128(digest_size=32)
+        ),
+        skip_message="Does not support SHAKE128",
+    )
+    def test_info_too_large_fails_shake128(self):
+        suite = Suite(KEM.X25519, KDF.SHAKE128, AEAD.AES_128_GCM)
+        pk_r = x25519.X25519PrivateKey.generate().public_key()
+
+        with pytest.raises(ValueError, match="info is too large"):
+            suite.encrypt(b"test", pk_r, info=b"x" * 65536)
