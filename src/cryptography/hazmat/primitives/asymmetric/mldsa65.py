@@ -126,9 +126,7 @@ class MlDsa65PrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def sign(
-        self, data: Buffer, context: Buffer | None = None
-    ) -> bytes:
+    def sign(self, data: Buffer, context: Buffer | None = None) -> bytes:
         """
         Signs the data.
         """

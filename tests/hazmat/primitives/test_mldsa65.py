@@ -286,6 +286,42 @@ class TestMlDsa65:
     only_if=lambda backend: backend.mldsa_supported(),
     skip_message="Requires a backend with ML-DSA-65 support",
 )
+def test_unsupported_mldsa_variant_private_key(backend):
+    # ML-DSA-44 is not supported; loading it must raise UnsupportedAlgorithm.
+    pkcs8_der = load_vectors_from_file(
+        os.path.join("asymmetric", "MLDSA", "mldsa44_priv.der"),
+        lambda derfile: derfile.read(),
+        mode="rb",
+    )
+    with raises_unsupported_algorithm(
+        _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+    ):
+        serialization.load_der_private_key(
+            pkcs8_der, password=None, backend=backend
+        )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mldsa_supported(),
+    skip_message="Requires a backend with ML-DSA-65 support",
+)
+def test_unsupported_mldsa_variant_public_key(backend):
+    # ML-DSA-44 is not supported; loading it must raise UnsupportedAlgorithm.
+    spki_der = load_vectors_from_file(
+        os.path.join("asymmetric", "MLDSA", "mldsa44_pub.der"),
+        lambda derfile: derfile.read(),
+        mode="rb",
+    )
+    with raises_unsupported_algorithm(
+        _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+    ):
+        serialization.load_der_public_key(spki_der, backend=backend)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mldsa_supported(),
+    skip_message="Requires a backend with ML-DSA-65 support",
+)
 def test_public_key_equality(backend):
     key = MlDsa65PrivateKey.generate()
     pub1 = key.public_key()
