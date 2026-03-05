@@ -89,6 +89,7 @@ Changelog
   method for computing hashes.
 * Added :doc:`/hazmat/primitives/hpke` support implementing :rfc:`9180` for
   hybrid authenticated encryption.
+
 .. _v46-0-5:
 
 46.0.5 - 2026-02-10
