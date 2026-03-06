@@ -11,12 +11,12 @@ use crate::exceptions;
 
 const MAX_CONTEXT_BYTES: usize = 255;
 
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.mldsa65")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.mldsa")]
 pub(crate) struct MlDsa65PrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.mldsa65")]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.mldsa")]
 pub(crate) struct MlDsa65PublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
@@ -231,7 +231,7 @@ impl MlDsa65PublicKey {
 }
 
 #[pyo3::pymodule(gil_used = false)]
-pub(crate) mod mldsa65 {
+pub(crate) mod mldsa {
     #[pymodule_export]
     use super::{
         from_public_bytes, from_seed_bytes, generate_key, MlDsa65PrivateKey, MlDsa65PublicKey,

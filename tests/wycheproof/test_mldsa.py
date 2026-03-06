@@ -7,7 +7,7 @@ import binascii
 import pytest
 
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives.asymmetric.mldsa65 import (
+from cryptography.hazmat.primitives.asymmetric.mldsa import (
     MlDsa65PrivateKey,
     MlDsa65PublicKey,
 )

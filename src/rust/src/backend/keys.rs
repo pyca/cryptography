@@ -171,7 +171,7 @@ fn private_key_from_pkey<'p>(
         id if id == openssl::pkey::Id::from_raw(cryptography_openssl::mldsa::NID_PQDSA) => {
             let pub_len = pkey.raw_public_key()?.len();
             if pub_len == cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES {
-                Ok(crate::backend::mldsa65::private_key_from_pkey(pkey)
+                Ok(crate::backend::mldsa::private_key_from_pkey(pkey)
                     .into_pyobject(py)?
                     .into_any())
             } else {
@@ -313,7 +313,7 @@ fn public_key_from_pkey<'p>(
         id if id == openssl::pkey::Id::from_raw(cryptography_openssl::mldsa::NID_PQDSA) => {
             let pub_len = pkey.raw_public_key()?.len();
             if pub_len == cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES {
-                Ok(crate::backend::mldsa65::public_key_from_pkey(pkey)
+                Ok(crate::backend::mldsa::public_key_from_pkey(pkey)
                     .into_pyobject(py)?
                     .into_any())
             } else {

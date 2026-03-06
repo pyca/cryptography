@@ -23,7 +23,7 @@ class MlDsa65PublicKey(metaclass=abc.ABCMeta):
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
-        return rust_openssl.mldsa65.from_public_bytes(data)
+        return rust_openssl.mldsa.from_public_bytes(data)
 
     @abc.abstractmethod
     def public_bytes(
@@ -74,8 +74,8 @@ class MlDsa65PublicKey(metaclass=abc.ABCMeta):
         """
 
 
-if hasattr(rust_openssl, "mldsa65"):
-    MlDsa65PublicKey.register(rust_openssl.mldsa65.MlDsa65PublicKey)
+if hasattr(rust_openssl, "mldsa"):
+    MlDsa65PublicKey.register(rust_openssl.mldsa.MlDsa65PublicKey)
 
 
 class MlDsa65PrivateKey(metaclass=abc.ABCMeta):
@@ -89,7 +89,7 @@ class MlDsa65PrivateKey(metaclass=abc.ABCMeta):
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
-        return rust_openssl.mldsa65.generate_key()
+        return rust_openssl.mldsa.generate_key()
 
     @classmethod
     def from_seed_bytes(cls, data: Buffer) -> MlDsa65PrivateKey:
@@ -101,7 +101,7 @@ class MlDsa65PrivateKey(metaclass=abc.ABCMeta):
                 _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
             )
 
-        return rust_openssl.mldsa65.from_seed_bytes(data)
+        return rust_openssl.mldsa.from_seed_bytes(data)
 
     @abc.abstractmethod
     def public_key(self) -> MlDsa65PublicKey:
@@ -151,5 +151,5 @@ class MlDsa65PrivateKey(metaclass=abc.ABCMeta):
         """
 
 
-if hasattr(rust_openssl, "mldsa65"):
-    MlDsa65PrivateKey.register(rust_openssl.mldsa65.MlDsa65PrivateKey)
+if hasattr(rust_openssl, "mldsa"):
+    MlDsa65PrivateKey.register(rust_openssl.mldsa.MlDsa65PrivateKey)

@@ -20,7 +20,7 @@ Public key
 ----------
 
 The public key was derived from the private key using the OpenSSL CLI
-(requires OpenSSL 3.5+ or AWS-LC with ML-DSA-44 support):
+(requires OpenSSL 3.5+):
 
 .. code-block:: console
 
