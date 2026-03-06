@@ -175,9 +175,11 @@ fn private_key_from_pkey<'p>(
                     .into_pyobject(py)?
                     .into_any())
             } else {
+                // NO-COVERAGE-START
                 Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err("Unsupported ML-DSA variant."),
                 ))
+                // NO-COVERAGE-END
             }
         }
         _ => Err(CryptographyError::from(
@@ -315,9 +317,11 @@ fn public_key_from_pkey<'p>(
                     .into_pyobject(py)?
                     .into_any())
             } else {
+                // NO-COVERAGE-START
                 Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err("Unsupported ML-DSA variant."),
                 ))
+                // NO-COVERAGE-END
             }
         }
         _ => Err(CryptographyError::from(

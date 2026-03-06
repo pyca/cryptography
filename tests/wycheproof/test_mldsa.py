@@ -60,19 +60,10 @@ def test_mldsa65_sign_seed(backend, wycheproof):
     if wycheproof.has_flag("Internal"):
         return
 
-    seed = wycheproof.cache_value_to_group(
-        "cached_seed",
-        lambda: binascii.unhexlify(wycheproof.testgroup["privateSeed"]),
-    )
-    key = wycheproof.cache_value_to_group(
-        "cached_key",
-        lambda: MlDsa65PrivateKey.from_seed_bytes(seed),
-    )
-    pub = wycheproof.cache_value_to_group(
-        "cached_pub",
-        lambda: MlDsa65PublicKey.from_public_bytes(
-            binascii.unhexlify(wycheproof.testgroup["publicKey"])
-        ),
+    seed = binascii.unhexlify(wycheproof.testgroup["privateSeed"])
+    key = MlDsa65PrivateKey.from_seed_bytes(seed)
+    pub = MlDsa65PublicKey.from_public_bytes(
+        binascii.unhexlify(wycheproof.testgroup["publicKey"])
     )
 
     assert key.public_key() == pub

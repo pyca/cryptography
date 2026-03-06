@@ -40,6 +40,8 @@ class MlDsa65PublicKey(metaclass=abc.ABCMeta):
         """
         The raw bytes of the public key.
         Equivalent to public_bytes(Raw, Raw).
+
+        The public key is 1,952 bytes for MLDSA-65.
         """
 
     @abc.abstractmethod
@@ -116,13 +118,18 @@ class MlDsa65PrivateKey(metaclass=abc.ABCMeta):
     ) -> bytes:
         """
         The serialized bytes of the private key.
+
+        This method only returns the serialization of the seed form of the
+        private key, never the expanded one.
         """
 
     @abc.abstractmethod
     def private_bytes_raw(self) -> bytes:
         """
-        The raw bytes of the private key (32-byte seed).
+        The raw bytes of the private key.
         Equivalent to private_bytes(Raw, Raw, NoEncryption()).
+
+        This method only returns the seed form of the private key (32 bytes).
         """
 
     @abc.abstractmethod

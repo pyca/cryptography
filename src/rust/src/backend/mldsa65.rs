@@ -40,7 +40,7 @@ pub(crate) fn public_key_from_pkey(
 #[pyo3::pyfunction]
 fn generate_key() -> CryptographyResult<MlDsa65PrivateKey> {
     let mut seed = [0u8; cryptography_openssl::mldsa::MLDSA65_SEED_BYTES];
-    openssl::rand::rand_bytes(&mut seed)?;
+    cryptography_openssl::rand::rand_bytes(&mut seed)?;
     let pkey = cryptography_openssl::mldsa::new_raw_private_key(&seed)?;
     Ok(MlDsa65PrivateKey { pkey })
 }
