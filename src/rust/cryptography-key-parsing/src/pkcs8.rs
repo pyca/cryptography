@@ -22,6 +22,18 @@ pub struct PrivateKeyInfo<'a> {
     pub attributes: Option<Attributes<'a>>,
 }
 
+// FIPS 204 Section 7.3
+// MLDSAPrivateKey ::= CHOICE {
+//     seed [0] IMPLICIT OCTET STRING (SIZE(32)),
+//     expandedKey OCTET STRING
+// }
+#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+struct MlDsaPrivateKey<'a> {
+    #[implicit(0)]
+    seed: Option<&'a [u8]>,
+}
+
 pub fn parse_private_key(
     data: &[u8],
 ) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
@@ -109,11 +121,22 @@ pub fn parse_private_key(
         }
 
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
-        AlgorithmParameters::MlDsa65 => Ok(openssl::pkey::PKey::private_key_from_der(data)?),
+        AlgorithmParameters::MlDsa65 => parse_mldsa_private_key(k.private_key),
 
         _ => Err(KeyParsingError::UnsupportedKeyType(
             k.algorithm.oid().clone(),
         )),
+    }
+}
+
+#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+fn parse_mldsa_private_key(
+    private_key_data: &[u8],
+) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
+    let k = asn1::parse_single::<MlDsaPrivateKey<'_>>(private_key_data)?;
+    match k.seed {
+        Some(seed) => Ok(cryptography_openssl::mldsa::new_raw_private_key(seed)?),
+        None => Err(KeyParsingError::InvalidKey),
     }
 }
 
@@ -445,7 +468,11 @@ pub fn serialize_private_key(
         }
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
         id if id == openssl::pkey::Id::from_raw(cryptography_openssl::mldsa::NID_PQDSA) => {
-            return Ok(pkey.private_key_to_pkcs8()?);
+            let seed = pkey.raw_private_key()?;
+            let private_key_der = asn1::write_single(&MlDsaPrivateKey {
+                seed: Some(seed.as_slice()),
+            })?;
+            (AlgorithmParameters::MlDsa65, private_key_der)
         }
         _ => {
             unimplemented!("Unknown key type");
