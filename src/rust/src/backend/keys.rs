@@ -86,24 +86,16 @@ fn load_pem_private_key<'p>(
     let (data, mut password_used) = cryptography_key_parsing::pem::decrypt_pem(&p, password)?;
 
     let pkey = match p.tag() {
-        "PRIVATE KEY" => {
-            cryptography_key_parsing::pkcs8::parse_private_key(&data)?
-        }
-        "RSA PRIVATE KEY" => {
-            cryptography_key_parsing::rsa::parse_pkcs1_private_key(&data).map_err(|e| {
-                CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
-            })?
-        }
-        "EC PRIVATE KEY" => {
-            cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None).map_err(|e| {
-                CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
-            })?
-        }
-        "DSA PRIVATE KEY" => {
-            cryptography_key_parsing::dsa::parse_pkcs1_private_key(&data).map_err(|e| {
-                CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
-            })?
-        }
+        "PRIVATE KEY" => cryptography_key_parsing::pkcs8::parse_private_key(&data)?,
+        "RSA PRIVATE KEY" => cryptography_key_parsing::rsa::parse_pkcs1_private_key(&data).map_err(|e| {
+            CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
+        })?,
+        "EC PRIVATE KEY" => cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None).map_err(|e| {
+            CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
+        })?,
+        "DSA PRIVATE KEY" => cryptography_key_parsing::dsa::parse_pkcs1_private_key(&data).map_err(|e| {
+            CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
+        })?,
         _ => {
             assert_eq!(p.tag(), "ENCRYPTED PRIVATE KEY");
             password_used = true;
