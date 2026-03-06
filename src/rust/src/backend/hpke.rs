@@ -272,33 +272,6 @@ impl KDF {
     fn is_one_stage(&self) -> bool {
         matches!(self, KDF::SHAKE128)
     }
-
-    fn hash_algorithm<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        debug_assert!(!self.is_one_stage());
-        if *self == KDF::HKDF_SHA256 {
-            return Ok(types::SHA256.get(py)?.call0()?);
-        }
-        if *self == KDF::HKDF_SHA384 {
-            return Ok(types::SHA384.get(py)?.call0()?);
-        }
-        Ok(types::SHA512.get(py)?.call0()?)
-    }
-
-    fn derive<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-        ikm: &[u8],
-        length: usize,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        debug_assert!(self.is_one_stage());
-        let algorithm = types::SHAKE128.get(py)?.call1((length,))?;
-        let mut hash = Hash::new(py, &algorithm, None)?;
-        hash.update_bytes(ikm)?;
-        hash.finalize(py)
-    }
 }
 
 #[allow(clippy::upper_case_acronyms)]
@@ -376,6 +349,20 @@ impl Suite {
             None,
         )?;
         hkdf_expand.derive(py, CffiBuf::from_bytes(py, prk))
+    }
+
+    fn hpke_hkdf_hash_algorithm<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        debug_assert!(!self.kdf.is_one_stage());
+        if self.kdf == KDF::HKDF_SHA256 {
+            return Ok(types::SHA256.get(py)?.call0()?);
+        }
+        if self.kdf == KDF::HKDF_SHA384 {
+            return Ok(types::SHA384.get(py)?.call0()?);
+        }
+        Ok(types::SHA512.get(py)?.call0()?)
     }
 
     fn kem_labeled_extract(
@@ -490,7 +477,7 @@ impl Suite {
         labeled_ikm.extend_from_slice(label);
         labeled_ikm.extend_from_slice(ikm);
 
-        let algorithm = self.kdf.hash_algorithm(py)?;
+        let algorithm = self.hpke_hkdf_hash_algorithm(py)?;
         let buf = CffiBuf::from_bytes(py, &labeled_ikm);
         hkdf_extract(py, &algorithm.unbind(), salt, &buf)
     }
@@ -510,7 +497,7 @@ impl Suite {
         labeled_info.extend_from_slice(&self.hpke_suite_id);
         labeled_info.extend_from_slice(label);
         labeled_info.extend_from_slice(info);
-        let algorithm = self.kdf.hash_algorithm(py)?;
+        let algorithm = self.hpke_hkdf_hash_algorithm(py)?;
         Suite::hkdf_expand(py, algorithm, prk, &labeled_info, length)
     }
 
@@ -533,7 +520,10 @@ impl Suite {
         labeled_ikm.extend_from_slice(label);
         labeled_ikm.extend_from_slice(&(length as u16).to_be_bytes());
         labeled_ikm.extend_from_slice(context);
-        self.kdf.derive(py, &labeled_ikm, length)
+        let algorithm = types::SHAKE128.get(py)?.call1((length,))?;
+        let mut hash = Hash::new(py, &algorithm, None)?;
+        hash.update_bytes(&labeled_ikm)?;
+        hash.finalize(py)
     }
 
     fn aead_encrypt<'p>(
