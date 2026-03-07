@@ -4325,6 +4325,22 @@ class TestCertificateBuilder:
                     )
                 ]
             ),
+            # Regression test: empty frozenset reasons previously panicked
+            # in encode_distribution_point_reasons (trailing_zeros(0) == 8).
+            x509.CRLDistributionPoints(
+                [
+                    x509.DistributionPoint(
+                        full_name=[
+                            x509.UniformResourceIdentifier(
+                                "http://crl.example.com/root.crl"
+                            )
+                        ],
+                        relative_name=None,
+                        reasons=frozenset(),
+                        crl_issuer=None,
+                    )
+                ]
+            ),
             x509.FreshestCRL(
                 [
                     x509.DistributionPoint(
