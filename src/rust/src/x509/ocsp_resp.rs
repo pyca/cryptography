@@ -888,7 +888,10 @@ impl OCSPResponseIterator {
                 }
             })
             .ok()?;
-        Some(OCSPSingleResponse { raw: single_resp })
+        Some(OCSPSingleResponse {
+            raw: single_resp,
+            cached_extensions: pyo3::sync::PyOnceLock::new(),
+        })
     }
 }
 
@@ -903,6 +906,7 @@ self_cell::self_cell!(
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.ocsp")]
 pub(crate) struct OCSPSingleResponse {
     raw: OwnedSingleResponse,
+    cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 impl OCSPSingleResponse {
@@ -1021,5 +1025,26 @@ impl OCSPSingleResponse {
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         let single_resp = self.single_response();
         singleresp_py_next_update_utc(single_resp, py)
+    }
+
+    #[getter]
+    fn extensions(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
+        x509::parse_and_cache_extensions(
+            py,
+            &self.cached_extensions,
+            &self.single_response().raw_single_extensions,
+            |ext| match &ext.extn_id {
+                &oid::SIGNED_CERTIFICATE_TIMESTAMPS_OID => {
+                    let contents = ext.value::<&[u8]>()?;
+                    let scts = sct::parse_scts(py, contents, sct::LogEntryType::Certificate)?;
+                    Ok(Some(
+                        types::SIGNED_CERTIFICATE_TIMESTAMPS
+                            .get(py)?
+                            .call1((scts,))?,
+                    ))
+                }
+                _ => crl::parse_crl_entry_ext(py, ext),
+            },
+        )
     }
 }
