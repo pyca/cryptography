@@ -1129,6 +1129,8 @@ HPKE (Hybrid Public Key Encryption)
   These vectors cover all four modes (Base, PSK, Auth, AuthPSK), multiple KEMs
   (X25519, X448, P-256, P-521), KDFs (HKDF-SHA256, HKDF-SHA512), and AEADs
   (AES-128-GCM, AES-256-GCM, ChaCha20Poly1305).
+* HPKE post-quantum and hybrid vectors (including SHAKE and TurboSHAKE KDF IDs)
+  from `hpkewg/hpke-pq test vectors`_.
 
 Key wrapping
 ~~~~~~~~~~~~
@@ -1277,3 +1279,4 @@ header format (substituting the correct information):
 .. _`evpkdf_argon2.txt`: https://github.com/openssl/openssl/blob/01f4b44e075a796d62d3b007a80c5c04d0e77bfb/test/recipes/30-test_evp_data/evpkdf_argon2.txt
 .. _`OpenSSL's RFC 6979 test vectors`: https://github.com/openssl/openssl/blob/1dbe8a6e1c56d010c271a80eafb2c7fd1b92fbda/test/recipes/30-test_evp_data/evppkey_ecdsa_rfc6979.txt
 .. _`IETF CFRG HPKE repository`: https://github.com/cfrg/draft-irtf-cfrg-hpke
+.. _`hpkewg/hpke-pq test vectors`: https://github.com/hpkewg/hpke-pq/blob/main/test-vectors.json
