@@ -47,6 +47,7 @@ pub(crate) fn load_der_ocsp_response(
         raw: Arc::new(raw),
         cached_extensions: pyo3::sync::PyOnceLock::new(),
         cached_single_extensions: pyo3::sync::PyOnceLock::new(),
+        cached_certs: pyo3::sync::PyOnceLock::new(),
     })
 }
 
@@ -64,6 +65,7 @@ pub(crate) struct OCSPResponse {
 
     cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
     cached_single_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_certs: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 impl OCSPResponse {
@@ -239,41 +241,41 @@ impl OCSPResponse {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyList>> {
-        let resp = self.requires_successful_response()?;
-        let py_certs = pyo3::types::PyList::empty(py);
-        let certs = match &resp.certs {
-            Some(certs) => certs.unwrap_read(),
-            None => return Ok(py_certs),
-        };
-        for i in 0..certs.len() {
-            // TODO: O(n^2), don't have too many certificates!
-            let raw_cert = map_arc_data_ocsp_response(py, &self.raw, |_data, resp| {
-                match &resp.response_bytes.as_ref().unwrap().response {
-                    Response::Basic(b) => b,
+        self.requires_successful_response()?;
+        Ok(self
+            .cached_certs
+            .get_or_try_init(py, || -> CryptographyResult<pyo3::Py<pyo3::PyAny>> {
+                let resp = self.requires_successful_response()?;
+                let py_certs = pyo3::types::PyList::empty(py);
+                let certs = match &resp.certs {
+                    Some(certs) => certs.unwrap_read().clone(),
+                    None => return Ok(py_certs.into_any().unbind()),
+                };
+                for cert in certs {
+                    let cert_der = asn1::write_single(&cert)?;
+                    let raw_cert = certificate::OwnedCertificate::try_new(
+                        pyo3::types::PyBytes::new(py, &cert_der).unbind(),
+                        |data| asn1::parse_single(data.as_bytes(py)),
+                    )?;
+                    py_certs.append(pyo3::Bound::new(
+                        py,
+                        x509::certificate::Certificate {
+                            raw: raw_cert,
+                            cached_extensions: pyo3::sync::PyOnceLock::new(),
+                            cached_issuer: pyo3::sync::PyOnceLock::new(),
+                            cached_subject: pyo3::sync::PyOnceLock::new(),
+                            cached_public_key: pyo3::sync::PyOnceLock::new(),
+                            cached_signature_algorithm_oid: pyo3::sync::PyOnceLock::new(),
+                            cached_signature_hash_algorithm: pyo3::sync::PyOnceLock::new(),
+                        },
+                    )?)?;
                 }
-                .get()
-                .certs
-                .as_ref()
-                .unwrap()
-                .unwrap_read()
-                .clone()
-                .nth(i)
-                .unwrap()
-            });
-            py_certs.append(pyo3::Bound::new(
-                py,
-                x509::certificate::Certificate {
-                    raw: raw_cert,
-                    cached_extensions: pyo3::sync::PyOnceLock::new(),
-                    cached_issuer: pyo3::sync::PyOnceLock::new(),
-                    cached_subject: pyo3::sync::PyOnceLock::new(),
-                    cached_public_key: pyo3::sync::PyOnceLock::new(),
-                    cached_signature_algorithm_oid: pyo3::sync::PyOnceLock::new(),
-                    cached_signature_hash_algorithm: pyo3::sync::PyOnceLock::new(),
-                },
-            )?)?;
-        }
-        Ok(py_certs)
+                Ok(py_certs.into_any().unbind())
+            })?
+            .bind(py)
+            .cast::<pyo3::types::PyList>()
+            .unwrap()
+            .clone())
     }
 
     #[getter]
@@ -487,30 +489,6 @@ impl OCSPResponse {
     }
 }
 
-// Open-coded implementation of the API discussed in
-// https://github.com/joshua-maros/ouroboros/issues/38
-fn map_arc_data_ocsp_response(
-    py: pyo3::Python<'_>,
-    it: &OwnedOCSPResponse,
-    f: impl for<'this> FnOnce(
-        &'this [u8],
-        &ocsp_resp::OCSPResponse<'this>,
-    ) -> cryptography_x509::certificate::Certificate<'this>,
-) -> certificate::OwnedCertificate {
-    certificate::OwnedCertificate::new(it.borrow_owner().clone_ref(py), |inner_it| {
-        it.with_dependent(|_, value| {
-            // SAFETY: This is safe because `Arc::clone` ensures the data is
-            // alive, but Rust doesn't understand the lifetime relationship it
-            // produces. Open-coded implementation of the API discussed in
-            // https://github.com/joshua-maros/ouroboros/issues/38
-            f(inner_it.as_bytes(py), unsafe {
-                std::mem::transmute::<&ocsp_resp::OCSPResponse<'_>, &ocsp_resp::OCSPResponse<'_>>(
-                    value,
-                )
-            })
-        })
-    })
-}
 fn try_map_arc_data_mut_ocsp_response_iterator<E>(
     it: &mut OwnedOCSPResponseIteratorData,
     f: impl for<'this> FnOnce(
