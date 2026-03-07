@@ -47,6 +47,9 @@ pub(crate) fn load_der_x509_crl(
         owned,
         revoked_certs: pyo3::sync::PyOnceLock::new(),
         cached_extensions: pyo3::sync::PyOnceLock::new(),
+        cached_issuer: pyo3::sync::PyOnceLock::new(),
+        cached_signature_algorithm_oid: pyo3::sync::PyOnceLock::new(),
+        cached_signature_hash_algorithm: pyo3::sync::PyOnceLock::new(),
     })
 }
 
@@ -85,6 +88,9 @@ pub(crate) struct CertificateRevocationList {
 
     revoked_certs: pyo3::sync::PyOnceLock<Vec<OwnedRevokedCertificate>>,
     cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_issuer: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_signature_algorithm_oid: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_signature_hash_algorithm: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 impl CertificateRevocationList {
@@ -199,7 +205,14 @@ impl CertificateRevocationList {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        oid_to_py_oid(py, self.owned.borrow_dependent().signature_algorithm.oid())
+        Ok(self
+            .cached_signature_algorithm_oid
+            .get_or_try_init(py, || {
+                oid_to_py_oid(py, self.owned.borrow_dependent().signature_algorithm.oid())
+                    .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -207,10 +220,17 @@ impl CertificateRevocationList {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
-        sign::identify_signature_hash_algorithm(
-            py,
-            &self.owned.borrow_dependent().signature_algorithm,
-        )
+        Ok(self
+            .cached_signature_hash_algorithm
+            .get_or_try_init(py, || {
+                sign::identify_signature_hash_algorithm(
+                    py,
+                    &self.owned.borrow_dependent().signature_algorithm,
+                )
+                .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -250,14 +270,21 @@ impl CertificateRevocationList {
 
     #[getter]
     fn issuer<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        Ok(x509::parse_name(
-            py,
-            self.owned
-                .borrow_dependent()
-                .tbs_cert_list
-                .issuer
-                .unwrap_read(),
-        )?)
+        Ok(self
+            .cached_issuer
+            .get_or_try_init(py, || {
+                x509::parse_name(
+                    py,
+                    self.owned
+                        .borrow_dependent()
+                        .tbs_cert_list
+                        .issuer
+                        .unwrap_read(),
+                )
+                .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
