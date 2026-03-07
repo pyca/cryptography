@@ -670,11 +670,8 @@ pub(crate) fn encode_distribution_point_reasons(
             .extract::<usize>()?;
         set_bit(&mut bits, bit, true);
     }
-    if bits[1] == 0 {
-        bits.truncate(1);
-        if bits[0] == 0 {
-            bits.truncate(0);
-        }
+    while bits.last() == Some(&0) {
+        bits.pop();
     }
     let unused_bits = bits.last().map_or(0, |b| b.trailing_zeros() as u8);
     Ok(asn1::OwnedBitString::new(bits, unused_bits).unwrap())
