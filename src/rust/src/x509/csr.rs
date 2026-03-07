@@ -29,6 +29,7 @@ self_cell::self_cell!(
 pub(crate) struct CertificateSigningRequest {
     raw: OwnedCsr,
     cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_attributes: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 #[pyo3::pymethods]
@@ -129,32 +130,40 @@ impl CertificateSigningRequest {
 
     #[getter]
     fn attributes<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        let pyattrs = pyo3::types::PyList::empty(py);
-        for attribute in self
-            .raw
-            .borrow_dependent()
-            .csr_info
-            .attributes
-            .unwrap_read()
-            .clone()
-        {
-            check_attribute_length(attribute.values.unwrap_read().clone()).map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err(
-                    "Only single-valued attributes are supported",
-                )
-            })?;
-            let oid = oid_to_py_oid(py, &attribute.type_id)?;
-            let val = attribute.values.unwrap_read().clone().next().unwrap();
-            let serialized = pyo3::types::PyBytes::new(py, val.data());
-            let tag = val.tag().as_u8().ok_or_else(|| {
-                CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-                    "Long-form tags are not supported in CSR attribute values",
-                ))
-            })?;
-            let pyattr = types::ATTRIBUTE.get(py)?.call1((oid, serialized, tag))?;
-            pyattrs.append(pyattr)?;
-        }
-        types::ATTRIBUTES.get(py)?.call1((pyattrs,))
+        Ok(self
+            .cached_attributes
+            .get_or_try_init(py, || -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
+                let pyattrs = pyo3::types::PyList::empty(py);
+                for attribute in self
+                    .raw
+                    .borrow_dependent()
+                    .csr_info
+                    .attributes
+                    .unwrap_read()
+                    .clone()
+                {
+                    check_attribute_length(attribute.values.unwrap_read().clone()).map_err(
+                        |_| {
+                            pyo3::exceptions::PyValueError::new_err(
+                                "Only single-valued attributes are supported",
+                            )
+                        },
+                    )?;
+                    let oid = oid_to_py_oid(py, &attribute.type_id)?;
+                    let val = attribute.values.unwrap_read().clone().next().unwrap();
+                    let serialized = pyo3::types::PyBytes::new(py, val.data());
+                    let tag = val.tag().as_u8().ok_or_else(|| {
+                        CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+                            "Long-form tags are not supported in CSR attribute values",
+                        ))
+                    })?;
+                    let pyattr = types::ATTRIBUTE.get(py)?.call1((oid, serialized, tag))?;
+                    pyattrs.append(pyattr)?;
+                }
+                Ok(types::ATTRIBUTES.get(py)?.call1((pyattrs,))?.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -236,6 +245,7 @@ pub(crate) fn load_der_x509_csr(
     Ok(CertificateSigningRequest {
         raw,
         cached_extensions: pyo3::sync::PyOnceLock::new(),
+        cached_attributes: pyo3::sync::PyOnceLock::new(),
     })
 }
 
