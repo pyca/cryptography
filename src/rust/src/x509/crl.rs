@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::collections::HashMap;
+
 use cryptography_x509::certificate::SerialNumber;
 use cryptography_x509::common::{self, Asn1Read};
 use cryptography_x509::crl::{
@@ -46,7 +48,11 @@ pub(crate) fn load_der_x509_crl(
     Ok(CertificateRevocationList {
         owned,
         revoked_certs: pyo3::sync::PyOnceLock::new(),
+        serial_number_map: pyo3::sync::PyOnceLock::new(),
         cached_extensions: pyo3::sync::PyOnceLock::new(),
+        cached_issuer: pyo3::sync::PyOnceLock::new(),
+        cached_signature_algorithm_oid: pyo3::sync::PyOnceLock::new(),
+        cached_signature_hash_algorithm: pyo3::sync::PyOnceLock::new(),
     })
 }
 
@@ -84,7 +90,11 @@ pub(crate) struct CertificateRevocationList {
     owned: OwnedCertificateRevocationList,
 
     revoked_certs: pyo3::sync::PyOnceLock<Vec<OwnedRevokedCertificate>>,
+    serial_number_map: pyo3::sync::PyOnceLock<HashMap<Vec<u8>, OwnedRevokedCertificate>>,
     cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_issuer: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_signature_algorithm_oid: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_signature_hash_algorithm: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 impl CertificateRevocationList {
@@ -199,7 +209,14 @@ impl CertificateRevocationList {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        oid_to_py_oid(py, self.owned.borrow_dependent().signature_algorithm.oid())
+        Ok(self
+            .cached_signature_algorithm_oid
+            .get_or_try_init(py, || {
+                oid_to_py_oid(py, self.owned.borrow_dependent().signature_algorithm.oid())
+                    .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -207,10 +224,17 @@ impl CertificateRevocationList {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
-        sign::identify_signature_hash_algorithm(
-            py,
-            &self.owned.borrow_dependent().signature_algorithm,
-        )
+        Ok(self
+            .cached_signature_hash_algorithm
+            .get_or_try_init(py, || {
+                sign::identify_signature_hash_algorithm(
+                    py,
+                    &self.owned.borrow_dependent().signature_algorithm,
+                )
+                .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -250,14 +274,21 @@ impl CertificateRevocationList {
 
     #[getter]
     fn issuer<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        Ok(x509::parse_name(
-            py,
-            self.owned
-                .borrow_dependent()
-                .tbs_cert_list
-                .issuer
-                .unwrap_read(),
-        )?)
+        Ok(self
+            .cached_issuer
+            .get_or_try_init(py, || {
+                x509::parse_name(
+                    py,
+                    self.owned
+                        .borrow_dependent()
+                        .tbs_cert_list
+                        .issuer
+                        .unwrap_read(),
+                )
+                .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -390,21 +421,43 @@ impl CertificateRevocationList {
     ) -> pyo3::PyResult<Option<RevokedCertificate>> {
         let serial_bytes = py_uint_to_big_endian_bytes(py, serial)?;
 
-        // Use try_map_crl_to_revoked_cert to soundly extract the certificate
-        let owned = try_map_crl_to_revoked_cert(&self.owned, py, |crl| {
-            let certs = crl.tbs_cert_list.revoked_certificates.as_ref()?;
-
-            // TODO: linear scan. Make a hash or bisect!
-            certs
-                .unwrap_read()
-                .clone()
-                .find(|cert| serial_bytes == cert.user_certificate.as_bytes())
+        let map = self.serial_number_map.get_or_init(py, || {
+            let mut map = HashMap::new();
+            let mut it_data = map_crl_to_iterator_data(&self.owned, py, |crl| {
+                crl.tbs_cert_list
+                    .revoked_certificates
+                    .as_ref()
+                    .map(|v| v.unwrap_read().clone())
+            });
+            loop {
+                let revoked = try_map_arc_data_mut_crl_iterator(py, &mut it_data, |v| match v {
+                    Some(v) => match v.next() {
+                        Some(revoked) => Ok(revoked),
+                        None => Err(()),
+                    },
+                    None => Err(()),
+                });
+                match revoked {
+                    Ok(owned) => {
+                        let key = owned
+                            .borrow_dependent()
+                            .user_certificate
+                            .as_bytes()
+                            .to_vec();
+                        map.insert(key, owned);
+                    }
+                    Err(()) => break,
+                }
+            }
+            map
         });
 
-        Ok(owned.map(|o| RevokedCertificate {
-            owned: o,
-            cached_extensions: pyo3::sync::PyOnceLock::new(),
-        }))
+        Ok(map
+            .get(serial_bytes.as_ref())
+            .map(|owned| RevokedCertificate {
+                owned: owned.clone_with_py(py),
+                cached_extensions: pyo3::sync::PyOnceLock::new(),
+            }))
     }
 
     fn is_signature_valid<'p>(
@@ -471,33 +524,6 @@ where
             >(source.borrow_dependent())
         })
     })
-}
-
-// Open-coded implementation of the API discussed in
-// https://github.com/joshua-maros/ouroboros/issues/38
-fn try_map_crl_to_revoked_cert<F>(
-    source: &OwnedCertificateRevocationList,
-    py: pyo3::Python<'_>,
-    f: F,
-) -> Option<OwnedRevokedCertificate>
-where
-    F: for<'a> FnOnce(&'a RawCertificateRevocationList<'a>) -> Option<RawRevokedCertificate<'a>>,
-{
-    OwnedRevokedCertificate::try_new(source.borrow_owner().clone_ref(py), |_| {
-        // SAFETY: This is safe because cloning the PyBytes Py<> ensures the data is
-        // alive, but Rust doesn't understand the lifetime relationship it
-        // produces.
-        match f(unsafe {
-            std::mem::transmute::<
-                &RawCertificateRevocationList<'_>,
-                &RawCertificateRevocationList<'_>,
-            >(source.borrow_dependent())
-        }) {
-            Some(cert) => Ok(cert),
-            None => Err(()),
-        }
-    })
-    .ok()
 }
 
 // Open-coded implementation of the API discussed in

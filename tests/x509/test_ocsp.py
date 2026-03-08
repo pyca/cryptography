@@ -1609,6 +1609,59 @@ class TestOCSPResponse:
         assert ext.oid == x509.CRLReason.oid
         assert ext.value == x509.CRLReason(x509.ReasonFlags.unspecified)
 
+    def test_single_response_extensions_empty(self):
+        # A typical single-response has no per-response extensions.
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-sha256.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        single = next(resp.responses)
+        assert isinstance(single, ocsp.OCSPSingleResponse)
+        assert len(single.extensions) == 0
+        # Idempotent: second access returns the same cached object.
+        assert single.extensions is single.extensions
+
+    def test_single_response_extensions_sct(self, backend):
+        # resp-sct-extension.der carries an SCT list in the per-response
+        # extensions (raw_single_extensions).  Verify the new
+        # OCSPSingleResponse.extensions getter exposes the same data that
+        # OCSPResponse.single_extensions already reported for this file.
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-sct-extension.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        single = next(resp.responses)
+        assert len(single.extensions) == 1
+        ext = single.extensions[0]
+        assert ext.oid == x509.ObjectIdentifier("1.3.6.1.4.1.11129.2.4.5")
+        assert len(ext.value) == 4
+
+    def test_single_response_extensions_reason(self, backend):
+        # resp-single-extension-reason.der carries a CRLReason in the
+        # per-response extensions.
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-single-extension-reason.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        single = next(resp.responses)
+        assert len(single.extensions) == 1
+        ext = single.extensions[0]
+        assert ext.oid == x509.CRLReason.oid
+        assert ext.value == x509.CRLReason(x509.ReasonFlags.unspecified)
+
+    def test_certificates_cached(self):
+        # OCSPResponse.certificates is cached: repeated access must return
+        # the identical list object, not rebuild it each time.
+        resp = _load_data(
+            os.path.join("x509", "ocsp", "resp-delegate-unknown-cert.der"),
+            ocsp.load_der_ocsp_response,
+        )
+        first = resp.certificates
+        second = resp.certificates
+        assert first is second
+        assert len(first) == 1
+        assert isinstance(first[0], x509.Certificate)
+
     def test_unknown_response_type(self):
         with pytest.raises(ValueError):
             _load_data(

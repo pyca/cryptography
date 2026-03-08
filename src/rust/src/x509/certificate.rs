@@ -41,6 +41,11 @@ self_cell::self_cell!(
 pub(crate) struct Certificate {
     pub(crate) raw: OwnedCertificate,
     pub(crate) cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    pub(crate) cached_issuer: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    pub(crate) cached_subject: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    pub(crate) cached_public_key: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    pub(crate) cached_signature_algorithm_oid: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    pub(crate) cached_signature_hash_algorithm: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 #[pyo3::pymethods]
@@ -78,10 +83,17 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        keys::load_der_public_key_bytes(
-            py,
-            self.raw.borrow_dependent().tbs_cert.spki.tlv().full_data(),
-        )
+        Ok(self
+            .cached_public_key
+            .get_or_try_init(py, || {
+                keys::load_der_public_key_bytes(
+                    py,
+                    self.raw.borrow_dependent().tbs_cert.spki.tlv().full_data(),
+                )
+                .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -138,14 +150,28 @@ impl Certificate {
 
     #[getter]
     fn issuer<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        Ok(x509::parse_name(py, self.raw.borrow_dependent().issuer())
-            .map_err(|e| e.add_location(asn1::ParseLocation::Field("issuer")))?)
+        Ok(self
+            .cached_issuer
+            .get_or_try_init(py, || {
+                x509::parse_name(py, self.raw.borrow_dependent().issuer())
+                    .map_err(|e| e.add_location(asn1::ParseLocation::Field("issuer")))
+                    .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
     fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        Ok(x509::parse_name(py, self.raw.borrow_dependent().subject())
-            .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))?)
+        Ok(self
+            .cached_subject
+            .get_or_try_init(py, || {
+                x509::parse_name(py, self.raw.borrow_dependent().subject())
+                    .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))
+                    .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -277,7 +303,17 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
-        sign::identify_signature_hash_algorithm(py, &self.raw.borrow_dependent().signature_alg)
+        Ok(self
+            .cached_signature_hash_algorithm
+            .get_or_try_init(py, || {
+                sign::identify_signature_hash_algorithm(
+                    py,
+                    &self.raw.borrow_dependent().signature_alg,
+                )
+                .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -285,7 +321,14 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        oid_to_py_oid(py, self.raw.borrow_dependent().signature_alg.oid())
+        Ok(self
+            .cached_signature_algorithm_oid
+            .get_or_try_init(py, || {
+                oid_to_py_oid(py, self.raw.borrow_dependent().signature_alg.oid())
+                    .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -441,6 +484,11 @@ pub(crate) fn load_der_x509_certificate(
     Ok(Certificate {
         raw,
         cached_extensions: pyo3::sync::PyOnceLock::new(),
+        cached_issuer: pyo3::sync::PyOnceLock::new(),
+        cached_subject: pyo3::sync::PyOnceLock::new(),
+        cached_public_key: pyo3::sync::PyOnceLock::new(),
+        cached_signature_algorithm_oid: pyo3::sync::PyOnceLock::new(),
+        cached_signature_hash_algorithm: pyo3::sync::PyOnceLock::new(),
     })
 }
 
