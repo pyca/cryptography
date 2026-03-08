@@ -265,10 +265,8 @@ impl KDF {
     }
 
     fn nh(&self) -> usize {
-        match self {
-            KDF::SHAKE128 => kdf_params::SHAKE128_NH,
-            _ => unreachable!("Only SHAKE128 is a one-stage KDF"),
-        }
+        debug_assert!(self.is_one_stage());
+        kdf_params::SHAKE128_NH
     }
 
     fn is_one_stage(&self) -> bool {
@@ -357,15 +355,13 @@ impl Suite {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        match self.kdf {
-            KDF::HKDF_SHA256 => Ok(types::SHA256.get(py)?.call0()?),
-            KDF::HKDF_SHA384 => Ok(types::SHA384.get(py)?.call0()?),
-            KDF::HKDF_SHA512 => Ok(types::SHA512.get(py)?.call0()?),
-            KDF::SHAKE128 => Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "SHAKE128 is a one-stage KDF and does not use HKDF extract/expand.",
-                ),
-            )),
+        debug_assert!(!self.kdf.is_one_stage());
+        if self.kdf == KDF::HKDF_SHA256 {
+            Ok(types::SHA256.get(py)?.call0()?)
+        } else if self.kdf == KDF::HKDF_SHA384 {
+            Ok(types::SHA384.get(py)?.call0()?)
+        } else {
+            Ok(types::SHA512.get(py)?.call0()?)
         }
     }
 
