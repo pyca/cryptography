@@ -267,6 +267,7 @@ impl OCSPResponse {
                     cached_extensions: pyo3::sync::PyOnceLock::new(),
                     cached_issuer: pyo3::sync::PyOnceLock::new(),
                     cached_subject: pyo3::sync::PyOnceLock::new(),
+                    cached_public_key: pyo3::sync::PyOnceLock::new(),
                 },
             )?)?;
         }
