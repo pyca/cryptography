@@ -358,16 +358,14 @@ impl Suite {
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
         match self.kdf {
-            KDF::HKDF_SHA256 => return Ok(types::SHA256.get(py)?.call0()?),
-            KDF::HKDF_SHA384 => return Ok(types::SHA384.get(py)?.call0()?),
-            KDF::HKDF_SHA512 => return Ok(types::SHA512.get(py)?.call0()?),
-            KDF::SHAKE128 => {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err(
-                        "SHAKE128 is a one-stage KDF and does not use HKDF extract/expand.",
-                    ),
-                ))
-            }
+            KDF::HKDF_SHA256 => Ok(types::SHA256.get(py)?.call0()?),
+            KDF::HKDF_SHA384 => Ok(types::SHA384.get(py)?.call0()?),
+            KDF::HKDF_SHA512 => Ok(types::SHA512.get(py)?.call0()?),
+            KDF::SHAKE128 => Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "SHAKE128 is a one-stage KDF and does not use HKDF extract/expand.",
+                ),
+            )),
         }
     }
 
