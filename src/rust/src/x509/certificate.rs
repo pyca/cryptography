@@ -42,6 +42,7 @@ pub(crate) struct Certificate {
     pub(crate) raw: OwnedCertificate,
     pub(crate) cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
     pub(crate) cached_issuer: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    pub(crate) cached_subject: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 #[pyo3::pymethods]
@@ -152,8 +153,15 @@ impl Certificate {
 
     #[getter]
     fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        Ok(x509::parse_name(py, self.raw.borrow_dependent().subject())
-            .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))?)
+        Ok(self
+            .cached_subject
+            .get_or_try_init(py, || {
+                x509::parse_name(py, self.raw.borrow_dependent().subject())
+                    .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))
+                    .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -450,6 +458,7 @@ pub(crate) fn load_der_x509_certificate(
         raw,
         cached_extensions: pyo3::sync::PyOnceLock::new(),
         cached_issuer: pyo3::sync::PyOnceLock::new(),
+        cached_subject: pyo3::sync::PyOnceLock::new(),
     })
 }
 
