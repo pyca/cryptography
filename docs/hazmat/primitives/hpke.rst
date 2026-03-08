@@ -93,6 +93,10 @@ specifying auxiliary authenticated information.
 
         HKDF-SHA384
 
+    .. attribute:: HKDF_SHA512
+
+        HKDF-SHA512
+
     .. attribute:: SHAKE128
 
         SHAKE-128
