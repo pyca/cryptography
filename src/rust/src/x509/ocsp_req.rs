@@ -47,6 +47,7 @@ pub(crate) fn load_der_ocsp_request(
         cached_issuer_name_hash: pyo3::sync::PyOnceLock::new(),
         cached_issuer_key_hash: pyo3::sync::PyOnceLock::new(),
         cached_hash_algorithm: pyo3::sync::PyOnceLock::new(),
+        cached_serial_number: pyo3::sync::PyOnceLock::new(),
     })
 }
 
@@ -58,6 +59,7 @@ pub(crate) struct OCSPRequest {
     cached_issuer_name_hash: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
     cached_issuer_key_hash: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
     cached_hash_algorithm: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_serial_number: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 impl OCSPRequest {
@@ -144,8 +146,19 @@ impl OCSPRequest {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
-        let bytes = self.cert_id().serial_number.as_bytes();
-        Ok(big_byte_slice_to_py_int(py, bytes)?)
+        Ok(self
+            .cached_serial_number
+            .get_or_try_init(
+                py,
+                || -> Result<pyo3::Py<pyo3::PyAny>, CryptographyError> {
+                    Ok(
+                        big_byte_slice_to_py_int(py, self.cert_id().serial_number.as_bytes())?
+                            .unbind(),
+                    )
+                },
+            )?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
