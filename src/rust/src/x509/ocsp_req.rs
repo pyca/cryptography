@@ -44,6 +44,7 @@ pub(crate) fn load_der_ocsp_request(
     Ok(OCSPRequest {
         raw,
         cached_extensions: pyo3::sync::PyOnceLock::new(),
+        cached_issuer_name_hash: pyo3::sync::PyOnceLock::new(),
     })
 }
 
@@ -52,6 +53,7 @@ pub(crate) struct OCSPRequest {
     raw: OwnedOCSPRequest,
 
     cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_issuer_name_hash: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 impl OCSPRequest {
@@ -71,8 +73,21 @@ impl OCSPRequest {
 #[pyo3::pymethods]
 impl OCSPRequest {
     #[getter]
-    fn issuer_name_hash(&self) -> &[u8] {
-        self.cert_id().issuer_name_hash
+    fn issuer_name_hash<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        Ok(self
+            .cached_issuer_name_hash
+            .get_or_try_init(py, || -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
+                Ok(
+                    pyo3::types::PyBytes::new(py, self.cert_id().issuer_name_hash)
+                        .into_any()
+                        .unbind(),
+                )
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
