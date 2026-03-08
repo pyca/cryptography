@@ -1028,6 +1028,10 @@ class TestRSACertificate:
             os.path.join("x509", "custom", "bad_country.pem"),
             x509.load_pem_x509_certificate,
         )
+        # Both warnings are emitted during the first parse_name call (when
+        # cert.subject is first accessed); subsequent accesses return the
+        # cached Name object without re-parsing, so both checks must live
+        # inside a single pytest.warns block.
         with pytest.warns(UserWarning):
             assert (
                 cert.subject.get_attributes_for_oid(x509.NameOID.COUNTRY_NAME)[
@@ -1035,8 +1039,6 @@ class TestRSACertificate:
                 ].value
                 == "too long"
             )
-
-        with pytest.warns(UserWarning):
             assert (
                 cert.subject.get_attributes_for_oid(
                     x509.NameOID.JURISDICTION_COUNTRY_NAME
