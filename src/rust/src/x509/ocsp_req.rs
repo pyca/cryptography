@@ -46,6 +46,7 @@ pub(crate) fn load_der_ocsp_request(
         cached_extensions: pyo3::sync::PyOnceLock::new(),
         cached_issuer_name_hash: pyo3::sync::PyOnceLock::new(),
         cached_issuer_key_hash: pyo3::sync::PyOnceLock::new(),
+        cached_hash_algorithm: pyo3::sync::PyOnceLock::new(),
     })
 }
 
@@ -56,6 +57,7 @@ pub(crate) struct OCSPRequest {
     cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
     cached_issuer_name_hash: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
     cached_issuer_key_hash: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_hash_algorithm: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 impl OCSPRequest {
@@ -115,17 +117,26 @@ impl OCSPRequest {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
-        let cert_id = self.cert_id();
-
-        match ocsp::ALGORITHM_PARAMETERS_TO_HASH.get(&cert_id.hash_algorithm.params) {
-            Some(alg_name) => Ok(types::HASHES_MODULE.get(py)?.getattr(*alg_name)?.call0()?),
-            None => Err(CryptographyError::from(
-                exceptions::UnsupportedAlgorithm::new_err(format!(
-                    "Signature algorithm OID: {} not recognized",
-                    cert_id.hash_algorithm.oid()
-                )),
-            )),
-        }
+        Ok(self
+            .cached_hash_algorithm
+            .get_or_try_init(py, || {
+                let cert_id = self.cert_id();
+                match ocsp::ALGORITHM_PARAMETERS_TO_HASH.get(&cert_id.hash_algorithm.params) {
+                    Some(alg_name) => Ok(types::HASHES_MODULE
+                        .get(py)?
+                        .getattr(*alg_name)?
+                        .call0()?
+                        .unbind()),
+                    None => Err(CryptographyError::from(
+                        exceptions::UnsupportedAlgorithm::new_err(format!(
+                            "Signature algorithm OID: {} not recognized",
+                            cert_id.hash_algorithm.oid()
+                        )),
+                    )),
+                }
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
