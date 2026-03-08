@@ -265,6 +265,8 @@ impl OCSPResponse {
                 x509::certificate::Certificate {
                     raw: raw_cert,
                     cached_extensions: pyo3::sync::PyOnceLock::new(),
+                    cached_issuer: pyo3::sync::PyOnceLock::new(),
+                    cached_subject: pyo3::sync::PyOnceLock::new(),
                 },
             )?)?;
         }
