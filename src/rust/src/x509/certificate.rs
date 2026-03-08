@@ -43,6 +43,7 @@ pub(crate) struct Certificate {
     pub(crate) cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
     pub(crate) cached_issuer: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
     pub(crate) cached_subject: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    pub(crate) cached_public_key: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 #[pyo3::pymethods]
@@ -80,10 +81,17 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        keys::load_der_public_key_bytes(
-            py,
-            self.raw.borrow_dependent().tbs_cert.spki.tlv().full_data(),
-        )
+        Ok(self
+            .cached_public_key
+            .get_or_try_init(py, || {
+                keys::load_der_public_key_bytes(
+                    py,
+                    self.raw.borrow_dependent().tbs_cert.spki.tlv().full_data(),
+                )
+                .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -459,6 +467,7 @@ pub(crate) fn load_der_x509_certificate(
         cached_extensions: pyo3::sync::PyOnceLock::new(),
         cached_issuer: pyo3::sync::PyOnceLock::new(),
         cached_subject: pyo3::sync::PyOnceLock::new(),
+        cached_public_key: pyo3::sync::PyOnceLock::new(),
     })
 }
 
