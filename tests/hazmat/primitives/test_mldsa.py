@@ -305,6 +305,22 @@ def test_unsupported_mldsa_variant_private_key(backend):
     only_if=lambda backend: backend.mldsa_supported(),
     skip_message="Requires a backend with ML-DSA-65 support",
 )
+def test_mldsa65_private_key_no_seed(backend):
+    pkcs8_der = load_vectors_from_file(
+        os.path.join("asymmetric", "MLDSA", "mldsa65_noseed_priv.der"),
+        lambda derfile: derfile.read(),
+        mode="rb",
+    )
+    with pytest.raises(ValueError):
+        serialization.load_der_private_key(
+            pkcs8_der, password=None, backend=backend
+        )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mldsa_supported(),
+    skip_message="Requires a backend with ML-DSA-65 support",
+)
 def test_unsupported_mldsa_variant_public_key(backend):
     # ML-DSA-44 is not supported; loading it must raise UnsupportedAlgorithm.
     spki_der = load_vectors_from_file(
