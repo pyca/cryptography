@@ -102,25 +102,8 @@ impl MlDsa65PrivateKey {
         let pki =
             asn1::parse_single::<cryptography_key_parsing::pkcs8::PrivateKeyInfo<'_>>(&pkcs8_der)
                 .unwrap();
-        // The privateKey content is [0x80, 0x20, <32 bytes of seed>]
-        // (context-specific tag 0, length 32)
-        if pki.private_key.len() == 2 + cryptography_openssl::mldsa::MLDSA65_SEED_BYTES
-            && pki.private_key[0] == 0x80
-            && pki.private_key[1] == cryptography_openssl::mldsa::MLDSA65_SEED_BYTES as u8
-        {
-            Ok(pyo3::types::PyBytes::new(py, &pki.private_key[2..]))
-        } else {
-            // NO-COVERAGE-START
-            // All supported ML-DSA variants use 32-byte seeds with the
-            // [0x80, 0x20, <seed>] encoding. This branch is purely
-            // defensive against future format changes.
-            Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "Cannot extract seed from this ML-DSA-65 private key",
-                ),
-            ))
-            // NO-COVERAGE-END
-        }
+        let seed = asn1::parse_single::<asn1::Implicit<&[u8], 0>>(pki.private_key).unwrap();
+        Ok(pyo3::types::PyBytes::new(py, seed.into_inner()))
     }
 
     fn private_bytes<'p>(
