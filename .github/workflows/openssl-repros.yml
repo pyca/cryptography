@@ -29,11 +29,25 @@ jobs:
       - name: Install build dependencies
         run: apt-get update && apt-get install -y gcc make perl
 
-      - name: Build OpenSSL from source
+      - name: Build OpenSSL from source (with debug prints)
         run: |
           git clone --depth 1 https://github.com/openssl/openssl.git /tmp/openssl-src
           cd /tmp/openssl-src
-          ./config --prefix=/tmp/openssl-install --libdir=lib shared -O0
+          # Patch ppc_aes_gcm_crypt to add debug output
+          sed -i '/int s = 0;/a\    fprintf(stderr, "DEBUG ppc_aes_gcm_crypt: len=%zu encrypt=%d\\n", len, encrypt);' \
+            providers/implementations/ciphers/cipher_aes_gcm_hw_ppc.inc
+          sed -i '/ndone += s;/i\        fprintf(stderr, "DEBUG ppc_aes_gcm_crypt: s=%d ndone=%d len=%zu\\n", s, ndone, len);' \
+            providers/implementations/ciphers/cipher_aes_gcm_hw_ppc.inc
+          # Patch ppc_aes_gcm_cipher_update to show if assembly path taken
+          sed -i '/bulk = ppc_aes_gcm_crypt/i\                fprintf(stderr, "DEBUG cipher_update: TAKING PPC ASM PATH, len=%zu res=%zu\\n", len, res);' \
+            providers/implementations/ciphers/cipher_aes_gcm_hw_ppc.inc
+          sed -i '/ctx->gcm.len.u\[1\] += bulk;/i\                fprintf(stderr, "DEBUG cipher_update: bulk=%zu (0x%zx)\\n", bulk, bulk);' \
+            providers/implementations/ciphers/cipher_aes_gcm_hw_ppc.inc
+          # Add stdio.h include
+          sed -i '1i #include <stdio.h>' providers/implementations/ciphers/cipher_aes_gcm_hw_ppc.inc
+          echo "--- Patched file ---"
+          head -60 providers/implementations/ciphers/cipher_aes_gcm_hw_ppc.inc
+          ./config --prefix=/tmp/openssl-install --libdir=lib shared -O2
           make -j"$(nproc)"
           make install_sw
 
@@ -62,4 +76,4 @@ jobs:
 
       - name: "Run: AES-GCM int overflow via EVP_Cipher"
         continue-on-error: true
-        run: ./repro_gcm
+        run: ./repro_gcm 2>&1
