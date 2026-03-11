@@ -6,7 +6,7 @@ import datetime
 import os
 from functools import lru_cache
 from ipaddress import IPv4Address
-from typing import Optional
+from typing import Optional, cast
 
 import pytest
 
@@ -14,11 +14,15 @@ from cryptography import x509
 from cryptography.hazmat._oid import ExtendedKeyUsageOID
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.types import (
+    CertificateIssuerPublicKeyTypes,
+)
 from cryptography.x509 import ExtensionType
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.oid import NameOID
 from cryptography.x509.verification import (
     Criticality,
+    CRLRevocationChecker,
     ExtensionPolicy,
     Policy,
     PolicyBuilder,
@@ -39,6 +43,26 @@ def dummy_store() -> Store:
     return Store([cert])
 
 
+def _crl_vector() -> tuple[
+    x509.Certificate, x509.CertificateRevocationList, int
+]:
+    crl_issuer = _load_cert(
+        os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+        x509.load_der_x509_certificate,
+    )
+    crl = _load_cert(
+        os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+        x509.load_der_x509_crl,
+    )
+    revoked_serial = next(iter(crl)).serial_number
+    return crl_issuer, crl, revoked_serial
+
+
+def dummy_revocation_checker() -> CRLRevocationChecker:
+    crl_issuer, crl, _revoked_serial = _crl_vector()
+    return CRLRevocationChecker([(crl_issuer, crl)])
+
+
 class TestPolicyBuilder:
     def test_time_already_set(self):
         with pytest.raises(ValueError):
@@ -53,6 +77,11 @@ class TestPolicyBuilder:
     def test_max_chain_depth_already_set(self):
         with pytest.raises(ValueError):
             PolicyBuilder().max_chain_depth(8).max_chain_depth(9)
+
+    def test_revocation_checker_already_set(self):
+        with pytest.raises(ValueError):
+            rc = dummy_revocation_checker()
+            PolicyBuilder().revocation_checker(rc).revocation_checker(rc)
 
     def test_ipaddress_subject(self):
         verifier = (
@@ -119,6 +148,12 @@ class TestPolicyBuilder:
             PolicyBuilder().build_server_verifier(DNSName("cryptography.io"))
 
 
+class TestCRLRevocationChecker:
+    def test_crl_revocation_checker_rejects_empty_list(self):
+        with pytest.raises(ValueError):
+            CRLRevocationChecker([])
+
+
 class TestStore:
     def test_store_rejects_empty_list(self):
         with pytest.raises(ValueError):
@@ -178,6 +213,71 @@ class TestClientVerifier:
         assert x509.DNSName("www.cryptography.io") in verified_client.subjects
         assert x509.DNSName("cryptography.io") in verified_client.subjects
         assert len(verified_client.subjects) == 2
+
+    def test_verify_crl_checker(self):
+        crl_issuer, _crl, revoked_serial = _crl_vector()
+        leaf_key = ec.generate_private_key(ec.SECP256R1())
+        validation_time = datetime.datetime.fromisoformat(
+            "2024-01-01T00:00:00+00:00"
+        )
+        issuer_public_key = cast(
+            CertificateIssuerPublicKeyTypes, crl_issuer.public_key()
+        )
+        leaf = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name(
+                    [x509.NameAttribute(NameOID.COMMON_NAME, "example.com")]
+                )
+            )
+            .issuer_name(crl_issuer.subject)
+            .public_key(leaf_key.public_key())
+            .serial_number(revoked_serial)
+            .not_valid_before(datetime.datetime(2023, 1, 1))
+            .not_valid_after(datetime.datetime(2025, 1, 1))
+            .add_extension(
+                x509.BasicConstraints(ca=False, path_length=None),
+                critical=True,
+            )
+            .add_extension(
+                x509.KeyUsage(
+                    digital_signature=True,
+                    content_commitment=False,
+                    key_encipherment=False,
+                    data_encipherment=False,
+                    key_agreement=False,
+                    key_cert_sign=False,
+                    crl_sign=False,
+                    encipher_only=False,
+                    decipher_only=False,
+                ),
+                critical=True,
+            )
+            .add_extension(
+                x509.ExtendedKeyUsage([ExtendedKeyUsageOID.CLIENT_AUTH]),
+                critical=False,
+            )
+            .add_extension(
+                x509.SubjectAlternativeName([x509.DNSName("example.com")]),
+                critical=False,
+            )
+            .add_extension(
+                x509.AuthorityKeyIdentifier.from_issuer_public_key(
+                    issuer_public_key
+                ),
+                critical=False,
+            )
+            .sign(leaf_key, hashes.SHA256())
+        )
+
+        builder = (
+            PolicyBuilder().store(Store([crl_issuer])).time(validation_time)
+        )
+        builder = builder.revocation_checker(dummy_revocation_checker())
+        verifier = builder.build_client_verifier()
+
+        with pytest.raises(VerificationError, match="certificate revoked"):
+            verifier.verify(leaf, [])
 
     def test_verify_fails_renders_oid(self):
         leaf = _load_cert(

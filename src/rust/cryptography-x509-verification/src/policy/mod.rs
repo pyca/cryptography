@@ -16,6 +16,7 @@ use cryptography_x509::common::{
     PSS_SHA256_HASH_ALG, PSS_SHA256_MASK_GEN_ALG, PSS_SHA384_HASH_ALG, PSS_SHA384_MASK_GEN_ALG,
     PSS_SHA512_HASH_ALG, PSS_SHA512_MASK_GEN_ALG,
 };
+use cryptography_x509::crl::CertificateRevocationList;
 use cryptography_x509::extensions::{BasicConstraints, Extensions, SubjectAlternativeName};
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
@@ -580,9 +581,35 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
 
         Ok(())
     }
+
+    pub(crate) fn permits_crl<'chain>(
+        &self,
+        crl: &CertificateRevocationList<'_>,
+    ) -> ValidationResult<'chain, (), B> {
+        let this_update = crl.tbs_cert_list.this_update.as_datetime();
+        permits_validity_date(&crl.tbs_cert_list.this_update)?;
+
+        // 5280 5: CRLs MUST include the nextUpdate field
+        let next_update = if let Some(next_update) = crl.tbs_cert_list.next_update.as_ref() {
+            permits_validity_date(next_update)?;
+            next_update.as_datetime()
+        } else {
+            return Err(ValidationError::new(ValidationErrorKind::Other(
+                "CRL missing required nextUpdate field".to_string(),
+            )));
+        };
+
+        if &self.validation_time < this_update || &self.validation_time > next_update {
+            return Err(ValidationError::new(ValidationErrorKind::Other(
+                "CRL is not in effect at validation time".to_string(),
+            )));
+        }
+
+        Ok(())
+    }
 }
 
-fn permits_validity_date<'chain, B: CryptoOps>(
+pub(crate) fn permits_validity_date<'chain, B: CryptoOps>(
     validity_date: &Time,
 ) -> ValidationResult<'chain, (), B> {
     const GENERALIZED_DATE_INVALIDITY_RANGE: Range<u16> = 1950..2050;
