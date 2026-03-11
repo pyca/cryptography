@@ -217,6 +217,9 @@ class PolicyBuilder:
     def extension_policies(
         self, *, ca_policy: ExtensionPolicy, ee_policy: ExtensionPolicy
     ) -> PolicyBuilder: ...
+    def revocation_checker(
+        self, revocation_checker: x509.verification.RevocationChecker
+    ) -> PolicyBuilder: ...
     def build_client_verifier(self) -> ClientVerifier: ...
     def build_server_verifier(
         self, subject: x509.verification.Subject
@@ -277,6 +280,9 @@ class ExtensionPolicy:
         criticality: Criticality,
         validator: PresentExtensionValidatorCallback[T] | None,
     ) -> ExtensionPolicy: ...
+
+class CRLRevocationChecker:
+    def __init__(self, crls: list[x509.CertificateRevocationList]) -> None: ...
 
 class VerifiedClient:
     @property

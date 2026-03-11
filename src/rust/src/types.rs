@@ -324,6 +324,9 @@ pub static ASN1_TYPE_BMP_STRING: LazyPyImport =
 pub static ASN1_TYPE_UNIVERSAL_STRING: LazyPyImport =
     LazyPyImport::new("cryptography.x509.name", &["_ASN1Type", "UniversalString"]);
 
+pub static REVOCATION_CHECKER: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.verification", &["RevocationChecker"]);
+
 pub static PKCS7_OPTIONS: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.serialization.pkcs7",
     &["PKCS7Options"],

@@ -4,17 +4,20 @@
 
 from __future__ import annotations
 
+import abc
 import typing
 
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.x509.general_name import DNSName, IPAddress
 
 __all__ = [
+    "CRLRevocationChecker",
     "ClientVerifier",
     "Criticality",
     "ExtensionPolicy",
     "Policy",
     "PolicyBuilder",
+    "RevocationChecker",
     "ServerVerifier",
     "Store",
     "Subject",
@@ -32,3 +35,13 @@ Policy = rust_x509.Policy
 ExtensionPolicy = rust_x509.ExtensionPolicy
 Criticality = rust_x509.Criticality
 VerificationError = rust_x509.VerificationError
+CRLRevocationChecker = rust_x509.CRLRevocationChecker
+
+
+class RevocationChecker(metaclass=abc.ABCMeta):
+    """
+    An interface for revocation checkers.
+    """
+
+
+RevocationChecker.register(CRLRevocationChecker)

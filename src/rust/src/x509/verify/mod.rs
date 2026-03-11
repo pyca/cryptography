@@ -3,16 +3,20 @@
 // for complete details.
 
 use cryptography_x509::certificate::Certificate;
+use cryptography_x509::crl::CertificateRevocationList;
 use cryptography_x509::extensions::SubjectAlternativeName;
 use cryptography_x509::oid::SUBJECT_ALTERNATIVE_NAME_OID;
 use cryptography_x509_verification::ops::{CryptoOps, VerificationCertificate};
 use cryptography_x509_verification::policy::{Policy, PolicyDefinition, Subject};
+use cryptography_x509_verification::revocation::RevocationChecker;
 use cryptography_x509_verification::trust_store::Store;
 use cryptography_x509_verification::types::{DNSName, IPAddress};
 use pyo3::types::{PyAnyMethods, PyListMethods};
 
 mod extension_policy;
 mod policy;
+mod revocation;
+pub(crate) use crate::x509::verify::revocation::PyCrlRevocationChecker;
 pub(crate) use extension_policy::{PyCriticality, PyExtensionPolicy};
 pub(crate) use policy::PyPolicy;
 
@@ -36,6 +40,22 @@ impl CryptoOps for PyCryptoOps {
     fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
         pyo3::Python::attach(|py| -> Result<Self::Key, Self::Err> {
             Ok(keys::load_der_public_key_bytes(py, cert.tbs_cert.spki.tlv().full_data())?.unbind())
+        })
+    }
+
+    fn verify_crl_signed_by(
+        &self,
+        crl: &CertificateRevocationList<'_>,
+        key: &Self::Key,
+    ) -> Result<(), Self::Err> {
+        pyo3::Python::attach(|py| -> CryptographyResult<()> {
+            sign::verify_signature_with_signature_algorithm(
+                py,
+                key.bind(py).clone(),
+                &crl.signature_algorithm,
+                crl.signature_value.as_bytes(),
+                &asn1::write_single(&crl.tbs_cert_list)?,
+            )
         })
     }
 
@@ -87,6 +107,7 @@ pub(crate) struct PolicyBuilder {
     max_chain_depth: Option<u8>,
     ca_ext_policy: Option<pyo3::Py<PyExtensionPolicy>>,
     ee_ext_policy: Option<pyo3::Py<PyExtensionPolicy>>,
+    revocation_checker: Option<pyo3::Py<pyo3::PyAny>>,
 }
 
 impl PolicyBuilder {
@@ -97,6 +118,7 @@ impl PolicyBuilder {
             max_chain_depth: self.max_chain_depth,
             ca_ext_policy: self.ca_ext_policy.as_ref().map(|p| p.clone_ref(py)),
             ee_ext_policy: self.ee_ext_policy.as_ref().map(|p| p.clone_ref(py)),
+            revocation_checker: self.revocation_checker.as_ref().map(|p| p.clone_ref(py)),
         }
     }
 }
@@ -111,6 +133,7 @@ impl PolicyBuilder {
             max_chain_depth: None,
             ca_ext_policy: None,
             ee_ext_policy: None,
+            revocation_checker: None,
         }
     }
 
@@ -170,6 +193,30 @@ impl PolicyBuilder {
         })
     }
 
+    fn revocation_checker(
+        &self,
+        py: pyo3::Python<'_>,
+        revocation_checker: pyo3::Py<pyo3::PyAny>,
+    ) -> CryptographyResult<PolicyBuilder> {
+        policy_builder_set_once_check!(self, revocation_checker, "revocation checker");
+
+        if !revocation_checker
+            .bind(py)
+            .is_instance(&types::REVOCATION_CHECKER.get(py)?)?
+        {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err(
+                    "revocation_checker must be a registered RevocationChecker",
+                ),
+            ));
+        }
+
+        Ok(PolicyBuilder {
+            revocation_checker: Some(revocation_checker),
+            ..self.py_clone(py)
+        })
+    }
+
     fn build_client_verifier(&self, py: pyo3::Python<'_>) -> CryptographyResult<PyClientVerifier> {
         let store = match self.store.as_ref() {
             Some(s) => s.clone_ref(py),
@@ -209,6 +256,7 @@ impl PolicyBuilder {
 
         Ok(PyClientVerifier {
             py_policy: pyo3::Py::new(py, py_policy)?,
+            revocation_checker: self.revocation_checker.as_ref().map(|c| c.clone_ref(py)),
             store,
         })
     }
@@ -266,6 +314,7 @@ impl PolicyBuilder {
 
         Ok(PyServerVerifier {
             py_policy: pyo3::Py::new(py, py_policy)?,
+            revocation_checker: self.revocation_checker.as_ref().map(|c| c.clone_ref(py)),
             store,
         })
     }
@@ -293,6 +342,12 @@ self_cell::self_cell!(
     }
 );
 
+/// This enum provides heterogenously typed ownership of revocation checker pyclasses for
+/// `PyClientVerifier::verify` and `PyServerVerifier::verify`.
+enum RevocationCheckerOwner {
+    Crl(pyo3::Py<PyCrlRevocationChecker>),
+}
+
 #[pyo3::pyclass(
     frozen,
     name = "VerifiedClient",
@@ -314,6 +369,8 @@ pub(crate) struct PyClientVerifier {
     #[pyo3(get, name = "policy")]
     py_policy: pyo3::Py<PyPolicy>,
     #[pyo3(get)]
+    revocation_checker: Option<pyo3::Py<pyo3::PyAny>>,
+    #[pyo3(get)]
     store: pyo3::Py<PyStore>,
 }
 
@@ -332,6 +389,15 @@ impl PyClientVerifier {
         intermediates: Vec<pyo3::Py<PyCertificate>>,
     ) -> CryptographyResult<PyVerifiedClient> {
         let policy = Policy::new(self.as_policy_def(), self.py_policy.clone_ref(py));
+        let revocation_checker_owner = self
+            .revocation_checker
+            .as_ref()
+            .map(|c| build_revocation_checker_owner(py, c))
+            .transpose()?;
+        let revocation_checker = revocation_checker_owner
+            .as_ref()
+            .map(build_revocation_checker)
+            .transpose()?;
         let store = self.store.get();
 
         let intermediates = intermediates
@@ -345,6 +411,7 @@ impl PyClientVerifier {
             &v,
             &intermediates,
             &policy,
+            revocation_checker,
             store.raw.borrow_dependent(),
         )
         .or_else(|e| handle_validation_error(py, e))?;
@@ -386,6 +453,8 @@ pub(crate) struct PyServerVerifier {
     #[pyo3(get, name = "policy")]
     py_policy: pyo3::Py<PyPolicy>,
     #[pyo3(get)]
+    revocation_checker: Option<pyo3::Py<pyo3::PyAny>>,
+    #[pyo3(get)]
     store: pyo3::Py<PyStore>,
 }
 
@@ -404,6 +473,15 @@ impl PyServerVerifier {
         intermediates: Vec<pyo3::Py<PyCertificate>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyList>> {
         let policy = Policy::new(self.as_policy_def(), self.py_policy.clone_ref(py));
+        let revocation_checker_owner = self
+            .revocation_checker
+            .as_ref()
+            .map(|c| build_revocation_checker_owner(py, c))
+            .transpose()?;
+        let revocation_checker = revocation_checker_owner
+            .as_ref()
+            .map(build_revocation_checker)
+            .transpose()?;
         let store = self.store.get();
 
         let intermediates = intermediates
@@ -417,6 +495,7 @@ impl PyServerVerifier {
             &v,
             &intermediates,
             &policy,
+            revocation_checker,
             store.raw.borrow_dependent(),
         )
         .or_else(|e| handle_validation_error(py, e))?;
@@ -472,6 +551,31 @@ fn build_subject<'a>(
                 .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("invalid IP address"))?;
 
             Ok(Subject::IP(ip_addr))
+        }
+    }
+}
+
+fn build_revocation_checker_owner(
+    py: pyo3::Python<'_>,
+    checker: &pyo3::Py<pyo3::PyAny>,
+) -> pyo3::PyResult<RevocationCheckerOwner> {
+    let checker = checker.bind(py);
+    if let Ok(checker) = checker.extract::<pyo3::Py<PyCrlRevocationChecker>>() {
+        return Ok(RevocationCheckerOwner::Crl(checker));
+    }
+
+    Err(pyo3::exceptions::PyTypeError::new_err(
+        "unsupported revocation checker type",
+    ))
+}
+
+fn build_revocation_checker<'a>(
+    checker: &'a RevocationCheckerOwner,
+) -> pyo3::PyResult<RevocationChecker<'a>> {
+    match checker {
+        RevocationCheckerOwner::Crl(crl) => {
+            let inner = crl.get().raw.borrow_dependent();
+            Ok(RevocationChecker::Crl(inner))
         }
     }
 }
