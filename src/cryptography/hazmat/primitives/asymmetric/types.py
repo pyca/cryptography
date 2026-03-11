@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     ec,
     ed448,
     ed25519,
+    mldsa44,
     rsa,
     x448,
     x25519,
@@ -28,6 +29,7 @@ PublicKeyTypes = typing.Union[
     ed448.Ed448PublicKey,
     x25519.X25519PublicKey,
     x448.X448PublicKey,
+    mldsa44.MlDsa44PublicKey,
 ]
 PUBLIC_KEY_TYPES = PublicKeyTypes
 utils.deprecated(
@@ -47,6 +49,7 @@ PrivateKeyTypes = typing.Union[
     ec.EllipticCurvePrivateKey,
     x25519.X25519PrivateKey,
     x448.X448PrivateKey,
+    mldsa44.MlDsa44PrivateKey,
 ]
 PRIVATE_KEY_TYPES = PrivateKeyTypes
 utils.deprecated(
@@ -64,6 +67,7 @@ CertificateIssuerPrivateKeyTypes = typing.Union[
     rsa.RSAPrivateKey,
     dsa.DSAPrivateKey,
     ec.EllipticCurvePrivateKey,
+    mldsa44.MlDsa44PrivateKey,
 ]
 CERTIFICATE_PRIVATE_KEY_TYPES = CertificateIssuerPrivateKeyTypes
 utils.deprecated(
@@ -81,6 +85,7 @@ CertificateIssuerPublicKeyTypes = typing.Union[
     ec.EllipticCurvePublicKey,
     ed25519.Ed25519PublicKey,
     ed448.Ed448PublicKey,
+    mldsa44.MlDsa44PublicKey,
 ]
 CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES = CertificateIssuerPublicKeyTypes
 utils.deprecated(
@@ -100,6 +105,7 @@ CertificatePublicKeyTypes = typing.Union[
     ed448.Ed448PublicKey,
     x25519.X25519PublicKey,
     x448.X448PublicKey,
+    mldsa44.MlDsa44PublicKey,
 ]
 CERTIFICATE_PUBLIC_KEY_TYPES = CertificatePublicKeyTypes
 utils.deprecated(

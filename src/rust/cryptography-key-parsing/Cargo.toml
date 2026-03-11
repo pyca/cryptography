@@ -18,4 +18,4 @@ openssl-sys.workspace = true
 pem.workspace = true
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(CRYPTOGRAPHY_IS_LIBRESSL)', 'cfg(CRYPTOGRAPHY_IS_BORINGSSL)', 'cfg(CRYPTOGRAPHY_OSSLCONF, values("OPENSSL_NO_RC2", "OPENSSL_NO_RC4"))', 'cfg(CRYPTOGRAPHY_IS_AWSLC)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(CRYPTOGRAPHY_IS_LIBRESSL)', 'cfg(CRYPTOGRAPHY_IS_BORINGSSL)', 'cfg(CRYPTOGRAPHY_OSSLCONF, values("OPENSSL_NO_RC2", "OPENSSL_NO_RC4"))', 'cfg(CRYPTOGRAPHY_IS_AWSLC)', 'cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)'] }

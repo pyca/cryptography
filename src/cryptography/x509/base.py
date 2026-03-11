@@ -17,6 +17,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     ec,
     ed448,
     ed25519,
+    mldsa44,
     padding,
     rsa,
     x448,
@@ -364,13 +365,14 @@ class CertificateBuilder:
                 ed448.Ed448PublicKey,
                 x25519.X25519PublicKey,
                 x448.X448PublicKey,
+                mldsa44.MlDsa44PublicKey,
             ),
         ):
             raise TypeError(
                 "Expecting one of DSAPublicKey, RSAPublicKey,"
                 " EllipticCurvePublicKey, Ed25519PublicKey,"
-                " Ed448PublicKey, X25519PublicKey, or "
-                "X448PublicKey."
+                " Ed448PublicKey, X25519PublicKey, X44PublicKey, or"
+                " MlDsa44PublicKey."
             )
         if self._public_key is not None:
             raise ValueError("The public key may only be set once.")

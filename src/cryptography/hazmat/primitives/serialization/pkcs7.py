@@ -16,7 +16,12 @@ from cryptography import utils, x509
 from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.bindings._rust import pkcs7 as rust_pkcs7
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
+from cryptography.hazmat.primitives.asymmetric import (
+    ec,
+    mldsa44,
+    padding,
+    rsa,
+)
 from cryptography.hazmat.primitives.ciphers import (
     algorithms,
 )
@@ -33,10 +38,13 @@ PKCS7HashTypes = typing.Union[
     hashes.SHA256,
     hashes.SHA384,
     hashes.SHA512,
+    None,
 ]
 
 PKCS7PrivateKeyTypes = typing.Union[
-    rsa.RSAPrivateKey, ec.EllipticCurvePrivateKey
+    rsa.RSAPrivateKey,
+    ec.EllipticCurvePrivateKey,
+    mldsa44.MlDsa44PrivateKey,
 ]
 
 ContentEncryptionAlgorithm = typing.Union[
@@ -86,26 +94,43 @@ class PKCS7SignatureBuilder:
         *,
         rsa_padding: padding.PSS | padding.PKCS1v15 | None = None,
     ) -> PKCS7SignatureBuilder:
-        if not isinstance(
-            hash_algorithm,
-            (
-                hashes.SHA224,
-                hashes.SHA256,
-                hashes.SHA384,
-                hashes.SHA512,
-            ),
-        ):
-            raise TypeError(
-                "hash_algorithm must be one of hashes.SHA224, "
-                "SHA256, SHA384, or SHA512"
-            )
         if not isinstance(certificate, x509.Certificate):
             raise TypeError("certificate must be a x509.Certificate")
 
         if not isinstance(
-            private_key, (rsa.RSAPrivateKey, ec.EllipticCurvePrivateKey)
+            private_key,
+            (
+                rsa.RSAPrivateKey,
+                ec.EllipticCurvePrivateKey,
+                mldsa44.MlDsa44PrivateKey,
+            ),
         ):
-            raise TypeError("Only RSA & EC keys are supported at this time.")
+            raise TypeError("Key must be RSA, EC, or ML-DSA")
+
+        # ML-DSA keys must use hash_algorithm=None (RFC 9882 Section 3.3)
+        if isinstance(
+            private_key,
+            (mldsa44.MlDsa44PrivateKey,),
+        ):
+            if hash_algorithm is not None:
+                raise ValueError(
+                    "hash_algorithm must be None when using ML-DSA keys"
+                )
+        else:
+            # RSA and EC keys require a hash algorithm
+            if not isinstance(
+                hash_algorithm,
+                (
+                    hashes.SHA224,
+                    hashes.SHA256,
+                    hashes.SHA384,
+                    hashes.SHA512,
+                ),
+            ):
+                raise TypeError(
+                    "hash_algorithm must be one of hashes.SHA224, "
+                    "SHA256, SHA384, or SHA512"
+                )
 
         if rsa_padding is not None:
             if not isinstance(rsa_padding, (padding.PSS, padding.PKCS1v15)):
