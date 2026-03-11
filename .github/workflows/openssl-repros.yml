@@ -1,0 +1,53 @@
+name: OpenSSL PPC64 reproducers
+
+on:
+  push:
+    branches: [bump-repros]
+  workflow_dispatch:
+
+jobs:
+  repros:
+    runs-on: ${{ matrix.arch.runner }}
+    container: ${{ matrix.arch.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - runner: ubuntu-latest
+            container: ghcr.io/pyca/cryptography-runner-ubuntu-rolling
+            name: x86_64
+          - runner: ubuntu-24.04-ppc64le
+            container: ghcr.io/pyca/cryptography-runner-ubuntu-rolling:ppc64le
+            name: ppc64le
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        timeout-minutes: 3
+        with:
+          persist-credentials: false
+
+      - name: Install build dependencies
+        run: apt-get update && apt-get install -y gcc make perl
+
+      - name: Build OpenSSL from source
+        run: |
+          git clone --depth 1 https://github.com/openssl/openssl.git /tmp/openssl-src
+          cd /tmp/openssl-src
+          ./config --prefix=/tmp/openssl-install --libdir=lib shared -O2
+          make -j"$(nproc)"
+          make install_sw
+
+      - name: Build reproducer
+        run: |
+          CFLAGS="-I/tmp/openssl-install/include -O2 -Wall"
+          LDFLAGS="-L/tmp/openssl-install/lib -Wl,-rpath,/tmp/openssl-install/lib"
+          gcc $CFLAGS -o repro_gcm repros/gcm_crypt.c $LDFLAGS -lcrypto
+
+      - name: Show CPU info
+        run: |
+          uname -m
+          cat /proc/cpuinfo | head -30 || true
+
+      - name: "Run: AES-GCM int overflow via EVP_Cipher"
+        continue-on-error: true
+        run: ./repro_gcm
