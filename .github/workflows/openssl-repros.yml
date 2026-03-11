@@ -49,5 +49,4 @@ jobs:
           cat /proc/cpuinfo | head -30 || true
 
       - name: "Run: AES-GCM int overflow via EVP_Cipher"
-        continue-on-error: true
         run: ./repro_gcm
