@@ -444,8 +444,8 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Mar 07, 2026.
-            REF: c31974128b511542cfff152c8f2e561dce491f01
+            # Latest commit on the certbot main branch, as of Mar 11, 2026.
+            REF: fa0b0b105713e7b07fdbc82a72737b2a9bd412e6
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
