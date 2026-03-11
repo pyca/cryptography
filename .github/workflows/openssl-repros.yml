@@ -47,8 +47,14 @@ jobs:
         run: |
           uname -m
           cat /proc/cpuinfo | head -30 || true
-          echo "--- OpenSSL GCM symbols ---"
-          nm -D /tmp/openssl-install/lib/libcrypto.so | grep -i "ppc_aes_gcm\|gcm_ghash_p8\|aes_p8_ctr32" || echo "No PPC GCM symbols found"
+          echo "--- OpenSSL GCM symbols (dynamic) ---"
+          nm -D /tmp/openssl-install/lib/libcrypto.so | grep -i "ppc_aes_gcm\|gcm_ghash_p8\|aes_p8_ctr32" || echo "No dynamic PPC GCM symbols found"
+          echo "--- OpenSSL GCM symbols (all) ---"
+          nm /tmp/openssl-install/lib/libcrypto.so | grep -i "ppc_aes_gcm\|gcm_ghash_p8\|aes_p8_ctr32" || echo "No PPC GCM symbols at all"
+          echo "--- Check aes-gcm-ppc assembly ---"
+          ls -la /tmp/openssl-src/crypto/modes/aes-gcm-ppc* 2>/dev/null || echo "No aes-gcm-ppc assembly files"
+          echo "--- Check PPC_AES_GCM_CAPABLE in build ---"
+          grep -r "PPC_AES_GCM_CAPABLE\|ppc_aes_gcm" /tmp/openssl-src/providers/implementations/ciphers/cipher_aes_gcm_hw*.c 2>/dev/null | head -10 || true
           echo "--- HWCAP ---"
           LD_SHOW_AUXV=1 /tmp/openssl-install/bin/openssl version 2>&1 | grep -i "hwcap\|platform" || true
           echo "--- OpenSSL version ---"
