@@ -33,7 +33,7 @@ jobs:
         run: |
           git clone --depth 1 https://github.com/openssl/openssl.git /tmp/openssl-src
           cd /tmp/openssl-src
-          ./config --prefix=/tmp/openssl-install --libdir=lib shared -O2
+          ./config --prefix=/tmp/openssl-install --libdir=lib shared -O2 -fwrapv
           make -j"$(nproc)"
           make install_sw
 
