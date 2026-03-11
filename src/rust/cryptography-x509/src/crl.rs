@@ -4,6 +4,7 @@
 
 use crate::certificate::SerialNumber;
 use crate::common::Asn1Operation;
+use crate::extensions::{DuplicateExtensionsError, Extensions};
 use crate::{common, extensions, name};
 
 pub type ReasonFlags<'a, Op> = Option<<Op as Asn1Operation>::OwnedBitString<'a>>;
@@ -13,6 +14,12 @@ pub struct CertificateRevocationList<'a> {
     pub tbs_cert_list: TBSCertList<'a>,
     pub signature_algorithm: common::AlgorithmIdentifier<'a>,
     pub signature_value: asn1::BitString<'a>,
+}
+
+impl<'a> CertificateRevocationList<'a> {
+    pub fn extensions(&self) -> Result<Extensions<'a>, DuplicateExtensionsError> {
+        self.tbs_cert_list.extensions()
+    }
 }
 
 pub type RevokedCertificates<'a> = Option<
@@ -34,11 +41,23 @@ pub struct TBSCertList<'a> {
     pub raw_crl_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
+impl<'a> TBSCertList<'a> {
+    pub fn extensions(&self) -> Result<Extensions<'a>, DuplicateExtensionsError> {
+        Extensions::from_raw_extensions(self.raw_crl_extensions.as_ref())
+    }
+}
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
 pub struct RevokedCertificate<'a> {
     pub user_certificate: SerialNumber<'a>,
     pub revocation_date: common::Time,
     pub raw_crl_entry_extensions: Option<extensions::RawExtensions<'a>>,
+}
+
+impl<'a> RevokedCertificate<'a> {
+    pub fn extensions(&self) -> Result<Extensions<'a>, DuplicateExtensionsError> {
+        Extensions::from_raw_extensions(self.raw_crl_entry_extensions.as_ref())
+    }
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
