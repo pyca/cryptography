@@ -3,6 +3,7 @@
 // for complete details.
 
 use cryptography_x509::certificate::Certificate;
+use cryptography_x509::crl::CertificateRevocationList;
 use cryptography_x509::extensions::SubjectAlternativeName;
 use cryptography_x509::oid::SUBJECT_ALTERNATIVE_NAME_OID;
 use cryptography_x509_verification::ops::{CryptoOps, VerificationCertificate};
@@ -13,8 +14,10 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 
 mod extension_policy;
 mod policy;
+mod revocation;
 pub(crate) use extension_policy::{PyCriticality, PyExtensionPolicy};
 pub(crate) use policy::PyPolicy;
+pub(crate) use revocation::PyRevocationChecker;
 
 use super::parse_general_names;
 use crate::backend::keys;
@@ -36,6 +39,22 @@ impl CryptoOps for PyCryptoOps {
     fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
         pyo3::Python::attach(|py| -> Result<Self::Key, Self::Err> {
             Ok(keys::load_der_public_key_bytes(py, cert.tbs_cert.spki.tlv().full_data())?.unbind())
+        })
+    }
+
+    fn verify_crl_signed_by(
+        &self,
+        crl: &CertificateRevocationList<'_>,
+        key: &Self::Key,
+    ) -> Result<(), Self::Err> {
+        pyo3::Python::attach(|py| -> CryptographyResult<()> {
+            sign::verify_signature_with_signature_algorithm(
+                py,
+                key.bind(py).clone(),
+                &crl.signature_algorithm,
+                crl.signature_value.as_bytes(),
+                &asn1::write_single(&crl.tbs_cert_list)?,
+            )
         })
     }
 
@@ -87,6 +106,7 @@ pub(crate) struct PolicyBuilder {
     max_chain_depth: Option<u8>,
     ca_ext_policy: Option<pyo3::Py<PyExtensionPolicy>>,
     ee_ext_policy: Option<pyo3::Py<PyExtensionPolicy>>,
+    revocation_checker: Option<pyo3::Py<PyRevocationChecker>>,
 }
 
 impl PolicyBuilder {
@@ -97,6 +117,7 @@ impl PolicyBuilder {
             max_chain_depth: self.max_chain_depth,
             ca_ext_policy: self.ca_ext_policy.as_ref().map(|p| p.clone_ref(py)),
             ee_ext_policy: self.ee_ext_policy.as_ref().map(|p| p.clone_ref(py)),
+            revocation_checker: self.revocation_checker.as_ref().map(|p| p.clone_ref(py)),
         }
     }
 }
@@ -111,6 +132,7 @@ impl PolicyBuilder {
             max_chain_depth: None,
             ca_ext_policy: None,
             ee_ext_policy: None,
+            revocation_checker: None,
         }
     }
 
@@ -198,6 +220,9 @@ impl PolicyBuilder {
                 self.ee_ext_policy
                     .as_ref()
                     .map(|p| p.get().clone_inner_policy()),
+                self.revocation_checker
+                    .as_ref()
+                    .map(|c| c.get().clone_inner_checker()),
             )
             .map_err(pyo3::exceptions::PyValueError::new_err)
         })?;
@@ -255,6 +280,9 @@ impl PolicyBuilder {
                     self.ee_ext_policy
                         .as_ref()
                         .map(|p| p.get().clone_inner_policy()),
+                    self.revocation_checker
+                        .as_ref()
+                        .map(|c| c.get().clone_inner_checker()),
                 )
                 .map_err(pyo3::exceptions::PyValueError::new_err)
             })?;

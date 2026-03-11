@@ -9,6 +9,7 @@
 pub mod certificate;
 pub mod ops;
 pub mod policy;
+pub mod revocation;
 pub mod trust_store;
 pub mod types;
 
@@ -40,6 +41,7 @@ pub enum ValidationErrorKind<'chain, B: CryptoOps> {
         reason: &'static str,
     },
     FatalError(&'static str),
+    RevocationNotDetermined(String),
     Other(String),
 }
 
@@ -91,6 +93,9 @@ impl<B: CryptoOps> Display for ValidationError<'_, B> {
                 write!(f, "invalid extension: {oid}: {reason}")
             }
             ValidationErrorKind::FatalError(err) => write!(f, "fatal error: {err}"),
+            ValidationErrorKind::RevocationNotDetermined(err) => {
+                write!(f, "unable to determine revocation status: {err}")
+            }
             ValidationErrorKind::Other(err) => write!(f, "{err}"),
         }
     }

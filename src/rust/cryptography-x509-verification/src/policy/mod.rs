@@ -28,6 +28,7 @@ pub use crate::policy::extension::{
     Criticality, ExtensionPolicy, ExtensionValidator, MaybeExtensionValidatorCallback,
     PresentExtensionValidatorCallback,
 };
+use crate::revocation::RevocationChecker;
 use crate::types::{DNSName, DNSPattern, IPAddress};
 use crate::{ValidationError, ValidationErrorKind, ValidationResult, VerificationCertificate};
 
@@ -237,6 +238,8 @@ pub struct PolicyDefinition<'a, B: CryptoOps> {
 
     ca_extension_policy: ExtensionPolicy<'a, B>,
     ee_extension_policy: ExtensionPolicy<'a, B>,
+
+    revocation_checker: Option<Box<dyn RevocationChecker<B>>>,
 }
 
 impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
@@ -248,6 +251,7 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
         extended_key_usage: ObjectIdentifier,
         ca_extension_policy: Option<ExtensionPolicy<'a, B>>,
         ee_extension_policy: Option<ExtensionPolicy<'a, B>>,
+        revocation_checker: Option<Box<dyn RevocationChecker<B>>>,
     ) -> Result<Self, &'static str> {
         let retval = Self {
             ops,
@@ -262,6 +266,7 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
                 .unwrap_or_else(ExtensionPolicy::new_default_webpki_ca),
             ee_extension_policy: ee_extension_policy
                 .unwrap_or_else(ExtensionPolicy::new_default_webpki_ee),
+            revocation_checker,
         };
 
         // Even without the following checks, verification
@@ -304,6 +309,7 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
         max_chain_depth: Option<u8>,
         ca_extension_policy: Option<ExtensionPolicy<'a, B>>,
         ee_extension_policy: Option<ExtensionPolicy<'a, B>>,
+        revocation_checker: Option<Box<dyn RevocationChecker<B>>>,
     ) -> Result<Self, &'static str> {
         Self::new(
             ops,
@@ -313,6 +319,7 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
             EKU_CLIENT_AUTH_OID.clone(),
             ca_extension_policy,
             ee_extension_policy,
+            revocation_checker,
         )
     }
 
@@ -325,6 +332,7 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
         max_chain_depth: Option<u8>,
         ca_extension_policy: Option<ExtensionPolicy<'a, B>>,
         ee_extension_policy: Option<ExtensionPolicy<'a, B>>,
+        revocation_checker: Option<Box<dyn RevocationChecker<B>>>,
     ) -> Result<Self, &'static str> {
         Self::new(
             ops,
@@ -334,6 +342,7 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
             EKU_SERVER_AUTH_OID.clone(),
             ca_extension_policy,
             ee_extension_policy,
+            revocation_checker,
         )
     }
 }

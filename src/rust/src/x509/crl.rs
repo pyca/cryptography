@@ -72,7 +72,7 @@ pub(crate) fn load_pem_x509_crl(
 }
 
 self_cell::self_cell!(
-    struct OwnedCertificateRevocationList {
+    pub(crate) struct OwnedCertificateRevocationList {
         owner: pyo3::Py<pyo3::types::PyBytes>,
         #[covariant]
         dependent: RawCertificateRevocationList,
@@ -81,7 +81,7 @@ self_cell::self_cell!(
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct CertificateRevocationList {
-    owned: OwnedCertificateRevocationList,
+    pub(crate) owned: OwnedCertificateRevocationList,
 
     revoked_certs: pyo3::sync::PyOnceLock<Vec<OwnedRevokedCertificate>>,
     cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
