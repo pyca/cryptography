@@ -171,6 +171,9 @@ pub struct MSCertificateTemplate {
     pub minor_version: Option<u32>,
 }
 
+pub type SequenceOfDistributionPoints<'a, Op> =
+    <Op as Asn1Operation>::SequenceOfVec<'a, DistributionPoint<'a, Op>>;
+
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct DistributionPoint<'a, Op: Asn1Operation> {
     #[explicit(0)]

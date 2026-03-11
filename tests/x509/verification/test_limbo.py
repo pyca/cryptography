@@ -12,9 +12,10 @@ import os
 import pytest
 
 from cryptography import x509
-from cryptography.x509 import load_pem_x509_certificate
+from cryptography.x509 import load_pem_x509_certificate, load_pem_x509_crl
 from cryptography.x509.verification import (
     ClientVerifier,
+    CRLRevocationChecker,
     PolicyBuilder,
     ServerVerifier,
     Store,
@@ -43,8 +44,6 @@ LIMBO_UNSUPPORTED_FEATURES = {
     "rfc5280-incompatible-with-webpki",
     # We do not support policy constraints.
     "has-policy-constraints",
-    # We don't yet support CRLs
-    "has-crl",
 }
 
 LIMBO_SKIP_TESTCASES = {
@@ -95,6 +94,8 @@ LIMBO_SKIP_TESTCASES = {
     "webpki::cn::utf8-vs-punycode-mismatch",
     "webpki::cn::not-in-san",
     "webpki::cn::case-mismatch",
+    # We fail on chain building for this case.
+    "crl::issuer-no-keyusage-extension",
 }
 
 
@@ -108,6 +109,19 @@ def _get_limbo_peer(expected_peer):
         return x509.IPAddress(ipaddress.ip_address(value))
     else:
         return x509.RFC822Name(value)
+
+
+def _crl_revocation_checker(builder, issuer_candidates, crls) -> PolicyBuilder:
+    issuers_by_name = {}
+    for cert in issuer_candidates:
+        assert cert.subject not in issuers_by_name
+        issuers_by_name[cert.subject] = cert
+
+    issuer_crls = []
+    for crl in crls:
+        issuer_crls.append((issuers_by_name[crl.issuer], crl))
+
+    return builder.revocation_checker(CRLRevocationChecker(issuer_crls))
 
 
 def _limbo_testcase(id_, testcase):
@@ -156,8 +170,15 @@ def _limbo_testcase(id_, testcase):
         # Some tests exercise invalid leaf SANs, which get caught before
         # validation even begins.
         try:
+            crls = [
+                load_pem_x509_crl(crl.encode()) for crl in testcase["crls"]
+            ]
+            if crls:
+                builder = _crl_revocation_checker(
+                    builder, [*trusted_certs, *untrusted_intermediates], crls
+                )
             verifier = builder.build_server_verifier(peer_name)
-        except ValueError:
+        except Exception:
             assert not should_pass
             return
     else:

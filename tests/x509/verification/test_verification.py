@@ -19,6 +19,7 @@ from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.oid import NameOID
 from cryptography.x509.verification import (
     Criticality,
+    CRLRevocationChecker,
     ExtensionPolicy,
     Policy,
     PolicyBuilder,
@@ -39,6 +40,23 @@ def dummy_store() -> Store:
     return Store([cert])
 
 
+def crl_vector() -> tuple[x509.Certificate, x509.CertificateRevocationList]:
+    crl_issuer = _load_cert(
+        os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+        x509.load_der_x509_certificate,
+    )
+    crl = _load_cert(
+        os.path.join("x509", "PKITS_data", "crls", "GoodCACRL.crl"),
+        x509.load_der_x509_crl,
+    )
+    return crl_issuer, crl
+
+
+def dummy_revocation_checker() -> CRLRevocationChecker:
+    crl_issuer, crl = crl_vector()
+    return CRLRevocationChecker([(crl_issuer, crl)])
+
+
 class TestPolicyBuilder:
     def test_time_already_set(self):
         with pytest.raises(ValueError):
@@ -53,6 +71,11 @@ class TestPolicyBuilder:
     def test_max_chain_depth_already_set(self):
         with pytest.raises(ValueError):
             PolicyBuilder().max_chain_depth(8).max_chain_depth(9)
+
+    def test_revocation_checker_already_set(self):
+        with pytest.raises(ValueError):
+            rc = dummy_revocation_checker()
+            PolicyBuilder().revocation_checker(rc).revocation_checker(rc)
 
     def test_ipaddress_subject(self):
         verifier = (
@@ -119,6 +142,18 @@ class TestPolicyBuilder:
             PolicyBuilder().build_server_verifier(DNSName("cryptography.io"))
 
 
+class TestCRLRevocationChecker:
+    def test_crl_revocation_checker_rejects_empty_list(self):
+        with pytest.raises(ValueError):
+            CRLRevocationChecker([])
+
+    def test_crl_revocation_checker_rejects_duplicate_crls(self):
+        crl_issuer, crl = crl_vector()
+
+        with pytest.raises(ValueError, match="Failed to process CRLs"):
+            CRLRevocationChecker([(crl_issuer, crl), (crl_issuer, crl)])
+
+
 class TestStore:
     def test_store_rejects_empty_list(self):
         with pytest.raises(ValueError):
@@ -178,6 +213,32 @@ class TestClientVerifier:
         assert x509.DNSName("www.cryptography.io") in verified_client.subjects
         assert x509.DNSName("cryptography.io") in verified_client.subjects
         assert len(verified_client.subjects) == 2
+
+    def test_verify_crl_checker(self):
+        crl_issuer, _crl = crl_vector()
+        leaf = _load_cert(
+            os.path.join(
+                "x509", "PKITS_data", "certs", "InvalidRevokedEETest3EE.crt"
+            ),
+            x509.load_der_x509_certificate,
+        )
+        validation_time = datetime.datetime.fromisoformat(
+            "2024-01-01T00:00:00+00:00"
+        )
+
+        builder = (
+            PolicyBuilder().store(Store([crl_issuer])).time(validation_time)
+        )
+        # PKITS EE cert doesn't have SAN, relax validator to test CRL behavior
+        builder = builder.extension_policies(
+            ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+            ee_policy=ExtensionPolicy.permit_all(),
+        )
+        builder = builder.revocation_checker(dummy_revocation_checker())
+        verifier = builder.build_client_verifier()
+
+        with pytest.raises(VerificationError, match="certificate revoked"):
+            verifier.verify(leaf, [])
 
     def test_verify_fails_renders_oid(self):
         leaf = _load_cert(
