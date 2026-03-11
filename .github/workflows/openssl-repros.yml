@@ -43,10 +43,16 @@ jobs:
           LDFLAGS="-L/tmp/openssl-install/lib -Wl,-rpath,/tmp/openssl-install/lib"
           gcc $CFLAGS -o repro_gcm repros/gcm_crypt.c $LDFLAGS -lcrypto
 
-      - name: Show CPU info
+      - name: Show CPU info and OpenSSL diagnostics
         run: |
           uname -m
           cat /proc/cpuinfo | head -30 || true
+          echo "--- OpenSSL GCM symbols ---"
+          nm -D /tmp/openssl-install/lib/libcrypto.so | grep -i "ppc_aes_gcm\|gcm_ghash_p8\|aes_p8_ctr32" || echo "No PPC GCM symbols found"
+          echo "--- HWCAP ---"
+          LD_SHOW_AUXV=1 /tmp/openssl-install/bin/openssl version 2>&1 | grep -i "hwcap\|platform" || true
+          echo "--- OpenSSL version ---"
+          /tmp/openssl-install/bin/openssl version -a || true
 
       - name: "Run: AES-GCM int overflow via EVP_Cipher"
         continue-on-error: true
