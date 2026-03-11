@@ -4,11 +4,12 @@
  * EVP_Cipher takes unsigned int inl, which allows values > INT_MAX.
  * The PPC64 GCM assembly path stores the size_t return from
  * ppc_aes_gcm_encrypt/decrypt into "int s", truncating it.
- * When s goes negative, "len -= s" (with implicit size_t conversion)
- * makes len enormous, causing an out-of-bounds read/write that
- * crashes with SIGSEGV.
+ * This corrupts the "bulk" byte count, which then corrupts the
+ * GCM length counter. CRYPTO_gcm128_encrypt_ctr32 detects the
+ * overflow and returns an error, causing EVP_Cipher to return -1.
  *
- * On non-PPC, the generic code paths handle size_t correctly.
+ * On non-PPC, the generic code paths handle size_t correctly,
+ * and EVP_Cipher returns (int)outl (a truncated but non-(-1) value).
  */
 
 #include <openssl/evp.h>
@@ -80,84 +81,38 @@ int main(void)
     /*
      * EVP_Cipher takes unsigned int for length.
      * Pass TEST_LEN (~2.5GB) which exceeds INT_MAX.
-     *
-     * On PPC64, the int truncation in ppc_aes_gcm_crypt causes
-     * len -= (negative s) to wrap len to a huge value, making the
-     * loop read/write far past the mmap'd region → SIGSEGV.
-     *
-     * Note: EVP_Cipher returns int, so the return value itself
-     * overflows for >2GB output. We ignore it and check the output.
      */
     printf("  Calling EVP_Cipher encrypt with len=%u ...\n",
            (unsigned int)TEST_LEN);
     fflush(stdout);
 
-    EVP_Cipher(ctx, out, buf, (unsigned int)TEST_LEN);
+    int enc_ret = EVP_Cipher(ctx, out, buf, (unsigned int)TEST_LEN);
+    printf("  EVP_Cipher encrypt returned: %d\n", enc_ret);
 
     /*
-     * If we get here on PPC, the bug didn't trigger (or was fixed).
-     * Verify the ciphertext isn't all zeros (encryption did something).
+     * On PPC64, the int truncation in ppc_aes_gcm_crypt causes
+     * the bulk value to be corrupted. The subsequent call to
+     * CRYPTO_gcm128_encrypt_ctr32 detects the overflow and returns
+     * an error, making EVP_Cipher return -1.
+     *
+     * On non-PPC, EVP_Cipher returns (int)outl = (int)TEST_LEN,
+     * which is a truncated but non-(-1) value.
+     *
+     * So: enc_ret == -1 means the bug triggered.
      */
-    printf("  Encrypt completed without crash\n");
-
-    int nonzero = 0;
-    for (size_t i = 0; i < 64; i++) {
-        if (out[i] != 0)
-            nonzero++;
-    }
-    if (nonzero == 0) {
-        printf("  WARNING: ciphertext is all zeros (encryption may have failed)\n");
+    if (enc_ret == -1) {
+        printf("FAIL: EVP_Cipher returned -1 (GCM internal error from int truncation bug)\n");
+        ret = 1;
     } else {
-        printf("  Ciphertext looks valid (%d/64 non-zero bytes in header)\n", nonzero);
-    }
-
-    /* Check that data past 2GB boundary was also encrypted */
-    nonzero = 0;
-    size_t boundary = (size_t)2 * 1024 * 1024 * 1024;
-    for (size_t i = boundary; i < boundary + 64 && i < TEST_LEN; i++) {
-        if (out[i] != 0)
-            nonzero++;
-    }
-    printf("  Past 2GB boundary: %d/64 non-zero bytes\n", nonzero);
-
-    /* Now decrypt and verify round-trip */
-    EVP_CIPHER_CTX_reset(ctx);
-    if (EVP_DecryptInit_ex(ctx, cipher, NULL, key, iv) != 1) {
-        fprintf(stderr, "DecryptInit failed\n");
-        goto cleanup;
-    }
-
-    /* Dirty the start of buf to verify decrypt overwrites it */
-    memset(buf, 0xCC, 64);
-
-    printf("  Calling EVP_Cipher decrypt with len=%u ...\n",
-           (unsigned int)TEST_LEN);
-    fflush(stdout);
-
-    EVP_Cipher(ctx, buf, out, (unsigned int)TEST_LEN);
-
-    printf("  Decrypt completed without crash\n");
-
-    /* Verify decrypted data matches original (zeros from mmap) */
-    ret = 0;
-    size_t check_points[] = {0, 1, 63, 4096, boundary - 1, boundary,
-                             boundary + 1, TEST_LEN - 64, TEST_LEN - 1};
-    int num_checks = sizeof(check_points) / sizeof(check_points[0]);
-    for (int i = 0; i < num_checks; i++) {
-        size_t off = check_points[i];
-        if (off >= TEST_LEN)
-            continue;
-        if (buf[off] != 0) {
-            printf("  MISMATCH at offset %zu: expected 0x00, got 0x%02x\n",
-                   off, buf[off]);
-            ret = 1;
-        }
+        printf("  EVP_Cipher returned %d (expected: %d from int truncation of outl)\n",
+               enc_ret, (int)(unsigned int)TEST_LEN);
+        ret = 0;
     }
 
     if (ret == 0)
-        printf("PASS: Round-trip correct for %zu bytes\n", TEST_LEN);
+        printf("PASS: No GCM int truncation bug detected\n");
     else
-        printf("FAIL: Round-trip mismatch\n");
+        printf("FAIL: GCM int truncation bug detected on this platform\n");
 
 cleanup:
     EVP_CIPHER_CTX_free(ctx);
