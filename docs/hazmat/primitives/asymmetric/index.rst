@@ -31,6 +31,7 @@ private key is able to decrypt it.
     rsa
     dh
     dsa
+    mldsa
     serialization
     utils
     cloudhsm
