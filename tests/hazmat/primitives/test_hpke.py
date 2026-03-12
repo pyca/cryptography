@@ -410,9 +410,7 @@ class TestHPKE:
 
                 sk_r_bytes = bytes.fromhex(vector["skRm"])
                 private_value = int.from_bytes(sk_r_bytes, "big")
-                sk_r = ec.derive_private_key(
-                    private_value, ec.SECP256R1()
-                )
+                sk_r = ec.derive_private_key(private_value, ec.SECP256R1())
 
                 enc = bytes.fromhex(vector["enc"])
                 info = bytes.fromhex(vector["info"])
