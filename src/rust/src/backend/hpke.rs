@@ -355,11 +355,16 @@ impl Suite {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        match &self.kdf {
-            KDF::HKDF_SHA256 => Ok(types::SHA256.get(py)?.call0()?),
-            KDF::HKDF_SHA384 => Ok(types::SHA384.get(py)?.call0()?),
-            KDF::HKDF_SHA512 => Ok(types::SHA512.get(py)?.call0()?),
-            KDF::SHAKE128 => unreachable!("SHAKE128 is a one-stage KDF"),
+        if self.kdf == KDF::HKDF_SHA256 {
+            Ok(types::SHA256.get(py)?.call0()?)
+        } else if self.kdf == KDF::HKDF_SHA384 {
+            Ok(types::SHA384.get(py)?.call0()?)
+        } else {
+            assert!(
+                self.kdf == KDF::HKDF_SHA512,
+                "SHAKE128 is a one-stage KDF"
+            );
+            Ok(types::SHA512.get(py)?.call0()?)
         }
     }
 
