@@ -8,6 +8,7 @@ import typing
 import pytest
 
 from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
@@ -249,7 +250,13 @@ def test_rsa_oaep_encryption(backend, wycheproof):
     if backend._fips_enabled and key.key_size < backend._fips_rsa_min_key_size:
         pytest.skip("Invalid params for FIPS. <2048 bit keys are disallowed")
 
-    if wycheproof.valid or wycheproof.acceptable:
+    if wycheproof.valid or (
+        wycheproof.acceptable
+        and not (
+            rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            and wycheproof.has_flag("SmallIntegerCiphertext")
+        )
+    ):
         pt = key.decrypt(
             binascii.unhexlify(wycheproof.testcase["ct"]), padding_algo
         )
