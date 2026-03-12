@@ -360,10 +360,7 @@ impl Suite {
         } else if self.kdf == KDF::HKDF_SHA384 {
             Ok(types::SHA384.get(py)?.call0()?)
         } else {
-            assert!(
-                self.kdf == KDF::HKDF_SHA512,
-                "SHAKE128 is a one-stage KDF"
-            );
+            assert!(self.kdf == KDF::HKDF_SHA512, "SHAKE128 is a one-stage KDF");
             Ok(types::SHA512.get(py)?.call0()?)
         }
     }
