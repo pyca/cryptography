@@ -281,7 +281,9 @@ impl KDF {
             KDF::HKDF_SHA256 => Ok(types::SHA256.get(py)?.call0()?),
             KDF::HKDF_SHA384 => Ok(types::SHA384.get(py)?.call0()?),
             KDF::HKDF_SHA512 => Ok(types::SHA512.get(py)?.call0()?),
+            // NO-COVERAGE-START
             KDF::SHAKE128 => unreachable!("SHAKE128 is a one-stage KDF"),
+            // NO-COVERAGE-END
         }
     }
 }
