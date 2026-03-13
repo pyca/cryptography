@@ -459,7 +459,7 @@ pub fn serialize_private_key(
             (params, private_key_der)
         }
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
-        id if id == openssl::pkey::Id::from_raw(cryptography_openssl::mldsa::NID_PQDSA) => {
+        cryptography_openssl::mldsa::PKEY_ID => {
             let seed = pkey.raw_private_key()?;
             let private_key_der = asn1::write_single(&MlDsaPrivateKey::Seed(seed.as_slice()))?;
             (AlgorithmParameters::MlDsa65, private_key_der)

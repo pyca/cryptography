@@ -168,7 +168,7 @@ fn private_key_from_pkey<'p>(
             .into_pyobject(py)?
             .into_any()),
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
-        id if id == openssl::pkey::Id::from_raw(cryptography_openssl::mldsa::NID_PQDSA) => {
+        cryptography_openssl::mldsa::PKEY_ID => {
             let pub_len = pkey.raw_public_key()?.len();
             if pub_len == cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES {
                 Ok(crate::backend::mldsa::private_key_from_pkey(pkey)
@@ -310,7 +310,7 @@ fn public_key_from_pkey<'p>(
             .into_any()),
 
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
-        id if id == openssl::pkey::Id::from_raw(cryptography_openssl::mldsa::NID_PQDSA) => {
+        cryptography_openssl::mldsa::PKEY_ID => {
             let pub_len = pkey.raw_public_key()?.len();
             if pub_len == cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES {
                 Ok(crate::backend::mldsa::public_key_from_pkey(pkey)

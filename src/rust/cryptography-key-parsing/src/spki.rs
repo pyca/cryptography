@@ -221,7 +221,7 @@ pub fn serialize_public_key(
             (params, pub_key_der)
         }
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
-        id if id == openssl::pkey::Id::from_raw(cryptography_openssl::mldsa::NID_PQDSA) => {
+        cryptography_openssl::mldsa::PKEY_ID => {
             let raw_bytes = pkey.raw_public_key()?;
             if raw_bytes.len() == cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES {
                 (AlgorithmParameters::MlDsa65, raw_bytes)
