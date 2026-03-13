@@ -117,20 +117,16 @@ pub fn parse_private_key(
         }
 
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
-        AlgorithmParameters::MlDsa65 => parse_mldsa_private_key(k.private_key),
+        AlgorithmParameters::MlDsa65 => {
+            let MlDsaPrivateKey::Seed(seed) =
+                asn1::parse_single::<MlDsaPrivateKey<'_>>(k.private_key)?;
+            Ok(cryptography_openssl::mldsa::new_raw_private_key(seed)?)
+        }
 
         _ => Err(KeyParsingError::UnsupportedKeyType(
             k.algorithm.oid().clone(),
         )),
     }
-}
-
-#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
-fn parse_mldsa_private_key(
-    private_key_data: &[u8],
-) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
-    let MlDsaPrivateKey::Seed(seed) = asn1::parse_single::<MlDsaPrivateKey<'_>>(private_key_data)?;
-    Ok(cryptography_openssl::mldsa::new_raw_private_key(seed)?)
 }
 
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
