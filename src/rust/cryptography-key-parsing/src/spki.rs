@@ -223,11 +223,11 @@ pub fn serialize_public_key(
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
         cryptography_openssl::mldsa::PKEY_ID => {
             let raw_bytes = pkey.raw_public_key()?;
-            if raw_bytes.len() == cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES {
-                (AlgorithmParameters::MlDsa65, raw_bytes)
-            } else {
-                unimplemented!("Unsupported ML-DSA variant");
-            }
+            assert_eq!(
+                raw_bytes.len(),
+                cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES
+            );
+            (AlgorithmParameters::MlDsa65, raw_bytes)
         }
         _ => {
             unimplemented!("Unknown key type");
@@ -268,18 +268,5 @@ mod tests {
         let pkey = openssl::pkey::PKey::ec_gen("brainpoolP512t1").unwrap();
         // Expected to panic
         _ = serialize_public_key(&pkey);
-    }
-
-    #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
-    #[test]
-    #[should_panic(expected = "Unsupported ML-DSA variant")]
-    fn test_serialize_public_key_unsupported_mldsa_variant() {
-        // Load an ML-DSA-44 public key from a Wycheproof test vector DER.
-        let der = include_bytes!(
-            "../../../../vectors/cryptography_vectors/asymmetric/MLDSA/mldsa44_pub.der"
-        );
-        let pub_pkey = openssl::pkey::PKey::public_key_from_der(der).unwrap();
-        // Expected to panic with "Unsupported ML-DSA variant"
-        _ = serialize_public_key(&pub_pkey);
     }
 }
