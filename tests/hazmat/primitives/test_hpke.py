@@ -299,6 +299,13 @@ class TestHPKE:
         with pytest.raises(InvalidTag):
             suite.decrypt(fake_ciphertext, sk_r)
 
+    def test_info_too_large_fails_shake128(self):
+        suite = Suite(KEM.X25519, KDF.SHAKE128, AEAD.AES_128_GCM)
+        pk_r = x25519.X25519PrivateKey.generate().public_key()
+
+        with pytest.raises(ValueError, match="info is too large"):
+            suite.encrypt(b"test", pk_r, info=b"x" * 65536)
+
     def test_vector_decryption(self, subtests):
         rfc_vectors = load_vectors_from_file(
             os.path.join("HPKE", "test-vectors.json"),
