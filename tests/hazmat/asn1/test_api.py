@@ -49,13 +49,13 @@ class TestTypesAPI:
         dt = datetime.datetime(
             2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
         )
-        assert asn1.UtcTime(dt).as_datetime() == dt
+        assert asn1.UTCTime(dt).as_datetime() == dt
 
     def test_repr_utc_time(self) -> None:
         dt = datetime.datetime(
             2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
         )
-        assert repr(asn1.UtcTime(dt)) == f"UtcTime({dt!r})"
+        assert repr(asn1.UTCTime(dt)) == f"UTCTime({dt!r})"
 
     def test_invalid_utc_time(self) -> None:
         with pytest.raises(
@@ -63,19 +63,19 @@ class TestTypesAPI:
             match="cannot initialize with naive datetime object",
         ):
             # We don't allow naive datetime objects
-            asn1.UtcTime(datetime.datetime(2000, 1, 1, 10, 10, 10))
+            asn1.UTCTime(datetime.datetime(2000, 1, 1, 10, 10, 10))
 
-        with pytest.raises(ValueError, match="invalid UtcTime"):
-            # UtcTime does not support dates before 1950
-            asn1.UtcTime(
+        with pytest.raises(ValueError, match="invalid UTCTime"):
+            # UTCTime does not support dates before 1950
+            asn1.UTCTime(
                 datetime.datetime(
                     1940, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
                 )
             )
 
-        with pytest.raises(ValueError, match="invalid UtcTime"):
-            # UtcTime does not support dates after 2050
-            asn1.UtcTime(
+        with pytest.raises(ValueError, match="invalid UTCTime"):
+            # UTCTime does not support dates after 2050
+            asn1.UTCTime(
                 datetime.datetime(
                     2090, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
                 )
@@ -83,10 +83,10 @@ class TestTypesAPI:
 
         with pytest.raises(
             ValueError,
-            match="invalid UtcTime: fractional seconds are not supported",
+            match="invalid UTCTime: fractional seconds are not supported",
         ):
-            # UtcTime does not support fractional seconds
-            asn1.UtcTime(
+            # UTCTime does not support fractional seconds
+            asn1.UTCTime(
                 datetime.datetime(
                     2020,
                     1,
@@ -230,7 +230,7 @@ class TestSequenceAPI:
     def test_fail_unsupported_size_annotation(self) -> None:
         with pytest.raises(
             TypeError,
-            match="field invalid has a SIZE annotation, but SIZE "
+            match="field 'invalid' has a SIZE annotation, but SIZE "
             "annotations are only supported for fields of types: ",
         ):
 
@@ -413,3 +413,41 @@ class TestSequenceAPI:
                         asn1.Implicit(1),
                     ],
                 ]
+
+    def test_fail_tlv_with_implicit_encoding(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "field 'invalid' has an IMPLICIT annotation, but IMPLICIT "
+                "annotations are not supported for TLV types."
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[asn1.TLV, asn1.Implicit(0)]
+
+    def test_fail_tlv_with_default_encoding(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "field 'invalid' has a DEFAULT annotation, but DEFAULT "
+                "annotations are not supported for TLV types."
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[asn1.TLV, asn1.Default(value=9)]
+
+    def test_fail_optional_tlv(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "optional TLV types (`TLV | None`) are not currently supported"
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: typing.Union[asn1.TLV, None]

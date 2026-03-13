@@ -3,6 +3,7 @@
 # for complete details.
 
 from cryptography.hazmat.asn1.asn1 import (
+    TLV,
     BitString,
     Default,
     Explicit,
@@ -12,7 +13,7 @@ from cryptography.hazmat.asn1.asn1 import (
     Null,
     PrintableString,
     Size,
-    UtcTime,
+    UTCTime,
     Variant,
     decode_der,
     encode_der,
@@ -20,6 +21,7 @@ from cryptography.hazmat.asn1.asn1 import (
 )
 
 __all__ = [
+    "TLV",
     "BitString",
     "Default",
     "Explicit",
@@ -29,7 +31,7 @@ __all__ = [
     "Null",
     "PrintableString",
     "Size",
-    "UtcTime",
+    "UTCTime",
     "Variant",
     "decode_der",
     "encode_der",
