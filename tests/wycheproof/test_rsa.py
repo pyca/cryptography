@@ -218,11 +218,6 @@ def test_rsa_pss_signature(backend, wycheproof):
     "rsa_oaep_misc_test.json",
 )
 def test_rsa_oaep_encryption(backend, wycheproof):
-    if backend._fips_enabled and wycheproof.has_flag("SmallIntegerCiphertext"):
-        pytest.skip(
-            "Small integer ciphertexts are rejected in OpenSSL 3.5 FIPS"
-        )
-
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
     mgf_digest = _DIGESTS[wycheproof.testgroup["mgfSha"]]
     assert digest is not None
@@ -253,7 +248,7 @@ def test_rsa_oaep_encryption(backend, wycheproof):
     if wycheproof.valid or (
         wycheproof.acceptable
         and not (
-            rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            (rust_openssl.CRYPTOGRAPHY_IS_AWSLC or backend._fips_enabled)
             and wycheproof.has_flag("SmallIntegerCiphertext")
         )
     ):
