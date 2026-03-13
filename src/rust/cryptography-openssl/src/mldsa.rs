@@ -93,7 +93,6 @@ pub fn sign(
     };
 
     // SAFETY: ml_dsa_65_sign takes raw key bytes, message, and context.
-    // SAFETY: ml_dsa_65_sign takes raw key bytes, message, and context.
     unsafe {
         let r = ml_dsa_65_sign(
             raw_key.as_ptr(),
