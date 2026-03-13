@@ -40,7 +40,7 @@ mod kdf_params {
     pub const HKDF_SHA384_ID: u16 = 0x0002;
     pub const HKDF_SHA512_ID: u16 = 0x0003;
     pub const SHAKE128_ID: u16 = 0x0010;
-    pub const SHAKE128_NH: usize = 32;
+    pub const SHAKE128_HASH_OUTPUT_LENGTH: usize = 32;
 }
 
 mod aead_params {
@@ -264,13 +264,25 @@ impl KDF {
         }
     }
 
-    fn nh(&self) -> usize {
+    fn hash_output_length(&self) -> usize {
         debug_assert!(self.is_one_stage());
-        kdf_params::SHAKE128_NH
+        kdf_params::SHAKE128_HASH_OUTPUT_LENGTH
     }
 
     fn is_one_stage(&self) -> bool {
         matches!(self, KDF::SHAKE128)
+    }
+
+    fn hkdf_hash_algorithm<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        match self {
+            KDF::HKDF_SHA256 => Ok(types::SHA256.get(py)?.call0()?),
+            KDF::HKDF_SHA384 => Ok(types::SHA384.get(py)?.call0()?),
+            KDF::HKDF_SHA512 => Ok(types::SHA512.get(py)?.call0()?),
+            KDF::SHAKE128 => unreachable!("SHAKE128 is a one-stage KDF"),
+        }
     }
 }
 
@@ -349,20 +361,6 @@ impl Suite {
             None,
         )?;
         hkdf_expand.derive(py, CffiBuf::from_bytes(py, prk))
-    }
-
-    fn hpke_hkdf_hash_algorithm<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        if self.kdf == KDF::HKDF_SHA256 {
-            Ok(types::SHA256.get(py)?.call0()?)
-        } else if self.kdf == KDF::HKDF_SHA384 {
-            Ok(types::SHA384.get(py)?.call0()?)
-        } else {
-            assert!(self.kdf == KDF::HKDF_SHA512, "SHAKE128 is a one-stage KDF");
-            Ok(types::SHA512.get(py)?.call0()?)
-        }
     }
 
     fn kem_labeled_extract(
@@ -477,7 +475,7 @@ impl Suite {
         labeled_ikm.extend_from_slice(label);
         labeled_ikm.extend_from_slice(ikm);
 
-        let algorithm = self.hpke_hkdf_hash_algorithm(py)?;
+        let algorithm = self.kdf.hkdf_hash_algorithm(py)?;
         let buf = CffiBuf::from_bytes(py, &labeled_ikm);
         hkdf_extract(py, &algorithm.unbind(), salt, &buf)
     }
@@ -497,7 +495,7 @@ impl Suite {
         labeled_info.extend_from_slice(&self.hpke_suite_id);
         labeled_info.extend_from_slice(label);
         labeled_info.extend_from_slice(info);
-        let algorithm = self.hpke_hkdf_hash_algorithm(py)?;
+        let algorithm = self.kdf.hkdf_hash_algorithm(py)?;
         Suite::hkdf_expand(py, algorithm, prk, &labeled_info, length)
     }
 
@@ -656,7 +654,7 @@ impl Suite {
                 &secrets,
                 b"secret",
                 &key_schedule_context,
-                key_length + nonce_length + self.kdf.nh(),
+                key_length + nonce_length + self.kdf.hash_output_length(),
             )?;
             let secret_bytes = secret.as_bytes();
             let key = pyo3::types::PyBytes::new(py, &secret_bytes[..key_length]);

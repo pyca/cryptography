@@ -12,7 +12,6 @@ import pytest
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
-from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, x25519
 from cryptography.hazmat.primitives.hpke import (
     AEAD,
@@ -29,16 +28,10 @@ P256_ENC_LENGTH = 65
 SUPPORTED_SUITES = list(
     itertools.product(
         [KEM.X25519, KEM.P256],
-        [KDF.HKDF_SHA256, KDF.HKDF_SHA384, KDF.HKDF_SHA512],
+        [KDF.HKDF_SHA256, KDF.HKDF_SHA384, KDF.HKDF_SHA512, KDF.SHAKE128],
         [AEAD.AES_128_GCM, AEAD.AES_256_GCM, AEAD.CHACHA20_POLY1305],
     )
 )
-
-SUPPORTED_SHAKE128_AEADS = [
-    AEAD.AES_128_GCM,
-    AEAD.AES_256_GCM,
-    AEAD.CHACHA20_POLY1305,
-]
 
 
 @pytest.mark.supported(
@@ -307,8 +300,12 @@ class TestHPKE:
             suite.decrypt(fake_ciphertext, sk_r)
 
     def test_vector_decryption(self, subtests):
-        vectors = load_vectors_from_file(
+        rfc_vectors = load_vectors_from_file(
             os.path.join("HPKE", "test-vectors.json"),
+            lambda f: json.load(f),
+        )
+        pq_vectors = load_vectors_from_file(
+            os.path.join("HPKE", "hpke-pq-test-vectors.json"),
             lambda f: json.load(f),
         )
 
@@ -319,6 +316,7 @@ class TestHPKE:
         kdf_map = {
             0x0001: KDF.HKDF_SHA256,
             0x0003: KDF.HKDF_SHA512,
+            0x0010: KDF.SHAKE128,
         }
         aead_map = {
             0x0001: AEAD.AES_128_GCM,
@@ -326,7 +324,7 @@ class TestHPKE:
             0x0003: AEAD.CHACHA20_POLY1305,
         }
 
-        for vector in vectors:
+        for vector in rfc_vectors + pq_vectors:
             if not (
                 vector["mode"] == 0
                 and vector["kem_id"] in kem_map
@@ -368,108 +366,3 @@ class TestHPKE:
                     suite, ciphertext, sk_r, info=info, aad=aad
                 )
                 assert pt == pt_expected
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(
-            hashes.SHAKE128(digest_size=32)
-        ),
-        skip_message="Does not support SHAKE128",
-    )
-    def test_shake128_vector_decryption(self, subtests):
-        vectors = load_vectors_from_file(
-            os.path.join("HPKE", "hpke-pq-test-vectors.json"),
-            lambda f: json.load(f),
-        )
-
-        kem_map = {
-            0x0010: KEM.P256,
-        }
-        kdf_map = {
-            0x0010: KDF.SHAKE128,
-        }
-        aead_map = {
-            0x0001: AEAD.AES_128_GCM,
-            0x0002: AEAD.AES_256_GCM,
-            0x0003: AEAD.CHACHA20_POLY1305,
-        }
-
-        for vector in vectors:
-            if not (
-                vector["mode"] == 0
-                and vector["kem_id"] in kem_map
-                and vector["kdf_id"] in kdf_map
-                and vector["aead_id"] in aead_map
-            ):
-                continue
-
-            with subtests.test():
-                kem = kem_map[vector["kem_id"]]
-                kdf = kdf_map[vector["kdf_id"]]
-                aead = aead_map[vector["aead_id"]]
-                suite = Suite(kem, kdf, aead)
-
-                sk_r_bytes = bytes.fromhex(vector["skRm"])
-                private_value = int.from_bytes(sk_r_bytes, "big")
-                sk_r = ec.derive_private_key(private_value, ec.SECP256R1())
-
-                enc = bytes.fromhex(vector["enc"])
-                info = bytes.fromhex(vector["info"])
-
-                encryption = vector["encryptions"][0]
-                aad = bytes.fromhex(encryption["aad"])
-                ct = bytes.fromhex(encryption["ct"])
-                pt_expected = bytes.fromhex(encryption["pt"])
-
-                ciphertext = enc + ct
-                pt = rust_openssl.hpke._decrypt_with_aad(
-                    suite, ciphertext, sk_r, info=info, aad=aad
-                )
-                assert pt == pt_expected
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(
-            hashes.SHAKE128(digest_size=32)
-        ),
-        skip_message="Does not support SHAKE128",
-    )
-    @pytest.mark.parametrize("aead", SUPPORTED_SHAKE128_AEADS)
-    def test_roundtrip_shake128(self, aead):
-        suite = Suite(KEM.X25519, KDF.SHAKE128, aead)
-
-        sk_r = x25519.X25519PrivateKey.generate()
-        pk_r = sk_r.public_key()
-
-        ciphertext = suite.encrypt(b"Hello, HPKE!", pk_r, info=b"shake128")
-        plaintext = suite.decrypt(ciphertext, sk_r, info=b"shake128")
-
-        assert plaintext == b"Hello, HPKE!"
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(
-            hashes.SHAKE128(digest_size=32)
-        ),
-        skip_message="Does not support SHAKE128",
-    )
-    def test_info_mismatch_fails_shake128(self):
-        suite = Suite(KEM.X25519, KDF.SHAKE128, AEAD.AES_128_GCM)
-
-        sk_r = x25519.X25519PrivateKey.generate()
-        pk_r = sk_r.public_key()
-
-        ciphertext = suite.encrypt(b"Secret", pk_r, info=b"sender info")
-
-        with pytest.raises(InvalidTag):
-            suite.decrypt(ciphertext, sk_r, info=b"different info")
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(
-            hashes.SHAKE128(digest_size=32)
-        ),
-        skip_message="Does not support SHAKE128",
-    )
-    def test_info_too_large_fails_shake128(self):
-        suite = Suite(KEM.X25519, KDF.SHAKE128, AEAD.AES_128_GCM)
-        pk_r = x25519.X25519PrivateKey.generate().public_key()
-
-        with pytest.raises(ValueError, match="info is too large"):
-            suite.encrypt(b"test", pk_r, info=b"x" * 65536)
