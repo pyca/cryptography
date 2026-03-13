@@ -89,6 +89,10 @@ specifying auxiliary authenticated information.
 
         HKDF-SHA256
 
+    .. attribute:: HKDF_SHA384
+
+        HKDF-SHA384
+
 .. class:: AEAD
 
     An enumeration of authenticated encryption algorithms.

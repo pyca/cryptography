@@ -1028,6 +1028,10 @@ class TestRSACertificate:
             os.path.join("x509", "custom", "bad_country.pem"),
             x509.load_pem_x509_certificate,
         )
+        # Both warnings are emitted during the first parse_name call (when
+        # cert.subject is first accessed); subsequent accesses return the
+        # cached Name object without re-parsing, so both checks must live
+        # inside a single pytest.warns block.
         with pytest.warns(UserWarning):
             assert (
                 cert.subject.get_attributes_for_oid(x509.NameOID.COUNTRY_NAME)[
@@ -1035,8 +1039,6 @@ class TestRSACertificate:
                 ].value
                 == "too long"
             )
-
-        with pytest.warns(UserWarning):
             assert (
                 cert.subject.get_attributes_for_oid(
                     x509.NameOID.JURISDICTION_COUNTRY_NAME
@@ -4321,6 +4323,22 @@ class TestCertificateBuilder:
                         ],
                         relative_name=None,
                         reasons=frozenset([x509.ReasonFlags.aa_compromise]),
+                        crl_issuer=None,
+                    )
+                ]
+            ),
+            # Regression test: empty frozenset reasons previously panicked
+            # in encode_distribution_point_reasons (trailing_zeros(0) == 8).
+            x509.CRLDistributionPoints(
+                [
+                    x509.DistributionPoint(
+                        full_name=[
+                            x509.UniformResourceIdentifier(
+                                "http://crl.example.com/root.crl"
+                            )
+                        ],
+                        relative_name=None,
+                        reasons=frozenset(),
                         crl_issuer=None,
                     )
                 ]
