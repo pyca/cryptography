@@ -22,6 +22,14 @@ pub struct PrivateKeyInfo<'a> {
     pub attributes: Option<Attributes<'a>>,
 }
 
+// RFC 9881 Section 6.5
+#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+enum MlDsaPrivateKey<'a> {
+    #[implicit(0)]
+    Seed(&'a [u8]),
+}
+
 pub fn parse_private_key(
     data: &[u8],
 ) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
@@ -106,6 +114,13 @@ pub fn parse_private_key(
                 key_bytes,
                 openssl::pkey::Id::ED448,
             )?)
+        }
+
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        AlgorithmParameters::MlDsa65 => {
+            let MlDsaPrivateKey::Seed(seed) =
+                asn1::parse_single::<MlDsaPrivateKey<'_>>(k.private_key)?;
+            Ok(cryptography_openssl::mldsa::new_raw_private_key(seed)?)
         }
 
         _ => Err(KeyParsingError::UnsupportedKeyType(
@@ -442,6 +457,12 @@ pub fn serialize_private_key(
             };
 
             (params, private_key_der)
+        }
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        cryptography_openssl::mldsa::PKEY_ID => {
+            let seed = pkey.raw_private_key()?;
+            let private_key_der = asn1::write_single(&MlDsaPrivateKey::Seed(seed.as_slice()))?;
+            (AlgorithmParameters::MlDsa65, private_key_der)
         }
         _ => {
             unimplemented!("Unknown key type");

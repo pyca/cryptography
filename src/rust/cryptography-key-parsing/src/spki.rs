@@ -100,6 +100,12 @@ pub fn parse_public_key(
 
             Ok(openssl::pkey::PKey::from_dh(dh)?)
         }
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        AlgorithmParameters::MlDsa65 => Ok(cryptography_openssl::mldsa::new_raw_public_key(
+            k.subject_public_key.as_bytes(),
+        )
+        .map_err(|_| KeyParsingError::InvalidKey)?),
+
         _ => Err(KeyParsingError::UnsupportedKeyType(
             k.algorithm.oid().clone(),
         )),
@@ -213,6 +219,15 @@ pub fn serialize_public_key(
             };
 
             (params, pub_key_der)
+        }
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        cryptography_openssl::mldsa::PKEY_ID => {
+            let raw_bytes = pkey.raw_public_key()?;
+            assert_eq!(
+                raw_bytes.len(),
+                cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES
+            );
+            (AlgorithmParameters::MlDsa65, raw_bytes)
         }
         _ => {
             unimplemented!("Unknown key type");

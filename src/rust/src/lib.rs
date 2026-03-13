@@ -241,6 +241,9 @@ mod _rust {
         use crate::backend::kdf::kdf;
         #[pymodule_export]
         use crate::backend::keys::keys;
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        #[pymodule_export]
+        use crate::backend::mldsa::mldsa;
         #[pymodule_export]
         use crate::backend::poly1305::poly1305;
         #[pymodule_export]

@@ -13,6 +13,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     ec,
     ed448,
     ed25519,
+    mldsa,
     rsa,
     x448,
     x25519,
@@ -26,6 +27,7 @@ PublicKeyTypes = typing.Union[
     ec.EllipticCurvePublicKey,
     ed25519.Ed25519PublicKey,
     ed448.Ed448PublicKey,
+    mldsa.MlDsa65PublicKey,
     x25519.X25519PublicKey,
     x448.X448PublicKey,
 ]
@@ -42,6 +44,7 @@ PrivateKeyTypes = typing.Union[
     dh.DHPrivateKey,
     ed25519.Ed25519PrivateKey,
     ed448.Ed448PrivateKey,
+    mldsa.MlDsa65PrivateKey,
     rsa.RSAPrivateKey,
     dsa.DSAPrivateKey,
     ec.EllipticCurvePrivateKey,
