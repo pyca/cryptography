@@ -12,6 +12,7 @@ import pytest
 
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, x25519
 from cryptography.hazmat.primitives.hpke import (
     AEAD,
@@ -55,7 +56,11 @@ class TestHPKE:
             Suite(KEM.X25519, KDF.HKDF_SHA256, "not an aead")  # type: ignore[arg-type]
 
     @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
-    def test_roundtrip(self, kem, kdf, aead):
+    def test_roundtrip(self, backend, kem, kdf, aead):
+        if kdf == KDF.SHAKE128 and not backend.hash_supported(
+            hashes.SHAKE128(digest_size=32)
+        ):
+            pytest.skip("SHAKE128 not supported")
         suite = Suite(kem, kdf, aead)
 
         sk_r: x25519.X25519PrivateKey | ec.EllipticCurvePrivateKey
@@ -71,7 +76,11 @@ class TestHPKE:
         assert plaintext == b"Hello, HPKE!"
 
     @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
-    def test_roundtrip_no_info(self, kem, kdf, aead):
+    def test_roundtrip_no_info(self, backend, kem, kdf, aead):
+        if kdf == KDF.SHAKE128 and not backend.hash_supported(
+            hashes.SHAKE128(digest_size=32)
+        ):
+            pytest.skip("SHAKE128 not supported")
         suite = Suite(kem, kdf, aead)
 
         sk_r: x25519.X25519PrivateKey | ec.EllipticCurvePrivateKey
@@ -299,14 +308,16 @@ class TestHPKE:
         with pytest.raises(InvalidTag):
             suite.decrypt(fake_ciphertext, sk_r)
 
-    def test_info_too_large_fails_shake128(self):
+    def test_info_too_large_fails_shake128(self, backend):
+        if not backend.hash_supported(hashes.SHAKE128(digest_size=32)):
+            pytest.skip("SHAKE128 not supported")
         suite = Suite(KEM.X25519, KDF.SHAKE128, AEAD.AES_128_GCM)
         pk_r = x25519.X25519PrivateKey.generate().public_key()
 
         with pytest.raises(ValueError, match="info is too large"):
             suite.encrypt(b"test", pk_r, info=b"x" * 65536)
 
-    def test_vector_decryption(self, subtests):
+    def test_vector_decryption(self, backend, subtests):
         rfc_vectors = load_vectors_from_file(
             os.path.join("HPKE", "test-vectors.json"),
             lambda f: json.load(f),
@@ -344,6 +355,12 @@ class TestHPKE:
                 kem = kem_map[vector["kem_id"]]
                 kdf = kdf_map[vector["kdf_id"]]
                 aead = aead_map[vector["aead_id"]]
+
+                if kdf == KDF.SHAKE128 and not backend.hash_supported(
+                    hashes.SHAKE128(digest_size=32)
+                ):
+                    continue
+
                 suite = Suite(kem, kdf, aead)
 
                 sk_r_bytes = bytes.fromhex(vector["skRm"])
