@@ -170,17 +170,13 @@ fn private_key_from_pkey<'p>(
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
         cryptography_openssl::mldsa::PKEY_ID => {
             let pub_len = pkey.raw_public_key()?.len();
-            if pub_len == cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES {
-                Ok(crate::backend::mldsa::private_key_from_pkey(pkey)
-                    .into_pyobject(py)?
-                    .into_any())
-            } else {
-                // NO-COVERAGE-START
-                Err(CryptographyError::from(
-                    exceptions::UnsupportedAlgorithm::new_err("Unsupported ML-DSA variant."),
-                ))
-                // NO-COVERAGE-END
-            }
+            assert_eq!(
+                pub_len,
+                cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES
+            );
+            Ok(crate::backend::mldsa::private_key_from_pkey(pkey)
+                .into_pyobject(py)?
+                .into_any())
         }
         _ => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
@@ -312,17 +308,13 @@ fn public_key_from_pkey<'p>(
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
         cryptography_openssl::mldsa::PKEY_ID => {
             let pub_len = pkey.raw_public_key()?.len();
-            if pub_len == cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES {
-                Ok(crate::backend::mldsa::public_key_from_pkey(pkey)
-                    .into_pyobject(py)?
-                    .into_any())
-            } else {
-                // NO-COVERAGE-START
-                Err(CryptographyError::from(
-                    exceptions::UnsupportedAlgorithm::new_err("Unsupported ML-DSA variant."),
-                ))
-                // NO-COVERAGE-END
-            }
+            assert_eq!(
+                pub_len,
+                cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES
+            );
+            Ok(crate::backend::mldsa::public_key_from_pkey(pkey)
+                .into_pyobject(py)?
+                .into_any())
         }
         _ => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),

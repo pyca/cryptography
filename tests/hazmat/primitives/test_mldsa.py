@@ -95,12 +95,10 @@ class TestMlDsa65:
                 sm = binascii.unhexlify(vector["sm"])
                 expected_sig = sm[:3309]
 
-                # Keygen: seed produces expected public key
                 key = MlDsa65PrivateKey.from_seed_bytes(xi)
                 assert key.private_bytes_raw() == xi
                 assert key.public_key().public_bytes_raw() == pk
 
-                # Sigver: known-good signature verifies
                 pub = MlDsa65PublicKey.from_public_bytes(pk)
                 pub.verify(expected_sig, msg, ctx)
 
