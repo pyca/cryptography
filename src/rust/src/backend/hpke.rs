@@ -6,6 +6,7 @@ use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 use crate::backend::aead::{AesGcm, ChaCha20Poly1305};
 use crate::backend::ec;
+use crate::backend::hashes::Hash;
 use crate::backend::kdf::{hkdf_extract, HkdfExpand};
 use crate::backend::x25519;
 use crate::buf::CffiBuf;
@@ -14,6 +15,15 @@ use crate::{exceptions, types};
 
 const HPKE_VERSION: &[u8] = b"HPKE-v1";
 const HPKE_MODE_BASE: u8 = 0x00;
+
+fn u16_length_prefix(length: usize, label: &str) -> CryptographyResult<[u8; 2]> {
+    let length = u16::try_from(length).map_err(|_| {
+        CryptographyError::from(pyo3::exceptions::PyValueError::new_err(format!(
+            "{label} is too large."
+        )))
+    })?;
+    Ok(length.to_be_bytes())
+}
 
 mod kem_params {
     pub const X25519_ID: u16 = 0x0020;
@@ -29,6 +39,8 @@ mod kdf_params {
     pub const HKDF_SHA256_ID: u16 = 0x0001;
     pub const HKDF_SHA384_ID: u16 = 0x0002;
     pub const HKDF_SHA512_ID: u16 = 0x0003;
+    pub const SHAKE128_ID: u16 = 0x0010;
+    pub const SHAKE128_HASH_OUTPUT_LENGTH: usize = 32;
 }
 
 mod aead_params {
@@ -239,6 +251,7 @@ pub(crate) enum KDF {
     HKDF_SHA256,
     HKDF_SHA384,
     HKDF_SHA512,
+    SHAKE128,
 }
 
 impl KDF {
@@ -247,10 +260,20 @@ impl KDF {
             KDF::HKDF_SHA256 => kdf_params::HKDF_SHA256_ID,
             KDF::HKDF_SHA384 => kdf_params::HKDF_SHA384_ID,
             KDF::HKDF_SHA512 => kdf_params::HKDF_SHA512_ID,
+            KDF::SHAKE128 => kdf_params::SHAKE128_ID,
         }
     }
 
-    fn hash_algorithm<'p>(
+    fn hash_output_length(&self) -> usize {
+        debug_assert!(self.is_one_stage());
+        kdf_params::SHAKE128_HASH_OUTPUT_LENGTH
+    }
+
+    fn is_one_stage(&self) -> bool {
+        matches!(self, KDF::SHAKE128)
+    }
+
+    fn hkdf_hash_algorithm<'p>(
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
@@ -258,6 +281,7 @@ impl KDF {
             KDF::HKDF_SHA256 => Ok(types::SHA256.get(py)?.call0()?),
             KDF::HKDF_SHA384 => Ok(types::SHA384.get(py)?.call0()?),
             KDF::HKDF_SHA512 => Ok(types::SHA512.get(py)?.call0()?),
+            KDF::SHAKE128 => unreachable!("SHAKE128 is a one-stage KDF"),
         }
     }
 }
@@ -451,7 +475,7 @@ impl Suite {
         labeled_ikm.extend_from_slice(label);
         labeled_ikm.extend_from_slice(ikm);
 
-        let algorithm = self.kdf.hash_algorithm(py)?;
+        let algorithm = self.kdf.hkdf_hash_algorithm(py)?;
         let buf = CffiBuf::from_bytes(py, &labeled_ikm);
         hkdf_extract(py, &algorithm.unbind(), salt, &buf)
     }
@@ -471,8 +495,29 @@ impl Suite {
         labeled_info.extend_from_slice(&self.hpke_suite_id);
         labeled_info.extend_from_slice(label);
         labeled_info.extend_from_slice(info);
-        let algorithm = self.kdf.hash_algorithm(py)?;
+        let algorithm = self.kdf.hkdf_hash_algorithm(py)?;
         Suite::hkdf_expand(py, algorithm, prk, &labeled_info, length)
+    }
+
+    fn hpke_labeled_derive<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        ikm: &[u8],
+        label: &[u8],
+        context: &[u8],
+        length: usize,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let label_len = u16_length_prefix(label.len(), "label")?;
+        let algorithm = types::SHAKE128.get(py)?.call1((length,))?;
+        let mut hash = Hash::new(py, &algorithm, None)?;
+        hash.update_bytes(ikm)?;
+        hash.update_bytes(HPKE_VERSION)?;
+        hash.update_bytes(&self.hpke_suite_id)?;
+        hash.update_bytes(&label_len)?;
+        hash.update_bytes(label)?;
+        hash.update_bytes(&(length as u16).to_be_bytes())?;
+        hash.update_bytes(context)?;
+        hash.finalize(py)
     }
 
     fn aead_encrypt<'p>(
@@ -583,6 +628,38 @@ impl Suite {
         pyo3::Bound<'p, pyo3::types::PyBytes>,
         pyo3::Bound<'p, pyo3::types::PyBytes>,
     )> {
+        if self.kdf.is_one_stage() {
+            let shared_secret_len = u16_length_prefix(shared_secret.len(), "shared_secret")?;
+            let info_len = u16_length_prefix(info.len(), "info")?;
+
+            let mut secrets = Vec::with_capacity(4 + shared_secret.len());
+            secrets.extend_from_slice(&0u16.to_be_bytes());
+            secrets.extend_from_slice(&shared_secret_len);
+            secrets.extend_from_slice(shared_secret);
+
+            let mut key_schedule_context = Vec::with_capacity(5 + info.len());
+            key_schedule_context.push(HPKE_MODE_BASE);
+            key_schedule_context.extend_from_slice(&0u16.to_be_bytes());
+            key_schedule_context.extend_from_slice(&info_len);
+            key_schedule_context.extend_from_slice(info);
+
+            let key_length = self.aead.key_length();
+            let nonce_length = self.aead.nonce_length();
+            let secret = self.hpke_labeled_derive(
+                py,
+                &secrets,
+                b"secret",
+                &key_schedule_context,
+                key_length + nonce_length + self.kdf.hash_output_length(),
+            )?;
+            let secret_bytes = secret.as_bytes();
+            let key = pyo3::types::PyBytes::new(py, &secret_bytes[..key_length]);
+            let base_nonce =
+                pyo3::types::PyBytes::new(py, &secret_bytes[key_length..key_length + nonce_length]);
+
+            return Ok((key, base_nonce));
+        }
+
         let psk_id_hash = self.hpke_labeled_extract(py, None, b"psk_id_hash", b"")?;
         let info_hash = self.hpke_labeled_extract(py, None, b"info_hash", info)?;
         let mut key_schedule_context = vec![HPKE_MODE_BASE];
@@ -689,4 +766,19 @@ pub(crate) mod hpke {
     #[rustfmt::skip]
     #[pymodule_export]
     use super::{_decrypt_with_aad, _encrypt_with_aad, Suite, AEAD, KDF, KEM};
+}
+
+#[cfg(test)]
+mod tests {
+    use super::KDF;
+
+    #[test]
+    #[should_panic(expected = "SHAKE128 is a one-stage KDF")]
+    fn test_shake128_hkdf_hash_algorithm_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let _ = KDF::SHAKE128.hkdf_hash_algorithm(py);
+        });
+    }
 }
