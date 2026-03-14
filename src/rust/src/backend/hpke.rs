@@ -281,9 +281,7 @@ impl KDF {
             KDF::HKDF_SHA256 => Ok(types::SHA256.get(py)?.call0()?),
             KDF::HKDF_SHA384 => Ok(types::SHA384.get(py)?.call0()?),
             KDF::HKDF_SHA512 => Ok(types::SHA512.get(py)?.call0()?),
-            // NO-COVERAGE-START
             KDF::SHAKE128 => unreachable!("SHAKE128 is a one-stage KDF"),
-            // NO-COVERAGE-END
         }
     }
 }
@@ -510,19 +508,15 @@ impl Suite {
         length: usize,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let label_len = u16_length_prefix(label.len(), "label")?;
-        let mut labeled_ikm = Vec::with_capacity(
-            ikm.len() + HPKE_VERSION.len() + 10 + 2 + label.len() + 2 + context.len(),
-        );
-        labeled_ikm.extend_from_slice(ikm);
-        labeled_ikm.extend_from_slice(HPKE_VERSION);
-        labeled_ikm.extend_from_slice(&self.hpke_suite_id);
-        labeled_ikm.extend_from_slice(&label_len);
-        labeled_ikm.extend_from_slice(label);
-        labeled_ikm.extend_from_slice(&(length as u16).to_be_bytes());
-        labeled_ikm.extend_from_slice(context);
         let algorithm = types::SHAKE128.get(py)?.call1((length,))?;
         let mut hash = Hash::new(py, &algorithm, None)?;
-        hash.update_bytes(&labeled_ikm)?;
+        hash.update_bytes(ikm)?;
+        hash.update_bytes(HPKE_VERSION)?;
+        hash.update_bytes(&self.hpke_suite_id)?;
+        hash.update_bytes(&label_len)?;
+        hash.update_bytes(label)?;
+        hash.update_bytes(&(length as u16).to_be_bytes())?;
+        hash.update_bytes(context)?;
         hash.finalize(py)
     }
 
@@ -772,4 +766,19 @@ pub(crate) mod hpke {
     #[rustfmt::skip]
     #[pymodule_export]
     use super::{_decrypt_with_aad, _encrypt_with_aad, Suite, AEAD, KDF, KEM};
+}
+
+#[cfg(test)]
+mod tests {
+    use super::KDF;
+
+    #[test]
+    #[should_panic(expected = "SHAKE128 is a one-stage KDF")]
+    fn test_shake128_hkdf_hash_algorithm_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let _ = KDF::SHAKE128.hkdf_hash_algorithm(py);
+        });
+    }
 }

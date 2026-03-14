@@ -40,9 +40,6 @@ SUPPORTED_SUITES = list(
     skip_message="Requires OpenSSL with X25519 support",
 )
 class TestHPKE:
-    def test_shake128_is_available(self):
-        assert isinstance(KDF.SHAKE128, KDF)
-
     def test_invalid_kem_type(self):
         with pytest.raises(TypeError):
             Suite("not a kem", KDF.HKDF_SHA256, AEAD.AES_128_GCM)  # type: ignore[arg-type]
