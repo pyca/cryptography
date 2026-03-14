@@ -416,8 +416,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Mar 13, 2026.
-            REF: 6fefff05561c0a5e8f668b4e029a6ba3adb7d89e
+            # Latest commit on the pyopenssl main branch, as of Mar 14, 2026.
+            REF: a8d28e7069ca213049ccfbcc227ed9ef6080a15b
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
