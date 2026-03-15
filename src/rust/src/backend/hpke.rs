@@ -244,16 +244,7 @@ impl KEM {
             KEM::X25519 => Ok(pk
                 .call_method0(pyo3::intern!(py, "public_bytes_raw"))?
                 .extract()?),
-            KEM::P256 => Ok(pk
-                .call_method1(
-                    pyo3::intern!(py, "public_bytes"),
-                    (
-                        crate::serialization::Encoding::X962,
-                        crate::serialization::PublicFormat::UncompressedPoint,
-                    ),
-                )?
-                .extract()?),
-            KEM::P521 => Ok(pk
+            KEM::P256 | KEM::P521 => Ok(pk
                 .call_method1(
                     pyo3::intern!(py, "public_bytes"),
                     (
@@ -293,14 +284,20 @@ impl KEM {
             KEM::X25519 => {
                 Ok(private_key.call_method1(pyo3::intern!(py, "exchange"), (public_key,))?)
             }
-            KEM::P256 => {
+            KEM::P256 | KEM::P521 => {
                 let ecdh = types::ECDH.get(py)?.call0()?;
                 Ok(private_key.call_method1(pyo3::intern!(py, "exchange"), (&ecdh, public_key))?)
             }
-            KEM::P521 => {
-                let ecdh = types::ECDH.get(py)?.call0()?;
-                Ok(private_key.call_method1(pyo3::intern!(py, "exchange"), (&ecdh, public_key))?)
-            }
+        }
+    }
+
+    fn kem_hash_algorithm<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        match self {
+            KEM::X25519 | KEM::P256 => Ok(types::SHA256.get(py)?.call0()?),
+            KEM::P521 => Ok(types::SHA512.get(py)?.call0()?),
         }
     }
 }
@@ -451,7 +448,7 @@ impl Suite {
         labeled_ikm.extend_from_slice(label);
         labeled_ikm.extend_from_slice(ikm);
 
-        let algorithm = types::SHA256.get(py)?.call0()?;
+        let algorithm = self.kem.kem_hash_algorithm(py)?;
         let buf = CffiBuf::from_bytes(py, &labeled_ikm);
         hkdf_extract(py, &algorithm.unbind(), None, &buf)
     }
@@ -472,7 +469,7 @@ impl Suite {
         labeled_info.extend_from_slice(label);
         labeled_info.extend_from_slice(info);
 
-        let algorithm = types::SHA256.get(py)?.call0()?;
+        let algorithm = self.kem.kem_hash_algorithm(py)?;
         Suite::hkdf_expand(py, algorithm, prk, &labeled_info, length)
     }
 
