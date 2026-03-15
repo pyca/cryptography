@@ -82,6 +82,60 @@ pub(crate) enum KEM {
 }
 
 impl KEM {
+    fn check_ec_public_key(
+        py: pyo3::Python<'_>,
+        key: &pyo3::Bound<'_, pyo3::PyAny>,
+        curve_type: &pyo3::Bound<'_, pyo3::PyAny>,
+        kem_name: &str,
+        curve_name: &str,
+    ) -> CryptographyResult<()> {
+        if !key.is_instance(&types::ELLIPTIC_CURVE_PUBLIC_KEY.get(py)?)? {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err(format!(
+                    "Expected EllipticCurvePublicKey for {}",
+                    kem_name
+                )),
+            ));
+        }
+        let curve = key.getattr(pyo3::intern!(py, "curve"))?;
+        if !curve.is_instance(curve_type)? {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err(format!(
+                    "Expected EllipticCurvePublicKey on {} for {}",
+                    curve_name, kem_name
+                )),
+            ));
+        }
+        Ok(())
+    }
+
+    fn check_ec_private_key(
+        py: pyo3::Python<'_>,
+        key: &pyo3::Bound<'_, pyo3::PyAny>,
+        curve_type: &pyo3::Bound<'_, pyo3::PyAny>,
+        kem_name: &str,
+        curve_name: &str,
+    ) -> CryptographyResult<()> {
+        if !key.is_instance(&types::ELLIPTIC_CURVE_PRIVATE_KEY.get(py)?)? {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err(format!(
+                    "Expected EllipticCurvePrivateKey for {}",
+                    kem_name
+                )),
+            ));
+        }
+        let curve = key.getattr(pyo3::intern!(py, "curve"))?;
+        if !curve.is_instance(curve_type)? {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err(format!(
+                    "Expected EllipticCurvePrivateKey on {} for {}",
+                    curve_name, kem_name
+                )),
+            ));
+        }
+        Ok(())
+    }
+
     fn id(&self) -> u16 {
         match self {
             KEM::X25519 => kem_params::X25519_ID,
@@ -121,40 +175,20 @@ impl KEM {
                     ));
                 }
             }
-            KEM::P256 => {
-                if !key.is_instance(&types::ELLIPTIC_CURVE_PUBLIC_KEY.get(py)?)? {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(
-                            "Expected EllipticCurvePublicKey for KEM.P256",
-                        ),
-                    ));
-                }
-                let curve = key.getattr(pyo3::intern!(py, "curve"))?;
-                if !curve.is_instance(&types::SECP256R1.get(py)?)? {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(
-                            "Expected EllipticCurvePublicKey on secp256r1 for KEM.P256",
-                        ),
-                    ));
-                }
-            }
-            KEM::P384 => {
-                if !key.is_instance(&types::ELLIPTIC_CURVE_PUBLIC_KEY.get(py)?)? {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(
-                            "Expected EllipticCurvePublicKey for KEM.P384",
-                        ),
-                    ));
-                }
-                let curve = key.getattr(pyo3::intern!(py, "curve"))?;
-                if !curve.is_instance(&types::SECP384R1.get(py)?)? {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(
-                            "Expected EllipticCurvePublicKey on secp384r1 for KEM.P384",
-                        ),
-                    ));
-                }
-            }
+            KEM::P256 => Self::check_ec_public_key(
+                py,
+                key,
+                &types::SECP256R1.get(py)?,
+                "KEM.P256",
+                "secp256r1",
+            )?,
+            KEM::P384 => Self::check_ec_public_key(
+                py,
+                key,
+                &types::SECP384R1.get(py)?,
+                "KEM.P384",
+                "secp384r1",
+            )?,
         }
         Ok(())
     }
@@ -174,40 +208,20 @@ impl KEM {
                     ));
                 }
             }
-            KEM::P256 => {
-                if !key.is_instance(&types::ELLIPTIC_CURVE_PRIVATE_KEY.get(py)?)? {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(
-                            "Expected EllipticCurvePrivateKey for KEM.P256",
-                        ),
-                    ));
-                }
-                let curve = key.getattr(pyo3::intern!(py, "curve"))?;
-                if !curve.is_instance(&types::SECP256R1.get(py)?)? {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(
-                            "Expected EllipticCurvePrivateKey on secp256r1 for KEM.P256",
-                        ),
-                    ));
-                }
-            }
-            KEM::P384 => {
-                if !key.is_instance(&types::ELLIPTIC_CURVE_PRIVATE_KEY.get(py)?)? {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(
-                            "Expected EllipticCurvePrivateKey for KEM.P384",
-                        ),
-                    ));
-                }
-                let curve = key.getattr(pyo3::intern!(py, "curve"))?;
-                if !curve.is_instance(&types::SECP384R1.get(py)?)? {
-                    return Err(CryptographyError::from(
-                        pyo3::exceptions::PyTypeError::new_err(
-                            "Expected EllipticCurvePrivateKey on secp384r1 for KEM.P384",
-                        ),
-                    ));
-                }
-            }
+            KEM::P256 => Self::check_ec_private_key(
+                py,
+                key,
+                &types::SECP256R1.get(py)?,
+                "KEM.P256",
+                "secp256r1",
+            )?,
+            KEM::P384 => Self::check_ec_private_key(
+                py,
+                key,
+                &types::SECP384R1.get(py)?,
+                "KEM.P384",
+                "secp384r1",
+            )?,
         }
         Ok(())
     }
