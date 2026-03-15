@@ -25,10 +25,11 @@ from ...utils import load_vectors_from_file
 
 X25519_ENC_LENGTH = 32
 P256_ENC_LENGTH = 65
+P521_ENC_LENGTH = 133
 
 SUPPORTED_SUITES = list(
     itertools.product(
-        [KEM.X25519, KEM.P256],
+        [KEM.X25519, KEM.P256, KEM.P521],
         [
             KDF.HKDF_SHA256,
             KDF.HKDF_SHA384,
@@ -73,8 +74,10 @@ class TestHPKE:
         sk_r: x25519.X25519PrivateKey | ec.EllipticCurvePrivateKey
         if kem == KEM.X25519:
             sk_r = x25519.X25519PrivateKey.generate()
-        else:
+        elif kem == KEM.P256:
             sk_r = ec.generate_private_key(ec.SECP256R1())
+        else:
+            sk_r = ec.generate_private_key(ec.SECP521R1())
         pk_r = sk_r.public_key()
 
         ciphertext = suite.encrypt(b"Hello, HPKE!", pk_r, info=b"test")
@@ -97,8 +100,10 @@ class TestHPKE:
         sk_r: x25519.X25519PrivateKey | ec.EllipticCurvePrivateKey
         if kem == KEM.X25519:
             sk_r = x25519.X25519PrivateKey.generate()
-        else:
+        elif kem == KEM.P256:
             sk_r = ec.generate_private_key(ec.SECP256R1())
+        else:
+            sk_r = ec.generate_private_key(ec.SECP521R1())
         pk_r = sk_r.public_key()
 
         ciphertext = suite.encrypt(b"Hello!", pk_r)
@@ -158,6 +163,47 @@ class TestHPKE:
         with pytest.raises(TypeError):
             suite.decrypt(ciphertext, secp384r1_sk)
 
+    def test_wrong_key_p521(self):
+        suite = Suite(KEM.P521, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
+        sk_r = ec.generate_private_key(ec.SECP521R1())
+        pk_r = sk_r.public_key()
+        ciphertext = suite.encrypt(b"test", pk_r)
+
+        # Wrong key of correct type
+        sk_wrong = ec.generate_private_key(ec.SECP521R1())
+        with pytest.raises(InvalidTag):
+            suite.decrypt(ciphertext, sk_wrong)
+
+        # Wrong key type for encrypt
+        x25519_pk = x25519.X25519PrivateKey.generate().public_key()
+        with pytest.raises(TypeError):
+            suite.encrypt(b"test", x25519_pk)
+
+        # Wrong key type for decrypt
+        x25519_sk = x25519.X25519PrivateKey.generate()
+        with pytest.raises(TypeError):
+            suite.decrypt(ciphertext, x25519_sk)
+
+        # Wrong EC curve for encrypt
+        secp256r1_pk = ec.generate_private_key(ec.SECP256R1()).public_key()
+        with pytest.raises(TypeError):
+            suite.encrypt(b"test", secp256r1_pk)
+
+        # Wrong EC curve for decrypt
+        secp256r1_sk = ec.generate_private_key(ec.SECP256R1())
+        with pytest.raises(TypeError):
+            suite.decrypt(ciphertext, secp256r1_sk)
+
+        # Wrong EC curve (P-384) for encrypt
+        secp384r1_pk = ec.generate_private_key(ec.SECP384R1()).public_key()
+        with pytest.raises(TypeError):
+            suite.encrypt(b"test", secp384r1_pk)
+
+        # Wrong EC curve (P-384) for decrypt
+        secp384r1_sk = ec.generate_private_key(ec.SECP384R1())
+        with pytest.raises(TypeError):
+            suite.decrypt(ciphertext, secp384r1_sk)
+
     def test_wrong_aad_fails(self):
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
@@ -205,6 +251,17 @@ class TestHPKE:
 
         # ciphertext should be: enc (65 bytes) + ct (4 bytes pt + 16 bytes tag)
         assert len(ciphertext) == P256_ENC_LENGTH + 4 + 16
+
+    def test_ciphertext_format_p521(self):
+        suite = Suite(KEM.P521, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
+
+        sk_r = ec.generate_private_key(ec.SECP521R1())
+        pk_r = sk_r.public_key()
+
+        ciphertext = suite.encrypt(b"test", pk_r)
+
+        # ciphertext should be: enc (133 bytes) + ct (4 bytes pt + 16 bytes tag)
+        assert len(ciphertext) == P521_ENC_LENGTH + 4 + 16
 
     def test_empty_plaintext(self):
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
@@ -349,6 +406,7 @@ class TestHPKE:
 
         kem_map = {
             0x0010: KEM.P256,
+            0x0012: KEM.P521,
             0x0020: KEM.X25519,
         }
         kdf_map = {
@@ -391,9 +449,12 @@ class TestHPKE:
                     sk_r = x25519.X25519PrivateKey.from_private_bytes(
                         sk_r_bytes
                     )
-                else:
+                elif kem == KEM.P256:
                     private_value = int.from_bytes(sk_r_bytes, "big")
                     sk_r = ec.derive_private_key(private_value, ec.SECP256R1())
+                else:
+                    private_value = int.from_bytes(sk_r_bytes, "big")
+                    sk_r = ec.derive_private_key(private_value, ec.SECP521R1())
 
                 enc = bytes.fromhex(vector["enc"])
                 info = bytes.fromhex(vector["info"])
