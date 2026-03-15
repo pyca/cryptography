@@ -271,11 +271,11 @@ impl KDF {
     fn hash_output_length(&self) -> usize {
         debug_assert!(self.is_one_stage());
         match self {
+            KDF::HKDF_SHA256 => unreachable!("hash_output_length only used for one-stage KDFs"),
+            KDF::HKDF_SHA384 => unreachable!("hash_output_length only used for one-stage KDFs"),
+            KDF::HKDF_SHA512 => unreachable!("hash_output_length only used for one-stage KDFs"),
             KDF::SHAKE128 => kdf_params::SHAKE128_HASH_OUTPUT_LENGTH,
             KDF::SHAKE256 => kdf_params::SHAKE256_HASH_OUTPUT_LENGTH,
-            // NO-COVERAGE-START
-            _ => unreachable!("hash_output_length only used for one-stage KDFs"),
-            // NO-COVERAGE-END
         }
     }
 
@@ -520,9 +520,13 @@ impl Suite {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let label_len = u16_length_prefix(label.len(), "label")?;
         let algorithm = match &self.kdf {
+            // NO-COVERAGE-START: hpke_labeled_derive is only called for one-stage KDFs
+            KDF::HKDF_SHA256 => unreachable!("hpke_labeled_derive only used for one-stage KDFs"),
+            KDF::HKDF_SHA384 => unreachable!("hpke_labeled_derive only used for one-stage KDFs"),
+            KDF::HKDF_SHA512 => unreachable!("hpke_labeled_derive only used for one-stage KDFs"),
+            // NO-COVERAGE-END
             KDF::SHAKE128 => types::SHAKE128.get(py)?.call1((length,))?,
             KDF::SHAKE256 => types::SHAKE256.get(py)?.call1((length,))?,
-            _ => unreachable!("hpke_labeled_derive only used for one-stage KDFs"),
         };
         let mut hash = Hash::new(py, &algorithm, None)?;
         hash.update_bytes(ikm)?;
@@ -813,5 +817,24 @@ mod tests {
         assert_eq!(KDF::SHAKE256.id(), kdf_params::SHAKE256_ID);
         assert!(KDF::SHAKE256.is_one_stage());
         assert_eq!(KDF::SHAKE256.hash_output_length(), 64);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_hkdf256_hash_output_length_unreachable() {
+        // Panics: debug_assert in debug, unreachable! in release
+        let _ = KDF::HKDF_SHA256.hash_output_length();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_hkdf384_hash_output_length_unreachable() {
+        let _ = KDF::HKDF_SHA384.hash_output_length();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_hkdf512_hash_output_length_unreachable() {
+        let _ = KDF::HKDF_SHA512.hash_output_length();
     }
 }
