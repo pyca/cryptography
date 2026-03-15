@@ -81,6 +81,14 @@ specifying auxiliary authenticated information.
 
         DHKEM(X25519, HKDF-SHA256)
 
+    .. attribute:: P256
+
+        DHKEM(P-256, HKDF-SHA256)
+
+    .. attribute:: P521
+
+        DHKEM(P-521, HKDF-SHA512)
+
 .. class:: KDF
 
     An enumeration of key derivation functions.
