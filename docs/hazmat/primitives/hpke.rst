@@ -101,6 +101,10 @@ specifying auxiliary authenticated information.
 
         SHAKE-128
 
+    .. attribute:: SHAKE256
+
+        SHAKE-256
+
 .. class:: AEAD
 
     An enumeration of authenticated encryption algorithms.
