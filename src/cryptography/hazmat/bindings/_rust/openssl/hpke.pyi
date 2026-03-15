@@ -8,6 +8,7 @@ from cryptography.utils import Buffer
 class KEM:
     X25519: KEM
     P256: KEM
+    P384: KEM
 
 class KDF:
     HKDF_SHA256: KDF
