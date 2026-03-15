@@ -273,7 +273,9 @@ impl KDF {
         match self {
             KDF::SHAKE128 => kdf_params::SHAKE128_HASH_OUTPUT_LENGTH,
             KDF::SHAKE256 => kdf_params::SHAKE256_HASH_OUTPUT_LENGTH,
+            // NO-COVERAGE-START
             _ => unreachable!("hash_output_length only used for one-stage KDFs"),
+            // NO-COVERAGE-END
         }
     }
 
@@ -783,6 +785,7 @@ pub(crate) mod hpke {
 
 #[cfg(test)]
 mod tests {
+    use super::kdf_params;
     use super::KDF;
 
     #[test]
@@ -803,5 +806,12 @@ mod tests {
         pyo3::Python::attach(|py| {
             let _ = KDF::SHAKE256.hkdf_hash_algorithm(py);
         });
+    }
+
+    #[test]
+    fn test_shake256_kdf_params() {
+        assert_eq!(KDF::SHAKE256.id(), kdf_params::SHAKE256_ID);
+        assert!(KDF::SHAKE256.is_one_stage());
+        assert_eq!(KDF::SHAKE256.hash_output_length(), 64);
     }
 }
