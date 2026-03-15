@@ -29,7 +29,13 @@ P256_ENC_LENGTH = 65
 SUPPORTED_SUITES = list(
     itertools.product(
         [KEM.X25519, KEM.P256],
-        [KDF.HKDF_SHA256, KDF.HKDF_SHA384, KDF.HKDF_SHA512, KDF.SHAKE128],
+        [
+            KDF.HKDF_SHA256,
+            KDF.HKDF_SHA384,
+            KDF.HKDF_SHA512,
+            KDF.SHAKE128,
+            KDF.SHAKE256,
+        ],
         [AEAD.AES_128_GCM, AEAD.AES_256_GCM, AEAD.CHACHA20_POLY1305],
     )
 )
@@ -58,6 +64,10 @@ class TestHPKE:
             hashes.SHAKE128(digest_size=32)
         ):
             pytest.skip("SHAKE128 not supported")
+        if kdf == KDF.SHAKE256 and not backend.hash_supported(
+            hashes.SHAKE256(digest_size=64)
+        ):
+            pytest.skip("SHAKE256 not supported")
         suite = Suite(kem, kdf, aead)
 
         sk_r: x25519.X25519PrivateKey | ec.EllipticCurvePrivateKey
@@ -78,6 +88,10 @@ class TestHPKE:
             hashes.SHAKE128(digest_size=32)
         ):
             pytest.skip("SHAKE128 not supported")
+        if kdf == KDF.SHAKE256 and not backend.hash_supported(
+            hashes.SHAKE256(digest_size=64)
+        ):
+            pytest.skip("SHAKE256 not supported")
         suite = Suite(kem, kdf, aead)
 
         sk_r: x25519.X25519PrivateKey | ec.EllipticCurvePrivateKey
@@ -314,6 +328,15 @@ class TestHPKE:
         with pytest.raises(ValueError, match="info is too large"):
             suite.encrypt(b"test", pk_r, info=b"x" * 65536)
 
+    def test_info_too_large_fails_shake256(self, backend):
+        if not backend.hash_supported(hashes.SHAKE256(digest_size=64)):
+            pytest.skip("SHAKE256 not supported")
+        suite = Suite(KEM.X25519, KDF.SHAKE256, AEAD.AES_128_GCM)
+        pk_r = x25519.X25519PrivateKey.generate().public_key()
+
+        with pytest.raises(ValueError, match="info is too large"):
+            suite.encrypt(b"test", pk_r, info=b"x" * 65536)
+
     def test_vector_decryption(self, backend, subtests):
         rfc_vectors = load_vectors_from_file(
             os.path.join("HPKE", "test-vectors.json"),
@@ -332,6 +355,7 @@ class TestHPKE:
             0x0001: KDF.HKDF_SHA256,
             0x0003: KDF.HKDF_SHA512,
             0x0010: KDF.SHAKE128,
+            0x0011: KDF.SHAKE256,
         }
         aead_map = {
             0x0001: AEAD.AES_128_GCM,
@@ -355,6 +379,10 @@ class TestHPKE:
 
                 if kdf == KDF.SHAKE128 and not backend.hash_supported(
                     hashes.SHAKE128(digest_size=32)
+                ):
+                    continue
+                if kdf == KDF.SHAKE256 and not backend.hash_supported(
+                    hashes.SHAKE256(digest_size=64)
                 ):
                     continue
 
