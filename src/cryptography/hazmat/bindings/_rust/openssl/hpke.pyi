@@ -15,6 +15,7 @@ class KDF:
     HKDF_SHA384: KDF
     HKDF_SHA512: KDF
     SHAKE128: KDF
+    SHAKE256: KDF
 
 class AEAD:
     AES_128_GCM: AEAD

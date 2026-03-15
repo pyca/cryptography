@@ -45,6 +45,8 @@ mod kdf_params {
     pub const HKDF_SHA512_ID: u16 = 0x0003;
     pub const SHAKE128_ID: u16 = 0x0010;
     pub const SHAKE128_HASH_OUTPUT_LENGTH: usize = 32;
+    pub const SHAKE256_ID: u16 = 0x0011;
+    pub const SHAKE256_HASH_OUTPUT_LENGTH: usize = 64;
 }
 
 mod aead_params {
@@ -318,6 +320,7 @@ pub(crate) enum KDF {
     HKDF_SHA384,
     HKDF_SHA512,
     SHAKE128,
+    SHAKE256,
 }
 
 impl KDF {
@@ -327,16 +330,22 @@ impl KDF {
             KDF::HKDF_SHA384 => kdf_params::HKDF_SHA384_ID,
             KDF::HKDF_SHA512 => kdf_params::HKDF_SHA512_ID,
             KDF::SHAKE128 => kdf_params::SHAKE128_ID,
+            KDF::SHAKE256 => kdf_params::SHAKE256_ID,
         }
     }
 
     fn hash_output_length(&self) -> usize {
-        debug_assert!(self.is_one_stage());
-        kdf_params::SHAKE128_HASH_OUTPUT_LENGTH
+        match self {
+            KDF::HKDF_SHA256 | KDF::HKDF_SHA384 | KDF::HKDF_SHA512 => {
+                unreachable!("hash_output_length only used for one-stage KDFs")
+            }
+            KDF::SHAKE128 => kdf_params::SHAKE128_HASH_OUTPUT_LENGTH,
+            KDF::SHAKE256 => kdf_params::SHAKE256_HASH_OUTPUT_LENGTH,
+        }
     }
 
     fn is_one_stage(&self) -> bool {
-        matches!(self, KDF::SHAKE128)
+        matches!(self, KDF::SHAKE128 | KDF::SHAKE256)
     }
 
     fn hkdf_hash_algorithm<'p>(
@@ -348,6 +357,7 @@ impl KDF {
             KDF::HKDF_SHA384 => Ok(types::SHA384.get(py)?.call0()?),
             KDF::HKDF_SHA512 => Ok(types::SHA512.get(py)?.call0()?),
             KDF::SHAKE128 => unreachable!("SHAKE128 is a one-stage KDF"),
+            KDF::SHAKE256 => unreachable!("SHAKE256 is a one-stage KDF"),
         }
     }
 }
@@ -574,7 +584,13 @@ impl Suite {
         length: usize,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let label_len = u16_length_prefix(label.len(), "label")?;
-        let algorithm = types::SHAKE128.get(py)?.call1((length,))?;
+        let algorithm = match &self.kdf {
+            KDF::HKDF_SHA256 | KDF::HKDF_SHA384 | KDF::HKDF_SHA512 => {
+                unreachable!("hpke_labeled_derive only used for one-stage KDFs")
+            }
+            KDF::SHAKE128 => types::SHAKE128.get(py)?.call1((length,))?,
+            KDF::SHAKE256 => types::SHAKE256.get(py)?.call1((length,))?,
+        };
         let mut hash = Hash::new(py, &algorithm, None)?;
         hash.update_bytes(ikm)?;
         hash.update_bytes(HPKE_VERSION)?;
@@ -836,6 +852,7 @@ pub(crate) mod hpke {
 
 #[cfg(test)]
 mod tests {
+    use super::kdf_params;
     use super::KDF;
 
     #[test]
@@ -845,6 +862,46 @@ mod tests {
 
         pyo3::Python::attach(|py| {
             let _ = KDF::SHAKE128.hkdf_hash_algorithm(py);
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "SHAKE256 is a one-stage KDF")]
+    fn test_shake256_hkdf_hash_algorithm_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let _ = KDF::SHAKE256.hkdf_hash_algorithm(py);
+        });
+    }
+
+    #[test]
+    fn test_shake256_kdf_params() {
+        assert_eq!(KDF::SHAKE256.id(), kdf_params::SHAKE256_ID);
+        assert!(KDF::SHAKE256.is_one_stage());
+        assert_eq!(KDF::SHAKE256.hash_output_length(), 64);
+    }
+
+    #[test]
+    #[should_panic(expected = "hash_output_length only used for one-stage KDFs")]
+    fn test_hkdf_hash_output_length_unreachable() {
+        let _ = KDF::HKDF_SHA256.hash_output_length();
+    }
+
+    #[test]
+    #[should_panic(expected = "hpke_labeled_derive only used for one-stage KDFs")]
+    fn test_hpke_labeled_derive_unreachable_hkdf() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let suite = super::Suite {
+                aead: super::AEAD::AES_128_GCM,
+                kem: super::KEM::X25519,
+                kem_suite_id: [0u8; 5],
+                hpke_suite_id: [0u8; 10],
+                kdf: KDF::HKDF_SHA256,
+            };
+            let _ = suite.hpke_labeled_derive(py, b"", b"test", b"", 32);
         });
     }
 }

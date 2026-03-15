@@ -40,8 +40,8 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.1"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.1.2"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.1"}}
-          # Latest commit on the BoringSSL main branch, as of Mar 14, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "d61cb8f3df753b28098c13213afbeba42c475252"}}
+          # Latest commit on the BoringSSL main branch, as of Mar 15, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "75a1350717c122d5f1edf8938a9c17f1ce79f888"}}
           # Latest tag of AWS-LC main branch, as of Mar 12, 2026.
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.70.0"}}
           # Latest commit on the OpenSSL master branch, as of Sep 04, 2025.
@@ -456,8 +456,8 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Mar 12, 2026.
-            REF: dbaaf69802570af278e92589686c62b153ed1187
+            # Latest commit on the scapy master branch, as of Mar 15, 2026.
+            REF: 2cb8101e18c5d06672f02e0369b0113a67e34f44
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
