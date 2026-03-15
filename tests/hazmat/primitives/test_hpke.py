@@ -354,6 +354,7 @@ class TestHPKE:
         }
         kdf_map = {
             0x0001: KDF.HKDF_SHA256,
+            0x0002: KDF.HKDF_SHA384,
             0x0003: KDF.HKDF_SHA512,
             0x0010: KDF.SHAKE128,
             0x0011: KDF.SHAKE256,
