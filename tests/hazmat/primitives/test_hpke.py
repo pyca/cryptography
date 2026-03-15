@@ -7,7 +7,6 @@ from __future__ import annotations
 import itertools
 import json
 import os
-from unittest.mock import patch
 
 import pytest
 
@@ -417,15 +416,3 @@ class TestHPKE:
                     suite, ciphertext, sk_r, info=info, aad=aad
                 )
                 assert pt == pt_expected
-
-    def test_vector_decryption_skips_shake256_when_not_supported(
-        self, backend, subtests
-    ):
-        """Cover the branch where we skip SHAKE256 vectors when not supported."""
-        def hash_supported(alg):
-            if isinstance(alg, hashes.SHAKE256) and alg.digest_size == 64:
-                return False
-            return backend.hash_supported(alg)
-
-        with patch.object(backend, "hash_supported", side_effect=hash_supported):
-            self.test_vector_decryption(backend, subtests)

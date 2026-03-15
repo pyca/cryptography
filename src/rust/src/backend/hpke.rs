@@ -269,11 +269,10 @@ impl KDF {
     }
 
     fn hash_output_length(&self) -> usize {
-        debug_assert!(self.is_one_stage());
         match self {
-            KDF::HKDF_SHA256 => unreachable!("hash_output_length only used for one-stage KDFs"),
-            KDF::HKDF_SHA384 => unreachable!("hash_output_length only used for one-stage KDFs"),
-            KDF::HKDF_SHA512 => unreachable!("hash_output_length only used for one-stage KDFs"),
+            KDF::HKDF_SHA256 | KDF::HKDF_SHA384 | KDF::HKDF_SHA512 => {
+                unreachable!("hash_output_length only used for one-stage KDFs")
+            }
             KDF::SHAKE128 => kdf_params::SHAKE128_HASH_OUTPUT_LENGTH,
             KDF::SHAKE256 => kdf_params::SHAKE256_HASH_OUTPUT_LENGTH,
         }
@@ -520,11 +519,9 @@ impl Suite {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let label_len = u16_length_prefix(label.len(), "label")?;
         let algorithm = match &self.kdf {
-            // NO-COVERAGE-START: hpke_labeled_derive is only called for one-stage KDFs
-            KDF::HKDF_SHA256 => unreachable!("hpke_labeled_derive only used for one-stage KDFs"),
-            KDF::HKDF_SHA384 => unreachable!("hpke_labeled_derive only used for one-stage KDFs"),
-            KDF::HKDF_SHA512 => unreachable!("hpke_labeled_derive only used for one-stage KDFs"),
-            // NO-COVERAGE-END
+            KDF::HKDF_SHA256 | KDF::HKDF_SHA384 | KDF::HKDF_SHA512 => {
+                unreachable!("hpke_labeled_derive only used for one-stage KDFs")
+            }
             KDF::SHAKE128 => types::SHAKE128.get(py)?.call1((length,))?,
             KDF::SHAKE256 => types::SHAKE256.get(py)?.call1((length,))?,
         };
@@ -820,21 +817,25 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
-    fn test_hkdf256_hash_output_length_unreachable() {
-        // Panics: debug_assert in debug, unreachable! in release
+    #[should_panic(expected = "hash_output_length only used for one-stage KDFs")]
+    fn test_hkdf_hash_output_length_unreachable() {
         let _ = KDF::HKDF_SHA256.hash_output_length();
     }
 
     #[test]
-    #[should_panic]
-    fn test_hkdf384_hash_output_length_unreachable() {
-        let _ = KDF::HKDF_SHA384.hash_output_length();
-    }
+    #[should_panic(expected = "hpke_labeled_derive only used for one-stage KDFs")]
+    fn test_hpke_labeled_derive_unreachable_hkdf() {
+        pyo3::Python::initialize();
 
-    #[test]
-    #[should_panic]
-    fn test_hkdf512_hash_output_length_unreachable() {
-        let _ = KDF::HKDF_SHA512.hash_output_length();
+        pyo3::Python::attach(|py| {
+            let suite = super::Suite {
+                aead: super::AEAD::AES_128_GCM,
+                kem: super::KEM::X25519,
+                kem_suite_id: [0u8; 5],
+                hpke_suite_id: [0u8; 10],
+                kdf: KDF::HKDF_SHA256,
+            };
+            let _ = suite.hpke_labeled_derive(py, b"", b"test", b"", 32);
+        });
     }
 }
