@@ -9,6 +9,7 @@ class KEM:
     X25519: KEM
     P256: KEM
     P384: KEM
+    P521: KEM
 
 class KDF:
     HKDF_SHA256: KDF
