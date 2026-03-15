@@ -260,7 +260,7 @@ class TestHPKE:
 
         ciphertext = suite.encrypt(b"test", pk_r)
 
-        # ciphertext should be: enc (133 bytes) + ct (4 bytes pt + 16 bytes tag)
+        # enc (133 bytes) + ct (4 bytes pt + 16 bytes tag)
         assert len(ciphertext) == P521_ENC_LENGTH + 4 + 16
 
     def test_empty_plaintext(self):
