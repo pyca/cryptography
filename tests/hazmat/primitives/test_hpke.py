@@ -440,6 +440,10 @@ class TestHPKE:
                     hashes.SHAKE128(digest_size=32)
                 ):
                     continue
+                if kdf == KDF.SHAKE256 and not backend.hash_supported(
+                    hashes.SHAKE256(digest_size=64)
+                ):
+                    continue
 
                 suite = Suite(kem, kdf, aead)
 
