@@ -37,6 +37,10 @@ mod kem_params {
     pub const P384_ID: u16 = 0x0011;
     pub const P384_NSECRET: usize = 48;
     pub const P384_NENC: usize = 97;
+
+    pub const P521_ID: u16 = 0x0012;
+    pub const P521_NSECRET: usize = 64;
+    pub const P521_NENC: usize = 133;
 }
 
 mod kdf_params {
@@ -79,6 +83,7 @@ pub(crate) enum KEM {
     X25519,
     P256,
     P384,
+    P521,
 }
 
 impl KEM {
@@ -141,6 +146,7 @@ impl KEM {
             KEM::X25519 => kem_params::X25519_ID,
             KEM::P256 => kem_params::P256_ID,
             KEM::P384 => kem_params::P384_ID,
+            KEM::P521 => kem_params::P521_ID,
         }
     }
 
@@ -149,6 +155,7 @@ impl KEM {
             KEM::X25519 => kem_params::X25519_NSECRET,
             KEM::P256 => kem_params::P256_NSECRET,
             KEM::P384 => kem_params::P384_NSECRET,
+            KEM::P521 => kem_params::P521_NSECRET,
         }
     }
 
@@ -157,6 +164,7 @@ impl KEM {
             KEM::X25519 => kem_params::X25519_NENC,
             KEM::P256 => kem_params::P256_NENC,
             KEM::P384 => kem_params::P384_NENC,
+            KEM::P521 => kem_params::P521_NENC,
         }
     }
 
@@ -188,6 +196,13 @@ impl KEM {
                 &types::SECP384R1.get(py)?,
                 "KEM.P384",
                 "secp384r1",
+            )?,
+            KEM::P521 => Self::check_ec_public_key(
+                py,
+                key,
+                &types::SECP521R1.get(py)?,
+                "KEM.P521",
+                "secp521r1",
             )?,
         }
         Ok(())
@@ -222,6 +237,13 @@ impl KEM {
                 "KEM.P384",
                 "secp384r1",
             )?,
+            KEM::P521 => Self::check_ec_private_key(
+                py,
+                key,
+                &types::SECP521R1.get(py)?,
+                "KEM.P521",
+                "secp521r1",
+            )?,
         }
         Ok(())
     }
@@ -246,6 +268,13 @@ impl KEM {
                         .into_any(),
                 )
             }
+            KEM::P521 => {
+                let secp521r1 = types::SECP521R1.get(py)?.call0()?;
+                Ok(
+                    pyo3::Bound::new(py, ec::generate_private_key(py, secp521r1, None)?)?
+                        .into_any(),
+                )
+            }
         }
     }
 
@@ -258,7 +287,7 @@ impl KEM {
             KEM::X25519 => Ok(pk
                 .call_method0(pyo3::intern!(py, "public_bytes_raw"))?
                 .extract()?),
-            KEM::P256 | KEM::P384 => Ok(pk
+            KEM::P256 | KEM::P384 | KEM::P521 => Ok(pk
                 .call_method1(
                     pyo3::intern!(py, "public_bytes"),
                     (
@@ -285,6 +314,10 @@ impl KEM {
                 let secp384r1 = types::SECP384R1.get(py)?.call0()?;
                 Ok(pyo3::Bound::new(py, ec::from_public_bytes(py, secp384r1, data)?)?.into_any())
             }
+            KEM::P521 => {
+                let secp521r1 = types::SECP521R1.get(py)?.call0()?;
+                Ok(pyo3::Bound::new(py, ec::from_public_bytes(py, secp521r1, data)?)?.into_any())
+            }
         }
     }
 
@@ -298,7 +331,7 @@ impl KEM {
             KEM::X25519 => {
                 Ok(private_key.call_method1(pyo3::intern!(py, "exchange"), (public_key,))?)
             }
-            KEM::P256 | KEM::P384 => {
+            KEM::P256 | KEM::P384 | KEM::P521 => {
                 let ecdh = types::ECDH.get(py)?.call0()?;
                 Ok(private_key.call_method1(pyo3::intern!(py, "exchange"), (&ecdh, public_key))?)
             }
@@ -312,6 +345,7 @@ impl KEM {
         match self {
             KEM::X25519 | KEM::P256 => Ok(types::SHA256.get(py)?.call0()?),
             KEM::P384 => Ok(types::SHA384.get(py)?.call0()?),
+            KEM::P521 => Ok(types::SHA512.get(py)?.call0()?),
         }
     }
 }
