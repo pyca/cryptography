@@ -416,8 +416,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Mar 16, 2026.
-            REF: 358cbf29c4e364c59930e53a270116249581eaa3
+            # Latest commit on the pyopenssl main branch, as of Mar 17, 2026.
+            REF: f72218efff8a1e3e7ae4683793ad36d2f9610976
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -461,8 +461,8 @@ jobs:
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Mar 16, 2026.
-            REF: 16a8e6b7bed131c1aa386fc9d1348b0c0412f2cc
+            # Latest commit on the sigstore-python main branch, as of Mar 17, 2026.
+            REF: e9f736f3e8cb3d8a30d636cae687dc4a95b40dfc
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
