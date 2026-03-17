@@ -135,6 +135,14 @@ html_static_path = ["_static"]
 # Output file base name for HTML help builder.
 htmlhelp_basename = "Cryptographydoc"
 
+html_context = {
+    "display_github": True,
+    "github_user": "pyca",
+    "github_repo": "cryptography",
+    "github_version": "main",
+    "conf_py_path": "/docs/",
+}
+
 
 # -- Options for LaTeX output -------------------------------------------------
 
