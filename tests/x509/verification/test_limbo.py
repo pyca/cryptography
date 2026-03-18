@@ -12,9 +12,10 @@ import os
 import pytest
 
 from cryptography import x509
-from cryptography.x509 import load_pem_x509_certificate
+from cryptography.x509 import load_pem_x509_certificate, load_pem_x509_crl
 from cryptography.x509.verification import (
     ClientVerifier,
+    CRLRevocationChecker,
     PolicyBuilder,
     ServerVerifier,
     Store,
@@ -43,8 +44,6 @@ LIMBO_UNSUPPORTED_FEATURES = {
     "rfc5280-incompatible-with-webpki",
     # We do not support policy constraints.
     "has-policy-constraints",
-    # We don't yet support CRLs
-    "has-crl",
 }
 
 LIMBO_SKIP_TESTCASES = {
@@ -132,6 +131,7 @@ def _limbo_testcase(id_, testcase):
     peer_certificate = load_pem_x509_certificate(
         testcase["peer_certificate"].encode()
     )
+    crls = [load_pem_x509_crl(crl.encode()) for crl in testcase["crls"]]
     validation_time = testcase["validation_time"]
     validation_time = (
         datetime.datetime.fromisoformat(validation_time)
@@ -142,6 +142,8 @@ def _limbo_testcase(id_, testcase):
     should_pass = testcase["expected_result"] == "SUCCESS"
 
     builder = PolicyBuilder().store(Store(trusted_certs))
+    if crls:
+        builder = builder.revocation_checker(CRLRevocationChecker(crls))
     if validation_time is not None:
         builder = builder.time(validation_time)
     if max_chain_depth is not None:

@@ -513,6 +513,14 @@ mod tests {
             "invalid extension: 2.5.29.17: duplicate extension"
         );
 
+        let err = ValidationError::<PublicKeyErrorOps>::new(
+            ValidationErrorKind::RevocationNotDetermined("no matching CRL found".to_owned()),
+        );
+        assert_eq!(
+            err.to_string(),
+            "unable to determine revocation status: no matching CRL found"
+        );
+
         let err =
             ValidationError::<PublicKeyErrorOps>::new(ValidationErrorKind::FatalError("oops"));
         assert_eq!(err.to_string(), "fatal error: oops");
