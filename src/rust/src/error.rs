@@ -341,6 +341,12 @@ mod tests {
             let py_error = pyo3::exceptions::PyRuntimeError::new_err("abc");
             let e: CryptographyError = py_error.clone_ref(py).into();
             assert!(e.to_string() == py_error.to_string());
+
+            let ordering_error = CryptographyError::Asn1Write(asn1::WriteError::InvalidSetOrdering);
+            assert!(
+                "invalid SET ordering while performing ASN.1 serialization"
+                    == ordering_error.to_string()
+            );
         })
     }
 
@@ -355,6 +361,14 @@ mod tests {
             ));
             let py_e: pyo3::PyErr = e.into();
             assert!(py_e.is_instance_of::<pyo3::exceptions::PyMemoryError>(py));
+
+            let e: CryptographyError = asn1::WriteError::InvalidSetOrdering.into();
+            assert!(matches!(
+                e,
+                CryptographyError::Asn1Write(asn1::WriteError::InvalidSetOrdering)
+            ));
+            let py_e: pyo3::PyErr = e.into();
+            assert!(py_e.is_instance_of::<pyo3::exceptions::PyValueError>(py));
 
             let e: CryptographyError = pyo3::CastError::new(
                 py.None().bind(py).as_borrowed(),
