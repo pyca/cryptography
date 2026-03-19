@@ -23,6 +23,8 @@ pub enum Type {
     Sequence(pyo3::Py<pyo3::types::PyType>, pyo3::Py<pyo3::types::PyDict>),
     /// SEQUENCE OF (`list[`T`]`)
     SequenceOf(pyo3::Py<AnnotatedType>),
+    /// SET OF (`list[`T`]`)
+    SetOf(pyo3::Py<AnnotatedType>),
     /// OPTIONAL (`T | None`)
     Option(pyo3::Py<AnnotatedType>),
     /// CHOICE (`T | U | ...`)
@@ -425,6 +427,52 @@ impl Null {
     }
 }
 
+#[derive(pyo3::FromPyObject)]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct SetOf {
+    pub(crate) inner: pyo3::Py<pyo3::types::PyList>,
+}
+
+#[pyo3::pymethods]
+impl SetOf {
+    #[new]
+    #[pyo3(signature = (inner,))]
+    fn new(inner: pyo3::Py<pyo3::types::PyList>) -> Self {
+        SetOf { inner }
+    }
+
+    pub fn as_list(&self, py: pyo3::Python<'_>) -> pyo3::Py<pyo3::types::PyList> {
+        self.inner.clone_ref(py)
+    }
+
+    fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
+        (**self.inner.bind(py)).eq(other.inner.bind(py))
+    }
+
+    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+        Ok(format!("SetOf({})", self.inner.bind(py).repr()?))
+    }
+
+    // TODO: Once the minimum Python version is >= 3.9, replace this manual
+    // `__class_getitem__` with `#[pyclass(generic)]`, which uses
+    // `pyo3::types::PyGenericAlias` to create `types.GenericAlias` objects.
+    #[classmethod]
+    fn __class_getitem__(
+        cls: &pyo3::Bound<'_, pyo3::types::PyType>,
+        py: pyo3::Python<'_>,
+        item: &pyo3::Bound<'_, pyo3::PyAny>,
+    ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
+        // types.GenericAlias is available from Python 3.9+.
+        // Fall back to typing._GenericAlias for Python 3.8.
+        if let Ok(generic_alias) = crate::types::TYPES_GENERICALIAS.get(py) {
+            Ok(generic_alias.call1((cls, item))?.unbind())
+        } else {
+            let generic_alias = crate::types::TYPING_GENERICALIAS.get(py)?;
+            Ok(generic_alias.call1((cls, (item,)))?.unbind())
+        }
+    }
+}
+
 /// Utility function for converting builtin Python types
 /// to their Rust `Type` equivalent.
 #[pyo3::pyfunction]
@@ -550,6 +598,7 @@ pub(crate) fn is_tag_valid_for_type(
     match type_ {
         Type::Sequence(_, _) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
         Type::SequenceOf(_) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
+        Type::SetOf(_) => check_tag_with_encoding(asn1::SetOf::<()>::TAG, encoding, tag),
         Type::Option(t) => is_tag_valid_for_type(py, tag, t.get().inner.get(), encoding),
         Type::Choice(variants) => variants.bind(py).into_iter().any(|v| {
             is_tag_valid_for_variant(py, tag, v.cast::<Variant>().unwrap().get(), encoding)

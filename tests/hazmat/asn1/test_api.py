@@ -148,6 +148,13 @@ class TestTypesAPI:
             # Padding bits have to be zero
             asn1.BitString(data=b"\x01\x02\x03", padding_bits=2)
 
+    def test_setof_as_list(self) -> None:
+        my_list = [1, 2, 3]
+        assert asn1.SetOf(my_list).as_list() == my_list
+
+    def test_repr_setof(self) -> None:
+        assert repr(asn1.SetOf([1, 2, 3])) == "SetOf([1, 2, 3])"
+
     def test_repr_null(self) -> None:
         assert repr(asn1.Null()) == "Null()"
 
@@ -363,6 +370,9 @@ class TestSequenceAPI:
 
         seq_of = declarative_asn1.Type.SequenceOf(ann_type)
         assert seq_of._0 is ann_type
+
+        set_of = declarative_asn1.Type.SetOf(ann_type)
+        assert set_of._0 is ann_type
 
         my_list: typing.List[int] = list()
         choice = declarative_asn1.Type.Choice(my_list)
