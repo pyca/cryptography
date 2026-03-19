@@ -218,7 +218,9 @@ class PolicyBuilder:
         self, *, ca_policy: ExtensionPolicy, ee_policy: ExtensionPolicy
     ) -> PolicyBuilder: ...
     def revocation_checker(
-        self, revocation_checker: x509.verification.RevocationChecker
+        self,
+        revocation_checker: x509.verification.CRLRevocationChecker
+        | x509.verification.RevocationChecker,
     ) -> PolicyBuilder: ...
     def build_client_verifier(self) -> ClientVerifier: ...
     def build_server_verifier(

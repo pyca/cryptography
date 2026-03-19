@@ -10,7 +10,7 @@ use crate::{
     ValidationResult,
 };
 
-trait CheckRevocation<B: CryptoOps> {
+pub trait CheckRevocation<B: CryptoOps> {
     fn is_revoked(
         &self,
         cert: &VerificationCertificate<'_, B>,
@@ -47,22 +47,6 @@ impl<'a> CrlRevocationChecker<'a> {
     }
 }
 
-/// Wrapper for revocation checkers that dispatches `is_revoked` calls to the inner implementation.
-/// This allows us to avoid trait object-based polymorphism in the verifier.
-pub enum RevocationChecker<'a> {
-    Crl(&'a CrlRevocationChecker<'a>),
-}
+pub type RevocationChecker<'a, B> = dyn CheckRevocation<B> + Send + Sync + 'a;
 
-impl RevocationChecker<'_> {
-    /// Checks the revocation status of the leaf of the provided chain.
-    pub fn is_revoked<B: CryptoOps>(
-        &self,
-        cert: &VerificationCertificate<'_, B>,
-        issuer: &VerificationCertificate<'_, B>,
-        policy: &Policy<'_, B>,
-    ) -> ValidationResult<'_, bool, B> {
-        match self {
-            RevocationChecker::Crl(c) => c.is_revoked(cert, issuer, policy),
-        }
-    }
-}
+impl<'a, B: CryptoOps> RevocationChecker<'a, B> {}

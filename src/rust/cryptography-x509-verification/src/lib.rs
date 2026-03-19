@@ -278,7 +278,7 @@ pub fn verify<'chain, B: CryptoOps>(
     leaf: &VerificationCertificate<'chain, B>,
     intermediates: &[VerificationCertificate<'chain, B>],
     policy: &Policy<'_, B>,
-    revocation_checker: Option<RevocationChecker<'_>>,
+    revocation_checker: Option<&'_ RevocationChecker<'_, B>>,
     store: &Store<'chain, B>,
 ) -> ValidationResult<'chain, Chain<'chain, B>, B> {
     let builder = ChainBuilder::new(intermediates, policy, revocation_checker, store);
@@ -290,7 +290,7 @@ pub fn verify<'chain, B: CryptoOps>(
 struct ChainBuilder<'a, 'chain, B: CryptoOps> {
     intermediates: &'a [VerificationCertificate<'chain, B>],
     policy: &'a Policy<'a, B>,
-    revocation_checker: Option<RevocationChecker<'a>>,
+    revocation_checker: Option<&'a RevocationChecker<'a, B>>,
     store: &'a Store<'chain, B>,
 }
 
@@ -317,7 +317,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     fn new(
         intermediates: &'a [VerificationCertificate<'chain, B>],
         policy: &'a Policy<'a, B>,
-        revocation_checker: Option<RevocationChecker<'a>>,
+        revocation_checker: Option<&'a RevocationChecker<'a, B>>,
         store: &'a Store<'chain, B>,
     ) -> Self {
         Self {
