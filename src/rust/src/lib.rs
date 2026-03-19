@@ -180,8 +180,8 @@ mod _rust {
         #[pymodule_export]
         use crate::x509::verify::{
             PolicyBuilder, PyClientVerifier, PyCriticality, PyCrlRevocationChecker,
-            PyExtensionPolicy, PyPolicy, PyServerVerifier, PyStore, PyVerifiedClient,
-            VerificationError,
+            PyExtensionPolicy, PyPolicy, PyRevocationChecker, PyServerVerifier, PyStore,
+            PyVerifiedClient, VerificationError,
         };
     }
 

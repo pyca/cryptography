@@ -15,8 +15,7 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 mod extension_policy;
 mod policy;
 mod revocation;
-pub(crate) use crate::x509::verify::revocation::PyCrlRevocationChecker;
-use crate::x509::verify::revocation::{build_rust_revocation_checker, PyRevocationChecker};
+pub(crate) use crate::x509::verify::revocation::{PyCrlRevocationChecker, PyRevocationChecker};
 pub(crate) use extension_policy::{PyCriticality, PyExtensionPolicy};
 pub(crate) use policy::PyPolicy;
 
@@ -27,6 +26,7 @@ use crate::types;
 use crate::x509::certificate::Certificate as PyCertificate;
 use crate::x509::common::{datetime_now, py_to_datetime};
 use crate::x509::sign;
+use crate::x509::verify::revocation::build_rust_revocation_checker;
 
 #[derive(Clone)]
 pub(crate) struct PyCryptoOps {}
