@@ -8,7 +8,6 @@ import abc
 import typing
 
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
-from cryptography.x509 import Certificate
 from cryptography.x509.general_name import DNSName, IPAddress
 
 __all__ = [
@@ -46,7 +45,10 @@ class RevocationChecker(rust_x509.RevocationChecker, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def is_revoked(
-        self, leaf: Certificate, issuer: Certificate, policy: Policy
+        self,
+        leaf: rust_x509.Certificate,
+        issuer: rust_x509.Certificate,
+        policy: Policy,
     ) -> bool:
         """
         Returns whether the certificate is revoked or not.
