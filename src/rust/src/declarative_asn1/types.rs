@@ -464,12 +464,10 @@ impl SetOf {
     ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
         // types.GenericAlias is available from Python 3.9+.
         // Fall back to typing._GenericAlias for Python 3.8.
-        let types = py.import("types")?;
-        if let Ok(generic_alias) = types.getattr("GenericAlias") {
+        if let Ok(generic_alias) = crate::types::TYPES_GENERICALIAS.get(py) {
             Ok(generic_alias.call1((cls, item))?.unbind())
         } else {
-            let typing = py.import("typing")?;
-            let generic_alias = typing.getattr("_GenericAlias")?;
+            let generic_alias = crate::types::TYPING_GENERICALIAS.get(py)?;
             Ok(generic_alias.call1((cls, (item,)))?.unbind())
         }
     }
