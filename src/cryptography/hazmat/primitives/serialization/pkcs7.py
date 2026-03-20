@@ -64,9 +64,13 @@ class PKCS7SignatureBuilder:
                 PKCS7HashTypes,
                 padding.PSS | padding.PKCS1v15 | None,
             ]
-        ] = [],
-        additional_certs: list[x509.Certificate] = [],
+        ] = None,
+        additional_certs: list[x509.Certificate] = None,
     ):
+        if signers is None:
+            signers = []
+        if additional_certs is None:
+            additional_certs = []
         self._data = data
         self._signers = signers
         self._additional_certs = additional_certs
