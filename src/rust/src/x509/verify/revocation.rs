@@ -2,10 +2,13 @@ use cryptography_x509_verification::{
     ops::VerificationCertificate,
     policy::Policy,
     revocation::{CheckRevocation, CrlRevocationChecker, RevocationChecker},
-    ValidationResult,
+    ValidationError, ValidationErrorKind, ValidationResult,
 };
 
-use crate::x509::{crl::CertificateRevocationList, verify::PyCryptoOps};
+use crate::x509::{
+    crl::CertificateRevocationList,
+    verify::{PyCryptoOps, VerificationError},
+};
 
 self_cell::self_cell!(
     pub(crate) struct RawPyCrlRevocationChecker {
@@ -58,29 +61,55 @@ impl PyCrlRevocationChecker {
 )]
 pub(crate) struct PyRevocationChecker;
 
+#[pyo3::pymethods]
+impl PyRevocationChecker {
+    #[new]
+    pub fn new(_cls: pyo3::Py<pyo3::PyAny>) -> Self {
+        Self
+    }
+}
+
 impl CheckRevocation<PyCryptoOps> for pyo3::Py<PyRevocationChecker> {
-    fn is_revoked(
+    fn is_revoked<'chain>(
         &self,
-        _cert: &VerificationCertificate<'_, PyCryptoOps>,
-        _issuer: &VerificationCertificate<'_, PyCryptoOps>,
-        _policy: &Policy<'_, PyCryptoOps>,
-    ) -> ValidationResult<'_, bool, PyCryptoOps> {
+        cert: &VerificationCertificate<'chain, PyCryptoOps>,
+        issuer: &VerificationCertificate<'chain, PyCryptoOps>,
+        policy: &Policy<'_, PyCryptoOps>,
+    ) -> ValidationResult<'chain, bool, PyCryptoOps> {
         pyo3::Python::attach(|py| {
-            let _self = self.bind(py);
-            todo!("self_.call_method w/ is_revoked ...")
+            self.call_method1(
+                py,
+                pyo3::intern!(py, "is_revoked"),
+                (cert.extra(), issuer.extra(), &policy.extra),
+            )
+            .map_err(|e| {
+                let kind = if e.is_instance_of::<VerificationError>(py) {
+                    ValidationErrorKind::RevocationNotDetermined::<PyCryptoOps>(e.to_string())
+                } else {
+                    ValidationErrorKind::FatalError::<PyCryptoOps>("the revocation checker threw an exception while checking revocation status")
+                };
+
+                ValidationError::new(kind)
+            })?
+            .extract(py)
+            .map_err(|_e| {
+                ValidationError::new(ValidationErrorKind::FatalError::<PyCryptoOps>(
+                    "the revocation checker returned an invalid non-bool result",
+                ))
+            })
         })
     }
 }
 
+/// Retrieves the underlying native RevocationChecker from the PyRevocationChecker if it exists.
 pub(crate) fn build_rust_revocation_checker<'a>(
     py: pyo3::Python<'a>,
     checker: &'a pyo3::Py<PyRevocationChecker>,
-) -> pyo3::PyResult<&'a RevocationChecker<'a, PyCryptoOps>> {
+) -> &'a RevocationChecker<'a, PyCryptoOps> {
     if let Ok(crl) = checker.cast_bound::<PyCrlRevocationChecker>(py) {
-        return Ok(crl.get().raw.borrow_dependent());
+        return crl.get().raw.borrow_dependent();
     }
 
-    Err(pyo3::exceptions::PyTypeError::new_err(
-        "not a Rust RevocationChecker",
-    ))
+    // this isn't a Rust-native revocation checker, fallthrough.
+    checker
 }

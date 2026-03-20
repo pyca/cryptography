@@ -375,7 +375,7 @@ impl PyClientVerifier {
         let revocation_checker = self
             .revocation_checker
             .as_ref()
-            .map(|c| build_rust_revocation_checker(py, c).unwrap_or(c));
+            .map(|c| build_rust_revocation_checker(py, c));
         let store = self.store.get();
 
         let intermediates = intermediates
@@ -454,7 +454,7 @@ impl PyServerVerifier {
         let revocation_checker = self
             .revocation_checker
             .as_ref()
-            .map(|c| build_rust_revocation_checker(py, c).unwrap_or(c));
+            .map(|c| build_rust_revocation_checker(py, c));
         let store = self.store.get();
 
         let intermediates = intermediates

@@ -16,15 +16,27 @@ from cryptography.x509 import ExtensionType
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.verification import (
     Criticality,
+    CRLRevocationChecker,
     ExtensionPolicy,
     Policy,
     PolicyBuilder,
+    RevocationChecker,
     Store,
     VerificationError,
 )
 from tests.x509.test_x509 import _load_cert
 
 WEBPKI_MINIMUM_RSA_MODULUS = 2048
+
+
+class DummyRevocationChecker(RevocationChecker):
+    def __init__(self, returns: bool) -> None:
+        self._returns = returns
+
+    def is_revoked(
+        self, cert: x509.Certificate, issuer: x509.Certificate, policy: Policy
+    ) -> bool:
+        return self._returns
 
 
 @lru_cache(maxsize=1)
@@ -50,6 +62,11 @@ class TestPolicyBuilder:
     def test_max_chain_depth_already_set(self):
         with pytest.raises(ValueError):
             PolicyBuilder().max_chain_depth(8).max_chain_depth(9)
+
+    def test_revocation_checker_already_set(self):
+        with pytest.raises(ValueError):
+            rc = DummyRevocationChecker(False)
+            PolicyBuilder().revocation_checker(rc).revocation_checker(rc)
 
     def test_ipaddress_subject(self):
         verifier = (
@@ -116,6 +133,12 @@ class TestPolicyBuilder:
             PolicyBuilder().build_server_verifier(DNSName("cryptography.io"))
 
 
+class TestCRLRevocationChecker:
+    def test_revocation_checker_rejects_empty_list(self):
+        with pytest.raises(ValueError):
+            CRLRevocationChecker([])
+
+
 class TestStore:
     def test_store_rejects_empty_list(self):
         with pytest.raises(ValueError):
@@ -151,6 +174,7 @@ class TestClientVerifier:
         builder = builder.time(validation_time).max_chain_depth(
             max_chain_depth
         )
+        builder = builder.revocation_checker(DummyRevocationChecker(False))
         verifier = builder.build_client_verifier()
 
         assert verifier.policy.subject is None
@@ -175,6 +199,30 @@ class TestClientVerifier:
         assert x509.DNSName("www.cryptography.io") in verified_client.subjects
         assert x509.DNSName("cryptography.io") in verified_client.subjects
         assert len(verified_client.subjects) == 2
+
+    def test_verify_fails_revoked(self):
+        # expires 2018-11-16 01:15:03 UTC
+        leaf = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        ca = _load_cert(
+            os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
+            x509.load_pem_x509_certificate,
+        )
+        store = Store([ca])
+
+        validation_time = datetime.datetime.fromisoformat(
+            "2018-11-16T00:00:00+00:00"
+        )
+
+        builder = PolicyBuilder().store(store).time(validation_time)
+        builder = builder.revocation_checker(DummyRevocationChecker(True))
+        verifier = builder.build_client_verifier()
+
+        with pytest.raises(VerificationError):
+            verifier.verify(leaf, [])
 
     def test_verify_fails_renders_oid(self):
         leaf = _load_cert(

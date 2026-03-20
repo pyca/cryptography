@@ -11,12 +11,12 @@ use crate::{
 };
 
 pub trait CheckRevocation<B: CryptoOps> {
-    fn is_revoked(
+    fn is_revoked<'chain>(
         &self,
-        cert: &VerificationCertificate<'_, B>,
-        issuer: &VerificationCertificate<'_, B>,
+        cert: &VerificationCertificate<'chain, B>,
+        issuer: &VerificationCertificate<'chain, B>,
         policy: &Policy<'_, B>,
-    ) -> ValidationResult<'_, bool, B>;
+    ) -> ValidationResult<'chain, bool, B>;
 }
 
 pub struct CrlRevocationChecker<'a> {
@@ -24,12 +24,12 @@ pub struct CrlRevocationChecker<'a> {
 }
 
 impl<'a, B: CryptoOps> CheckRevocation<B> for CrlRevocationChecker<'a> {
-    fn is_revoked(
+    fn is_revoked<'chain>(
         &self,
-        cert: &VerificationCertificate<'_, B>,
-        issuer: &VerificationCertificate<'_, B>,
+        cert: &VerificationCertificate<'chain, B>,
+        issuer: &VerificationCertificate<'chain, B>,
         policy: &Policy<'_, B>,
-    ) -> ValidationResult<'_, bool, B> {
+    ) -> ValidationResult<'chain, bool, B> {
         let _crls = &self.crls;
         let _cert = cert;
         let _issuer = issuer;
@@ -48,5 +48,3 @@ impl<'a> CrlRevocationChecker<'a> {
 }
 
 pub type RevocationChecker<'a, B> = dyn CheckRevocation<B> + Send + Sync + 'a;
-
-impl<'a, B: CryptoOps> RevocationChecker<'a, B> {}

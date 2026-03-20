@@ -166,6 +166,10 @@ def _limbo_testcase(id_, testcase):
         assert testcase["extended_key_usage"] == ["clientAuth"]
         verifier = builder.build_client_verifier()
 
+    # XX(tnytown): xfail until we implement the CRL revocation checker.
+    if crls:
+        pytest.xfail()
+
     if should_pass:
         if isinstance(verifier, ServerVerifier):
             built_chain = verifier.verify(
