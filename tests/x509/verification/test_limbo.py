@@ -166,9 +166,14 @@ def _limbo_testcase(id_, testcase):
         assert testcase["extended_key_usage"] == ["clientAuth"]
         verifier = builder.build_client_verifier()
 
-    # XX(tnytown): xfail until we implement the CRL revocation checker.
+    # XX(tnytown): just run the verifier without caring about its results for
+    # CRL tests. this is just to give us a preview of coverage through limbo
     if crls:
-        pytest.xfail()
+        try:
+            verifier.verify(peer_certificate, untrusted_intermediates)
+        except Exception as _e:
+            pass
+        return
 
     if should_pass:
         if isinstance(verifier, ServerVerifier):
