@@ -301,6 +301,35 @@ class TestBitString:
             asn1.decode_der(asn1.BitString, b"\x03\x02\x08\x00")
 
 
+class TestTLV:
+    def test_ok_decode_tlv(self) -> None:
+        decoded = asn1.decode_der(asn1.TLV, b"\x03\x02\x07\x40")
+        assert isinstance(decoded, asn1.TLV)
+        assert decoded.tag == 3
+        assert bytes(decoded.data) == b"\x07\x40"
+
+    def test_ok_tlv_parse_method(self) -> None:
+        decoded_tlv = asn1.decode_der(asn1.TLV, b"\x30\x03\x02\x01\x09")
+        assert isinstance(decoded_tlv, asn1.TLV)
+
+        @asn1.sequence
+        class Example:
+            foo: int
+
+        decoded_example = decoded_tlv.parse(Example)
+        assert isinstance(decoded_example, Example)
+        assert decoded_example.foo == 9
+
+    def test_fail_encode_tlv(self) -> None:
+        tlv = asn1.decode_der(asn1.TLV, b"\x03\x02\x07\x40")
+        assert isinstance(tlv, asn1.TLV)
+
+        with pytest.raises(
+            NotImplementedError, match="TLV encoding currently not supported"
+        ):
+            asn1.encode_der(tlv)
+
+
 class TestNull:
     def test_ok_null(self) -> None:
         assert_roundtrips([(asn1.Null(), b"\x05\x00")])
@@ -970,6 +999,42 @@ class TestSequence:
                 ),
             ]
         )
+
+    def test_sequence_with_tlv_with_explicit_annotation(
+        self,
+    ) -> None:
+        @asn1.sequence
+        class Example:
+            foo: Annotated[asn1.TLV, asn1.Explicit(0)]
+            bar: Annotated[asn1.TLV, asn1.Explicit(1)]
+
+        encoded = b"\x30\x0a\xa0\x03\x02\x01\x08\xa1\x03\x02\x01\x09"
+        decoded = asn1.decode_der(Example, encoded)
+
+        assert isinstance(decoded.foo, asn1.TLV)
+        assert decoded.foo.tag == 2
+        assert bytes(decoded.foo.data) == b"\x08"
+
+        assert isinstance(decoded.bar, asn1.TLV)
+        assert decoded.bar.tag == 2
+        assert bytes(decoded.bar.data) == b"\x09"
+
+    def test_fail_sequence_with_tlv_with_explicit_annotation(
+        self,
+    ) -> None:
+        @asn1.sequence
+        class Example:
+            foo: Annotated[asn1.TLV, asn1.Explicit(0)]
+            # explicit tag does not match data
+            bar: Annotated[asn1.TLV, asn1.Explicit(3)]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("error parsing asn1 value"),
+        ):
+            asn1.decode_der(
+                Example, b"\x30\x0a\xa0\x03\x02\x01\x08\xa1\x03\x02\x01\x09"
+            )
 
 
 class TestSize:

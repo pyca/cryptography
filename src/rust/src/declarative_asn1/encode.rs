@@ -243,6 +243,11 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 check_size_constraint(&annotation.size, n_bits, "BIT STRING")?;
                 Ok(write_value(writer, &bitstring, encoding)?)
             }
+            Type::Tlv() => Err(CryptographyError::Py(
+                pyo3::exceptions::PyNotImplementedError::new_err(
+                    "TLV encoding currently not supported",
+                ),
+            )),
             Type::Null() => Ok(write_value(writer, &(), encoding)?),
         }
     }
