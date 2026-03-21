@@ -264,7 +264,13 @@ impl IA5String {
 }
 
 #[derive(pyo3::FromPyObject)]
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+// NO-COVERAGE-START
+#[pyo3::pyclass(
+    frozen,
+    name = "UTCTime",
+    module = "cryptography.hazmat.bindings._rust.asn1"
+)]
+// NO-COVERAGE-END
 pub struct UtcTime {
     pub(crate) inner: pyo3::Py<pyo3::types::PyDateTime>,
 }

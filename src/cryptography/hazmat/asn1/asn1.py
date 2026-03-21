@@ -370,7 +370,7 @@ Size = declarative_asn1.Size
 
 PrintableString = declarative_asn1.PrintableString
 IA5String = declarative_asn1.IA5String
-UTCTime = declarative_asn1.UtcTime
+UTCTime = declarative_asn1.UTCTime
 GeneralizedTime = declarative_asn1.GeneralizedTime
 BitString = declarative_asn1.BitString
 Null = declarative_asn1.Null
