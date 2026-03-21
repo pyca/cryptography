@@ -159,12 +159,12 @@ class TestObjectIdentifier:
         )
 
 
-class TestUtcTime:
+class TestUTCTime:
     def test_utc_time(self) -> None:
         assert_roundtrips(
             [
                 (
-                    asn1.UtcTime(
+                    asn1.UTCTime(
                         datetime.datetime(
                             2019,
                             12,
@@ -178,7 +178,7 @@ class TestUtcTime:
                     b"\x17\x0d191216030210Z",
                 ),
                 (
-                    asn1.UtcTime(
+                    asn1.UTCTime(
                         datetime.datetime(
                             1999,
                             1,
@@ -506,7 +506,7 @@ class TestSequence:
             b: typing.Union[int, None]
             c: typing.Union[bytes, None]
             d: typing.Union[asn1.PrintableString, None]
-            e: typing.Union[asn1.UtcTime, None]
+            e: typing.Union[asn1.UTCTime, None]
             f: typing.Union[asn1.GeneralizedTime, None]
             g: typing.Union[typing.List[int], None]
             g2: typing.Union[asn1.SetOf[int], None]
@@ -564,8 +564,8 @@ class TestSequence:
                 asn1.PrintableString, asn1.Default(asn1.PrintableString("a"))
             ]
             d: Annotated[
-                asn1.UtcTime,
-                asn1.Default(asn1.UtcTime(default_time)),
+                asn1.UTCTime,
+                asn1.Default(asn1.UTCTime(default_time)),
             ]
             e: Annotated[
                 asn1.GeneralizedTime,
@@ -602,7 +602,7 @@ class TestSequence:
                         a=3,
                         b=b"\x00",
                         c=asn1.PrintableString("a"),
-                        d=asn1.UtcTime(default_time),
+                        d=asn1.UTCTime(default_time),
                         e=asn1.GeneralizedTime(default_time),
                         f=[1],
                         g=asn1.BitString(data=b"", padding_bits=0),
