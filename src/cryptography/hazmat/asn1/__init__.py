@@ -3,6 +3,7 @@
 # for complete details.
 
 from cryptography.hazmat.asn1.asn1 import (
+    TLV,
     BitString,
     Default,
     Explicit,
@@ -21,6 +22,7 @@ from cryptography.hazmat.asn1.asn1 import (
 )
 
 __all__ = [
+    "TLV",
     "BitString",
     "Default",
     "Explicit",

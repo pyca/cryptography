@@ -156,7 +156,8 @@ mod _rust {
         #[pymodule_export]
         use crate::declarative_asn1::types::{
             non_root_python_to_rust, AnnotatedType, Annotation, BitString, Encoding,
-            GeneralizedTime, IA5String, Null, PrintableString, SetOf, Size, Type, UtcTime, Variant,
+            GeneralizedTime, IA5String, Null, PrintableString, SetOf, Size, Tlv, Type, UtcTime,
+            Variant,
         };
     }
 
