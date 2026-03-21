@@ -163,10 +163,12 @@ def _normalize_field_type(
             )
 
     if hasattr(field_type, "__asn1_root__"):
-        annotated_root = field_type.__asn1_root__
-        if not isinstance(annotated_root, declarative_asn1.AnnotatedType):
-            raise TypeError(f"unsupported root type: {annotated_root}")
-        return annotated_root
+        root_type = field_type.__asn1_root__
+        if not isinstance(root_type, declarative_asn1.Type.Sequence):
+            raise TypeError(f"unsupported root type: {root_type}")
+        return declarative_asn1.AnnotatedType(
+            typing.cast(declarative_asn1.Type, root_type), annotation
+        )
     elif _is_union(field_type):
         union_args = get_type_args(field_type)
         if len(union_args) == 2 and NoneType in union_args:
@@ -278,7 +280,7 @@ def _type_to_variant(
         tag_name = get_type_args(tag_literal)[0]
 
         if hasattr(value_type, "__asn1_root__"):
-            rust_type = value_type.__asn1_root__.inner
+            rust_type = value_type.__asn1_root__
         else:
             rust_type = declarative_asn1.non_root_python_to_rust(value_type)
 
@@ -318,10 +320,7 @@ def _annotate_fields(
 
 def _register_asn1_sequence(cls: type[U]) -> None:
     raw_fields = get_type_hints(cls, include_extras=True)
-    root = declarative_asn1.AnnotatedType(
-        declarative_asn1.Type.Sequence(cls, _annotate_fields(raw_fields)),
-        declarative_asn1.Annotation(),
-    )
+    root = declarative_asn1.Type.Sequence(cls, _annotate_fields(raw_fields))
 
     setattr(cls, "__asn1_root__", root)
 

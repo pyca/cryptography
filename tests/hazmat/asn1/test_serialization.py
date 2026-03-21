@@ -573,6 +573,11 @@ class TestSequence:
         )
 
     def test_ok_sequence_all_types_default(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class MyField:
+            a: int
+
         default_time = datetime.datetime(
             2019,
             12,
@@ -619,6 +624,10 @@ class TestSequence:
                 asn1.Null,
                 asn1.Default(asn1.Null()),
             ]
+            k2: Annotated[
+                MyField,
+                asn1.Default(MyField(a=9)),
+            ]
             z: Annotated[str, asn1.Default("a"), asn1.Implicit(0)]
             only_field_present: Annotated[
                 str, asn1.Default("a"), asn1.Implicit(1)
@@ -639,6 +648,7 @@ class TestSequence:
                         i=default_oid,
                         j=3,
                         k=asn1.Null(),
+                        k2=MyField(a=9),
                         z="a",
                         only_field_present="b",
                     ),
