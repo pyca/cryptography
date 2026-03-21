@@ -276,7 +276,7 @@ impl UtcTime {
     fn new(py: pyo3::Python<'_>, inner: pyo3::Py<pyo3::types::PyDateTime>) -> pyo3::PyResult<Self> {
         if inner.bind(py).get_tzinfo().is_none() {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "invalid UtcTime: cannot initialize with naive datetime object",
+                "invalid UTCTime: cannot initialize with naive datetime object",
             ));
         }
         let (datetime, microseconds) =
@@ -284,11 +284,11 @@ impl UtcTime {
 
         if microseconds.is_some() {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "invalid UtcTime: fractional seconds are not supported",
+                "invalid UTCTime: fractional seconds are not supported",
             ));
         }
         Asn1UtcTime::new(datetime).map_err(|e| {
-            pyo3::exceptions::PyValueError::new_err(format!("invalid UtcTime: {e}"))
+            pyo3::exceptions::PyValueError::new_err(format!("invalid UTCTime: {e}"))
         })?;
         Ok(UtcTime { inner })
     }
@@ -310,7 +310,7 @@ impl UtcTime {
     ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
         pyo3::types::PyString::from_fmt(
             py,
-            format_args!("UtcTime({})", self.inner.bind(py).repr()?),
+            format_args!("UTCTime({})", self.inner.bind(py).repr()?),
         )
     }
 }

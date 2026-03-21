@@ -49,13 +49,13 @@ class TestTypesAPI:
         dt = datetime.datetime(
             2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
         )
-        assert asn1.UtcTime(dt).as_datetime() == dt
+        assert asn1.UTCTime(dt).as_datetime() == dt
 
     def test_repr_utc_time(self) -> None:
         dt = datetime.datetime(
             2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
         )
-        assert repr(asn1.UtcTime(dt)) == f"UtcTime({dt!r})"
+        assert repr(asn1.UTCTime(dt)) == f"UTCTime({dt!r})"
 
     def test_invalid_utc_time(self) -> None:
         with pytest.raises(
@@ -63,19 +63,19 @@ class TestTypesAPI:
             match="cannot initialize with naive datetime object",
         ):
             # We don't allow naive datetime objects
-            asn1.UtcTime(datetime.datetime(2000, 1, 1, 10, 10, 10))
+            asn1.UTCTime(datetime.datetime(2000, 1, 1, 10, 10, 10))
 
-        with pytest.raises(ValueError, match="invalid UtcTime"):
-            # UtcTime does not support dates before 1950
-            asn1.UtcTime(
+        with pytest.raises(ValueError, match="invalid UTCTime"):
+            # UTCTime does not support dates before 1950
+            asn1.UTCTime(
                 datetime.datetime(
                     1940, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
                 )
             )
 
-        with pytest.raises(ValueError, match="invalid UtcTime"):
-            # UtcTime does not support dates after 2050
-            asn1.UtcTime(
+        with pytest.raises(ValueError, match="invalid UTCTime"):
+            # UTCTime does not support dates after 2050
+            asn1.UTCTime(
                 datetime.datetime(
                     2090, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
                 )
@@ -83,10 +83,10 @@ class TestTypesAPI:
 
         with pytest.raises(
             ValueError,
-            match="invalid UtcTime: fractional seconds are not supported",
+            match="invalid UTCTime: fractional seconds are not supported",
         ):
-            # UtcTime does not support fractional seconds
-            asn1.UtcTime(
+            # UTCTime does not support fractional seconds
+            asn1.UTCTime(
                 datetime.datetime(
                     2020,
                     1,
