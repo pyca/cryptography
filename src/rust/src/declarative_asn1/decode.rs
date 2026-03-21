@@ -128,7 +128,7 @@ fn decode_generalized_time<'a>(
         Some(_) => {
             return Err(CryptographyError::Py(
                 pyo3::exceptions::PyValueError::new_err(
-                    "decoded GeneralizedTime data has higher precision than supported".to_string(),
+                    "decoded GeneralizedTime data has higher precision than supported",
                 ),
             ))
         }
@@ -182,7 +182,7 @@ fn decode_choice_with_encoding<'a>(
         Encoding::Implicit(_) => Err(CryptographyError::Py(
             // CHOICEs cannot be IMPLICIT. See X.680 section 31.2.9.
             pyo3::exceptions::PyValueError::new_err(
-                "invalid type definition: CHOICE fields cannot be implicitly encoded".to_string(),
+                "invalid type definition: CHOICE fields cannot be implicitly encoded",
             ),
         ))?,
         Encoding::Explicit(n) => {
@@ -316,7 +316,7 @@ pub(crate) fn decode_annotated_type<'a>(
                 }
                 Err(CryptographyError::Py(
                     pyo3::exceptions::PyValueError::new_err(
-                        "could not find matching variant when parsing CHOICE field".to_string(),
+                        "could not find matching variant when parsing CHOICE field",
                     ),
                 ))?
             }
@@ -337,7 +337,7 @@ pub(crate) fn decode_annotated_type<'a>(
     match &ann_type.annotation.get().default {
         Some(default) if decoded.eq(default.bind(py))? => Err(CryptographyError::Py(
             pyo3::exceptions::PyValueError::new_err(
-                "invalid DER: DEFAULT value was explicitly encoded".to_string(),
+                "invalid DER: DEFAULT value was explicitly encoded",
             ),
         )),
         _ => Ok(decoded),

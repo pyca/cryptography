@@ -144,9 +144,10 @@ def _normalize_field_type(
         )
     ):
         raise TypeError(
-            f"field {field_name} has a SIZE annotation, but SIZE annotations "
-            f"are only supported for fields of types: [SEQUENCE OF, SET OF, "
-            "BIT STRING, OCTET STRING, UTF8String, PrintableString, IA5String]"
+            f"field '{field_name}' has a SIZE annotation, but SIZE "
+            "annotations are only supported for fields of types: "
+            "[SEQUENCE OF, SET OF, BIT STRING, OCTET STRING, UTF8String, "
+            "PrintableString, IA5String]"
         )
 
     if hasattr(field_type, "__asn1_root__"):
