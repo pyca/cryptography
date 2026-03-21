@@ -362,6 +362,10 @@ class TestSequenceAPI:
         assert seq._0 is type(None)
         assert seq._1 == {}
 
+        set = declarative_asn1.Type.Set(type(None), {})
+        assert set._0 is type(None)
+        assert set._1 == {}
+
         ann_type = declarative_asn1.AnnotatedType(
             seq, declarative_asn1.Annotation()
         )
@@ -461,3 +465,69 @@ class TestSequenceAPI:
             @asn1.sequence
             class Example:
                 invalid: typing.Union[asn1.TLV, None]
+
+
+class TestSetAPI:
+    def test_fail_unsupported_field(self) -> None:
+        class Unsupported:
+            foo: int
+
+        with pytest.raises(TypeError, match="cannot handle type"):
+
+            @asn1.set
+            class Example:
+                foo: Unsupported
+
+    def test_fail_init_incorrect_field_name(self) -> None:
+        @asn1.set
+        class Example:
+            foo: int
+
+        with pytest.raises(
+            TypeError, match="got an unexpected keyword argument 'bar'"
+        ):
+            Example(bar=3)  # type: ignore[call-arg]
+
+    def test_fail_init_missing_field_name(self) -> None:
+        @asn1.set
+        class Example:
+            foo: int
+
+        expected_err = (
+            "missing 1 required keyword-only argument: 'foo'"
+            if sys.version_info >= (3, 10)
+            else "missing 1 required positional argument: 'foo'"
+        )
+
+        with pytest.raises(TypeError, match=expected_err):
+            Example()  # type: ignore[call-arg]
+
+    def test_fail_positional_field_initialization(self) -> None:
+        @asn1.set
+        class Example:
+            foo: int
+
+        # The kw-only init is only enforced in Python >= 3.10, which is
+        # when the parameter `kw_only` for `dataclasses.datalass` was
+        # added.
+        if sys.version_info < (3, 10):
+            assert Example(5).foo == 5  # type: ignore[misc]
+        else:
+            with pytest.raises(
+                TypeError,
+                match="takes 1 positional argument but 2 were given",
+            ):
+                Example(5)  # type: ignore[misc]
+
+    def test_fail_malformed_root_type(self) -> None:
+        @asn1.set
+        class Invalid:
+            foo: int
+
+        setattr(Invalid, "__asn1_root__", int)
+
+        with pytest.raises(TypeError, match="unsupported root type"):
+
+            @asn1.set
+            class Example:
+                foo: Invalid

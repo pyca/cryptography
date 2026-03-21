@@ -528,10 +528,16 @@ class TestSequence:
         class MyField:
             a: int
 
+        @asn1.set
+        @_comparable_dataclass
+        class MySetField:
+            a: int
+
         @asn1.sequence
         @_comparable_dataclass
         class Example:
             a: typing.Union[MyField, None]
+            a2: typing.Union[MySetField, None]
             b: typing.Union[int, None]
             c: typing.Union[bytes, None]
             d: typing.Union[asn1.PrintableString, None]
@@ -553,6 +559,7 @@ class TestSequence:
                 (
                     Example(
                         a=None,
+                        a2=None,
                         b=None,
                         c=None,
                         d=None,
@@ -588,6 +595,11 @@ class TestSequence:
             tzinfo=datetime.timezone.utc,
         )
         default_oid = x509.ObjectIdentifier("1.3.6.1.4.1.343")
+
+        @asn1.set
+        @_comparable_dataclass
+        class MySetField:
+            a: int
 
         @asn1.sequence
         @_comparable_dataclass
@@ -628,6 +640,10 @@ class TestSequence:
                 MyField,
                 asn1.Default(MyField(a=9)),
             ]
+            k3: Annotated[
+                MySetField,
+                asn1.Default(MySetField(a=9)),
+            ]
             z: Annotated[str, asn1.Default("a"), asn1.Implicit(0)]
             only_field_present: Annotated[
                 str, asn1.Default("a"), asn1.Implicit(1)
@@ -649,6 +665,7 @@ class TestSequence:
                         j=3,
                         k=asn1.Null(),
                         k2=MyField(a=9),
+                        k3=MySetField(a=9),
                         z="a",
                         only_field_present="b",
                     ),
@@ -1045,6 +1062,77 @@ class TestSequence:
             asn1.decode_der(
                 Example, b"\x30\x0a\xa0\x03\x02\x01\x08\xa1\x03\x02\x01\x09"
             )
+
+
+class TestSet:
+    def test_ok_set_single_field(self) -> None:
+        @asn1.set
+        @_comparable_dataclass
+        class Example:
+            foo: int
+
+        assert_roundtrips([(Example(foo=9), b"\x31\x03\x02\x01\x09")])
+
+    def test_ok_set_multiple_fields(self) -> None:
+        @asn1.set
+        @_comparable_dataclass
+        class Example:
+            foo: int
+            bar: int
+
+        assert_roundtrips(
+            [(Example(foo=6, bar=9), b"\x31\x06\x02\x01\x06\x02\x01\x09")]
+        )
+
+    def test_fail_set_multiple_fields_wrong_order(self) -> None:
+        @asn1.set
+        @_comparable_dataclass
+        class Example:
+            foo: int
+            bar: int
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "invalid SET ordering while performing ASN.1 serialization"
+            ),
+        ):
+            assert_roundtrips(
+                [(Example(foo=9, bar=6), b"\x31\x06\x02\x01\x06\x02\x01\x09")]
+            )
+
+    def test_ok_nested_set(self) -> None:
+        @asn1.set
+        @_comparable_dataclass
+        class Child:
+            foo: int
+
+        @asn1.set
+        @_comparable_dataclass
+        class Parent:
+            foo: Child
+
+        assert_roundtrips(
+            [(Parent(foo=Child(foo=9)), b"\x31\x05\x31\x03\x02\x01\x09")]
+        )
+
+    def test_ok_set_multiple_types(self) -> None:
+        @asn1.set
+        @_comparable_dataclass
+        class Example:
+            a: bool
+            b: int
+            c: bytes
+            d: str
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a=True, b=9, c=b"c", d="d"),
+                    b"\x31\x0c\x01\x01\xff\x02\x01\x09\x04\x01c\x0c\x01d",
+                )
+            ]
+        )
 
 
 class TestSize:

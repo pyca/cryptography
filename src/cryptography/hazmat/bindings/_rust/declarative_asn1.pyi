@@ -14,6 +14,7 @@ def non_root_python_to_rust(cls: type) -> Type: ...
 class Type:
     Sequence: typing.ClassVar[type]
     SequenceOf: typing.ClassVar[type]
+    Set: typing.ClassVar[type]
     SetOf: typing.ClassVar[type]
     Option: typing.ClassVar[type]
     Choice: typing.ClassVar[type]
