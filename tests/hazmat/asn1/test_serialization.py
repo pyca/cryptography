@@ -305,7 +305,7 @@ class TestTLV:
     def test_ok_decode_tlv(self) -> None:
         decoded = asn1.decode_der(asn1.TLV, b"\x03\x02\x07\x40")
         assert isinstance(decoded, asn1.TLV)
-        assert decoded.tag == 3
+        assert decoded.tag_bytes == b"\x03"
         assert bytes(decoded.data) == b"\x07\x40"
 
     def test_ok_tlv_parse_method(self) -> None:
@@ -1012,11 +1012,11 @@ class TestSequence:
         decoded = asn1.decode_der(Example, encoded)
 
         assert isinstance(decoded.foo, asn1.TLV)
-        assert decoded.foo.tag == 2
+        assert decoded.foo.tag_bytes == b"\x02"
         assert bytes(decoded.foo.data) == b"\x08"
 
         assert isinstance(decoded.bar, asn1.TLV)
-        assert decoded.bar.tag == 2
+        assert decoded.bar.tag_bytes == b"\x02"
         assert bytes(decoded.bar.data) == b"\x09"
 
     def test_fail_sequence_with_tlv_with_explicit_annotation(

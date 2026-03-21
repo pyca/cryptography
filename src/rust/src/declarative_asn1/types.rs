@@ -174,7 +174,7 @@ impl Variant {
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
 pub struct Tlv {
     #[pyo3(get)]
-    pub tag: u32,
+    pub tag_bytes: pyo3::Py<pyo3::types::PyBytes>,
 
     // We store the bytes of the entire TLV, and to access the Value part
     // we store the index where it starts.
