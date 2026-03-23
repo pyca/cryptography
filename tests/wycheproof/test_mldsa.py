@@ -61,7 +61,12 @@ def test_mldsa65_sign_seed(backend, wycheproof):
         return
 
     seed = binascii.unhexlify(wycheproof.testgroup["privateSeed"])
-    key = MlDsa65PrivateKey.from_seed_bytes(seed)
+    try:
+        key = MlDsa65PrivateKey.from_seed_bytes(seed)
+    except ValueError:
+        assert wycheproof.invalid
+        assert wycheproof.has_flag("IncorrectPrivateKeyLength")
+        return
     pub = MlDsa65PublicKey.from_public_bytes(
         binascii.unhexlify(wycheproof.testgroup["publicKey"])
     )
