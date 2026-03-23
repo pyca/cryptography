@@ -24,7 +24,9 @@ pub struct PrivateKeyInfo<'a> {
 
 // RFC 9881 Section 6.5
 #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 enum MlDsaPrivateKey<'a> {
     #[implicit(0)]
     Seed(&'a [u8]),
