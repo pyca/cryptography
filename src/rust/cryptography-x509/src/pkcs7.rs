@@ -61,6 +61,49 @@ pub struct SignedData<'a> {
     >,
 }
 
+pub type CertificateSet<'a> = common::Asn1ReadableOrWritable<
+    asn1::SetOf<'a, CertificateChoices<'a>>,
+    asn1::SetOfWriter<'a, CertificateChoices<'a>, Vec<CertificateChoices<'a>>>,
+>;
+
+pub type RevocationInfoChoices<'a> = common::Asn1ReadableOrWritable<
+    asn1::SetOf<'a, RevocationInfoChoice<'a>>,
+    asn1::SetOfWriter<'a, RevocationInfoChoice<'a>, Vec<RevocationInfoChoice<'a>>>,
+>;
+
+#[allow(clippy::large_enum_variant)]
+#[derive(asn1::Asn1Write, asn1::Asn1Read)]
+pub enum CertificateChoices<'a> {
+    Certificate(certificate::Certificate<'a>),
+    #[implicit(0)]
+    ExtendedCertificate(asn1::Sequence<'a>),
+    #[implicit(1)]
+    V1AttrCert(asn1::Sequence<'a>),
+    #[implicit(2)]
+    V2AttrCert(asn1::Sequence<'a>),
+    #[implicit(3)]
+    OtherCertificate(OtherCertificateFormat<'a>),
+}
+
+#[derive(asn1::Asn1Write, asn1::Asn1Read)]
+pub struct OtherCertificateFormat<'a> {
+    pub other_cert_format: asn1::ObjectIdentifier,
+    pub other_cert: asn1::Tlv<'a>,
+}
+
+#[derive(asn1::Asn1Write, asn1::Asn1Read)]
+pub enum RevocationInfoChoice<'a> {
+    Crl(asn1::Sequence<'a>),
+    #[implicit(1)]
+    Other(OtherRevocationInfoFormat<'a>),
+}
+
+#[derive(asn1::Asn1Write, asn1::Asn1Read)]
+pub struct OtherRevocationInfoFormat<'a> {
+    pub other_rev_info_format: asn1::ObjectIdentifier,
+    pub other_rev_info: asn1::Tlv<'a>,
+}
+
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
 pub struct SignerInfo<'a> {
     pub version: u8,
