@@ -1489,7 +1489,7 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         >>> pkcs7.pkcs7_decrypt_pem(enveloped, cert, key, options)
         b'data to encrypt'
 
-    Deserialize and decrypt a PEM-encoded PKCS7E message. PKCS7 (or S/MIME) has multiple versions,
+    Deserialize and decrypt a PEM-encoded PKCS7 message. PKCS7 (or S/MIME) has multiple versions,
     but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
 
     :param data: The data, encoded in PEM format.
@@ -1633,6 +1633,60 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         reduce the size of the signature but requires that the recipient can
         obtain the signer's certificate by other means (for example from a
         previously signed message).
+
+S/MIME Email Example
+~~~~~~~~~~~~~~~~~~~~
+
+The following example demonstrates how to sign and encrypt an email message
+using PKCS7 and S/MIME. This uses Python's built-in :mod:`email` module to
+construct a MIME message, then signs and encrypts it with ``cryptography``.
+
+.. code-block:: python
+
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    from cryptography import x509
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.serialization import pkcs7
+
+    # Load the sender's certificate and private key
+    with open("sender-cert.pem", "rb") as f:
+        sender_cert = x509.load_pem_x509_certificate(f.read())
+    with open("sender-key.pem", "rb") as f:
+        sender_key = serialization.load_pem_private_key(f.read(), password=None)
+
+    # Load the recipient's certificate
+    with open("recipient-cert.pem", "rb") as f:
+        recipient_cert = x509.load_pem_x509_certificate(f.read())
+
+    # Build the email body using Python's email module
+    msg = MIMEMultipart()
+    msg["Subject"] = "Signed and encrypted message"
+    msg["From"] = "sender@example.com"
+    msg["To"] = "recipient@example.com"
+    msg.attach(MIMEText("This is a secret message.", "plain"))
+
+    # Sign the message
+    options = [pkcs7.PKCS7Options.Text]
+    signed = (
+        pkcs7.PKCS7SignatureBuilder()
+        .set_data(msg.as_bytes())
+        .add_signer(sender_cert, sender_key, hashes.SHA256())
+        .sign(serialization.Encoding.SMIME, options)
+    )
+
+    # Encrypt the signed message for the recipient
+    encrypted = (
+        pkcs7.PKCS7EnvelopeBuilder()
+        .set_data(signed)
+        .add_recipient(recipient_cert)
+        .encrypt(serialization.Encoding.SMIME, options)
+    )
+
+    # ``encrypted`` contains the S/MIME message ready to be sent via email.
+    # The recipient can decrypt it with ``pkcs7_decrypt_smime`` and then
+    # verify the signature using the standard ``smime`` verification flow.
 
 Serialization Formats
 ~~~~~~~~~~~~~~~~~~~~~
