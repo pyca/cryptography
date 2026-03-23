@@ -190,6 +190,12 @@ impl fmt::Display for CryptographyError {
                     "failed to allocate memory while performing ASN.1 serialization"
                 )
             }
+            CryptographyError::Asn1Write(asn1::WriteError::InvalidSetOrdering) => {
+                write!(
+                    f,
+                    "invalid SET ordering while performing ASN.1 serialization"
+                )
+            }
             CryptographyError::KeyParsing(asn1_error) => {
                 write!(
                     f,
@@ -221,6 +227,9 @@ impl From<CryptographyError> for pyo3::PyErr {
             }
             CryptographyError::Asn1Write(asn1::WriteError::AllocationError) => {
                 pyo3::exceptions::PyMemoryError::new_err(e.to_string())
+            }
+            CryptographyError::Asn1Write(asn1::WriteError::InvalidSetOrdering) => {
+                pyo3::exceptions::PyValueError::new_err(e.to_string())
             }
             CryptographyError::Py(py_error) => py_error,
             CryptographyError::OpenSSL(ref error_stack) => pyo3::Python::attach(|py| {
@@ -332,6 +341,12 @@ mod tests {
             let py_error = pyo3::exceptions::PyRuntimeError::new_err("abc");
             let e: CryptographyError = py_error.clone_ref(py).into();
             assert!(e.to_string() == py_error.to_string());
+
+            let ordering_error = CryptographyError::Asn1Write(asn1::WriteError::InvalidSetOrdering);
+            assert!(
+                "invalid SET ordering while performing ASN.1 serialization"
+                    == ordering_error.to_string()
+            );
         })
     }
 
@@ -346,6 +361,14 @@ mod tests {
             ));
             let py_e: pyo3::PyErr = e.into();
             assert!(py_e.is_instance_of::<pyo3::exceptions::PyMemoryError>(py));
+
+            let e: CryptographyError = asn1::WriteError::InvalidSetOrdering.into();
+            assert!(matches!(
+                e,
+                CryptographyError::Asn1Write(asn1::WriteError::InvalidSetOrdering)
+            ));
+            let py_e: pyo3::PyErr = e.into();
+            assert!(py_e.is_instance_of::<pyo3::exceptions::PyValueError>(py));
 
             let e: CryptographyError = pyo3::CastError::new(
                 py.None().bind(py).as_borrowed(),

@@ -8,11 +8,15 @@ from cryptography.utils import Buffer
 class KEM:
     X25519: KEM
     P256: KEM
+    P384: KEM
+    P521: KEM
 
 class KDF:
     HKDF_SHA256: KDF
     HKDF_SHA384: KDF
     HKDF_SHA512: KDF
+    SHAKE128: KDF
+    SHAKE256: KDF
 
 class AEAD:
     AES_128_GCM: AEAD

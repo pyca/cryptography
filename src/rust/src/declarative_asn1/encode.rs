@@ -9,12 +9,13 @@ use crate::declarative_asn1::types::{
     check_size_constraint, AnnotatedType, AnnotatedTypeObject, BitString, Encoding,
     GeneralizedTime, IA5String, PrintableString, Type, UtcTime, Variant,
 };
+use crate::error::CryptographyError;
 
 fn write_value<T: SimpleAsn1Writable>(
     writer: &mut Writer<'_>,
     value: &T,
     encoding: &Option<pyo3::Py<Encoding>>,
-) -> Result<(), asn1::WriteError> {
+) -> Result<(), T::Error> {
     match encoding {
         Some(e) => match e.get() {
             Encoding::Implicit(tag) => writer.write_implicit_element(value, *tag),
@@ -25,11 +26,12 @@ fn write_value<T: SimpleAsn1Writable>(
 }
 
 impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
+    type Error = CryptographyError;
     fn encoded_length(&self) -> Option<usize> {
         None
     }
 
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), asn1::WriteError> {
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), Self::Error> {
         let value: pyo3::Bound<'_, pyo3::PyAny> = self.value.clone();
         let py = value.py();
         let annotated_type = self.annotated_type;
@@ -37,10 +39,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
         // Handle DEFAULT annotation if value is same as default (by
         // not encoding the value)
         if let Some(default) = &annotated_type.annotation.get().default {
-            if value
-                .eq(default)
-                .map_err(|_| asn1::WriteError::AllocationError)?
-            {
+            if value.eq(default)? {
                 return Ok(());
             }
         }
@@ -53,18 +52,11 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 writer,
                 &asn1::SequenceWriter::new(&|w| {
                     for (name, ann_type) in fields.bind(py).into_iter() {
-                        let name = name
-                            .cast::<pyo3::types::PyString>()
-                            .map_err(|_| asn1::WriteError::AllocationError)?;
-                        let ann_type = ann_type
-                            .cast::<AnnotatedType>()
-                            .map_err(|_| asn1::WriteError::AllocationError)?;
+                        let name = name.cast::<pyo3::types::PyString>()?;
+                        let ann_type = ann_type.cast::<AnnotatedType>()?;
                         let object = AnnotatedTypeObject {
                             annotated_type: ann_type.get(),
-                            value: self
-                                .value
-                                .getattr(name)
-                                .map_err(|_| asn1::WriteError::AllocationError)?,
+                            value: self.value.getattr(name)?,
                         };
                         w.write_element(&object)?;
                     }
@@ -74,8 +66,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
             ),
             Type::SequenceOf(cls) => {
                 let values: Vec<AnnotatedTypeObject<'_>> = value
-                    .cast::<pyo3::types::PyList>()
-                    .map_err(|_| asn1::WriteError::AllocationError)?
+                    .cast::<pyo3::types::PyList>()?
                     .iter()
                     .map(|e| AnnotatedTypeObject {
                         annotated_type: cls.get(),
@@ -83,10 +74,26 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     })
                     .collect();
 
-                check_size_constraint(&annotation.size, values.len(), "SEQUENCE OF")
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                check_size_constraint(&annotation.size, values.len(), "SEQUENCE OF")?;
 
                 write_value(writer, &asn1::SequenceOfWriter::new(values), encoding)
+            }
+            Type::SetOf(cls) => {
+                let setof = value.cast::<super::types::SetOf>()?;
+                let values: Vec<AnnotatedTypeObject<'_>> = setof
+                    .get()
+                    .inner
+                    .bind(py)
+                    .iter()
+                    .map(|e| AnnotatedTypeObject {
+                        annotated_type: cls.get(),
+                        value: e,
+                    })
+                    .collect();
+
+                check_size_constraint(&annotation.size, values.len(), "SET OF")?;
+
+                write_value(writer, &asn1::SetOfWriter::new(values), encoding)
             }
             Type::Option(cls) => {
                 if !value.is_none() {
@@ -107,10 +114,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
             }
             Type::Choice(ts) => {
                 for t in ts.bind(py) {
-                    let variant = t
-                        .cast::<Variant>()
-                        .map_err(|_| asn1::WriteError::AllocationError)?
-                        .get();
+                    let variant = t.cast::<Variant>()?.get();
 
                     if !value.is_exact_instance(variant.python_class.bind(py)) {
                         continue;
@@ -119,11 +123,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     // Check if this variant matches the value
                     let matches = match &variant.tag_name {
                         Some(expected_tag) => {
-                            let value_tag: String = value
-                                .getattr("tag")
-                                .map_err(|_| asn1::WriteError::AllocationError)?
-                                .extract()
-                                .map_err(|_| asn1::WriteError::AllocationError)?;
+                            let value_tag: String = value.getattr("tag")?.extract()?;
                             &value_tag == expected_tag
                         }
                         None => true,
@@ -131,9 +131,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
 
                     if matches {
                         let val = if variant.tag_name.is_some() {
-                            value
-                                .getattr("value")
-                                .map_err(|_| asn1::WriteError::AllocationError)?
+                            value.getattr("value")?
                         } else {
                             value
                         };
@@ -145,7 +143,11 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                             Some(e) => match e.get() {
                                 // CHOICEs cannot be IMPLICIT. See X.680 section 31.2.9.
                                 Encoding::Implicit(_) => {
-                                    return Err(asn1::WriteError::AllocationError)
+                                    return Err(CryptographyError::Py(
+                                        pyo3::exceptions::PyValueError::new_err(
+                                            "CHOICE fields cannot be IMPLICIT".to_string(),
+                                        ),
+                                    ));
                                 }
                                 Encoding::Explicit(n) => {
                                     return writer.write_explicit_element(&object, *n)
@@ -156,113 +158,97 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     }
                 }
                 // No matching variant found
-                Err(asn1::WriteError::AllocationError)
+                Err(CryptographyError::Py(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "value for CHOICE field does not correspond to any of the variant types"
+                            .to_string(),
+                    ),
+                ))
             }
             Type::PyBool() => {
-                let val: bool = value
-                    .extract()
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &val, encoding)
+                let val: bool = value.extract()?;
+                Ok(write_value(writer, &val, encoding)?)
             }
             Type::PyInt() => {
-                let val: i64 = value
-                    .extract()
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &val, encoding)
+                let val: i64 = value.extract()?;
+                Ok(write_value(writer, &val, encoding)?)
             }
             Type::PyBytes() => {
-                let val: &[u8] = value
-                    .extract()
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                check_size_constraint(&annotation.size, val.len(), "OCTET STRING")
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &val, encoding)
+                let val: &[u8] = value.extract()?;
+                check_size_constraint(&annotation.size, val.len(), "OCTET STRING")?;
+                Ok(write_value(writer, &val, encoding)?)
             }
             Type::PyStr() => {
-                let val: pyo3::pybacked::PyBackedStr = value
-                    .extract()
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let val: pyo3::pybacked::PyBackedStr = value.extract()?;
                 let asn1_string: asn1::Utf8String<'_> = asn1::Utf8String::new(&val);
-                check_size_constraint(&annotation.size, val.len(), "UTF8String")
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &asn1_string, encoding)
+                check_size_constraint(&annotation.size, val.len(), "UTF8String")?;
+                Ok(write_value(writer, &asn1_string, encoding)?)
             }
             Type::PrintableString() => {
-                let val: &pyo3::Bound<'_, PrintableString> = value
-                    .cast()
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let val: &pyo3::Bound<'_, PrintableString> = value.cast()?;
                 // TODO: Switch this to `to_str()` once our minimum version is py310+
-                let inner_str = val
-                    .get()
-                    .inner
-                    .to_cow(py)
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                check_size_constraint(&annotation.size, inner_str.len(), "PrintableString")
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let inner_str = val.get().inner.to_cow(py)?;
+                check_size_constraint(&annotation.size, inner_str.len(), "PrintableString")?;
                 let printable_string: asn1::PrintableString<'_> =
-                    asn1::PrintableString::new(&inner_str)
-                        .ok_or(asn1::WriteError::AllocationError)?;
-                write_value(writer, &printable_string, encoding)
+                    asn1::PrintableString::new(&inner_str).ok_or(CryptographyError::Py(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "invalid value for PrintableString".to_string(),
+                        ),
+                    ))?;
+
+                Ok(write_value(writer, &printable_string, encoding)?)
             }
             Type::IA5String() => {
-                let val: &pyo3::Bound<'_, IA5String> = value
-                    .cast()
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let val: &pyo3::Bound<'_, IA5String> = value.cast()?;
                 // TODO: Switch this to `to_str()` once our minimum version is py310+
-                let inner_str = val
-                    .get()
-                    .inner
-                    .to_cow(py)
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                check_size_constraint(&annotation.size, inner_str.len(), "IA5String")
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                let ia5_string: asn1::IA5String<'_> =
-                    asn1::IA5String::new(&inner_str).ok_or(asn1::WriteError::AllocationError)?;
-                write_value(writer, &ia5_string, encoding)
+                let inner_str = val.get().inner.to_cow(py)?;
+                check_size_constraint(&annotation.size, inner_str.len(), "IA5String")?;
+                let ia5_string: asn1::IA5String<'_> = asn1::IA5String::new(&inner_str).ok_or(
+                    CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
+                        "invalid value for IA5String".to_string(),
+                    )),
+                )?;
+                Ok(write_value(writer, &ia5_string, encoding)?)
             }
             Type::ObjectIdentifier() => {
-                let val: &pyo3::Bound<'_, crate::oid::ObjectIdentifier> = value
-                    .cast()
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &val.get().oid, encoding)
+                let val: &pyo3::Bound<'_, crate::oid::ObjectIdentifier> = value.cast()?;
+                Ok(write_value(writer, &val.get().oid, encoding)?)
             }
             Type::UtcTime() => {
-                let val: &pyo3::Bound<'_, UtcTime> = value
-                    .cast()
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let val: &pyo3::Bound<'_, UtcTime> = value.cast()?;
                 let py_datetime = val.get().inner.bind(py).clone();
-                let datetime = crate::x509::py_to_datetime(py, py_datetime)
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                let utc_time =
-                    asn1::UtcTime::new(datetime).map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &utc_time, encoding)
+                let datetime = crate::x509::py_to_datetime(py, py_datetime)?;
+                let utc_time = asn1::UtcTime::new(datetime)?;
+                Ok(write_value(writer, &utc_time, encoding)?)
             }
             Type::GeneralizedTime() => {
-                let val: &pyo3::Bound<'_, GeneralizedTime> = value
-                    .cast()
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let val: &pyo3::Bound<'_, GeneralizedTime> = value.cast()?;
                 let py_datetime = val.get().inner.bind(py).clone();
                 let (datetime, microseconds) =
-                    crate::x509::py_to_datetime_with_microseconds(py, py_datetime)
-                        .map_err(|_| asn1::WriteError::AllocationError)?;
+                    crate::x509::py_to_datetime_with_microseconds(py, py_datetime)?;
                 let nanoseconds = microseconds.map(|m| m * 1000);
-                let generalized_time = asn1::GeneralizedTime::new(datetime, nanoseconds)
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &generalized_time, encoding)
+                let generalized_time = asn1::GeneralizedTime::new(datetime, nanoseconds)?;
+                Ok(write_value(writer, &generalized_time, encoding)?)
             }
             Type::BitString() => {
-                let val: &pyo3::Bound<'_, BitString> = value
-                    .cast()
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
+                let val: &pyo3::Bound<'_, BitString> = value.cast()?;
                 let bitstring: asn1::BitString<'_> =
                     asn1::BitString::new(val.get().data.as_bytes(py), val.get().padding_bits)
-                        .ok_or(asn1::WriteError::AllocationError)?;
+                        .ok_or(CryptographyError::Py(
+                            pyo3::exceptions::PyValueError::new_err(
+                                "invalid value for BitString".to_string(),
+                            ),
+                        ))?;
                 let n_bits = bitstring.as_bytes().len() * 8 - usize::from(bitstring.padding_bits());
-                check_size_constraint(&annotation.size, n_bits, "BIT STRING")
-                    .map_err(|_| asn1::WriteError::AllocationError)?;
-                write_value(writer, &bitstring, encoding)
+                check_size_constraint(&annotation.size, n_bits, "BIT STRING")?;
+                Ok(write_value(writer, &bitstring, encoding)?)
             }
-            Type::Null() => write_value(writer, &(), encoding),
+            Type::Tlv() => Err(CryptographyError::Py(
+                pyo3::exceptions::PyNotImplementedError::new_err(
+                    "TLV encoding currently not supported",
+                ),
+            )),
+            Type::Null() => Ok(write_value(writer, &(), encoding)?),
         }
     }
 }
