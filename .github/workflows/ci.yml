@@ -40,10 +40,10 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.1"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.1.2"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.1"}}
-          # Latest commit on the BoringSSL main branch, as of Mar 12, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "488e3e2e187596ffb615c923b8bd8433647d2bd0"}}
-          # Latest tag of AWS-LC main branch, as of Mar 12, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.70.0"}}
+          # Latest commit on the BoringSSL main branch, as of Mar 23, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "031e739fceefd9fc14ae141a222778b57917cd44"}}
+          # Latest tag of AWS-LC main branch, as of Mar 20, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.71.0"}}
           # Latest commit on the OpenSSL master branch, as of Sep 04, 2025.
           - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "ceb45f64bde3d299c7ef529e5cd5372e4a421366"}}
           # Builds with various Rust versions. Includes MSRV and next
@@ -416,13 +416,13 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Feb 28, 2026.
-            REF: 8b4c66b1b5649ce046665b151772d40c1cddd66a
+            # Latest commit on the pyopenssl main branch, as of Mar 17, 2026.
+            REF: f72218efff8a1e3e7ae4683793ad36d2f9610976
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
-            # Latest release tag of pyopenssl-release, as of Sep 18, 2025.
-            REF: 25.3.0
+            # Latest release tag of pyopenssl-release, as of Mar 16, 2026.
+            REF: 26.0.0
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
@@ -441,8 +441,8 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Mar 12, 2026.
-            REF: e9f3c986a29c0cbf46e5e6bdac9f3872878896c0
+            # Latest commit on the certbot main branch, as of Mar 21, 2026.
+            REF: 9599364837459b6dea19589b3e65be65f63a1950
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -451,18 +451,18 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Mar 09, 2026.
-            REF: 2a7bb7ba05a9a1c14b4fd7674d5356bc665a4182
+            # Latest commit on the mitmproxy main branch, as of Mar 18, 2026.
+            REF: b5d14444c655c0a0e21c6ba8914539a13f84d103
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Mar 12, 2026.
-            REF: dbaaf69802570af278e92589686c62b153ed1187
+            # Latest commit on the scapy master branch, as of Mar 20, 2026.
+            REF: b1add1f796b4f28f0ff29d6b81480a9cd0ac8b85
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Mar 12, 2026.
-            REF: 2e9be1a44fde706a7b4bce5e160ffc445670f57d
+            # Latest commit on the sigstore-python main branch, as of Mar 23, 2026.
+            REF: c34d993175f2b54933d66e570a29f5c72342cbc2
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
@@ -542,7 +542,7 @@ jobs:
         if: ${{ always() }}
       - name: Download coverage data
         if: ${{ always() }}
-        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: coverage-data-*
           merge-multiple: true

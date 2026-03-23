@@ -8,8 +8,8 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
     check_size_constraint, is_tag_valid_for_type, is_tag_valid_for_variant, AnnotatedType,
-    Annotation, BitString, Encoding, GeneralizedTime, IA5String, Null, PrintableString, Type,
-    UtcTime, Variant,
+    Annotation, BitString, Encoding, GeneralizedTime, IA5String, Null, PrintableString, SetOf, Tlv,
+    Type, UtcTime, Variant,
 };
 use crate::error::CryptographyError;
 
@@ -128,7 +128,7 @@ fn decode_generalized_time<'a>(
         Some(_) => {
             return Err(CryptographyError::Py(
                 pyo3::exceptions::PyValueError::new_err(
-                    "decoded GeneralizedTime data has higher precision than supported".to_string(),
+                    "decoded GeneralizedTime data has higher precision than supported",
                 ),
             ))
         }
@@ -161,6 +161,33 @@ fn decode_bitstring<'a>(
     )?)
 }
 
+fn decode_tlv<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, Tlv>> {
+    let tlv = match encoding {
+        Some(e) => match e.get() {
+            Encoding::Implicit(_) => Err(CryptographyError::Py(
+                // We don't support IMPLICIT TLV
+                pyo3::exceptions::PyValueError::new_err(
+                    "invalid type definition: TLV/ANY fields cannot be implicitly encoded",
+                ),
+            ))?,
+            Encoding::Explicit(n) => parser.read_explicit_element::<asn1::Tlv<'_>>(*n),
+        },
+        None => parser.read_element::<asn1::Tlv<'_>>(),
+    }?;
+    Ok(pyo3::Bound::new(
+        py,
+        Tlv {
+            tag_bytes: pyo3::types::PyBytes::new(py, tlv.tag_bytes()).unbind(),
+            data_index: tlv.full_data().len() - tlv.data().len(),
+            full_data: pyo3::types::PyBytes::new(py, tlv.full_data()).unbind(),
+        },
+    )?)
+}
+
 fn decode_null<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -182,7 +209,7 @@ fn decode_choice_with_encoding<'a>(
         Encoding::Implicit(_) => Err(CryptographyError::Py(
             // CHOICEs cannot be IMPLICIT. See X.680 section 31.2.9.
             pyo3::exceptions::PyValueError::new_err(
-                "invalid type definition: CHOICE fields cannot be implicitly encoded".to_string(),
+                "invalid type definition: CHOICE fields cannot be implicitly encoded",
             ),
         ))?,
         Encoding::Explicit(n) => {
@@ -259,6 +286,26 @@ pub(crate) fn decode_annotated_type<'a>(
                 Ok(list.into_any())
             })?
         }
+        Type::SetOf(cls) => {
+            let setof_parse_result = read_value::<asn1::Set<'_>>(parser, encoding)?;
+
+            setof_parse_result.parse(|d| -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
+                let inner_ann_type = cls.get();
+                let list = pyo3::types::PyList::empty(py);
+                while !d.is_empty() {
+                    let val = decode_annotated_type(py, d, inner_ann_type)?;
+                    list.append(val)?;
+                }
+                check_size_constraint(&annotation.size, list.len(), "SET OF")?;
+                Ok(pyo3::Bound::new(
+                    py,
+                    SetOf {
+                        inner: list.unbind(),
+                    },
+                )?
+                .into_any())
+            })?
+        }
         Type::Option(cls) => {
             match parser.peek_tag() {
                 Some(t) if is_tag_valid_for_type(py, t, cls.get().inner.get(), encoding) => {
@@ -296,7 +343,7 @@ pub(crate) fn decode_annotated_type<'a>(
                 }
                 Err(CryptographyError::Py(
                     pyo3::exceptions::PyValueError::new_err(
-                        "could not find matching variant when parsing CHOICE field".to_string(),
+                        "could not find matching variant when parsing CHOICE field",
                     ),
                 ))?
             }
@@ -311,13 +358,14 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::UtcTime() => decode_utc_time(py, parser, encoding)?.into_any(),
         Type::GeneralizedTime() => decode_generalized_time(py, parser, encoding)?.into_any(),
         Type::BitString() => decode_bitstring(py, parser, annotation)?.into_any(),
+        Type::Tlv() => decode_tlv(py, parser, encoding)?.into_any(),
         Type::Null() => decode_null(py, parser, encoding)?.into_any(),
     };
 
     match &ann_type.annotation.get().default {
         Some(default) if decoded.eq(default.bind(py))? => Err(CryptographyError::Py(
             pyo3::exceptions::PyValueError::new_err(
-                "invalid DER: DEFAULT value was explicitly encoded".to_string(),
+                "invalid DER: DEFAULT value was explicitly encoded",
             ),
         )),
         _ => Ok(decoded),
@@ -350,6 +398,21 @@ mod tests {
             let error = result.unwrap_err();
             assert!(format!("{error}")
                 .contains("invalid type definition: CHOICE fields cannot be implicitly encoded"));
+        });
+    }
+
+    #[test]
+    fn test_decode_implicit_tlv() {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| {
+            let result = asn1::parse(&[], |parser| {
+                let encoding = pyo3::Py::new(py, Encoding::Implicit(0)).ok();
+                super::decode_tlv(py, parser, &encoding)
+            });
+            assert!(result.is_err());
+            let error = result.unwrap_err();
+            assert!(format!("{error}")
+                .contains("invalid type definition: TLV/ANY fields cannot be implicitly encoded"));
         });
     }
 }

@@ -6,7 +6,7 @@ use asn1::{
     IA5String as Asn1IA5String, PrintableString as Asn1PrintableString, SimpleAsn1Readable,
     UtcTime as Asn1UtcTime,
 };
-use pyo3::types::{PyAnyMethods, PyTzInfoAccess};
+use pyo3::types::{PyAnyMethods, PySequenceMethods, PyTzInfoAccess};
 use pyo3::{IntoPyObject, PyTypeInfo};
 
 use crate::error::CryptographyError;
@@ -23,6 +23,8 @@ pub enum Type {
     Sequence(pyo3::Py<pyo3::types::PyType>, pyo3::Py<pyo3::types::PyDict>),
     /// SEQUENCE OF (`list[`T`]`)
     SequenceOf(pyo3::Py<AnnotatedType>),
+    /// SET OF (`list[`T`]`)
+    SetOf(pyo3::Py<AnnotatedType>),
     /// OPTIONAL (`T | None`)
     Option(pyo3::Py<AnnotatedType>),
     /// CHOICE (`T | U | ...`)
@@ -51,6 +53,8 @@ pub enum Type {
     GeneralizedTime(),
     /// BIT STRING (`bytes`)
     BitString(),
+    /// ANY (parsed as a TLV)
+    Tlv(),
     /// NULL
     Null(),
 }
@@ -167,6 +171,39 @@ impl Variant {
     }
 }
 
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct Tlv {
+    #[pyo3(get)]
+    pub tag_bytes: pyo3::Py<pyo3::types::PyBytes>,
+
+    // We store the bytes of the entire TLV, and to access the Value part
+    // we store the index where it starts.
+    pub data_index: usize,
+    pub full_data: pyo3::Py<pyo3::types::PyBytes>,
+}
+
+#[pyo3::pymethods]
+impl Tlv {
+    pub fn parse<'p>(
+        &'p self,
+        py: pyo3::Python<'p>,
+        class: &pyo3::Bound<'p, pyo3::types::PyType>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        crate::declarative_asn1::asn1::decode_der(py, class, self.full_data.as_bytes(py))
+    }
+
+    #[getter]
+    pub fn data<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::types::PyMemoryView>> {
+        let mem_view = pyo3::types::PyMemoryView::from(self.full_data.bind(py))?;
+        let seq = mem_view.cast::<pyo3::types::PySequence>().unwrap();
+        let slice = seq.get_slice(self.data_index, seq.len()?)?;
+        pyo3::types::PyMemoryView::from(&slice)
+    }
+}
+
 // TODO: Once the minimum Python version is >= 3.10, use a `self_cell`
 // to store the owned PyString along with the dependent Asn1PrintableString
 // in order to avoid verifying the string twice (once during construction,
@@ -262,7 +299,13 @@ impl IA5String {
 }
 
 #[derive(pyo3::FromPyObject)]
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+// NO-COVERAGE-START
+#[pyo3::pyclass(
+    frozen,
+    name = "UTCTime",
+    module = "cryptography.hazmat.bindings._rust.asn1"
+)]
+// NO-COVERAGE-END
 pub struct UtcTime {
     pub(crate) inner: pyo3::Py<pyo3::types::PyDateTime>,
 }
@@ -274,7 +317,7 @@ impl UtcTime {
     fn new(py: pyo3::Python<'_>, inner: pyo3::Py<pyo3::types::PyDateTime>) -> pyo3::PyResult<Self> {
         if inner.bind(py).get_tzinfo().is_none() {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "invalid UtcTime: cannot initialize with naive datetime object",
+                "invalid UTCTime: cannot initialize with naive datetime object",
             ));
         }
         let (datetime, microseconds) =
@@ -282,11 +325,11 @@ impl UtcTime {
 
         if microseconds.is_some() {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "invalid UtcTime: fractional seconds are not supported",
+                "invalid UTCTime: fractional seconds are not supported",
             ));
         }
         Asn1UtcTime::new(datetime).map_err(|e| {
-            pyo3::exceptions::PyValueError::new_err(format!("invalid UtcTime: {e}"))
+            pyo3::exceptions::PyValueError::new_err(format!("invalid UTCTime: {e}"))
         })?;
         Ok(UtcTime { inner })
     }
@@ -308,7 +351,7 @@ impl UtcTime {
     ) -> pyo3::PyResult<pyo3::Bound<'py, pyo3::types::PyString>> {
         pyo3::types::PyString::from_fmt(
             py,
-            format_args!("UtcTime({})", self.inner.bind(py).repr()?),
+            format_args!("UTCTime({})", self.inner.bind(py).repr()?),
         )
     }
 }
@@ -425,6 +468,52 @@ impl Null {
     }
 }
 
+#[derive(pyo3::FromPyObject)]
+#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+pub struct SetOf {
+    pub(crate) inner: pyo3::Py<pyo3::types::PyList>,
+}
+
+#[pyo3::pymethods]
+impl SetOf {
+    #[new]
+    #[pyo3(signature = (inner,))]
+    fn new(inner: pyo3::Py<pyo3::types::PyList>) -> Self {
+        SetOf { inner }
+    }
+
+    pub fn as_list(&self, py: pyo3::Python<'_>) -> pyo3::Py<pyo3::types::PyList> {
+        self.inner.clone_ref(py)
+    }
+
+    fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
+        (**self.inner.bind(py)).eq(other.inner.bind(py))
+    }
+
+    fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
+        Ok(format!("SetOf({})", self.inner.bind(py).repr()?))
+    }
+
+    // TODO: Once the minimum Python version is >= 3.9, replace this manual
+    // `__class_getitem__` with `#[pyclass(generic)]`, which uses
+    // `pyo3::types::PyGenericAlias` to create `types.GenericAlias` objects.
+    #[classmethod]
+    fn __class_getitem__(
+        cls: &pyo3::Bound<'_, pyo3::types::PyType>,
+        py: pyo3::Python<'_>,
+        item: &pyo3::Bound<'_, pyo3::PyAny>,
+    ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
+        // types.GenericAlias is available from Python 3.9+.
+        // Fall back to typing._GenericAlias for Python 3.8.
+        if let Ok(generic_alias) = crate::types::TYPES_GENERICALIAS.get(py) {
+            Ok(generic_alias.call1((cls, item))?.unbind())
+        } else {
+            let generic_alias = crate::types::TYPING_GENERICALIAS.get(py)?;
+            Ok(generic_alias.call1((cls, (item,)))?.unbind())
+        }
+    }
+}
+
 /// Utility function for converting builtin Python types
 /// to their Rust `Type` equivalent.
 #[pyo3::pyfunction]
@@ -452,6 +541,8 @@ pub fn non_root_python_to_rust<'p>(
         Type::GeneralizedTime().into_pyobject(py)
     } else if class.is(BitString::type_object(py)) {
         Type::BitString().into_pyobject(py)
+    } else if class.is(Tlv::type_object(py)) {
+        Type::Tlv().into_pyobject(py)
     } else if class.is(Null::type_object(py)) {
         Type::Null().into_pyobject(py)
     } else {
@@ -491,7 +582,17 @@ pub(crate) fn python_class_to_annotated<'p>(
 ) -> pyo3::PyResult<pyo3::Bound<'p, AnnotatedType>> {
     if let Ok(root) = class.getattr("__asn1_root__") {
         // Handle decorated classes
-        Ok(root.cast_into::<AnnotatedType>()?)
+        AnnotatedType {
+            inner: root.cast_into::<Type>()?.unbind(),
+            annotation: Annotation {
+                default: None,
+                encoding: None,
+                size: None,
+            }
+            .into_pyobject(py)?
+            .unbind(),
+        }
+        .into_pyobject(py)
     } else {
         // Handle builtin types
         pyo3::Bound::new(py, non_root_type_to_annotated(py, class)?)
@@ -550,6 +651,7 @@ pub(crate) fn is_tag_valid_for_type(
     match type_ {
         Type::Sequence(_, _) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
         Type::SequenceOf(_) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
+        Type::SetOf(_) => check_tag_with_encoding(asn1::SetOf::<()>::TAG, encoding, tag),
         Type::Option(t) => is_tag_valid_for_type(py, tag, t.get().inner.get(), encoding),
         Type::Choice(variants) => variants.bind(py).into_iter().any(|v| {
             is_tag_valid_for_variant(py, tag, v.cast::<Variant>().unwrap().get(), encoding)
@@ -572,6 +674,18 @@ pub(crate) fn is_tag_valid_for_type(
             check_tag_with_encoding(asn1::GeneralizedTime::TAG, encoding, tag)
         }
         Type::BitString() => check_tag_with_encoding(asn1::BitString::TAG, encoding, tag),
+        Type::Tlv() => {
+            match encoding {
+                Some(e) => match e.get() {
+                    // TLVs with implicit annotations are not supported
+                    // (they are caught first at the Python level)
+                    Encoding::Implicit(_) => false,
+                    Encoding::Explicit(n) => tag == asn1::explicit_tag(*n),
+                },
+                // When reading TLVs we accept any tag
+                None => true,
+            }
+        }
         Type::Null() => check_tag_with_encoding(asn1::Null::TAG, encoding, tag),
     }
 }
@@ -686,6 +800,38 @@ mod tests {
                 asn1::BigInt::TAG,
                 &variant,
                 &encoding
+            ));
+        })
+    }
+
+    #[test]
+    // Needed for coverage of `is_tag_valid_for_type(Type::Tlv())`, since
+    // `is_tag_valid_for_type` is never called with a TLV type.
+    fn test_tlv_is_tag_valid_for_type() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            assert!(is_tag_valid_for_type(
+                py,
+                asn1::BigInt::TAG,
+                &Type::Tlv(),
+                &None
+            ));
+
+            let implicit_encoding = pyo3::Py::new(py, Encoding::Implicit(3)).ok();
+            assert!(!is_tag_valid_for_type(
+                py,
+                asn1::BigInt::TAG,
+                &Type::Tlv(),
+                &implicit_encoding
+            ));
+
+            let explicit_encoding = pyo3::Py::new(py, Encoding::Explicit(3)).ok();
+            assert!(is_tag_valid_for_type(
+                py,
+                asn1::explicit_tag(3),
+                &Type::Tlv(),
+                &explicit_encoding
             ));
         })
     }
