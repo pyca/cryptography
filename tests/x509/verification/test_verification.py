@@ -177,7 +177,6 @@ class TestClientVerifier:
         builder = builder.time(validation_time).max_chain_depth(
             max_chain_depth
         )
-        builder = builder.revocation_checker(DummyRevocationChecker(False))
         verifier = builder.build_client_verifier()
 
         assert verifier.policy.subject is None
@@ -234,6 +233,7 @@ class TestClientVerifier:
     @pytest.mark.parametrize(
         ("returns", "raises", "error"),
         [
+            (False, None, None),
             (True, None, "certificate revoked"),
             (
                 "Truthy",
@@ -249,7 +249,7 @@ class TestClientVerifier:
             (None, None, "unable to determine revocation status"),
         ],
     )
-    def test_verify_fails_revocation(self, returns, raises, error):
+    def test_verify_revocation(self, returns, raises, error):
         # expires 2018-11-16 01:15:03 UTC
         leaf = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
@@ -272,7 +272,10 @@ class TestClientVerifier:
         )
         verifier = builder.build_client_verifier()
 
-        with pytest.raises(VerificationError, match=error):
+        if error is not None:
+            with pytest.raises(VerificationError, match=error):
+                verifier.verify(leaf, [])
+        else:
             verifier.verify(leaf, [])
 
     def test_verify_fails_renders_oid(self):
