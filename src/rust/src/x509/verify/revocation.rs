@@ -63,7 +63,8 @@ pub(crate) struct PyRevocationChecker;
 #[pyo3::pymethods]
 impl PyRevocationChecker {
     #[new]
-    pub fn new(_cls: pyo3::Py<pyo3::PyAny>) -> Self {
+    #[pyo3(signature = (*_args))]
+    pub fn new(_args: &pyo3::Bound<'_, pyo3::PyAny>) -> Self {
         Self
     }
 }
