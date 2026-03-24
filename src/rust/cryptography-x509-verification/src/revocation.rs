@@ -7,7 +7,7 @@ use cryptography_x509::crl::CertificateRevocationList;
 use crate::{
     ops::{CryptoOps, VerificationCertificate},
     policy::Policy,
-    ValidationResult,
+    ValidationError, ValidationErrorKind, ValidationResult,
 };
 
 pub trait CheckRevocation<B: CryptoOps> {
@@ -35,7 +35,9 @@ impl<'a, B: CryptoOps> CheckRevocation<B> for CrlRevocationChecker<'a> {
         let _issuer = issuer;
         let _policy = policy;
 
-        Ok(false)
+        Err(ValidationError::new(ValidationErrorKind::FatalError(
+            "unimplemented",
+        )))
     }
 }
 

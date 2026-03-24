@@ -137,7 +137,7 @@ class TestPolicyBuilder:
 
 
 class TestCRLRevocationChecker:
-    def test_revocation_checker_rejects_empty_list(self):
+    def test_crl_revocation_checker_rejects_empty_list(self):
         with pytest.raises(ValueError):
             CRLRevocationChecker([])
 
@@ -202,6 +202,34 @@ class TestClientVerifier:
         assert x509.DNSName("www.cryptography.io") in verified_client.subjects
         assert x509.DNSName("cryptography.io") in verified_client.subjects
         assert len(verified_client.subjects) == 2
+
+    def test_verify_crl_checker(self):
+        # expires 2018-11-16 01:15:03 UTC
+        leaf = _load_cert(
+            os.path.join("x509", "cryptography.io.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        ca = _load_cert(
+            os.path.join("x509", "rapidssl_sha256_ca_g3.pem"),
+            x509.load_pem_x509_certificate,
+        )
+        crl = _load_cert(
+            os.path.join("x509", "custom", "crl_empty.pem"),
+            x509.load_pem_x509_crl,
+        )
+        store = Store([ca])
+
+        validation_time = datetime.datetime.fromisoformat(
+            "2018-11-16T00:00:00+00:00"
+        )
+
+        builder = PolicyBuilder().store(store).time(validation_time)
+        builder = builder.revocation_checker(CRLRevocationChecker([crl]))
+        verifier = builder.build_client_verifier()
+
+        with pytest.raises(VerificationError, match="unimplemented"):
+            verifier.verify(leaf, [])
 
     @pytest.mark.parametrize(
         ("returns", "raises", "error"),
