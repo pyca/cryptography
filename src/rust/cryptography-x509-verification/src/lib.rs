@@ -42,7 +42,7 @@ pub enum ValidationErrorKind<'chain, B: CryptoOps> {
         reason: &'static str,
     },
     FatalError(&'static str),
-    RevocationNotDetermined(String),
+    RevocationNotDetermined,
     Other(String),
 }
 
@@ -94,8 +94,8 @@ impl<B: CryptoOps> Display for ValidationError<'_, B> {
                 write!(f, "invalid extension: {oid}: {reason}")
             }
             ValidationErrorKind::FatalError(err) => write!(f, "fatal error: {err}"),
-            ValidationErrorKind::RevocationNotDetermined(err) => {
-                write!(f, "unable to determine revocation status: {err}")
+            ValidationErrorKind::RevocationNotDetermined => {
+                write!(f, "unable to determine revocation status")
             }
             ValidationErrorKind::Other(err) => write!(f, "{err}"),
         }

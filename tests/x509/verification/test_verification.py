@@ -30,12 +30,14 @@ WEBPKI_MINIMUM_RSA_MODULUS = 2048
 
 
 class DummyRevocationChecker(RevocationChecker):
-    def __init__(self, returns: bool) -> None:
+    def __init__(self, returns, raises: Exception | None = None) -> None:
         self._returns = returns
 
     def is_revoked(
         self, cert: x509.Certificate, issuer: x509.Certificate, policy: Policy
     ) -> bool:
+        if self.raises is not None:
+            raise self.raises
         return self._returns
 
 
@@ -200,7 +202,25 @@ class TestClientVerifier:
         assert x509.DNSName("cryptography.io") in verified_client.subjects
         assert len(verified_client.subjects) == 2
 
-    def test_verify_fails_revoked(self):
+    @pytest.mark.parametrize(
+        ("returns", "raises", "error"),
+        [
+            (True, None, "certificate revoked"),
+            (
+                "Truthy",
+                None,
+                "fatal error: the revocation checker must return one of "
+                "True, False, or None",
+            ),
+            (
+                None,
+                Exception("some exception"),
+                "fatal error: the revocation checker raised an exception",
+            ),
+            (None, None, "unable to determine revocation status"),
+        ],
+    )
+    def test_verify_fails_revocation(self, returns, raises, error):
         # expires 2018-11-16 01:15:03 UTC
         leaf = _load_cert(
             os.path.join("x509", "cryptography.io.pem"),
@@ -218,10 +238,12 @@ class TestClientVerifier:
         )
 
         builder = PolicyBuilder().store(store).time(validation_time)
-        builder = builder.revocation_checker(DummyRevocationChecker(True))
+        builder = builder.revocation_checker(
+            DummyRevocationChecker(returns, raises)
+        )
         verifier = builder.build_client_verifier()
 
-        with pytest.raises(VerificationError):
+        with pytest.raises(VerificationError, match=error):
             verifier.verify(leaf, [])
 
     def test_verify_fails_renders_oid(self):

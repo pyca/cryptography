@@ -52,13 +52,15 @@ impl PyCrlRevocationChecker {
     }
 }
 
-/// A marker class that Rust and Python revocation checkers subclass from.
+// NO-COVERAGE-START
 #[pyo3::pyclass(
     subclass,
     frozen,
     module = "cryptography.hazmat.bindings._rust.x509",
     name = "RevocationChecker"
 )]
+// NO-COVERAGE-END
+/// A marker class that Rust and Python revocation checkers subclass from.
 pub(crate) struct PyRevocationChecker;
 
 #[pyo3::pymethods]
@@ -77,26 +79,24 @@ impl CheckRevocation<PyCryptoOps> for pyo3::Py<PyRevocationChecker> {
         policy: &Policy<'_, PyCryptoOps>,
     ) -> ValidationResult<'chain, bool, PyCryptoOps> {
         pyo3::Python::attach(|py| {
-            self.call_method1(
+            let result = self.call_method1(
                 py,
                 pyo3::intern!(py, "is_revoked"),
                 (cert.extra(), issuer.extra(), &policy.extra),
             )
-            .map_err(|e| {
-                let kind = if e.is_instance_of::<VerificationError>(py) {
-                    ValidationErrorKind::RevocationNotDetermined::<PyCryptoOps>(e.to_string())
-                } else {
-                    ValidationErrorKind::FatalError::<PyCryptoOps>("the revocation checker threw an exception while checking revocation status")
-                };
-
-                ValidationError::new(kind)
-            })?
-            .extract(py)
             .map_err(|_e| {
-                ValidationError::new(ValidationErrorKind::FatalError::<PyCryptoOps>(
-                    "the revocation checker returned an invalid non-bool result",
-                ))
-            })
+                ValidationError::new(ValidationErrorKind::FatalError::<PyCryptoOps>("the revocation checker raised an exception"))
+            })?;
+
+            if result.is_none(py) {
+                ValidationError::new(ValidationErrorKind::RevocationNotDetermined);
+            } else {
+                result.extract(py).map_err(|_e| {
+                    ValidationError::new(ValidationErrorKind::FatalError::<PyCryptoOps>(
+                        "the revocation checker must return one of True, False, or None",
+                    ))
+                })
+            }
         })
     }
 }

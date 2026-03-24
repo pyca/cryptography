@@ -49,7 +49,8 @@ class RevocationChecker(rust_x509.RevocationChecker, metaclass=abc.ABCMeta):
         leaf: rust_x509.Certificate,
         issuer: rust_x509.Certificate,
         policy: Policy,
-    ) -> bool:
+    ) -> bool | None:
         """
-        Returns whether the certificate is revoked or not.
+        Returns whether the certificate is revoked. If the revocation status
+        cannot be determined, the revocation checker may return None.
         """
