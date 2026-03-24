@@ -5,10 +5,7 @@ use cryptography_x509_verification::{
     ValidationError, ValidationErrorKind, ValidationResult,
 };
 
-use crate::x509::{
-    crl::CertificateRevocationList,
-    verify::{PyCryptoOps, VerificationError},
-};
+use crate::x509::{crl::CertificateRevocationList, verify::PyCryptoOps};
 
 self_cell::self_cell!(
     pub(crate) struct RawPyCrlRevocationChecker {
@@ -79,17 +76,22 @@ impl CheckRevocation<PyCryptoOps> for pyo3::Py<PyRevocationChecker> {
         policy: &Policy<'_, PyCryptoOps>,
     ) -> ValidationResult<'chain, bool, PyCryptoOps> {
         pyo3::Python::attach(|py| {
-            let result = self.call_method1(
-                py,
-                pyo3::intern!(py, "is_revoked"),
-                (cert.extra(), issuer.extra(), &policy.extra),
-            )
-            .map_err(|_e| {
-                ValidationError::new(ValidationErrorKind::FatalError::<PyCryptoOps>("the revocation checker raised an exception"))
-            })?;
+            let result = self
+                .call_method1(
+                    py,
+                    pyo3::intern!(py, "is_revoked"),
+                    (cert.extra(), issuer.extra(), &policy.extra),
+                )
+                .map_err(|_e| {
+                    ValidationError::new(ValidationErrorKind::FatalError::<PyCryptoOps>(
+                        "the revocation checker raised an exception",
+                    ))
+                })?;
 
             if result.is_none(py) {
-                ValidationError::new(ValidationErrorKind::RevocationNotDetermined);
+                Err(ValidationError::new(
+                    ValidationErrorKind::RevocationNotDetermined,
+                ))
             } else {
                 result.extract(py).map_err(|_e| {
                     ValidationError::new(ValidationErrorKind::FatalError::<PyCryptoOps>(
