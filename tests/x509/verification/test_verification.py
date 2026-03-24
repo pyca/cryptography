@@ -32,6 +32,7 @@ WEBPKI_MINIMUM_RSA_MODULUS = 2048
 class DummyRevocationChecker(RevocationChecker):
     def __init__(self, returns, raises=None) -> None:
         self._returns = returns
+        self._raises = raises
 
     def is_revoked(
         self, cert: x509.Certificate, issuer: x509.Certificate, policy: Policy

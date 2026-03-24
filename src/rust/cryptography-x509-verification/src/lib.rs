@@ -525,10 +525,7 @@ mod tests {
 
         let err =
             ValidationError::<PublicKeyErrorOps>::new(ValidationErrorKind::RevocationNotDetermined);
-        assert_eq!(
-            err.to_string(),
-            "unable to determine revocation status"
-        );
+        assert_eq!(err.to_string(), "unable to determine revocation status");
 
         let err =
             ValidationError::<PublicKeyErrorOps>::new(ValidationErrorKind::FatalError("oops"));
