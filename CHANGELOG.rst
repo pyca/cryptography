@@ -3,6 +3,13 @@ Changelog
 
 .. _v46-0-5:
 
+46.0.6 - 2026-03-25
+~~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE**: Fixed a bug where name constraints were not applied
+  to peer names during verification when the leaf certificate contains a
+  wildcard DNS SAN. **CVE-2026-34073**
+
 46.0.5 - 2026-02-10
 ~~~~~~~~~~~~~~~~~~~
 
