@@ -114,7 +114,7 @@ class MlDsa65PrivateKey(metaclass=abc.ABCMeta):
         self,
         encoding: _serialization.Encoding,
         format: _serialization.PrivateFormat,
-        encryption_algorithm: (_serialization.KeySerializationEncryption),
+        encryption_algorithm: _serialization.KeySerializationEncryption,
     ) -> bytes:
         """
         The serialized bytes of the private key.

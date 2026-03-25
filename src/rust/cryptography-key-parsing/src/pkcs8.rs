@@ -27,7 +27,7 @@ pub struct PrivateKeyInfo<'a> {
 // NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 // NO-COVERAGE-END
-enum MlDsaPrivateKey<'a> {
+pub enum MlDsaPrivateKey<'a> {
     #[implicit(0)]
     Seed(&'a [u8]),
 }

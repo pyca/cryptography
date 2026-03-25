@@ -22,11 +22,8 @@ from .utils import wycheproof_tests
 @wycheproof_tests("mldsa_65_verify_test.json")
 def test_mldsa65_verify(backend, wycheproof):
     try:
-        pub = wycheproof.cache_value_to_group(
-            "cached_pub",
-            lambda: MlDsa65PublicKey.from_public_bytes(
-                binascii.unhexlify(wycheproof.testgroup["publicKey"])
-            ),
+        pub = MlDsa65PublicKey.from_public_bytes(
+            binascii.unhexlify(wycheproof.testgroup["publicKey"])
         )
     except ValueError:
         assert wycheproof.invalid
@@ -56,7 +53,8 @@ def test_mldsa65_verify(backend, wycheproof):
 )
 @wycheproof_tests("mldsa_65_sign_seed_test.json")
 def test_mldsa65_sign_seed(backend, wycheproof):
-    # Skip "Internal" tests
+    # Skip "Internal" tests, they use the inner method `Sign_internal`
+    # instead of `Sign` which we do not expose.
     if wycheproof.has_flag("Internal"):
         return
 

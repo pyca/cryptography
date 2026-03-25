@@ -8,9 +8,8 @@ use std::os::raw::c_int;
 
 use crate::{cvt, cvt_p, OpenSSLResult};
 
-pub const NID_ML_DSA_65: c_int = ffi::NID_MLDSA65;
-pub const NID_PQDSA: c_int = ffi::NID_PQDSA;
-pub const PKEY_ID: openssl::pkey::Id = openssl::pkey::Id::from_raw(NID_PQDSA);
+const NID_ML_DSA_65: c_int = ffi::NID_MLDSA65;
+pub const PKEY_ID: openssl::pkey::Id = openssl::pkey::Id::from_raw(ffi::NID_PQDSA);
 const MLDSA65_SIGNATURE_BYTES: usize = 3309;
 pub const MLDSA65_PUBLIC_KEY_BYTES: usize = 1952;
 pub const MLDSA65_SEED_BYTES: usize = 32;

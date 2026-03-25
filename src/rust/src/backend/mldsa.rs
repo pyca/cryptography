@@ -102,8 +102,12 @@ impl MlDsa65PrivateKey {
         let pki =
             asn1::parse_single::<cryptography_key_parsing::pkcs8::PrivateKeyInfo<'_>>(&pkcs8_der)
                 .unwrap();
-        let seed = asn1::parse_single::<asn1::Implicit<&[u8], 0>>(pki.private_key).unwrap();
-        Ok(pyo3::types::PyBytes::new(py, seed.into_inner()))
+        let cryptography_key_parsing::pkcs8::MlDsaPrivateKey::Seed(seed) =
+            asn1::parse_single::<cryptography_key_parsing::pkcs8::MlDsaPrivateKey<'_>>(
+                pki.private_key,
+            )
+            .unwrap();
+        Ok(pyo3::types::PyBytes::new(py, seed))
     }
 
     fn private_bytes<'p>(
