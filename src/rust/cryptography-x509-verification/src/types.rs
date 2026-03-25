@@ -138,19 +138,6 @@ impl<'a> DNSPattern<'a> {
             },
         }
     }
-
-    /// Returns the inner `DNSName` within this `DNSPattern`, e.g.
-    /// `foo.com` for `*.foo.com` or `example.com` for `example.com`.
-    ///
-    /// This API must not be used to bypass pattern matching; it exists
-    /// solely to enable checks that only require the inner name, such
-    /// as Name Constraint checks.
-    pub fn inner_name(&self) -> &DNSName<'a> {
-        match self {
-            DNSPattern::Exact(dnsname) => dnsname,
-            DNSPattern::Wildcard(dnsname) => dnsname,
-        }
-    }
 }
 
 /// A `DNSConstraint` represents a DNS name constraint as defined in [RFC 5280 4.2.1.10].
@@ -163,35 +150,45 @@ impl<'a> DNSConstraint<'a> {
         DNSName::new(pattern).map(Self)
     }
 
-    /// Returns true if this `DNSConstraint` matches the given name.
+    /// Returns true if this `DNSConstraint` matches the given `DNSPattern`.
     ///
     /// Constraint matching is defined by RFC 5280: any DNS name that can
     /// be constructed by simply adding zero or more labels to the left-hand
     /// side of the name satisfies the name constraint.
     ///
-    /// ```rust
-    /// # use cryptography_x509_verification::types::{DNSConstraint, DNSName};
-    /// let example_com = DNSName::new("example.com").unwrap();
-    /// let badexample_com = DNSName::new("badexample.com").unwrap();
-    /// let foo_example_com = DNSName::new("foo.example.com").unwrap();
-    /// assert!(DNSConstraint::new(example_com.as_str()).unwrap().matches(&example_com));
-    /// assert!(DNSConstraint::new(example_com.as_str()).unwrap().matches(&foo_example_com));
-    /// assert!(!DNSConstraint::new(example_com.as_str()).unwrap().matches(&badexample_com));
-    /// ```
-    pub fn matches(&self, name: &DNSName<'_>) -> bool {
-        // NOTE: This may seem like an obtuse way to perform label matching,
-        // but it saves us a few allocations: doing a substring check instead
-        // would require us to clone each string and do case normalization.
-        // Note also that we check the length in advance: Rust's zip
-        // implementation terminates with the shorter iterator, so we need
-        // to first check that the candidate name is at least as long as
-        // the constraint it's matching against.
-        name.as_str().len() >= self.0.as_str().len()
-            && self
-                .0
-                .rlabels()
-                .zip(name.rlabels())
-                .all(|(a, o)| a.eq_ignore_ascii_case(o))
+    /// On top of what RFC 5280 specifies, we define behavior for wildcard
+    /// patterns (which are not covered by RFC 5280): a wildcard pattern
+    /// matches a constraint if the pattern matches the constraint's inner name,
+    /// _or_ if the pattern's inner name matches the constraint.
+    /// This allows us to reject DNS names like `*.example.com` when
+    /// the constraint is `example.com` or `bar.example.com`.
+    pub fn matches(&self, name: &DNSPattern<'_>) -> bool {
+        match name {
+            DNSPattern::Exact(name) => {
+                // NOTE: This may seem like an obtuse way to perform label matching,
+                // but it saves us a few allocations: doing a substring check instead
+                // would require us to clone each string and do case normalization.
+                // Note also that we check the length in advance: Rust's zip
+                // implementation terminates with the shorter iterator, so we need
+                // to first check that the candidate name is at least as long as
+                // the constraint it's matching against.
+                name.as_str().len() >= self.0.as_str().len()
+                    && self
+                        .0
+                        .rlabels()
+                        .zip(name.rlabels())
+                        .all(|(a, o)| a.eq_ignore_ascii_case(o))
+            }
+            DNSPattern::Wildcard(inner) => {
+                // NOTE: This check is not as simple as a single pattern match,
+                // since we need two subtly distinct cases here:
+                // 1. Constraint `bar.example.com` on `*.example.com`
+                // 2. Constraint `example.com` on `*.example.com`
+                // The first cases is handled by `DNSPattern::matches`, and the second is handled
+                // by `DNSConstraint::matches`.
+                name.matches(&self.0) || self.matches(&DNSPattern::Exact(inner.clone()))
+            }
+        }
     }
 }
 
@@ -597,14 +594,33 @@ mod tests {
         let example_com = DNSConstraint::new("example.com").unwrap();
 
         // Exact domain and arbitrary subdomains match.
-        assert!(example_com.matches(&DNSName::new("example.com").unwrap()));
-        assert!(example_com.matches(&DNSName::new("foo.example.com").unwrap()));
-        assert!(example_com.matches(&DNSName::new("foo.bar.baz.quux.example.com").unwrap()));
+        assert!(example_com.matches(&DNSPattern::new("example.com").unwrap()));
+        assert!(example_com.matches(&DNSPattern::new("foo.example.com").unwrap()));
+        assert!(example_com.matches(&DNSPattern::new("foo.bar.baz.quux.example.com").unwrap()));
 
         // Parent domains, distinct domains, and substring domains do not match.
-        assert!(!example_com.matches(&DNSName::new("com").unwrap()));
-        assert!(!example_com.matches(&DNSName::new("badexample.com").unwrap()));
-        assert!(!example_com.matches(&DNSName::new("wrong.com").unwrap()));
+        assert!(!example_com.matches(&DNSPattern::new("com").unwrap()));
+        assert!(!example_com.matches(&DNSPattern::new("badexample.com").unwrap()));
+        assert!(!example_com.matches(&DNSPattern::new("wrong.com").unwrap()));
+    }
+
+    #[test]
+    fn test_dnsconstraint_matches_wildcard() {
+        let com = DNSConstraint::new("com").unwrap();
+        let example_com = DNSConstraint::new("example.com").unwrap();
+        let bar_example_com = DNSConstraint::new("bar.example.com").unwrap();
+        let baz_bar_example_com = DNSConstraint::new("baz.bar.example.com").unwrap();
+        let any_example_com = DNSPattern::new("*.example.com").unwrap();
+
+        assert!(com.matches(&any_example_com));
+        assert!(example_com.matches(&any_example_com));
+        assert!(bar_example_com.matches(&any_example_com));
+
+        // A constraint on `baz.bar.example.com` doesn't match `*.example.com`,
+        // since `baz.bar.example.com` matches zero or more sublabels of
+        // `baz.bar.example.com` while `*.example.com` matches exactly one
+        // sublabel of `example.com`.
+        assert!(!baz_bar_example_com.matches(&any_example_com));
     }
 
     #[test]
