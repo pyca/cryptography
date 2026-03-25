@@ -138,19 +138,6 @@ impl<'a> DNSPattern<'a> {
             },
         }
     }
-
-    /// Returns the inner `DNSName` within this `DNSPattern`, e.g.
-    /// `foo.com` for `*.foo.com` or `example.com` for `example.com`.
-    ///
-    /// This API must not be used to bypass pattern matching; it exists
-    /// solely to enable checks that only require the inner name, such
-    /// as Name Constraint checks.
-    pub fn inner_name(&self) -> &DNSName<'a> {
-        match self {
-            DNSPattern::Exact(dnsname) => dnsname,
-            DNSPattern::Wildcard(dnsname) => dnsname,
-        }
-    }
 }
 
 /// A `DNSConstraint` represents a DNS name constraint as defined in [RFC 5280 4.2.1.10].
@@ -175,17 +162,6 @@ impl<'a> DNSConstraint<'a> {
     /// _or_ if the pattern's inner name matches the constraint.
     /// This allows us to reject DNS names like `*.example.com` when
     /// the constraint is `example.com` or `bar.example.com`.
-    ///
-    ///
-    /// ```rust
-    /// # use cryptography_x509_verification::types::{DNSConstraint, DNSPattern};
-    /// let example_com = DNSPattern::new("example.com").unwrap();
-    /// let badexample_com = DNSPattern::new("badexample.com").unwrap();
-    /// let foo_example_com = DNSPattern::new("foo.example.com").unwrap();
-    /// assert!(DNSConstraint::new(example_com.inner_name().as_str()).unwrap().matches(&example_com));
-    /// assert!(DNSConstraint::new(example_com.inner_name().as_str()).unwrap().matches(&foo_example_com));
-    /// assert!(!DNSConstraint::new(example_com.inner_name().as_str()).unwrap().matches(&badexample_com));
-    /// ```
     pub fn matches(&self, name: &DNSPattern<'_>) -> bool {
         match name {
             DNSPattern::Exact(name) => {
