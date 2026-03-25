@@ -159,12 +159,12 @@ class TestObjectIdentifier:
         )
 
 
-class TestUtcTime:
+class TestUTCTime:
     def test_utc_time(self) -> None:
         assert_roundtrips(
             [
                 (
-                    asn1.UtcTime(
+                    asn1.UTCTime(
                         datetime.datetime(
                             2019,
                             12,
@@ -178,7 +178,7 @@ class TestUtcTime:
                     b"\x17\x0d191216030210Z",
                 ),
                 (
-                    asn1.UtcTime(
+                    asn1.UTCTime(
                         datetime.datetime(
                             1999,
                             1,
@@ -301,6 +301,35 @@ class TestBitString:
             asn1.decode_der(asn1.BitString, b"\x03\x02\x08\x00")
 
 
+class TestTLV:
+    def test_ok_decode_tlv(self) -> None:
+        decoded = asn1.decode_der(asn1.TLV, b"\x03\x02\x07\x40")
+        assert isinstance(decoded, asn1.TLV)
+        assert decoded.tag_bytes == b"\x03"
+        assert bytes(decoded.data) == b"\x07\x40"
+
+    def test_ok_tlv_parse_method(self) -> None:
+        decoded_tlv = asn1.decode_der(asn1.TLV, b"\x30\x03\x02\x01\x09")
+        assert isinstance(decoded_tlv, asn1.TLV)
+
+        @asn1.sequence
+        class Example:
+            foo: int
+
+        decoded_example = decoded_tlv.parse(Example)
+        assert isinstance(decoded_example, Example)
+        assert decoded_example.foo == 9
+
+    def test_fail_encode_tlv(self) -> None:
+        tlv = asn1.decode_der(asn1.TLV, b"\x03\x02\x07\x40")
+        assert isinstance(tlv, asn1.TLV)
+
+        with pytest.raises(
+            NotImplementedError, match="TLV encoding currently not supported"
+        ):
+            asn1.encode_der(tlv)
+
+
 class TestNull:
     def test_ok_null(self) -> None:
         assert_roundtrips([(asn1.Null(), b"\x05\x00")])
@@ -395,6 +424,46 @@ class TestSequence:
             ]
         )
 
+    def test_ok_setof_simple_type(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: asn1.SetOf[int]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a=asn1.SetOf([1, 2, 3, 4])),
+                    b"\x30\x0e\x31\x0c\x02\x01\x01\x02\x01\x02\x02\x01\x03\x02\x01\x04",
+                )
+            ]
+        )
+
+    def test_ok_setof_user_defined_type(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class MyType:
+            a: int
+            b: bool
+
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: asn1.SetOf[MyType]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(
+                        a=asn1.SetOf(
+                            [MyType(a=1, b=True), MyType(a=2, b=False)]
+                        )
+                    ),
+                    b"\x30\x12\x31\x10\x30\x06\x02\x01\x01\x01\x01\xff\x30\x06\x02\x01\x02\x01\x01\x00",
+                )
+            ]
+        )
+
     def test_ok_sequence_with_optionals(self) -> None:
         @asn1.sequence
         @_comparable_dataclass
@@ -466,9 +535,10 @@ class TestSequence:
             b: typing.Union[int, None]
             c: typing.Union[bytes, None]
             d: typing.Union[asn1.PrintableString, None]
-            e: typing.Union[asn1.UtcTime, None]
+            e: typing.Union[asn1.UTCTime, None]
             f: typing.Union[asn1.GeneralizedTime, None]
             g: typing.Union[typing.List[int], None]
+            g2: typing.Union[asn1.SetOf[int], None]
             h: typing.Union[asn1.BitString, None]
             i: typing.Union[asn1.IA5String, None]
             j: typing.Union[x509.ObjectIdentifier, None]
@@ -489,6 +559,7 @@ class TestSequence:
                         e=None,
                         f=None,
                         g=None,
+                        g2=None,
                         h=None,
                         i=None,
                         j=None,
@@ -502,6 +573,11 @@ class TestSequence:
         )
 
     def test_ok_sequence_all_types_default(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class MyField:
+            a: int
+
         default_time = datetime.datetime(
             2019,
             12,
@@ -522,8 +598,8 @@ class TestSequence:
                 asn1.PrintableString, asn1.Default(asn1.PrintableString("a"))
             ]
             d: Annotated[
-                asn1.UtcTime,
-                asn1.Default(asn1.UtcTime(default_time)),
+                asn1.UTCTime,
+                asn1.Default(asn1.UTCTime(default_time)),
             ]
             e: Annotated[
                 asn1.GeneralizedTime,
@@ -548,6 +624,10 @@ class TestSequence:
                 asn1.Null,
                 asn1.Default(asn1.Null()),
             ]
+            k2: Annotated[
+                MyField,
+                asn1.Default(MyField(a=9)),
+            ]
             z: Annotated[str, asn1.Default("a"), asn1.Implicit(0)]
             only_field_present: Annotated[
                 str, asn1.Default("a"), asn1.Implicit(1)
@@ -560,7 +640,7 @@ class TestSequence:
                         a=3,
                         b=b"\x00",
                         c=asn1.PrintableString("a"),
-                        d=asn1.UtcTime(default_time),
+                        d=asn1.UTCTime(default_time),
                         e=asn1.GeneralizedTime(default_time),
                         f=[1],
                         g=asn1.BitString(data=b"", padding_bits=0),
@@ -568,6 +648,7 @@ class TestSequence:
                         i=default_oid,
                         j=3,
                         k=asn1.Null(),
+                        k2=MyField(a=9),
                         z="a",
                         only_field_present="b",
                     ),
@@ -929,6 +1010,42 @@ class TestSequence:
             ]
         )
 
+    def test_sequence_with_tlv_with_explicit_annotation(
+        self,
+    ) -> None:
+        @asn1.sequence
+        class Example:
+            foo: Annotated[asn1.TLV, asn1.Explicit(0)]
+            bar: Annotated[asn1.TLV, asn1.Explicit(1)]
+
+        encoded = b"\x30\x0a\xa0\x03\x02\x01\x08\xa1\x03\x02\x01\x09"
+        decoded = asn1.decode_der(Example, encoded)
+
+        assert isinstance(decoded.foo, asn1.TLV)
+        assert decoded.foo.tag_bytes == b"\x02"
+        assert bytes(decoded.foo.data) == b"\x08"
+
+        assert isinstance(decoded.bar, asn1.TLV)
+        assert decoded.bar.tag_bytes == b"\x02"
+        assert bytes(decoded.bar.data) == b"\x09"
+
+    def test_fail_sequence_with_tlv_with_explicit_annotation(
+        self,
+    ) -> None:
+        @asn1.sequence
+        class Example:
+            foo: Annotated[asn1.TLV, asn1.Explicit(0)]
+            # explicit tag does not match data
+            bar: Annotated[asn1.TLV, asn1.Explicit(3)]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("error parsing asn1 value"),
+        ):
+            asn1.decode_der(
+                Example, b"\x30\x0a\xa0\x03\x02\x01\x08\xa1\x03\x02\x01\x09"
+            )
+
 
 class TestSize:
     def test_ok_sequenceof_size_restriction(self) -> None:
@@ -1035,6 +1152,111 @@ class TestSize:
             ValueError,
         ):
             asn1.encode_der(Example(a=[1, 2, 3, 4]))
+
+    def test_ok_setof_size_restriction(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[asn1.SetOf[int], asn1.Size(min=1, max=4)]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a=asn1.SetOf([1, 2, 3, 4])),
+                    b"\x30\x0e\x31\x0c\x02\x01\x01\x02\x01\x02\x02\x01\x03\x02\x01\x04",
+                )
+            ]
+        )
+
+    def test_ok_setof_size_restriction_no_max(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[asn1.SetOf[int], asn1.Size(min=1, max=None)]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a=asn1.SetOf([1, 2, 3, 4])),
+                    b"\x30\x0e\x31\x0c\x02\x01\x01\x02\x01\x02\x02\x01\x03\x02\x01\x04",
+                )
+            ]
+        )
+
+    def test_ok_setof_size_restriction_exact(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[asn1.SetOf[int], asn1.Size.exact(4)]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a=asn1.SetOf([1, 2, 3, 4])),
+                    b"\x30\x0e\x31\x0c\x02\x01\x01\x02\x01\x02\x02\x01\x03\x02\x01\x04",
+                )
+            ]
+        )
+
+    def test_fail_setof_size_too_big(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[asn1.SetOf[int], asn1.Size(min=1, max=2)]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("SET OF has size 4, expected size in [1, 2]"),
+        ):
+            asn1.decode_der(
+                Example,
+                b"\x30\x0e\x31\x0c\x02\x01\x01\x02\x01\x02\x02\x01\x03\x02\x01\x04",
+            )
+
+        with pytest.raises(
+            ValueError,
+        ):
+            asn1.encode_der(Example(a=asn1.SetOf([1, 2, 3, 4])))
+
+    def test_fail_setof_size_too_small(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[asn1.SetOf[int], asn1.Size(min=5, max=6)]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("SET OF has size 4, expected size in [5, 6]"),
+        ):
+            asn1.decode_der(
+                Example,
+                b"\x30\x0e\x31\x0c\x02\x01\x01\x02\x01\x02\x02\x01\x03\x02\x01\x04",
+            )
+
+        with pytest.raises(
+            ValueError,
+        ):
+            asn1.encode_der(Example(a=asn1.SetOf([1, 2, 3, 4])))
+
+    def test_fail_setof_size_not_exact(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[asn1.SetOf[int], asn1.Size.exact(5)]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("SET OF has size 4, expected size in [5, 5]"),
+        ):
+            asn1.decode_der(
+                Example,
+                b"\x30\x0e\x31\x0c\x02\x01\x01\x02\x01\x02\x02\x01\x03\x02\x01\x04",
+            )
+
+        with pytest.raises(
+            ValueError,
+        ):
+            asn1.encode_der(Example(a=asn1.SetOf([1, 2, 3, 4])))
 
     def test_ok_bytes_size_restriction(self) -> None:
         @asn1.sequence

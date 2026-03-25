@@ -40,10 +40,10 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.1"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.1.2"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.1"}}
-          # Latest commit on the BoringSSL main branch, as of Mar 07, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "30cd935189c9a7d45ad789e038fc6506d1b7a0bd"}}
-          # Latest tag of AWS-LC main branch, as of Mar 03, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.69.0"}}
+          # Latest commit on the BoringSSL main branch, as of Mar 24, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "aa0acca1acf36b7fb16aa8a7b60b97d5cb01404d"}}
+          # Latest tag of AWS-LC main branch, as of Mar 20, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.71.0"}}
           # Latest commit on the OpenSSL master branch, as of Sep 04, 2025.
           - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "ceb45f64bde3d299c7ef529e5cd5372e4a421366"}}
           # Builds with various Rust versions. Includes MSRV and next
@@ -167,11 +167,8 @@ jobs:
           - {IMAGE: "centos-stream10-fips", NOXSESSION: "tests", RUNNER: "ubuntu-latest", FIPS: true}
 
           - {IMAGE: "ubuntu-rolling:aarch64", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-arm"}
-
           - {IMAGE: "ubuntu-rolling:armv7l", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-arm"}
-
-          # Disable coverage until coverage.py has a wheel with C ext for ppc64le
-          - {IMAGE: "ubuntu-rolling:ppc64le", NOXSESSION: "tests-nocoverage", RUNNER: "ubuntu-24.04-ppc64le"}
+          - {IMAGE: "ubuntu-rolling:ppc64le", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-ppc64le"}
     timeout-minutes: 15
     env:
       RUSTUP_HOME: /root/.rustup
@@ -315,7 +312,7 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/fetch-vectors
 
-      - uses: dawidd6/action-download-artifact@2536c51d3d126276eb39f74d6bc9c72ac6ef30d3 # v16
+      - uses: dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927 # v19
         with:
           repo: pyca/infra
           workflow: build-macos-openssl.yml
@@ -376,7 +373,7 @@ jobs:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
       - run: python -m pip install -c ci-constraints-requirements.txt "nox[uv]" "tomli; python_version < '3.11'"
 
-      - uses: dawidd6/action-download-artifact@2536c51d3d126276eb39f74d6bc9c72ac6ef30d3 # v16
+      - uses: dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927 # v19
         with:
           repo: pyca/infra
           workflow: build-windows-openssl.yml
@@ -419,18 +416,18 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Feb 28, 2026.
-            REF: 8b4c66b1b5649ce046665b151772d40c1cddd66a
+            # Latest commit on the pyopenssl main branch, as of Mar 17, 2026.
+            REF: f72218efff8a1e3e7ae4683793ad36d2f9610976
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
-            # Latest release tag of pyopenssl-release, as of Sep 18, 2025.
-            REF: 25.3.0
+            # Latest release tag of pyopenssl-release, as of Mar 16, 2026.
+            REF: 26.0.0
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Mar 02, 2026.
-            REF: 508c44f0dabf00398c03c00e9bd9dc3d3d7e72e6
+            # Latest commit on the twisted trunk branch, as of Mar 10, 2026.
+            REF: 3ec002a1f90faacca223f898705e2dd4924e8101
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -444,28 +441,28 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Mar 07, 2026.
-            REF: c31974128b511542cfff152c8f2e561dce491f01
+            # Latest commit on the certbot main branch, as of Mar 24, 2026.
+            REF: 6f1c0b0abd187a5e8e6eceba0451e881b11d8c6b
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
-            # Latest commit on the certbot-josepy main branch, as of Mar 07, 2026.
-            REF: e510d39fabe0f07314d73bca84570c0c2f297afa
+            # Latest commit on the certbot-josepy main branch, as of Mar 10, 2026.
+            REF: de4cfa2b439b83c155d4af04c06a794451154612
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Mar 07, 2026.
-            REF: 6d073bbe84f00cd31272f0c7a3df6421ea52d065
+            # Latest commit on the mitmproxy main branch, as of Mar 24, 2026.
+            REF: 5a4a12888e73f6e0de2b7daf1eb91a21349ee814
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Mar 07, 2026.
-            REF: 9802dca4186c1e84494bb33b33a8e6c5e91a08ba
+            # Latest commit on the scapy master branch, as of Mar 24, 2026.
+            REF: 04b99c3c69572b579526bc6861ecdc1f6ab5f265
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Mar 07, 2026.
-            REF: f29c4dfe3bc04d7c468d1b434075acce0599df54
+            # Latest commit on the sigstore-python main branch, as of Mar 23, 2026.
+            REF: c34d993175f2b54933d66e570a29f5c72342cbc2
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
@@ -545,7 +542,7 @@ jobs:
         if: ${{ always() }}
       - name: Download coverage data
         if: ${{ always() }}
-        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: coverage-data-*
           merge-multiple: true

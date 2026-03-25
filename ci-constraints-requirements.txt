@@ -10,7 +10,7 @@ argcomplete==3.6.3
     # via nox
 attrs==25.3.0 ; python_full_version < '3.9'
     # via nox
-attrs==25.4.0 ; python_full_version >= '3.9'
+attrs==26.1.0 ; python_full_version >= '3.9'
     # via nox
 babel==2.18.0
     # via sphinx
@@ -18,7 +18,7 @@ build==1.2.2.post1 ; python_full_version < '3.9'
     # via
     #   cryptography (pyproject.toml)
     #   check-sdist
-build==1.4.0 ; python_full_version >= '3.9'
+build==1.4.1 ; python_full_version >= '3.9'
     # via
     #   cryptography (pyproject.toml)
     #   check-sdist
@@ -26,7 +26,7 @@ certifi==2026.2.25
     # via
     #   cryptography (pyproject.toml)
     #   requests
-charset-normalizer==3.4.5
+charset-normalizer==3.4.6
     # via requests
 check-sdist==1.2.0 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
@@ -209,7 +209,7 @@ pytest-benchmark==5.2.3 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
 pytest-cov==5.0.0 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
-pytest-cov==7.0.0 ; python_full_version >= '3.9'
+pytest-cov==7.1.0 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
 pytest-randomly==3.15.0 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
@@ -219,7 +219,7 @@ pytest-xdist==3.6.1 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
 pytest-xdist==3.8.0 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
-python-discovery==1.1.1
+python-discovery==1.2.0
     # via virtualenv
 pytz==2026.1.post1 ; python_full_version < '3.9'
     # via babel
@@ -235,7 +235,7 @@ requests==2.32.5 ; python_full_version >= '3.9'
     #   sphinxcontrib-spelling
 roman-numerals==4.1.0 ; python_full_version >= '3.11'
     # via sphinx
-ruff==0.15.5
+ruff==0.15.7
     # via cryptography (pyproject.toml)
 snowballstemmer==3.0.1
     # via sphinx
@@ -332,9 +332,9 @@ urllib3==2.2.3 ; python_full_version < '3.9'
     # via requests
 urllib3==2.6.3 ; python_full_version >= '3.9'
     # via requests
-uv==0.10.9
+uv==0.11.1
     # via nox
-virtualenv==21.1.0
+virtualenv==21.2.0
     # via nox
 zipp==3.20.2 ; python_full_version < '3.9'
     # via
