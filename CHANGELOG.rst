@@ -3,6 +3,15 @@ Changelog
 
 .. _v46-0-5:
 
+46.0.6 - 2026-03-25
+~~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE**: Fixed a bug where name constraints were not applied
+  to peer names during verification when the leaf certificate contains a
+  wildcard DNS SAN. Ordinary X.509 topologies are not affected by this bug,
+  including those used by the Web PKI. Credit to **Oleh Konko (1seal)** for
+  reporting the issue. **CVE-2026-34073**
+
 46.0.5 - 2026-02-10
 ~~~~~~~~~~~~~~~~~~~
 

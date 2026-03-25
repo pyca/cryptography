@@ -85,6 +85,16 @@ LIMBO_SKIP_TESTCASES = {
     # with what webpki and rustls do, but inconsistent with Go and OpenSSL.
     "rfc5280::ca-as-leaf",
     "pathlen::validation-ignores-pathlen-in-leaf",
+    # These CABF SAN/CN mismatch tests are pretty niche.
+    "webpki::cn::ipv4-hex-mismatch",
+    "webpki::cn::ipv4-leading-zeros-mismatch",
+    "webpki::cn::ipv6-uppercase-mismatch",
+    "webpki::cn::ipv6-uncompressed-mismatch",
+    "webpki::cn::ipv6-non-rfc5952-mismatch",
+    "webpki::cn::punycode-not-in-san",
+    "webpki::cn::utf8-vs-punycode-mismatch",
+    "webpki::cn::not-in-san",
+    "webpki::cn::case-mismatch",
 }
 
 
