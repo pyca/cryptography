@@ -61,9 +61,7 @@ fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<MlDsa65PublicKey> {
     Ok(MlDsa65PublicKey { pkey })
 }
 
-// NO-COVERAGE-START
 #[pyo3::pymethods]
-// NO-COVERAGE-END
 impl MlDsa65PrivateKey {
     #[pyo3(signature = (data, context=None))]
     fn sign<'p>(
@@ -150,9 +148,7 @@ impl MlDsa65PrivateKey {
     }
 }
 
-// NO-COVERAGE-START
 #[pyo3::pymethods]
-// NO-COVERAGE-END
 impl MlDsa65PublicKey {
     #[pyo3(signature = (signature, data, context=None))]
     fn verify(
