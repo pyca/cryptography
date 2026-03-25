@@ -40,8 +40,8 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.1"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.1.2"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.1"}}
-          # Latest commit on the BoringSSL main branch, as of Mar 23, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "031e739fceefd9fc14ae141a222778b57917cd44"}}
+          # Latest commit on the BoringSSL main branch, as of Mar 24, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "aa0acca1acf36b7fb16aa8a7b60b97d5cb01404d"}}
           # Latest tag of AWS-LC main branch, as of Mar 20, 2026.
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.71.0"}}
           # Latest commit on the OpenSSL master branch, as of Sep 04, 2025.
@@ -441,8 +441,8 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Mar 21, 2026.
-            REF: 9599364837459b6dea19589b3e65be65f63a1950
+            # Latest commit on the certbot main branch, as of Mar 24, 2026.
+            REF: 6f1c0b0abd187a5e8e6eceba0451e881b11d8c6b
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -451,13 +451,13 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Mar 18, 2026.
-            REF: b5d14444c655c0a0e21c6ba8914539a13f84d103
+            # Latest commit on the mitmproxy main branch, as of Mar 24, 2026.
+            REF: 5a4a12888e73f6e0de2b7daf1eb91a21349ee814
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Mar 20, 2026.
-            REF: b1add1f796b4f28f0ff29d6b81480a9cd0ac8b85
+            # Latest commit on the scapy master branch, as of Mar 24, 2026.
+            REF: 04b99c3c69572b579526bc6861ecdc1f6ab5f265
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
