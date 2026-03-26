@@ -35,9 +35,7 @@ def get_remote_latest_tag(repo_url: str, tag_pattern: str) -> str:
     return sorted(tags, key=version_key)[-1]
 
 
-def get_current_versions_from_file(
-    file_path: str, pattern: str
-) -> list[str]:
+def get_current_versions_from_file(file_path: str, pattern: str) -> list[str]:
     with open(file_path) as f:
         content = f.read()
 
@@ -165,7 +163,7 @@ def main() -> int:
                 f.write("HAS_UPDATES=false\n")
         return 0
 
-    current_version = current_versions[0]
+    current_version = next(v for v in current_versions if v != latest_version)
     print(
         f"{args.name}: Update available "
         f"({current_version} -> {latest_version})"
