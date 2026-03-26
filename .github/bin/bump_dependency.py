@@ -13,11 +13,6 @@ def get_remote_commit_sha(repo_url: str, branch: str) -> str:
     return output.split("\t")[0]
 
 
-def _version_key(tag: str) -> tuple[int, ...]:
-    version = tag.lstrip("v")
-    return tuple(map(int, version.split(".")))
-
-
 def get_remote_latest_tag(repo_url: str, tag_pattern: str) -> str:
     output = subprocess.check_output(
         ["git", "ls-remote", "--tags", repo_url], text=True
@@ -33,15 +28,20 @@ def get_remote_latest_tag(repo_url: str, tag_pattern: str) -> str:
                     if re.match(tag_pattern + "$", tag):
                         tags.append(tag)
 
-    return sorted(tags, key=_version_key)[-1]
+    def version_key(tag: str) -> tuple[int, ...]:
+        version = tag.lstrip("v")
+        return tuple(map(int, version.split(".")))
+
+    return sorted(tags, key=version_key)[-1]
 
 
-def get_current_version_from_file(file_path: str, pattern: str) -> str:
+def get_current_versions_from_file(
+    file_path: str, pattern: str
+) -> list[str]:
     with open(file_path) as f:
         content = f.read()
 
-    matches = re.findall(pattern, content)
-    return min(matches, key=_version_key)
+    return re.findall(pattern, content)
 
 
 def update_file_version(
@@ -149,22 +149,23 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    current_version = get_current_version_from_file(
-        args.file_path, args.current_version_pattern
-    )
-
     if args.tag:
         latest_version = get_remote_latest_tag(args.repo_url, args.tag_pattern)
     else:
         latest_version = get_remote_commit_sha(args.repo_url, args.branch)
 
-    if current_version == latest_version:
-        print(f"{args.name}: No update needed (current: {current_version})")
+    current_versions = get_current_versions_from_file(
+        args.file_path, args.current_version_pattern
+    )
+
+    if all(v == latest_version for v in current_versions):
+        print(f"{args.name}: No update needed (current: {latest_version})")
         if not args.commit_message_fd:
             with open(os.environ["GITHUB_OUTPUT"], "a") as f:
                 f.write("HAS_UPDATES=false\n")
         return 0
 
+    current_version = current_versions[0]
     print(
         f"{args.name}: Update available "
         f"({current_version} -> {latest_version})"
