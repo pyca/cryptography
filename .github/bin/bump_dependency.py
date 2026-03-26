@@ -13,6 +13,11 @@ def get_remote_commit_sha(repo_url: str, branch: str) -> str:
     return output.split("\t")[0]
 
 
+def _version_key(tag: str) -> tuple[int, ...]:
+    version = tag.lstrip("v")
+    return tuple(map(int, version.split(".")))
+
+
 def get_remote_latest_tag(repo_url: str, tag_pattern: str) -> str:
     output = subprocess.check_output(
         ["git", "ls-remote", "--tags", repo_url], text=True
@@ -28,19 +33,15 @@ def get_remote_latest_tag(repo_url: str, tag_pattern: str) -> str:
                     if re.match(tag_pattern + "$", tag):
                         tags.append(tag)
 
-    def version_key(tag: str) -> tuple[int, ...]:
-        version = tag.lstrip("v")
-        return tuple(map(int, version.split(".")))
-
-    return sorted(tags, key=version_key)[-1]
+    return sorted(tags, key=_version_key)[-1]
 
 
 def get_current_version_from_file(file_path: str, pattern: str) -> str:
     with open(file_path) as f:
         content = f.read()
 
-    match = re.search(pattern, content)
-    return match.group(1)
+    matches = re.findall(pattern, content)
+    return min(matches, key=_version_key)
 
 
 def update_file_version(
