@@ -13,7 +13,7 @@ use std::sync::LazyLock;
 use cryptography_x509::certificate::Certificate as RawCertificate;
 use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters};
 use cryptography_x509::csr::Attribute;
-use cryptography_x509::pkcs7::PKCS7_DATA_OID;
+use cryptography_x509::pkcs7::{RecipientIdentifier, PKCS7_DATA_OID};
 use cryptography_x509::{common, oid, pkcs7};
 #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use openssl::pkcs7::Pkcs7;
@@ -135,12 +135,12 @@ fn encrypt_and_serialize<'p>(
             .call_method1(pyo3::intern!(py, "encrypt"), (&key, &padding))?
             .extract::<pyo3::pybacked::PyBackedBytes>()?;
 
-        recipient_infos.push(pkcs7::RecipientInfo {
+        recipient_infos.push(pkcs7::KeyTransRecipientInfo {
             version: 0,
-            issuer_and_serial_number: pkcs7::IssuerAndSerialNumber {
+            rid: RecipientIdentifier::IssuerAndSerialNumber(pkcs7::IssuerAndSerialNumber {
                 issuer: cert.get().raw.borrow_dependent().tbs_cert.issuer.clone(),
                 serial_number: cert.get().raw.borrow_dependent().tbs_cert.serial,
-            },
+            }),
             key_encryption_algorithm: AlgorithmIdentifier {
                 oid: asn1::DefinedByMarker::marker(),
                 params: AlgorithmParameters::Rsa(Some(())),
@@ -158,6 +158,7 @@ fn encrypt_and_serialize<'p>(
 
     let enveloped_data = pkcs7::EnvelopedData {
         version: 0,
+        originator_info: None,
         recipient_infos: common::Asn1ReadableOrWritable::new_write(asn1::SetOfWriter::new(
             &recipient_infos,
         )),
@@ -170,6 +171,7 @@ fn encrypt_and_serialize<'p>(
             },
             encrypted_content: Some(&encrypted_content),
         },
+        unprotected_attrs: None,
     };
 
     let content_info = pkcs7::ContentInfo {
@@ -253,8 +255,12 @@ fn decrypt_der<'p>(
             let recipient_serial_number = recipient_certificate.tbs_cert.serial;
             let recipient_issuer = recipient_certificate.tbs_cert.issuer.clone();
             let found_recipient_info = recipient_infos.find(|info| {
-                info.issuer_and_serial_number.serial_number == recipient_serial_number
-                    && info.issuer_and_serial_number.issuer == recipient_issuer
+                matches!(
+                    &info.rid,
+                    RecipientIdentifier::IssuerAndSerialNumber(ias)
+                        if ias.serial_number == recipient_serial_number
+                            && ias.issuer == recipient_issuer
+                )
             });
 
             // Raise error when no recipient is found

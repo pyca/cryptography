@@ -76,22 +76,36 @@ pub struct SignerInfo<'a> {
     pub unauthenticated_attributes: Option<csr::Attributes<'a>>,
 }
 
+// RFC 5652 section 6
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
 pub struct EnvelopedData<'a> {
     pub version: u8,
+    #[implicit(0)]
+    pub originator_info: Option<asn1::Sequence<'a>>,
     pub recipient_infos: common::Asn1ReadableOrWritable<
-        asn1::SetOf<'a, RecipientInfo<'a>>,
-        asn1::SetOfWriter<'a, RecipientInfo<'a>>,
+        asn1::SetOf<'a, KeyTransRecipientInfo<'a>>,
+        asn1::SetOfWriter<'a, KeyTransRecipientInfo<'a>>,
     >,
     pub encrypted_content_info: EncryptedContentInfo<'a>,
+    #[implicit(1)]
+    pub unprotected_attrs: Option<csr::Attributes<'a>>,
 }
 
+// RFC 5652 section 6.2.1
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
-pub struct RecipientInfo<'a> {
+pub struct KeyTransRecipientInfo<'a> {
     pub version: u8,
-    pub issuer_and_serial_number: IssuerAndSerialNumber<'a>,
+    pub rid: RecipientIdentifier<'a>,
     pub key_encryption_algorithm: common::AlgorithmIdentifier<'a>,
     pub encrypted_key: &'a [u8],
+}
+
+// RFC 5652 section 6.2.1
+#[derive(asn1::Asn1Write, asn1::Asn1Read)]
+pub enum RecipientIdentifier<'a> {
+    IssuerAndSerialNumber(IssuerAndSerialNumber<'a>),
+    #[implicit(0)]
+    SubjectKeyIdentifier(&'a [u8]),
 }
 
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
