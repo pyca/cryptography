@@ -118,7 +118,7 @@ dependencies = [
  "openssl-sys",
  "pem",
  "pyo3",
- "pyo3-build-config",
+ "pyo3-build-config 0.28.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "self_cell",
 ]
 
@@ -254,13 +254,12 @@ dependencies = [
 [[package]]
 name = "pyo3"
 version = "0.28.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf85e27e86080aafd5a22eae58a162e133a589551542b3e5cee4beb27e54f8e1"
+source = "git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section#91a041953f3f0f219ffb717e321dac56cc56b2b4"
 dependencies = [
  "libc",
  "once_cell",
  "portable-atomic",
- "pyo3-build-config",
+ "pyo3-build-config 0.28.2 (git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section)",
  "pyo3-ffi",
  "pyo3-macros",
 ]
@@ -275,20 +274,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pyo3-build-config"
+version = "0.28.2"
+source = "git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section#91a041953f3f0f219ffb717e321dac56cc56b2b4"
+dependencies = [
+ "target-lexicon",
+]
+
+[[package]]
 name = "pyo3-ffi"
 version = "0.28.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "491aa5fc66d8059dd44a75f4580a2962c1862a1c2945359db36f6c2818b748dc"
+source = "git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section#91a041953f3f0f219ffb717e321dac56cc56b2b4"
 dependencies = [
  "libc",
- "pyo3-build-config",
+ "pyo3-build-config 0.28.2 (git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section)",
 ]
 
 [[package]]
 name = "pyo3-macros"
 version = "0.28.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5d671734e9d7a43449f8480f8b38115df67bef8d21f76837fa75ee7aaa5e52e"
+source = "git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section#91a041953f3f0f219ffb717e321dac56cc56b2b4"
 dependencies = [
  "proc-macro2",
  "pyo3-macros-backend",
@@ -299,12 +304,10 @@ dependencies = [
 [[package]]
 name = "pyo3-macros-backend"
 version = "0.28.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22faaa1ce6c430a1f71658760497291065e6450d7b5dc2bcf254d49f66ee700a"
+source = "git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section#91a041953f3f0f219ffb717e321dac56cc56b2b4"
 dependencies = [
  "heck",
  "proc-macro2",
- "pyo3-build-config",
  "quote",
  "syn",
 ]

@@ -84,14 +84,26 @@ fn main() {
     )
     .unwrap()
         == "True";
+    let at_least_py_315 = run_python_script(
+        &python,
+        "import sys; print(sys.version_info > (3, 14), end='')",
+    )
+    .unwrap()
+        == "True";
 
     // Enable abi3 mode if we're not using PyPy or the free-threaded build
-    if !(python_impl == "PyPy" || is_free_threaded) {
+    if !(python_impl == "PyPy" || is_free_threaded || at_least_py_315) {
         // cp38 (Python 3.8 to help our grep when we some day drop 3.8 support)
         build.define("Py_LIMITED_API", "0x030800f0");
     }
 
-    if cfg!(windows) {
+    if at_least_py_315 {
+        build.define("Py_LIMITED_API", "0x030F0000");
+        build.define("Py_GIL_DISABLED", "1");
+        build.define("_Py_OPAQUE_PYOBJECT", "1");
+    }
+
+    if cfg!(windows) && !at_least_py_315 {
         build.define("WIN32_LEAN_AND_MEAN", None);
         // python.h doesn't set this on the Windows free-threaded build
         // see https://github.com/python/cpython/issues/127294

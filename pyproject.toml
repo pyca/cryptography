@@ -2,15 +2,14 @@
 # These requirements must be kept sync with the requirements in
 # ./.github/requirements/build-requirements.{in,txt}
 requires = [
-    "maturin>=1.9.4,<2,!=1.12.0",
+    "maturin @ git+https://github.com/ngoldbaum/maturin@abi3t",
 
     # Must be kept in sync with `project.dependencies`
-    "cffi>=1.14; platform_python_implementation != 'PyPy' and python_version == '3.8'",
-    "cffi>=2.0.0; platform_python_implementation != 'PyPy' and python_version >= '3.9'",
+    "cffi @ git+https://github.com/ngoldbaum/cffi@abi3t.abi3",
     # Used by cffi (which import distutils, and in Python 3.12, distutils has
     # been removed from the stdlib, but installing setuptools puts it back) as
     # well as our build.rs for the rust/cffi bridge.
-    "setuptools!=74.0.0,!=74.1.0,!=74.1.1,!=74.1.2",
+    "setuptools @ git+https://github.com/ngoldbaum/setuptools@abi3.abi3t",
 ]
 build-backend = "maturin"
 
