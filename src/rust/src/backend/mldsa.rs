@@ -91,21 +91,9 @@ impl MlDsa65PrivateKey {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        // AWS-LC's raw_private_key() returns the expanded key, not the seed.
-        // Round-trip through PKCS#8 DER to extract the 32-byte seed.
-        // Note: private_key_to_pkcs8() (i2d_PKCS8PrivateKey_bio) must be used
-        // instead of private_key_to_der() (i2d_PrivateKey), because AWS-LC's
-        // i2d_PrivateKey doesn't support PQDSA keys.
-        let pkcs8_der = self.pkey.private_key_to_pkcs8()?;
-        let pki =
-            asn1::parse_single::<cryptography_key_parsing::pkcs8::PrivateKeyInfo<'_>>(&pkcs8_der)
-                .unwrap();
         let cryptography_key_parsing::pkcs8::MlDsaPrivateKey::Seed(seed) =
-            asn1::parse_single::<cryptography_key_parsing::pkcs8::MlDsaPrivateKey<'_>>(
-                pki.private_key,
-            )
-            .unwrap();
-        Ok(pyo3::types::PyBytes::new(py, seed))
+            cryptography_key_parsing::pkcs8::mldsa_seed_from_pkey(&self.pkey)?;
+        Ok(pyo3::types::PyBytes::new(py, &seed))
     }
 
     fn private_bytes<'p>(

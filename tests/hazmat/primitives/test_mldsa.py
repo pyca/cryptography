@@ -160,6 +160,7 @@ class TestMlDsa65:
         serialized = key.private_bytes(encoding, fmt, encryption)
         loaded_key = load_func(serialized, passwd, backend)
         assert isinstance(loaded_key, MlDsa65PrivateKey)
+        assert loaded_key.private_bytes_raw() == key.private_bytes_raw()
         sig = loaded_key.sign(b"test data")
         key.public_key().verify(sig, b"test data")
 
