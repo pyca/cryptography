@@ -219,7 +219,7 @@ pytest-xdist==3.6.1 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
 pytest-xdist==3.8.0 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
-python-discovery==1.2.0
+python-discovery==1.2.1
     # via virtualenv
 pytz==2026.1.post1 ; python_full_version < '3.9'
     # via babel
@@ -235,7 +235,7 @@ requests==2.32.5 ; python_full_version >= '3.9'
     #   sphinxcontrib-spelling
 roman-numerals==4.1.0 ; python_full_version >= '3.11'
     # via sphinx
-ruff==0.15.7
+ruff==0.15.8
     # via cryptography (pyproject.toml)
 snowballstemmer==3.0.1
     # via sphinx
@@ -332,7 +332,7 @@ urllib3==2.2.3 ; python_full_version < '3.9'
     # via requests
 urllib3==2.6.3 ; python_full_version >= '3.9'
     # via requests
-uv==0.11.1
+uv==0.11.2
     # via nox
 virtualenv==21.2.0
     # via nox
