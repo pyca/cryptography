@@ -21,6 +21,8 @@ pub(crate) mod hmac;
 pub(crate) mod hpke;
 pub(crate) mod kdf;
 pub(crate) mod keys;
+#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+pub(crate) mod mldsa;
 pub(crate) mod poly1305;
 pub(crate) mod rand;
 pub(crate) mod rsa;

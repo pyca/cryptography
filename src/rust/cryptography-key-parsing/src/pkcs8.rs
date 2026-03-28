@@ -22,6 +22,28 @@ pub struct PrivateKeyInfo<'a> {
     pub attributes: Option<Attributes<'a>>,
 }
 
+// RFC 9881 Section 6.5
+#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub enum MlDsaPrivateKey {
+    #[implicit(0)]
+    Seed([u8; 32]),
+}
+
+/// Extract the 32-byte ML-DSA-65 seed from a private key.
+///
+/// AWS-LC's `raw_private_key()` returns the expanded key, not the seed.
+/// This function round-trips through the native PKCS#8 encoding to extract it.
+/// https://github.com/aws/aws-lc/issues/3072
+#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+pub fn mldsa_seed_from_pkey(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+) -> Result<MlDsaPrivateKey, openssl::error::ErrorStack> {
+    let pkcs8_der = pkey.private_key_to_pkcs8()?;
+    let pki = asn1::parse_single::<PrivateKeyInfo<'_>>(&pkcs8_der).unwrap();
+    Ok(asn1::parse_single::<MlDsaPrivateKey>(pki.private_key).unwrap())
+}
+
 pub fn parse_private_key(
     data: &[u8],
 ) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
@@ -106,6 +128,12 @@ pub fn parse_private_key(
                 key_bytes,
                 openssl::pkey::Id::ED448,
             )?)
+        }
+
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        AlgorithmParameters::MlDsa65 => {
+            let MlDsaPrivateKey::Seed(seed) = asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
+            Ok(cryptography_openssl::mldsa::new_raw_private_key(&seed)?)
         }
 
         _ => Err(KeyParsingError::UnsupportedKeyType(
@@ -442,6 +470,11 @@ pub fn serialize_private_key(
             };
 
             (params, private_key_der)
+        }
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        cryptography_openssl::mldsa::PKEY_ID => {
+            let private_key_der = asn1::write_single(&mldsa_seed_from_pkey(pkey)?)?;
+            (AlgorithmParameters::MlDsa65, private_key_der)
         }
         _ => {
             unimplemented!("Unknown key type");
