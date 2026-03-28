@@ -9,6 +9,7 @@
 pub mod certificate;
 pub mod ops;
 pub mod policy;
+pub mod revocation;
 pub mod trust_store;
 pub mod types;
 
@@ -26,6 +27,7 @@ use cryptography_x509::oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID}
 use crate::certificate::cert_is_self_issued;
 use crate::ops::{CryptoOps, VerificationCertificate};
 use crate::policy::Policy;
+use crate::revocation::RevocationChecker;
 use crate::trust_store::Store;
 use crate::types::{
     DNSConstraint, DNSPattern, IPAddress, IPConstraint, RFC822Constraint, RFC822Name,
@@ -40,6 +42,7 @@ pub enum ValidationErrorKind<'chain, B: CryptoOps> {
         reason: &'static str,
     },
     FatalError(&'static str),
+    RevocationNotDetermined,
     Other(String),
 }
 
@@ -91,6 +94,9 @@ impl<B: CryptoOps> Display for ValidationError<'_, B> {
                 write!(f, "invalid extension: {oid}: {reason}")
             }
             ValidationErrorKind::FatalError(err) => write!(f, "fatal error: {err}"),
+            ValidationErrorKind::RevocationNotDetermined => {
+                write!(f, "unable to determine revocation status")
+            }
             ValidationErrorKind::Other(err) => write!(f, "{err}"),
         }
     }
@@ -270,9 +276,10 @@ pub fn verify<'chain, B: CryptoOps>(
     leaf: &VerificationCertificate<'chain, B>,
     intermediates: &[VerificationCertificate<'chain, B>],
     policy: &Policy<'_, B>,
+    revocation_checker: Option<&'_ RevocationChecker<'_, B>>,
     store: &Store<'chain, B>,
 ) -> ValidationResult<'chain, Chain<'chain, B>, B> {
-    let builder = ChainBuilder::new(intermediates, policy, store);
+    let builder = ChainBuilder::new(intermediates, policy, revocation_checker, store);
 
     let mut budget = Budget::new();
     builder.build_chain(leaf, &mut budget)
@@ -281,6 +288,7 @@ pub fn verify<'chain, B: CryptoOps>(
 struct ChainBuilder<'a, 'chain, B: CryptoOps> {
     intermediates: &'a [VerificationCertificate<'chain, B>],
     policy: &'a Policy<'a, B>,
+    revocation_checker: Option<&'a RevocationChecker<'a, B>>,
     store: &'a Store<'chain, B>,
 }
 
@@ -307,11 +315,13 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     fn new(
         intermediates: &'a [VerificationCertificate<'chain, B>],
         policy: &'a Policy<'a, B>,
+        revocation_checker: Option<&'a RevocationChecker<'a, B>>,
         store: &'a Store<'chain, B>,
     ) -> Self {
         Self {
             intermediates,
             policy,
+            revocation_checker,
             store,
         }
     }
@@ -408,6 +418,18 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                         budget,
                     ) {
                         Ok(mut chain) => {
+                            if let Some(revocation_checker) = self.revocation_checker {
+                                if revocation_checker.is_revoked(
+                                    working_cert,
+                                    issuing_cert_candidate,
+                                    self.policy,
+                                )? {
+                                    return Err(ValidationError::new(ValidationErrorKind::Other(
+                                        "certificate revoked".to_string(),
+                                    )));
+                                }
+                            }
+
                             chain.push(working_cert.clone());
                             return Ok(chain);
                         }
@@ -498,6 +520,10 @@ mod tests {
             err.to_string(),
             "invalid extension: 2.5.29.17: duplicate extension"
         );
+
+        let err =
+            ValidationError::<PublicKeyErrorOps>::new(ValidationErrorKind::RevocationNotDetermined);
+        assert_eq!(err.to_string(), "unable to determine revocation status");
 
         let err =
             ValidationError::<PublicKeyErrorOps>::new(ValidationErrorKind::FatalError("oops"));

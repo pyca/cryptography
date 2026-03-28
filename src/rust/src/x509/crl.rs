@@ -10,6 +10,7 @@ use cryptography_x509::crl::{
 };
 use cryptography_x509::extensions::{Extension, IssuerAlternativeName};
 use cryptography_x509::{name, oid};
+use cryptography_x509_verification::ops::CryptoOps;
 use pyo3::types::{PyAnyMethods, PyListMethods, PySliceMethods};
 
 use crate::asn1::{
@@ -17,6 +18,7 @@ use crate::asn1::{
 };
 use crate::backend::hashes::Hash;
 use crate::error::{CryptographyError, CryptographyResult};
+use crate::x509::verify::PyCryptoOps;
 use crate::x509::{certificate, extensions, sign};
 use crate::{exceptions, types, x509};
 
@@ -72,7 +74,7 @@ pub(crate) fn load_pem_x509_crl(
 }
 
 self_cell::self_cell!(
-    struct OwnedCertificateRevocationList {
+    pub(crate) struct OwnedCertificateRevocationList {
         owner: pyo3::Py<pyo3::types::PyBytes>,
         #[covariant]
         dependent: RawCertificateRevocationList,
@@ -81,7 +83,7 @@ self_cell::self_cell!(
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct CertificateRevocationList {
-    owned: OwnedCertificateRevocationList,
+    pub(crate) owned: OwnedCertificateRevocationList,
 
     revoked_certs: pyo3::sync::PyOnceLock<Vec<OwnedRevokedCertificate>>,
     cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
@@ -422,14 +424,10 @@ impl CertificateRevocationList {
         // being an invalid signature.
         sign::identify_public_key_type(py, public_key.clone())?;
 
-        Ok(sign::verify_signature_with_signature_algorithm(
-            py,
-            public_key,
-            &slf.owned.borrow_dependent().signature_algorithm,
-            slf.owned.borrow_dependent().signature_value.as_bytes(),
-            &asn1::write_single(&slf.owned.borrow_dependent().tbs_cert_list)?,
-        )
-        .is_ok())
+        let ops = PyCryptoOps {};
+        Ok(ops
+            .verify_crl_signed_by(slf.owned.borrow_dependent(), &public_key.unbind())
+            .is_ok())
     }
 }
 
