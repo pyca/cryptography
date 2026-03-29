@@ -23,6 +23,10 @@ pub enum Type {
     Sequence(pyo3::Py<pyo3::types::PyType>, pyo3::Py<pyo3::types::PyDict>),
     /// SEQUENCE OF (`list[`T`]`)
     SequenceOf(pyo3::Py<AnnotatedType>),
+    /// SET(`class`, `dict`)
+    /// The first element is the Python class that represents the set,
+    /// the second element is a dict of the (already converted) fields of the class.
+    Set(pyo3::Py<pyo3::types::PyType>, pyo3::Py<pyo3::types::PyDict>),
     /// SET OF (`list[`T`]`)
     SetOf(pyo3::Py<AnnotatedType>),
     /// OPTIONAL (`T | None`)
@@ -650,6 +654,7 @@ pub(crate) fn is_tag_valid_for_type(
 ) -> bool {
     match type_ {
         Type::Sequence(_, _) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
+        Type::Set(_, _) => check_tag_with_encoding(asn1::Set::TAG, encoding, tag),
         Type::SequenceOf(_) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
         Type::SetOf(_) => check_tag_with_encoding(asn1::SetOf::<()>::TAG, encoding, tag),
         Type::Option(t) => is_tag_valid_for_type(py, tag, t.get().inner.get(), encoding),

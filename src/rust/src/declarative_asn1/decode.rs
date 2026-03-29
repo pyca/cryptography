@@ -286,6 +286,21 @@ pub(crate) fn decode_annotated_type<'a>(
                 Ok(list.into_any())
             })?
         }
+        Type::Set(cls, fields) => {
+            let set_parse_result = read_value::<asn1::Set<'_>>(parser, encoding)?;
+
+            set_parse_result.parse(|d| -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
+                let kwargs = pyo3::types::PyDict::new(py);
+                let fields = fields.bind(py);
+                for (name, ann_type) in fields.into_iter() {
+                    let ann_type = ann_type.cast::<AnnotatedType>()?;
+                    let value = decode_annotated_type(py, d, ann_type.get())?;
+                    kwargs.set_item(name, value)?;
+                }
+                let val = cls.call(py, (), Some(&kwargs))?.into_bound(py);
+                Ok(val)
+            })?
+        }
         Type::SetOf(cls) => {
             let setof_parse_result = read_value::<asn1::Set<'_>>(parser, encoding)?;
 

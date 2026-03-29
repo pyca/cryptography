@@ -164,7 +164,10 @@ def _normalize_field_type(
 
     if hasattr(field_type, "__asn1_root__"):
         root_type = field_type.__asn1_root__
-        if not isinstance(root_type, declarative_asn1.Type.Sequence):
+        if not isinstance(
+            root_type,
+            (declarative_asn1.Type.Sequence, declarative_asn1.Type.Set),
+        ):
             raise TypeError(f"unsupported root type: {root_type}")
         return declarative_asn1.AnnotatedType(
             typing.cast(declarative_asn1.Type, root_type), annotation
@@ -325,6 +328,13 @@ def _register_asn1_sequence(cls: type[U]) -> None:
     setattr(cls, "__asn1_root__", root)
 
 
+def _register_asn1_set(cls: type[U]) -> None:
+    raw_fields = get_type_hints(cls, include_extras=True)
+    root = declarative_asn1.Type.Set(cls, _annotate_fields(raw_fields))
+
+    setattr(cls, "__asn1_root__", root)
+
+
 # Due to https://github.com/python/mypy/issues/19731, we can't define an alias
 # for `dataclass_transform` that conditionally points to `typing` or
 # `typing_extensions` depending on the Python version (like we do for
@@ -356,6 +366,29 @@ if sys.version_info < (3, 11):
         _register_asn1_sequence(dataclass_cls)
         return dataclass_cls
 
+    @typing_extensions.dataclass_transform(kw_only_default=True)
+    def set(cls: type[U]) -> type[U]:
+        # We use `dataclasses.dataclass` to add an __init__ method
+        # to the class with keyword-only parameters.
+        if sys.version_info >= (3, 10):
+            dataclass_cls = dataclasses.dataclass(
+                repr=False,
+                eq=False,
+                # `match_args` was added in Python 3.10 and defaults
+                # to True
+                match_args=False,
+                # `kw_only` was added in Python 3.10 and defaults to
+                # False
+                kw_only=True,
+            )(cls)
+        else:
+            dataclass_cls = dataclasses.dataclass(
+                repr=False,
+                eq=False,
+            )(cls)
+        _register_asn1_set(dataclass_cls)
+        return dataclass_cls
+
 else:
 
     @typing.dataclass_transform(kw_only_default=True)
@@ -369,6 +402,19 @@ else:
             kw_only=True,
         )(cls)
         _register_asn1_sequence(dataclass_cls)
+        return dataclass_cls
+
+    @typing.dataclass_transform(kw_only_default=True)
+    def set(cls: type[U]) -> type[U]:
+        # Only add an __init__ method, with keyword-only
+        # parameters.
+        dataclass_cls = dataclasses.dataclass(
+            repr=False,
+            eq=False,
+            match_args=False,
+            kw_only=True,
+        )(cls)
+        _register_asn1_set(dataclass_cls)
         return dataclass_cls
 
 

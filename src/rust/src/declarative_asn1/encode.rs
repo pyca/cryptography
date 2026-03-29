@@ -78,6 +78,22 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
 
                 write_value(writer, &asn1::SequenceOfWriter::new(values), encoding)
             }
+            Type::Set(_cls, fields) => write_value(
+                writer,
+                &asn1::SetWriter::new(&|w| {
+                    for (name, ann_type) in fields.bind(py).into_iter() {
+                        let name = name.cast::<pyo3::types::PyString>()?;
+                        let ann_type = ann_type.cast::<AnnotatedType>()?;
+                        let object = AnnotatedTypeObject {
+                            annotated_type: ann_type.get(),
+                            value: self.value.getattr(name)?,
+                        };
+                        w.write_element(&object)?;
+                    }
+                    Ok(())
+                }),
+                encoding,
+            ),
             Type::SetOf(cls) => {
                 let setof = value.cast::<super::types::SetOf>()?;
                 let values: Vec<AnnotatedTypeObject<'_>> = setof
