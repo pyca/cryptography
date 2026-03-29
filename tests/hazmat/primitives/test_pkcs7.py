@@ -23,6 +23,15 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
 from cryptography.hazmat.primitives.ciphers import algorithms
 from cryptography.hazmat.primitives.serialization import pkcs7
+from cryptography.x509.oid import (
+    ExtendedKeyUsageOID,
+    ObjectIdentifier,
+)
+from cryptography.x509.verification import (
+    PolicyBuilder,
+    Store,
+    VerificationError,
+)
 from tests.x509.test_x509 import _generate_ca_and_leaf
 
 from ...hazmat.primitives.fixtures_rsa import (
@@ -160,6 +169,145 @@ def _load_cert_key():
         mode="rb",
     )
     return cert, key
+
+
+class TestPKCS7VerifyCertificate:
+    @staticmethod
+    def build_pkcs7_certificate(
+        ca: bool = False,
+        digital_signature: bool = True,
+        usages: typing.Optional[typing.List[ObjectIdentifier]] = None,
+    ) -> x509.Certificate:
+        """
+        This static method is a helper to build certificates allowing us
+        to test all cases in PKCS#7 certificate verification.
+        """
+        # Load the standard certificate and private key
+        certificate, private_key = _load_cert_key()
+
+        # Basic certificate builder
+        certificate_builder = (
+            x509.CertificateBuilder()
+            .serial_number(certificate.serial_number)
+            .subject_name(certificate.subject)
+            .issuer_name(certificate.issuer)
+            .public_key(private_key.public_key())
+            .not_valid_before(certificate.not_valid_before)
+            .not_valid_after(certificate.not_valid_after)
+        )
+
+        # Add AuthorityKeyIdentifier extension
+        aki = x509.AuthorityKeyIdentifier(
+            b"\xfc\xeb\xb4\xd8\x12\xf2\xc9=\x99\xc3<g\xf4}7}\xe6\x13\xed\xfa",
+            None,
+            None,
+        )
+        certificate_builder = certificate_builder.add_extension(
+            aki,
+            critical=False,
+        )
+
+        # Add SubjectAlternativeName extension
+        san = x509.SubjectAlternativeName(
+            [
+                x509.RFC822Name("example@example.com"),
+            ]
+        )
+        certificate_builder = certificate_builder.add_extension(
+            san,
+            critical=True,
+        )
+
+        # Add BasicConstraints extension
+        bc_extension = x509.BasicConstraints(ca=ca, path_length=None)
+        certificate_builder = certificate_builder.add_extension(
+            bc_extension, False
+        )
+
+        # Add KeyUsage extension
+        ku_extension = x509.KeyUsage(
+            digital_signature=digital_signature,
+            content_commitment=False,
+            key_encipherment=True,
+            data_encipherment=True,
+            key_agreement=True,
+            key_cert_sign=True,
+            crl_sign=True,
+            encipher_only=False,
+            decipher_only=False,
+        )
+        certificate_builder = certificate_builder.add_extension(
+            ku_extension, True
+        )
+
+        # Add valid ExtendedKeyUsage extension
+        usages = usages or [ExtendedKeyUsageOID.EMAIL_PROTECTION]
+        certificate_builder = certificate_builder.add_extension(
+            x509.ExtendedKeyUsage(usages), True
+        )
+
+        # Build the certificate
+        return certificate_builder.sign(
+            private_key, certificate.signature_hash_algorithm, None
+        )
+
+    def test_verify_pkcs7_certificate(self):
+        # Prepare the parameters
+        certificate = self.build_pkcs7_certificate()
+        ca_policy, ee_policy = pkcs7.pkcs7_x509_extension_policies()
+
+        # Verify the certificate
+        verifier = (
+            PolicyBuilder()
+            .store(Store([certificate]))
+            .extension_policies(ca_policy=ca_policy, ee_policy=ee_policy)
+            .build_client_verifier()
+        )
+        verifier.verify(certificate, [])
+
+    @pytest.mark.parametrize(
+        "arguments",
+        [
+            {"ca": True},
+            {"digital_signature": False},
+            {"usages": [ExtendedKeyUsageOID.CLIENT_AUTH]},
+        ],
+    )
+    def test_verify_invalid_pkcs7_certificate(self, arguments: dict):
+        # Prepare the parameters
+        certificate = self.build_pkcs7_certificate(**arguments)
+
+        # Verify the certificate
+        self.verify_invalid_pkcs7_certificate(certificate)
+
+    @staticmethod
+    def verify_invalid_pkcs7_certificate(certificate: x509.Certificate):
+        ca_policy, ee_policy = pkcs7.pkcs7_x509_extension_policies()
+        verifier = (
+            PolicyBuilder()
+            .store(Store([certificate]))
+            .extension_policies(ca_policy=ca_policy, ee_policy=ee_policy)
+            .build_client_verifier()
+        )
+
+        with pytest.raises(VerificationError):
+            verifier.verify(certificate, [])
+
+    @pytest.mark.parametrize(
+        "filename", ["non-ascii-san.pem", "ascii-san.pem"]
+    )
+    def test_verify_pkcs7_certificate_wrong_san(self, filename):
+        # Read a certificate with an invalid SAN
+        pkcs7_certificate = load_vectors_from_file(
+            os.path.join("pkcs7", filename),
+            loader=lambda pemfile: x509.load_pem_x509_certificate(
+                pemfile.read()
+            ),
+            mode="rb",
+        )
+
+        # Verify the certificate
+        self.verify_invalid_pkcs7_certificate(pkcs7_certificate)
 
 
 @pytest.mark.supported(
