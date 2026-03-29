@@ -44,6 +44,10 @@ pub(crate) fn load_der_ocsp_request(
     Ok(OCSPRequest {
         raw,
         cached_extensions: pyo3::sync::PyOnceLock::new(),
+        cached_issuer_name_hash: pyo3::sync::PyOnceLock::new(),
+        cached_issuer_key_hash: pyo3::sync::PyOnceLock::new(),
+        cached_hash_algorithm: pyo3::sync::PyOnceLock::new(),
+        cached_serial_number: pyo3::sync::PyOnceLock::new(),
     })
 }
 
@@ -52,6 +56,10 @@ pub(crate) struct OCSPRequest {
     raw: OwnedOCSPRequest,
 
     cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_issuer_name_hash: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_issuer_key_hash: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_hash_algorithm: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    cached_serial_number: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 impl OCSPRequest {
@@ -71,13 +79,39 @@ impl OCSPRequest {
 #[pyo3::pymethods]
 impl OCSPRequest {
     #[getter]
-    fn issuer_name_hash(&self) -> &[u8] {
-        self.cert_id().issuer_name_hash
+    fn issuer_name_hash<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        Ok(self
+            .cached_issuer_name_hash
+            .get_or_try_init(py, || -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
+                Ok(
+                    pyo3::types::PyBytes::new(py, self.cert_id().issuer_name_hash)
+                        .into_any()
+                        .unbind(),
+                )
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
-    fn issuer_key_hash(&self) -> &[u8] {
-        self.cert_id().issuer_key_hash
+    fn issuer_key_hash<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+    ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+        Ok(self
+            .cached_issuer_key_hash
+            .get_or_try_init(py, || -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
+                Ok(
+                    pyo3::types::PyBytes::new(py, self.cert_id().issuer_key_hash)
+                        .into_any()
+                        .unbind(),
+                )
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -85,17 +119,26 @@ impl OCSPRequest {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
-        let cert_id = self.cert_id();
-
-        match ocsp::ALGORITHM_PARAMETERS_TO_HASH.get(&cert_id.hash_algorithm.params) {
-            Some(alg_name) => Ok(types::HASHES_MODULE.get(py)?.getattr(*alg_name)?.call0()?),
-            None => Err(CryptographyError::from(
-                exceptions::UnsupportedAlgorithm::new_err(format!(
-                    "Signature algorithm OID: {} not recognized",
-                    cert_id.hash_algorithm.oid()
-                )),
-            )),
-        }
+        Ok(self
+            .cached_hash_algorithm
+            .get_or_try_init(py, || {
+                let cert_id = self.cert_id();
+                match ocsp::ALGORITHM_PARAMETERS_TO_HASH.get(&cert_id.hash_algorithm.params) {
+                    Some(alg_name) => Ok(types::HASHES_MODULE
+                        .get(py)?
+                        .getattr(*alg_name)?
+                        .call0()?
+                        .unbind()),
+                    None => Err(CryptographyError::from(
+                        exceptions::UnsupportedAlgorithm::new_err(format!(
+                            "Signature algorithm OID: {} not recognized",
+                            cert_id.hash_algorithm.oid()
+                        )),
+                    )),
+                }
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -103,8 +146,19 @@ impl OCSPRequest {
         &self,
         py: pyo3::Python<'p>,
     ) -> Result<pyo3::Bound<'p, pyo3::PyAny>, CryptographyError> {
-        let bytes = self.cert_id().serial_number.as_bytes();
-        Ok(big_byte_slice_to_py_int(py, bytes)?)
+        Ok(self
+            .cached_serial_number
+            .get_or_try_init(
+                py,
+                || -> Result<pyo3::Py<pyo3::PyAny>, CryptographyError> {
+                    Ok(
+                        big_byte_slice_to_py_int(py, self.cert_id().serial_number.as_bytes())?
+                            .unbind(),
+                    )
+                },
+            )?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
