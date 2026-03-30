@@ -1266,8 +1266,8 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
     The PKCS7 signature builder can create both basic PKCS7 signed messages as
     well as S/MIME messages, which are commonly used in email. S/MIME has
-    multiple versions, but this implements a subset of :rfc:`2632`, also known
-    as S/MIME Version 3.
+    multiple versions, most of this implementation follows S/MIME 2.0 (RFC 2311).
+    Only a small subset of :rfc:`2632`, also known as S/MIME version 3 is supported.
 
     .. versionadded:: 3.2
 
@@ -1344,8 +1344,8 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
 
     The PKCS7 envelope builder can create encrypted S/MIME messages,
     which are commonly used in email. S/MIME has multiple versions,
-    but this implements a subset of :rfc:`5751`, also known as S/MIME
-    Version 3.2.
+    most of this implementation follows S/MIME 2.0 (RFC 2311).
+    Only a small subset of :rfc:`2632`, also known as S/MIME version 3 is supported.
 
     .. versionadded:: 43.0.0
 
@@ -1434,7 +1434,8 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         b'data to encrypt'
 
     Deserialize and decrypt a DER-encoded PKCS7 message. PKCS7 (or S/MIME) has multiple versions,
-    but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
+    most of this implementation follows S/MIME 2.0 (RFC 2311). A small subset of :rfc:`2632`,
+    also known as S/MIME version 3 is supported.
 
     :param data: The data, encoded in DER format.
     :type data: bytes
@@ -1489,8 +1490,9 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         >>> pkcs7.pkcs7_decrypt_pem(enveloped, cert, key, options)
         b'data to encrypt'
 
-    Deserialize and decrypt a PEM-encoded PKCS7E message. PKCS7 (or S/MIME) has multiple versions,
-    but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
+    Deserialize and decrypt a PEM-encoded PKCS7 message. PKCS7 (or S/MIME) has multiple versions,
+    most of this implementation follows S/MIME 2.0 (RFC 2311). A small subset of :rfc:`2632`,
+    also known as S/MIME version 3 is supported.
 
     :param data: The data, encoded in PEM format.
     :type data: bytes
@@ -1547,7 +1549,8 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         b'data to encrypt'
 
     Deserialize and decrypt a S/MIME-encoded PKCS7 message. PKCS7 (or S/MIME) has multiple versions,
-    but this supports a subset of :rfc:`5751`, also known as S/MIME Version 3.2.
+    most of this implementation follows S/MIME 2.0 (RFC 2311). A small subset of :rfc:`2632`,
+    also known as S/MIME version 3 is supported.
 
     :param data: The data. It should be in S/MIME format, meaning MIME with content type
         ``application/pkcs7-mime`` or ``application/x-pkcs7-mime``.
