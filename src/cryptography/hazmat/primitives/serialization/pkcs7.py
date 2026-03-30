@@ -266,8 +266,9 @@ class PKCS7EnvelopeBuilder:
         if self._data is None:
             raise ValueError("You must add data to encrypt")
 
-        # The default content encryption algorithm is AES-128, which the S/MIME
-        # v3.2 RFC specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.7)
+        # The default content encryption algorithm is AES-128-CBC, which the
+        # S/MIME v3.2 RFC specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.7)
+        # however rest of S/MIME v3.2 is not currently supported
         content_encryption_algorithm = (
             self._content_encryption_algorithm or algorithms.AES128
         )

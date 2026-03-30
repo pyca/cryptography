@@ -130,6 +130,7 @@ fn encrypt_and_serialize<'p>(
     for cert in py_recipients.iter() {
         // Currently, keys are encrypted with RSA (PKCS #1 v1.5), which the S/MIME v3.2 RFC
         // specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.3)
+        // however rest of S/MIME v3.2 is not currently supported
         let encrypted_key = cert
             .call_method0(pyo3::intern!(py, "public_key"))?
             .call_method1(pyo3::intern!(py, "encrypt"), (&key, &padding))?
@@ -293,7 +294,7 @@ fn decrypt_der<'p>(
             // The function can decrypt content encrypted with AES-128-CBC, which the S/MIME v3.2
             // RFC specifies as MUST support, and AES-256-CBC, which is specified as SHOULD+
             // support. More info: https://datatracker.ietf.org/doc/html/rfc5751#section-2.7
-            // TODO: implement the possible algorithms from S/MIME 3.2 (and 4.0?)
+            // however rest of S/MIME v3.2 is not currently supported
             let algorithm_identifier = enveloped_data
                 .encrypted_content_info
                 .content_encryption_algorithm;
