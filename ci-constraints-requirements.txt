@@ -175,7 +175,7 @@ pyenchant==3.3.0 ; python_full_version >= '3.9'
     # via
     #   cryptography (pyproject.toml)
     #   sphinxcontrib-spelling
-pygments==2.19.2
+pygments==2.20.0
     # via
     #   pytest
     #   readme-renderer
