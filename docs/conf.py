@@ -50,6 +50,11 @@ extensions = [
     "sphinx_inline_tabs",
 ]
 
+doctest_global_setup = """
+from cryptography.hazmat.bindings._rust import openssl as _rust_openssl
+SKIP_MLDSA = not _rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+"""
+
 if spelling is not None:
     extensions.append("sphinxcontrib.spelling")
 
