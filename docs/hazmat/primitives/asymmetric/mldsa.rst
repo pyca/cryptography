@@ -12,7 +12,7 @@ Signing & Verification
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. doctest::
-    :skipif: SKIP_MLDSA
+    :skipif: not _backend.mldsa_supported()
 
     >>> from cryptography.hazmat.primitives.asymmetric.mldsa import MlDsa65PrivateKey
     >>> private_key = MlDsa65PrivateKey.generate()
@@ -28,7 +28,7 @@ The context can be up to 255 bytes and is used to differentiate signatures in
 different contexts or protocols.
 
 .. doctest::
-    :skipif: SKIP_MLDSA
+    :skipif: not _backend.mldsa_supported()
 
     >>> from cryptography.hazmat.primitives.asymmetric.mldsa import MlDsa65PrivateKey
     >>> private_key = MlDsa65PrivateKey.generate()
@@ -69,7 +69,7 @@ Key interfaces
             not supported by the backend ``cryptography`` is using.
 
         .. doctest::
-            :skipif: SKIP_MLDSA
+            :skipif: not _backend.mldsa_supported()
 
             >>> from cryptography.hazmat.primitives.asymmetric import mldsa
             >>> private_key = mldsa.MlDsa65PrivateKey.generate()
@@ -158,7 +158,7 @@ Key interfaces
             not supported by the backend ``cryptography`` is using.
 
         .. doctest::
-            :skipif: SKIP_MLDSA
+            :skipif: not _backend.mldsa_supported()
 
             >>> from cryptography.hazmat.primitives import serialization
             >>> from cryptography.hazmat.primitives.asymmetric import mldsa

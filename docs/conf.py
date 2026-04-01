@@ -51,8 +51,7 @@ extensions = [
 ]
 
 doctest_global_setup = """
-from cryptography.hazmat.bindings._rust import openssl as _rust_openssl
-SKIP_MLDSA = not _rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+from cryptography.hazmat.backends.openssl.backend import backend as _backend
 """
 
 if spelling is not None:
