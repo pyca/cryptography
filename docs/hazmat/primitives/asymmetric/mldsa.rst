@@ -1,11 +1,11 @@
 .. hazmat::
 
-ML-DSA-65 signing
+ML-DSA signing
 =================
 
 .. currentmodule:: cryptography.hazmat.primitives.asymmetric.mldsa
 
-ML-DSA-65 is a post-quantum digital signature algorithm based on module
+ML-DSA is a post-quantum digital signature algorithm based on module
 lattices, standardized in `FIPS 204`_.
 
 Signing & Verification
@@ -23,7 +23,7 @@ Signing & Verification
 Context-based Signing & Verification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ML-DSA-65 supports context strings to bind additional information to signatures.
+ML-DSA supports context strings to bind additional information to signatures.
 The context can be up to 255 bytes and is used to differentiate signatures in
 different contexts or protocols.
 
