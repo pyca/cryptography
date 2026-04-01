@@ -23,6 +23,7 @@ private key is able to decrypt it.
 .. toctree::
     :maxdepth: 1
 
+    mldsa
     ed25519
     x25519
     ed448
@@ -31,7 +32,6 @@ private key is able to decrypt it.
     rsa
     dh
     dsa
-    mldsa
     serialization
     utils
     cloudhsm
