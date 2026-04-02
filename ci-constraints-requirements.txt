@@ -26,7 +26,7 @@ certifi==2026.2.25
     # via
     #   cryptography (pyproject.toml)
     #   requests
-charset-normalizer==3.4.6
+charset-normalizer==3.4.7
     # via requests
 check-sdist==1.2.0 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
