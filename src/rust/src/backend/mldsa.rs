@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use cryptography_openssl::mldsa::MlDsaVariant;
 use pyo3::types::PyAnyMethods;
 
 use crate::backend::utils;
@@ -39,25 +40,28 @@ pub(crate) fn public_key_from_pkey(
 
 #[pyo3::pyfunction]
 fn generate_key() -> CryptographyResult<MlDsa65PrivateKey> {
-    let mut seed = [0u8; cryptography_openssl::mldsa::MLDSA65_SEED_BYTES];
+    let mut seed = [0u8; 32];
     cryptography_openssl::rand::rand_bytes(&mut seed)?;
-    let pkey = cryptography_openssl::mldsa::new_raw_private_key(&seed)?;
+    let pkey = cryptography_openssl::mldsa::new_raw_private_key(MlDsaVariant::MlDsa65, &seed)?;
     Ok(MlDsa65PrivateKey { pkey })
 }
 
 #[pyo3::pyfunction]
 fn from_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa65PrivateKey> {
-    let pkey = cryptography_openssl::mldsa::new_raw_private_key(data.as_bytes()).map_err(|_| {
-        pyo3::exceptions::PyValueError::new_err("An ML-DSA-65 seed is 32 bytes long")
-    })?;
+    let pkey =
+        cryptography_openssl::mldsa::new_raw_private_key(MlDsaVariant::MlDsa65, data.as_bytes())
+            .map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err("An ML-DSA-65 seed is 32 bytes long")
+            })?;
     Ok(MlDsa65PrivateKey { pkey })
 }
 
 #[pyo3::pyfunction]
 fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<MlDsa65PublicKey> {
-    let pkey = cryptography_openssl::mldsa::new_raw_public_key(data).map_err(|_| {
-        pyo3::exceptions::PyValueError::new_err("An ML-DSA-65 public key is 1952 bytes long")
-    })?;
+    let pkey = cryptography_openssl::mldsa::new_raw_public_key(MlDsaVariant::MlDsa65, data)
+        .map_err(|_| {
+            pyo3::exceptions::PyValueError::new_err("An ML-DSA-65 public key is 1952 bytes long")
+        })?;
     Ok(MlDsa65PublicKey { pkey })
 }
 
@@ -83,7 +87,10 @@ impl MlDsa65PrivateKey {
     fn public_key(&self) -> CryptographyResult<MlDsa65PublicKey> {
         let raw_bytes = self.pkey.raw_public_key()?;
         Ok(MlDsa65PublicKey {
-            pkey: cryptography_openssl::mldsa::new_raw_public_key(&raw_bytes)?,
+            pkey: cryptography_openssl::mldsa::new_raw_public_key(
+                MlDsaVariant::MlDsa65,
+                &raw_bytes,
+            )?,
         })
     }
 

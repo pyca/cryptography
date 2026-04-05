@@ -172,7 +172,7 @@ fn private_key_from_pkey<'p>(
             let pub_len = pkey.raw_public_key()?.len();
             assert_eq!(
                 pub_len,
-                cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa65.public_key_bytes()
             );
             Ok(crate::backend::mldsa::private_key_from_pkey(pkey)
                 .into_pyobject(py)?
@@ -310,7 +310,7 @@ fn public_key_from_pkey<'p>(
             let pub_len = pkey.raw_public_key()?.len();
             assert_eq!(
                 pub_len,
-                cryptography_openssl::mldsa::MLDSA65_PUBLIC_KEY_BYTES
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa65.public_key_bytes()
             );
             Ok(crate::backend::mldsa::public_key_from_pkey(pkey)
                 .into_pyobject(py)?
