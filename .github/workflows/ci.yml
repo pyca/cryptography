@@ -427,8 +427,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Mar 30, 2026.
-            REF: 3d84863915f8b6ec8a11be2132ebb2bd0b3d0c03
+            # Latest commit on the twisted trunk branch, as of Apr 05, 2026.
+            REF: e172cf1bb236866efad056b2e4d5994d8b6a04f4
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
