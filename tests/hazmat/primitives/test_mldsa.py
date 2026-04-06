@@ -258,16 +258,12 @@ class TestMlDsa:
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
     def test_invalid_type_public_bytes(self, variant, backend):
         with pytest.raises(TypeError):
-            variant.public_key_class.from_public_bytes(
-                object()
-            )
+            variant.public_key_class.from_public_bytes(object())
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
     def test_invalid_type_seed_bytes(self, variant, backend):
         with pytest.raises(TypeError):
-            variant.private_key_class.from_seed_bytes(
-                object()
-            )
+            variant.private_key_class.from_seed_bytes(object())
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
     def test_invalid_private_bytes(self, variant, backend):
