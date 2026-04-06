@@ -39,7 +39,7 @@ pub(crate) fn public_key_from_pkey(
 }
 
 #[pyo3::pyfunction]
-fn generate_key() -> CryptographyResult<MlDsa65PrivateKey> {
+fn generate_key_mldsa65() -> CryptographyResult<MlDsa65PrivateKey> {
     let mut seed = [0u8; 32];
     cryptography_openssl::rand::rand_bytes(&mut seed)?;
     let pkey = cryptography_openssl::mldsa::new_raw_private_key(MlDsaVariant::MlDsa65, &seed)?;
@@ -47,7 +47,7 @@ fn generate_key() -> CryptographyResult<MlDsa65PrivateKey> {
 }
 
 #[pyo3::pyfunction]
-fn from_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa65PrivateKey> {
+fn from_seed_bytes_mldsa65(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa65PrivateKey> {
     let pkey =
         cryptography_openssl::mldsa::new_raw_private_key(MlDsaVariant::MlDsa65, data.as_bytes())
             .map_err(|_| {
@@ -57,7 +57,7 @@ fn from_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa65PrivateKey> {
 }
 
 #[pyo3::pyfunction]
-fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<MlDsa65PublicKey> {
+fn from_public_bytes_mldsa65(data: &[u8]) -> pyo3::PyResult<MlDsa65PublicKey> {
     let pkey = cryptography_openssl::mldsa::new_raw_public_key(MlDsaVariant::MlDsa65, data)
         .map_err(|_| {
             pyo3::exceptions::PyValueError::new_err("An ML-DSA-65 public key is 1952 bytes long")
@@ -212,6 +212,7 @@ impl MlDsa65PublicKey {
 pub(crate) mod mldsa {
     #[pymodule_export]
     use super::{
-        from_public_bytes, from_seed_bytes, generate_key, MlDsa65PrivateKey, MlDsa65PublicKey,
+        from_public_bytes_mldsa65, from_seed_bytes_mldsa65, generate_key_mldsa65,
+        MlDsa65PrivateKey, MlDsa65PublicKey,
     };
 }
