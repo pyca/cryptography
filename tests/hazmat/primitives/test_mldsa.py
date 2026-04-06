@@ -5,6 +5,7 @@
 
 import binascii
 import copy
+import dataclasses
 import os
 
 import pytest
@@ -22,6 +23,29 @@ from ...utils import (
     load_vectors_from_file,
     raises_unsupported_algorithm,
 )
+
+
+@dataclasses.dataclass
+class MlDsaVariant:
+    private_key_class: type
+    public_key_class: type
+    pub_key_size: int
+    sig_size: int
+    seed_size: int
+
+
+ML_DSA_VARIANTS = [
+    pytest.param(
+        MlDsaVariant(
+            private_key_class=MlDsa65PrivateKey,
+            public_key_class=MlDsa65PublicKey,
+            pub_key_size=1952,
+            sig_size=3309,
+            seed_size=32,
+        ),
+        id="ML-DSA-65",
+    ),
+]
 
 
 @pytest.mark.supported(
@@ -49,17 +73,20 @@ def test_mldsa_unsupported(backend):
     only_if=lambda backend: backend.mldsa_supported(),
     skip_message="Requires a backend with ML-DSA-65 support",
 )
-class TestMlDsa65:
-    def test_sign_verify(self, backend):
-        key = MlDsa65PrivateKey.generate()
+class TestMlDsa:
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_sign_verify(self, variant, backend):
+        key = variant.private_key_class.generate()
         sig = key.sign(b"test data")
         key.public_key().verify(sig, b"test data")
 
-    def test_sign_verify_empty_message(self, backend):
-        key = MlDsa65PrivateKey.generate()
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_sign_verify_empty_message(self, variant, backend):
+        key = variant.private_key_class.generate()
         sig = key.sign(b"")
         key.public_key().verify(sig, b"")
 
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
     @pytest.mark.parametrize(
         "ctx",
         [
@@ -67,13 +94,14 @@ class TestMlDsa65:
             b"a" * 255,
         ],
     )
-    def test_sign_verify_with_context(self, backend, ctx):
-        key = MlDsa65PrivateKey.generate()
+    def test_sign_verify_with_context(self, variant, backend, ctx):
+        key = variant.private_key_class.generate()
         sig = key.sign(b"test data", ctx)
         key.public_key().verify(sig, b"test data", ctx)
 
-    def test_empty_context_equivalence(self, backend):
-        key = MlDsa65PrivateKey.generate()
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_empty_context_equivalence(self, variant, backend):
+        key = variant.private_key_class.generate()
         pub = key.public_key()
         data = b"test data"
         sig = key.sign(data)
@@ -102,11 +130,12 @@ class TestMlDsa65:
                 pub = MlDsa65PublicKey.from_public_bytes(pk)
                 pub.verify(expected_sig, msg, ctx)
 
-    def test_private_bytes_raw_round_trip(self, backend):
-        key = MlDsa65PrivateKey.generate()
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_private_bytes_raw_round_trip(self, variant, backend):
+        key = variant.private_key_class.generate()
         seed = key.private_bytes_raw()
-        assert len(seed) == 32
-        key2 = MlDsa65PrivateKey.from_seed_bytes(seed)
+        assert len(seed) == variant.seed_size
+        key2 = variant.private_key_class.from_seed_bytes(seed)
         assert key2.private_bytes_raw() == seed
         assert seed == key.private_bytes(
             serialization.Encoding.Raw,
@@ -116,10 +145,11 @@ class TestMlDsa65:
 
         pub = key.public_key()
         raw_pub = pub.public_bytes_raw()
-        assert len(raw_pub) == 1952
-        pub2 = MlDsa65PublicKey.from_public_bytes(raw_pub)
+        assert len(raw_pub) == variant.pub_key_size
+        pub2 = variant.public_key_class.from_public_bytes(raw_pub)
         assert pub2.public_bytes_raw() == raw_pub
 
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
     @pytest.mark.parametrize(
         ("encoding", "fmt", "encryption", "passwd", "load_func"),
         [
@@ -154,16 +184,17 @@ class TestMlDsa65:
         ],
     )
     def test_round_trip_private_serialization(
-        self, encoding, fmt, encryption, passwd, load_func, backend
+        self, variant, encoding, fmt, encryption, passwd, load_func, backend
     ):
-        key = MlDsa65PrivateKey.generate()
+        key = variant.private_key_class.generate()
         serialized = key.private_bytes(encoding, fmt, encryption)
         loaded_key = load_func(serialized, passwd, backend)
-        assert isinstance(loaded_key, MlDsa65PrivateKey)
+        assert isinstance(loaded_key, variant.private_key_class)
         assert loaded_key.private_bytes_raw() == key.private_bytes_raw()
         sig = loaded_key.sign(b"test data")
         key.public_key().verify(sig, b"test data")
 
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
     @pytest.mark.parametrize(
         ("encoding", "fmt", "load_func"),
         [
@@ -180,59 +211,67 @@ class TestMlDsa65:
         ],
     )
     def test_round_trip_public_serialization(
-        self, encoding, fmt, load_func, backend
+        self, variant, encoding, fmt, load_func, backend
     ):
-        key = MlDsa65PrivateKey.generate()
+        key = variant.private_key_class.generate()
         pub = key.public_key()
         serialized = pub.public_bytes(encoding, fmt)
         loaded_pub = load_func(serialized, backend)
-        assert isinstance(loaded_pub, MlDsa65PublicKey)
+        assert isinstance(loaded_pub, variant.public_key_class)
         assert loaded_pub == pub
 
-    def test_invalid_signature(self, backend):
-        key = MlDsa65PrivateKey.generate()
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_invalid_signature(self, variant, backend):
+        key = variant.private_key_class.generate()
         sig = key.sign(b"test data")
         with pytest.raises(InvalidSignature):
             key.public_key().verify(sig, b"wrong data")
 
         with pytest.raises(InvalidSignature):
-            key.public_key().verify(b"0" * 3309, b"test data")
+            key.public_key().verify(b"0" * variant.sig_size, b"test data")
 
-    def test_context_wrong_context(self, backend):
-        key = MlDsa65PrivateKey.generate()
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_context_wrong_context(self, variant, backend):
+        key = variant.private_key_class.generate()
         sig = key.sign(b"test data", b"ctx-a")
         with pytest.raises(InvalidSignature):
             key.public_key().verify(sig, b"test data", b"ctx-b")
 
-    def test_context_too_long(self, backend):
-        key = MlDsa65PrivateKey.generate()
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_context_too_long(self, variant, backend):
+        key = variant.private_key_class.generate()
         with pytest.raises(ValueError):
             key.sign(b"data", b"x" * 256)
         with pytest.raises(ValueError):
             key.public_key().verify(b"sig", b"data", b"x" * 256)
 
-    def test_invalid_length_from_public_bytes(self, backend):
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_invalid_length_from_public_bytes(self, variant, backend):
         with pytest.raises(ValueError):
-            MlDsa65PublicKey.from_public_bytes(b"a" * 10)
+            variant.public_key_class.from_public_bytes(b"a" * 10)
 
-    def test_invalid_length_from_seed_bytes(self, backend):
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_invalid_length_from_seed_bytes(self, variant, backend):
         with pytest.raises(ValueError):
-            MlDsa65PrivateKey.from_seed_bytes(b"a" * 10)
+            variant.private_key_class.from_seed_bytes(b"a" * 10)
 
-    def test_invalid_type_public_bytes(self, backend):
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_invalid_type_public_bytes(self, variant, backend):
         with pytest.raises(TypeError):
-            MlDsa65PublicKey.from_public_bytes(
+            variant.public_key_class.from_public_bytes(
                 object()  # type: ignore[arg-type]
             )
 
-    def test_invalid_type_seed_bytes(self, backend):
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_invalid_type_seed_bytes(self, variant, backend):
         with pytest.raises(TypeError):
-            MlDsa65PrivateKey.from_seed_bytes(
+            variant.private_key_class.from_seed_bytes(
                 object()  # type: ignore[arg-type]
             )
 
-    def test_invalid_private_bytes(self, backend):
-        key = MlDsa65PrivateKey.generate()
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_invalid_private_bytes(self, variant, backend):
+        key = variant.private_key_class.generate()
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.Raw,
@@ -260,8 +299,9 @@ class TestMlDsa65:
                 serialization.NoEncryption(),
             )
 
-    def test_invalid_public_bytes(self, backend):
-        key = MlDsa65PrivateKey.generate().public_key()
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_invalid_public_bytes(self, variant, backend):
+        key = variant.private_key_class.generate().public_key()
         with pytest.raises(ValueError):
             key.public_bytes(
                 serialization.Encoding.Raw,
@@ -279,6 +319,45 @@ class TestMlDsa65:
                 serialization.Encoding.PEM,
                 serialization.PublicFormat.Raw,
             )
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_public_key_equality(self, variant, backend):
+        key = variant.private_key_class.generate()
+        pub1 = key.public_key()
+        pub2 = key.public_key()
+        pub3 = variant.private_key_class.generate().public_key()
+        assert pub1 == pub2
+        assert pub1 != pub3
+        assert pub1 != object()
+
+        with pytest.raises(TypeError):
+            pub1 < pub2  # type: ignore[operator]
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_public_key_copy(self, variant, backend):
+        key = variant.private_key_class.generate()
+        pub1 = key.public_key()
+        pub2 = copy.copy(pub1)
+        assert pub1 == pub2
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_public_key_deepcopy(self, variant, backend):
+        key = variant.private_key_class.generate()
+        pub1 = key.public_key()
+        pub2 = copy.deepcopy(pub1)
+        assert pub1 == pub2
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_private_key_copy(self, variant, backend):
+        key1 = variant.private_key_class.generate()
+        key2 = copy.copy(key1)
+        assert key1.private_bytes_raw() == key2.private_bytes_raw()
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_private_key_deepcopy(self, variant, backend):
+        key1 = variant.private_key_class.generate()
+        key2 = copy.deepcopy(key1)
+        assert key1.private_bytes_raw() == key2.private_bytes_raw()
 
 
 @pytest.mark.supported(
@@ -331,62 +410,3 @@ def test_unsupported_mldsa_variant_public_key(backend):
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
     ):
         serialization.load_der_public_key(spki_der, backend=backend)
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mldsa_supported(),
-    skip_message="Requires a backend with ML-DSA-65 support",
-)
-def test_public_key_equality(backend):
-    key = MlDsa65PrivateKey.generate()
-    pub1 = key.public_key()
-    pub2 = key.public_key()
-    pub3 = MlDsa65PrivateKey.generate().public_key()
-    assert pub1 == pub2
-    assert pub1 != pub3
-    assert pub1 != object()
-
-    with pytest.raises(TypeError):
-        pub1 < pub2  # type: ignore[operator]
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mldsa_supported(),
-    skip_message="Requires a backend with ML-DSA-65 support",
-)
-def test_public_key_copy(backend):
-    key = MlDsa65PrivateKey.generate()
-    pub1 = key.public_key()
-    pub2 = copy.copy(pub1)
-    assert pub1 == pub2
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mldsa_supported(),
-    skip_message="Requires a backend with ML-DSA-65 support",
-)
-def test_public_key_deepcopy(backend):
-    key = MlDsa65PrivateKey.generate()
-    pub1 = key.public_key()
-    pub2 = copy.deepcopy(pub1)
-    assert pub1 == pub2
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mldsa_supported(),
-    skip_message="Requires a backend with ML-DSA-65 support",
-)
-def test_private_key_copy(backend):
-    key1 = MlDsa65PrivateKey.generate()
-    key2 = copy.copy(key1)
-    assert key1.private_bytes_raw() == key2.private_bytes_raw()
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mldsa_supported(),
-    skip_message="Requires a backend with ML-DSA-65 support",
-)
-def test_private_key_deepcopy(backend):
-    key1 = MlDsa65PrivateKey.generate()
-    key2 = copy.deepcopy(key1)
-    assert key1.private_bytes_raw() == key2.private_bytes_raw()
