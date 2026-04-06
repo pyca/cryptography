@@ -259,14 +259,14 @@ class TestMlDsa:
     def test_invalid_type_public_bytes(self, variant, backend):
         with pytest.raises(TypeError):
             variant.public_key_class.from_public_bytes(
-                object()  # type: ignore[arg-type]
+                object()
             )
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
     def test_invalid_type_seed_bytes(self, variant, backend):
         with pytest.raises(TypeError):
             variant.private_key_class.from_seed_bytes(
-                object()  # type: ignore[arg-type]
+                object()
             )
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
@@ -276,7 +276,7 @@ class TestMlDsa:
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.Raw,
-                None,  # type: ignore[arg-type]
+                None,
             )
         with pytest.raises(ValueError):
             key.private_bytes(
@@ -331,7 +331,7 @@ class TestMlDsa:
         assert pub1 != object()
 
         with pytest.raises(TypeError):
-            pub1 < pub2  # type: ignore[operator]
+            pub1 < pub2
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
     def test_public_key_copy(self, variant, backend):
