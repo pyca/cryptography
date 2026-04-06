@@ -174,7 +174,7 @@ fn private_key_from_pkey<'p>(
                 pub_len,
                 cryptography_openssl::mldsa::MlDsaVariant::MlDsa65.public_key_bytes()
             );
-            Ok(crate::backend::mldsa::private_key_from_pkey(pkey)
+            Ok(crate::backend::mldsa::mldsa65_private_key_from_pkey(pkey)
                 .into_pyobject(py)?
                 .into_any())
         }
@@ -312,7 +312,7 @@ fn public_key_from_pkey<'p>(
                 pub_len,
                 cryptography_openssl::mldsa::MlDsaVariant::MlDsa65.public_key_bytes()
             );
-            Ok(crate::backend::mldsa::public_key_from_pkey(pkey)
+            Ok(crate::backend::mldsa::mldsa65_public_key_from_pkey(pkey)
                 .into_pyobject(py)?
                 .into_any())
         }

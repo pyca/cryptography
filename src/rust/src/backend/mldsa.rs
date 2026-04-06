@@ -22,7 +22,7 @@ pub(crate) struct MlDsa65PublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
 
-pub(crate) fn private_key_from_pkey(
+pub(crate) fn mldsa65_private_key_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
 ) -> MlDsa65PrivateKey {
     MlDsa65PrivateKey {
@@ -30,7 +30,7 @@ pub(crate) fn private_key_from_pkey(
     }
 }
 
-pub(crate) fn public_key_from_pkey(
+pub(crate) fn mldsa65_public_key_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
 ) -> MlDsa65PublicKey {
     MlDsa65PublicKey {
