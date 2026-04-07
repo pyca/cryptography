@@ -40,6 +40,11 @@ fn _extract_buffer_length(
             "Buffer is not writable.",
         ));
     };
+    if !buf.is_c_contiguous() {
+        return Err(pyo3::exceptions::PyBufferError::new_err(
+            "Buffer is not contiguous.",
+        ));
+    }
     let ptr = buf.buf_ptr() as usize;
     let len = buf.len_bytes();
     Ok((Some(buf), ptr, len))
