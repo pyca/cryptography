@@ -90,7 +90,7 @@ Changelog
 * Added :doc:`/hazmat/primitives/hpke` support implementing :rfc:`9180` for
   hybrid authenticated encryption.
 * Added new :doc:`/hazmat/primitives/asymmetric/mldsa` module with
-  support for ML-DSA-65 signing and verification with the AWS-LC backend.
+  support for ML-DSA signing and verification with the AWS-LC backend.
 
 .. _v46-0-6:
 

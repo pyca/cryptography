@@ -133,6 +133,17 @@ pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
         }
 
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        AlgorithmParameters::MlDsa44 => {
+            let MlDsaPrivateKey::Seed(seed) = asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
+            Ok(ParsedPrivateKey::Pkey(
+                cryptography_openssl::mldsa::new_raw_private_key(
+                    cryptography_openssl::mldsa::MlDsaVariant::MlDsa44,
+                    &seed,
+                )?,
+            ))
+        }
+
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
         AlgorithmParameters::MlDsa65 => {
             let MlDsaPrivateKey::Seed(seed) = asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
             Ok(ParsedPrivateKey::Pkey(
@@ -481,7 +492,11 @@ pub fn serialize_private_key(
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
         cryptography_openssl::mldsa::PKEY_ID => {
             let private_key_der = asn1::write_single(&mldsa_seed_from_pkey(pkey)?)?;
-            (AlgorithmParameters::MlDsa65, private_key_der)
+            let params = match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => AlgorithmParameters::MlDsa44,
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa65 => AlgorithmParameters::MlDsa65,
+            };
+            (params, private_key_der)
         }
         _ => {
             unimplemented!("Unknown key type");

@@ -109,6 +109,14 @@ pub fn parse_public_key(data: &[u8]) -> KeyParsingResult<ParsedPublicKey> {
             Ok(ParsedPublicKey::Pkey(openssl::pkey::PKey::from_dh(dh)?))
         }
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        AlgorithmParameters::MlDsa44 => Ok(ParsedPublicKey::Pkey(
+            cryptography_openssl::mldsa::new_raw_public_key(
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa44,
+                k.subject_public_key.as_bytes(),
+            )
+            .map_err(|_| KeyParsingError::InvalidKey)?,
+        )),
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
         AlgorithmParameters::MlDsa65 => Ok(ParsedPublicKey::Pkey(
             cryptography_openssl::mldsa::new_raw_public_key(
                 cryptography_openssl::mldsa::MlDsaVariant::MlDsa65,
@@ -234,11 +242,11 @@ pub fn serialize_public_key(
         #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
         cryptography_openssl::mldsa::PKEY_ID => {
             let raw_bytes = pkey.raw_public_key()?;
-            assert_eq!(
-                raw_bytes.len(),
-                cryptography_openssl::mldsa::MlDsaVariant::MlDsa65.public_key_bytes()
-            );
-            (AlgorithmParameters::MlDsa65, raw_bytes)
+            let params = match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => AlgorithmParameters::MlDsa44,
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa65 => AlgorithmParameters::MlDsa65,
+            };
+            (params, raw_bytes)
         }
         _ => {
             unimplemented!("Unknown key type");
