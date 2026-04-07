@@ -12,9 +12,9 @@ from cryptography.hazmat.primitives import _serialization
 from cryptography.utils import Buffer
 
 
-class MlDsa44PublicKey(metaclass=abc.ABCMeta):
+class MLDSA44PublicKey(metaclass=abc.ABCMeta):
     @classmethod
-    def from_public_bytes(cls, data: bytes) -> MlDsa44PublicKey:
+    def from_public_bytes(cls, data: bytes) -> MLDSA44PublicKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.mldsa_supported():
@@ -62,25 +62,25 @@ class MlDsa44PublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __copy__(self) -> MlDsa44PublicKey:
+    def __copy__(self) -> MLDSA44PublicKey:
         """
         Returns a copy.
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self, memo: dict) -> MlDsa44PublicKey:
+    def __deepcopy__(self, memo: dict) -> MLDSA44PublicKey:
         """
         Returns a deep copy.
         """
 
 
 if hasattr(rust_openssl, "mldsa"):
-    MlDsa44PublicKey.register(rust_openssl.mldsa.MlDsa44PublicKey)
+    MLDSA44PublicKey.register(rust_openssl.mldsa.MLDSA44PublicKey)
 
 
-class MlDsa44PrivateKey(metaclass=abc.ABCMeta):
+class MLDSA44PrivateKey(metaclass=abc.ABCMeta):
     @classmethod
-    def generate(cls) -> MlDsa44PrivateKey:
+    def generate(cls) -> MLDSA44PrivateKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.mldsa_supported():
@@ -92,7 +92,7 @@ class MlDsa44PrivateKey(metaclass=abc.ABCMeta):
         return rust_openssl.mldsa.generate_mldsa44_key()
 
     @classmethod
-    def from_seed_bytes(cls, data: Buffer) -> MlDsa44PrivateKey:
+    def from_seed_bytes(cls, data: Buffer) -> MLDSA44PrivateKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.mldsa_supported():
@@ -104,9 +104,9 @@ class MlDsa44PrivateKey(metaclass=abc.ABCMeta):
         return rust_openssl.mldsa.from_mldsa44_seed_bytes(data)
 
     @abc.abstractmethod
-    def public_key(self) -> MlDsa44PublicKey:
+    def public_key(self) -> MLDSA44PublicKey:
         """
-        The MlDsa44PublicKey derived from the private key.
+        The MLDSA44PublicKey derived from the private key.
         """
 
     @abc.abstractmethod
@@ -139,25 +139,25 @@ class MlDsa44PrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __copy__(self) -> MlDsa44PrivateKey:
+    def __copy__(self) -> MLDSA44PrivateKey:
         """
         Returns a copy.
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self, memo: dict) -> MlDsa44PrivateKey:
+    def __deepcopy__(self, memo: dict) -> MLDSA44PrivateKey:
         """
         Returns a deep copy.
         """
 
 
 if hasattr(rust_openssl, "mldsa"):
-    MlDsa44PrivateKey.register(rust_openssl.mldsa.MlDsa44PrivateKey)
+    MLDSA44PrivateKey.register(rust_openssl.mldsa.MLDSA44PrivateKey)
 
 
-class MlDsa65PublicKey(metaclass=abc.ABCMeta):
+class MLDSA65PublicKey(metaclass=abc.ABCMeta):
     @classmethod
-    def from_public_bytes(cls, data: bytes) -> MlDsa65PublicKey:
+    def from_public_bytes(cls, data: bytes) -> MLDSA65PublicKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.mldsa_supported():
@@ -205,25 +205,25 @@ class MlDsa65PublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __copy__(self) -> MlDsa65PublicKey:
+    def __copy__(self) -> MLDSA65PublicKey:
         """
         Returns a copy.
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self, memo: dict) -> MlDsa65PublicKey:
+    def __deepcopy__(self, memo: dict) -> MLDSA65PublicKey:
         """
         Returns a deep copy.
         """
 
 
 if hasattr(rust_openssl, "mldsa"):
-    MlDsa65PublicKey.register(rust_openssl.mldsa.MlDsa65PublicKey)
+    MLDSA65PublicKey.register(rust_openssl.mldsa.MLDSA65PublicKey)
 
 
-class MlDsa65PrivateKey(metaclass=abc.ABCMeta):
+class MLDSA65PrivateKey(metaclass=abc.ABCMeta):
     @classmethod
-    def generate(cls) -> MlDsa65PrivateKey:
+    def generate(cls) -> MLDSA65PrivateKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.mldsa_supported():
@@ -235,7 +235,7 @@ class MlDsa65PrivateKey(metaclass=abc.ABCMeta):
         return rust_openssl.mldsa.generate_mldsa65_key()
 
     @classmethod
-    def from_seed_bytes(cls, data: Buffer) -> MlDsa65PrivateKey:
+    def from_seed_bytes(cls, data: Buffer) -> MLDSA65PrivateKey:
         from cryptography.hazmat.backends.openssl.backend import backend
 
         if not backend.mldsa_supported():
@@ -247,9 +247,9 @@ class MlDsa65PrivateKey(metaclass=abc.ABCMeta):
         return rust_openssl.mldsa.from_mldsa65_seed_bytes(data)
 
     @abc.abstractmethod
-    def public_key(self) -> MlDsa65PublicKey:
+    def public_key(self) -> MLDSA65PublicKey:
         """
-        The MlDsa65PublicKey derived from the private key.
+        The MLDSA65PublicKey derived from the private key.
         """
 
     @abc.abstractmethod
@@ -282,17 +282,17 @@ class MlDsa65PrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def __copy__(self) -> MlDsa65PrivateKey:
+    def __copy__(self) -> MLDSA65PrivateKey:
         """
         Returns a copy.
         """
 
     @abc.abstractmethod
-    def __deepcopy__(self, memo: dict) -> MlDsa65PrivateKey:
+    def __deepcopy__(self, memo: dict) -> MLDSA65PrivateKey:
         """
         Returns a deep copy.
         """
 
 
 if hasattr(rust_openssl, "mldsa"):
-    MlDsa65PrivateKey.register(rust_openssl.mldsa.MlDsa65PrivateKey)
+    MLDSA65PrivateKey.register(rust_openssl.mldsa.MLDSA65PrivateKey)

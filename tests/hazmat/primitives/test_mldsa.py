@@ -13,10 +13,10 @@ import pytest
 from cryptography.exceptions import InvalidSignature, _Reasons
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.mldsa import (
-    MlDsa44PrivateKey,
-    MlDsa44PublicKey,
-    MlDsa65PrivateKey,
-    MlDsa65PublicKey,
+    MLDSA44PrivateKey,
+    MLDSA44PublicKey,
+    MLDSA65PrivateKey,
+    MLDSA65PublicKey,
 )
 
 from ...doubles import DummyKeySerializationEncryption
@@ -28,7 +28,7 @@ from ...utils import (
 
 
 @dataclasses.dataclass
-class MlDsaVariant:
+class MLDSAVariant:
     private_key_class: type
     public_key_class: type
     pub_key_size: int
@@ -38,9 +38,9 @@ class MlDsaVariant:
 
 ML_DSA_VARIANTS = [
     pytest.param(
-        MlDsaVariant(
-            private_key_class=MlDsa44PrivateKey,
-            public_key_class=MlDsa44PublicKey,
+        MLDSAVariant(
+            private_key_class=MLDSA44PrivateKey,
+            public_key_class=MLDSA44PublicKey,
             pub_key_size=1312,
             sig_size=2420,
             seed_size=32,
@@ -48,9 +48,9 @@ ML_DSA_VARIANTS = [
         id="ML-DSA-44",
     ),
     pytest.param(
-        MlDsaVariant(
-            private_key_class=MlDsa65PrivateKey,
-            public_key_class=MlDsa65PublicKey,
+        MLDSAVariant(
+            private_key_class=MLDSA65PrivateKey,
+            public_key_class=MLDSA65PublicKey,
             pub_key_size=1952,
             sig_size=3309,
             seed_size=32,
@@ -68,39 +68,39 @@ def test_mldsa_unsupported(backend):
     with raises_unsupported_algorithm(
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
     ):
-        MlDsa44PublicKey.from_public_bytes(b"0" * 1312)
+        MLDSA44PublicKey.from_public_bytes(b"0" * 1312)
 
     with raises_unsupported_algorithm(
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
     ):
-        MlDsa44PrivateKey.from_seed_bytes(b"0" * 32)
+        MLDSA44PrivateKey.from_seed_bytes(b"0" * 32)
 
     with raises_unsupported_algorithm(
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
     ):
-        MlDsa44PrivateKey.generate()
+        MLDSA44PrivateKey.generate()
 
     with raises_unsupported_algorithm(
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
     ):
-        MlDsa65PublicKey.from_public_bytes(b"0" * 1952)
+        MLDSA65PublicKey.from_public_bytes(b"0" * 1952)
 
     with raises_unsupported_algorithm(
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
     ):
-        MlDsa65PrivateKey.from_seed_bytes(b"0" * 32)
+        MLDSA65PrivateKey.from_seed_bytes(b"0" * 32)
 
     with raises_unsupported_algorithm(
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
     ):
-        MlDsa65PrivateKey.generate()
+        MLDSA65PrivateKey.generate()
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.mldsa_supported(),
     skip_message="Requires a backend with ML-DSA support",
 )
-class TestMlDsa:
+class TestMLDSA:
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
     def test_sign_verify(self, variant, backend):
         key = variant.private_key_class.generate()
@@ -150,11 +150,11 @@ class TestMlDsa:
                 sm = binascii.unhexlify(vector["sm"])
                 expected_sig = sm[:2420]
 
-                key = MlDsa44PrivateKey.from_seed_bytes(xi)
+                key = MLDSA44PrivateKey.from_seed_bytes(xi)
                 assert key.private_bytes_raw() == xi
                 assert key.public_key().public_bytes_raw() == pk
 
-                pub = MlDsa44PublicKey.from_public_bytes(pk)
+                pub = MLDSA44PublicKey.from_public_bytes(pk)
                 pub.verify(expected_sig, msg, ctx)
 
     def test_kat_vectors_65(self, backend, subtests):
@@ -171,11 +171,11 @@ class TestMlDsa:
                 sm = binascii.unhexlify(vector["sm"])
                 expected_sig = sm[:3309]
 
-                key = MlDsa65PrivateKey.from_seed_bytes(xi)
+                key = MLDSA65PrivateKey.from_seed_bytes(xi)
                 assert key.private_bytes_raw() == xi
                 assert key.public_key().public_bytes_raw() == pk
 
-                pub = MlDsa65PublicKey.from_public_bytes(pk)
+                pub = MLDSA65PublicKey.from_public_bytes(pk)
                 pub.verify(expected_sig, msg, ctx)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)

@@ -14,8 +14,8 @@ Signing & Verification
 .. doctest::
     :skipif: not _backend.mldsa_supported()
 
-    >>> from cryptography.hazmat.primitives.asymmetric.mldsa import MlDsa65PrivateKey
-    >>> private_key = MlDsa65PrivateKey.generate()
+    >>> from cryptography.hazmat.primitives.asymmetric.mldsa import MLDSA65PrivateKey
+    >>> private_key = MLDSA65PrivateKey.generate()
     >>> signature = private_key.sign(b"my authenticated message")
     >>> public_key = private_key.public_key()
     >>> public_key.verify(signature, b"my authenticated message")
@@ -30,8 +30,8 @@ different contexts or protocols.
 .. doctest::
     :skipif: not _backend.mldsa_supported()
 
-    >>> from cryptography.hazmat.primitives.asymmetric.mldsa import MlDsa65PrivateKey
-    >>> private_key = MlDsa65PrivateKey.generate()
+    >>> from cryptography.hazmat.primitives.asymmetric.mldsa import MLDSA65PrivateKey
+    >>> private_key = MLDSA65PrivateKey.generate()
     >>> context = b"email-signature-v1"
     >>> signature = private_key.sign(b"my authenticated message", context)
     >>> public_key = private_key.public_key()
@@ -41,7 +41,7 @@ different contexts or protocols.
 Key interfaces
 ~~~~~~~~~~~~~~
 
-.. class:: MlDsa44PrivateKey
+.. class:: MLDSA44PrivateKey
 
     .. versionadded:: 47.0
 
@@ -49,7 +49,7 @@ Key interfaces
 
         Generate an ML-DSA-44 private key.
 
-        :returns: :class:`MlDsa44PrivateKey`
+        :returns: :class:`MLDSA44PrivateKey`
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: If ML-DSA-44 is
             not supported by the backend ``cryptography`` is using.
@@ -61,7 +61,7 @@ Key interfaces
         :param data: 32 byte seed.
         :type data: :term:`bytes-like`
 
-        :returns: :class:`MlDsa44PrivateKey`
+        :returns: :class:`MLDSA44PrivateKey`
 
         :raises ValueError: If the seed is not 32 bytes.
 
@@ -72,13 +72,13 @@ Key interfaces
             :skipif: not _backend.mldsa_supported()
 
             >>> from cryptography.hazmat.primitives.asymmetric import mldsa
-            >>> private_key = mldsa.MlDsa44PrivateKey.generate()
+            >>> private_key = mldsa.MLDSA44PrivateKey.generate()
             >>> seed = private_key.private_bytes_raw()
-            >>> same_key = mldsa.MlDsa44PrivateKey.from_seed_bytes(seed)
+            >>> same_key = mldsa.MLDSA44PrivateKey.from_seed_bytes(seed)
 
     .. method:: public_key()
 
-        :returns: :class:`MlDsa44PublicKey`
+        :returns: :class:`MLDSA44PublicKey`
 
     .. method:: sign(data, context=None)
 
@@ -142,7 +142,7 @@ Key interfaces
 
         :return bytes: Raw key (32-byte seed).
 
-.. class:: MlDsa44PublicKey
+.. class:: MLDSA44PublicKey
 
     .. versionadded:: 47.0
 
@@ -150,7 +150,7 @@ Key interfaces
 
         :param bytes data: 1312 byte public key.
 
-        :returns: :class:`MlDsa44PublicKey`
+        :returns: :class:`MLDSA44PublicKey`
 
         :raises ValueError: If the public key is not 1312 bytes.
 
@@ -162,13 +162,13 @@ Key interfaces
 
             >>> from cryptography.hazmat.primitives import serialization
             >>> from cryptography.hazmat.primitives.asymmetric import mldsa
-            >>> private_key = mldsa.MlDsa44PrivateKey.generate()
+            >>> private_key = mldsa.MLDSA44PrivateKey.generate()
             >>> public_key = private_key.public_key()
             >>> public_bytes = public_key.public_bytes(
             ...     encoding=serialization.Encoding.Raw,
             ...     format=serialization.PublicFormat.Raw
             ... )
-            >>> loaded_public_key = mldsa.MlDsa44PublicKey.from_public_bytes(public_bytes)
+            >>> loaded_public_key = mldsa.MLDSA44PublicKey.from_public_bytes(public_bytes)
 
     .. method:: public_bytes(encoding, format)
 
@@ -227,7 +227,7 @@ Key interfaces
             signature cannot be verified.
         :raises ValueError: If the context is longer than 255 bytes.
 
-.. class:: MlDsa65PrivateKey
+.. class:: MLDSA65PrivateKey
 
     .. versionadded:: 47.0
 
@@ -235,7 +235,7 @@ Key interfaces
 
         Generate an ML-DSA-65 private key.
 
-        :returns: :class:`MlDsa65PrivateKey`
+        :returns: :class:`MLDSA65PrivateKey`
 
         :raises cryptography.exceptions.UnsupportedAlgorithm: If ML-DSA-65 is
             not supported by the backend ``cryptography`` is using.
@@ -247,7 +247,7 @@ Key interfaces
         :param data: 32 byte seed.
         :type data: :term:`bytes-like`
 
-        :returns: :class:`MlDsa65PrivateKey`
+        :returns: :class:`MLDSA65PrivateKey`
 
         :raises ValueError: If the seed is not 32 bytes.
 
@@ -258,13 +258,13 @@ Key interfaces
             :skipif: not _backend.mldsa_supported()
 
             >>> from cryptography.hazmat.primitives.asymmetric import mldsa
-            >>> private_key = mldsa.MlDsa65PrivateKey.generate()
+            >>> private_key = mldsa.MLDSA65PrivateKey.generate()
             >>> seed = private_key.private_bytes_raw()
-            >>> same_key = mldsa.MlDsa65PrivateKey.from_seed_bytes(seed)
+            >>> same_key = mldsa.MLDSA65PrivateKey.from_seed_bytes(seed)
 
     .. method:: public_key()
 
-        :returns: :class:`MlDsa65PublicKey`
+        :returns: :class:`MLDSA65PublicKey`
 
     .. method:: sign(data, context=None)
 
@@ -328,7 +328,7 @@ Key interfaces
 
         :return bytes: Raw key (32-byte seed).
 
-.. class:: MlDsa65PublicKey
+.. class:: MLDSA65PublicKey
 
     .. versionadded:: 47.0
 
@@ -336,7 +336,7 @@ Key interfaces
 
         :param bytes data: 1952 byte public key.
 
-        :returns: :class:`MlDsa65PublicKey`
+        :returns: :class:`MLDSA65PublicKey`
 
         :raises ValueError: If the public key is not 1952 bytes.
 
@@ -348,13 +348,13 @@ Key interfaces
 
             >>> from cryptography.hazmat.primitives import serialization
             >>> from cryptography.hazmat.primitives.asymmetric import mldsa
-            >>> private_key = mldsa.MlDsa65PrivateKey.generate()
+            >>> private_key = mldsa.MLDSA65PrivateKey.generate()
             >>> public_key = private_key.public_key()
             >>> public_bytes = public_key.public_bytes(
             ...     encoding=serialization.Encoding.Raw,
             ...     format=serialization.PublicFormat.Raw
             ... )
-            >>> loaded_public_key = mldsa.MlDsa65PublicKey.from_public_bytes(public_bytes)
+            >>> loaded_public_key = mldsa.MLDSA65PublicKey.from_public_bytes(public_bytes)
 
     .. method:: public_bytes(encoding, format)
 

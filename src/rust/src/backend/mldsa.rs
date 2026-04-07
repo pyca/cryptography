@@ -12,12 +12,20 @@ use crate::exceptions;
 
 const MAX_CONTEXT_BYTES: usize = 255;
 
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.mldsa")]
+#[pyo3::pyclass(
+    frozen,
+    module = "cryptography.hazmat.bindings._rust.openssl.mldsa",
+    name = "MLDSA44PrivateKey"
+)]
 pub(crate) struct MlDsa44PrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.mldsa")]
+#[pyo3::pyclass(
+    frozen,
+    module = "cryptography.hazmat.bindings._rust.openssl.mldsa",
+    name = "MLDSA44PublicKey"
+)]
 pub(crate) struct MlDsa44PublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
@@ -205,12 +213,20 @@ impl MlDsa44PublicKey {
     }
 }
 
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.mldsa")]
+#[pyo3::pyclass(
+    frozen,
+    module = "cryptography.hazmat.bindings._rust.openssl.mldsa",
+    name = "MLDSA65PrivateKey"
+)]
 pub(crate) struct MlDsa65PrivateKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Private>,
 }
 
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.mldsa")]
+#[pyo3::pyclass(
+    frozen,
+    module = "cryptography.hazmat.bindings._rust.openssl.mldsa",
+    name = "MLDSA65PublicKey"
+)]
 pub(crate) struct MlDsa65PublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }

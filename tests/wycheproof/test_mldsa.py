@@ -8,10 +8,10 @@ import pytest
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.mldsa import (
-    MlDsa44PrivateKey,
-    MlDsa44PublicKey,
-    MlDsa65PrivateKey,
-    MlDsa65PublicKey,
+    MLDSA44PrivateKey,
+    MLDSA44PublicKey,
+    MLDSA65PrivateKey,
+    MLDSA65PublicKey,
 )
 
 from .utils import wycheproof_tests
@@ -24,7 +24,7 @@ from .utils import wycheproof_tests
 @wycheproof_tests("mldsa_44_verify_test.json")
 def test_mldsa44_verify(backend, wycheproof):
     try:
-        pub = MlDsa44PublicKey.from_public_bytes(
+        pub = MLDSA44PublicKey.from_public_bytes(
             binascii.unhexlify(wycheproof.testgroup["publicKey"])
         )
     except ValueError:
@@ -62,12 +62,12 @@ def test_mldsa44_sign_seed(backend, wycheproof):
 
     seed = binascii.unhexlify(wycheproof.testgroup["privateSeed"])
     try:
-        key = MlDsa44PrivateKey.from_seed_bytes(seed)
+        key = MLDSA44PrivateKey.from_seed_bytes(seed)
     except ValueError:
         assert wycheproof.invalid
         assert wycheproof.has_flag("IncorrectPrivateKeyLength")
         return
-    pub = MlDsa44PublicKey.from_public_bytes(
+    pub = MLDSA44PublicKey.from_public_bytes(
         binascii.unhexlify(wycheproof.testgroup["publicKey"])
     )
 
@@ -95,7 +95,7 @@ def test_mldsa44_sign_seed(backend, wycheproof):
 @wycheproof_tests("mldsa_65_verify_test.json")
 def test_mldsa65_verify(backend, wycheproof):
     try:
-        pub = MlDsa65PublicKey.from_public_bytes(
+        pub = MLDSA65PublicKey.from_public_bytes(
             binascii.unhexlify(wycheproof.testgroup["publicKey"])
         )
     except ValueError:
@@ -133,12 +133,12 @@ def test_mldsa65_sign_seed(backend, wycheproof):
 
     seed = binascii.unhexlify(wycheproof.testgroup["privateSeed"])
     try:
-        key = MlDsa65PrivateKey.from_seed_bytes(seed)
+        key = MLDSA65PrivateKey.from_seed_bytes(seed)
     except ValueError:
         assert wycheproof.invalid
         assert wycheproof.has_flag("IncorrectPrivateKeyLength")
         return
-    pub = MlDsa65PublicKey.from_public_bytes(
+    pub = MLDSA65PublicKey.from_public_bytes(
         binascii.unhexlify(wycheproof.testgroup["publicKey"])
     )
 
