@@ -1,7 +1,17 @@
 Changelog
 =========
 
-.. _v46-0-5:
+.. v46-0-7:
+
+46.0.7 - 2026-01-27
+~~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE**: Fixed an issue where non-contiguous buffesr could be
+  passed to APIs that accept Python buffers, which could lead to buffer
+  overflow.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.6.
+
+.. _v46-0-6:
 
 46.0.6 - 2026-03-25
 ~~~~~~~~~~~~~~~~~~~
@@ -11,6 +21,8 @@ Changelog
   wildcard DNS SAN. Ordinary X.509 topologies are not affected by this bug,
   including those used by the Web PKI. Credit to **Oleh Konko (1seal)** for
   reporting the issue. **CVE-2026-34073**
+
+.. _v46-0-5:
 
 46.0.5 - 2026-02-10
 ~~~~~~~~~~~~~~~~~~~
