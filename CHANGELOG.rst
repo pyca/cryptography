@@ -8,7 +8,7 @@ Changelog
 
 * **SECURITY ISSUE**: Fixed an issue where non-contiguous buffers could be
   passed to APIs that accept Python buffers, which could lead to buffer
-  overflow.
+  overflow. **CVE-2026-39892**
 * Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.6.
 
 .. _v46-0-6:
