@@ -6,7 +6,7 @@ Changelog
 46.0.7 - 2026-01-27
 ~~~~~~~~~~~~~~~~~~~
 
-* **SECURITY ISSUE**: Fixed an issue where non-contiguous buffesr could be
+* **SECURITY ISSUE**: Fixed an issue where non-contiguous buffers could be
   passed to APIs that accept Python buffers, which could lead to buffer
   overflow.
 * Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.6.
