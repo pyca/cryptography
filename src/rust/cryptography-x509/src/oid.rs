@@ -111,6 +111,7 @@ pub const ED448_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 101, 113);
 
 pub const ML_DSA_44_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 17);
 pub const ML_DSA_65_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 18);
+pub const ML_DSA_87_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 19);
 
 // Hashes
 pub const SHA1_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 14, 3, 2, 26);

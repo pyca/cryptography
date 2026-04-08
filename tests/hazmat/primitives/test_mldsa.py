@@ -17,6 +17,8 @@ from cryptography.hazmat.primitives.asymmetric.mldsa import (
     MLDSA44PublicKey,
     MLDSA65PrivateKey,
     MLDSA65PublicKey,
+    MLDSA87PrivateKey,
+    MLDSA87PublicKey,
 )
 
 from ...doubles import DummyKeySerializationEncryption
@@ -57,6 +59,16 @@ ML_DSA_VARIANTS = [
         ),
         id="ML-DSA-65",
     ),
+    pytest.param(
+        MLDSAVariant(
+            private_key_class=MLDSA87PrivateKey,
+            public_key_class=MLDSA87PublicKey,
+            pub_key_size=2592,
+            sig_size=4627,
+            seed_size=32,
+        ),
+        id="ML-DSA-87",
+    ),
 ]
 
 
@@ -94,6 +106,21 @@ def test_mldsa_unsupported(backend):
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
     ):
         MLDSA65PrivateKey.generate()
+
+    with raises_unsupported_algorithm(
+        _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+    ):
+        MLDSA87PublicKey.from_public_bytes(b"0" * 2592)
+
+    with raises_unsupported_algorithm(
+        _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+    ):
+        MLDSA87PrivateKey.from_seed_bytes(b"0" * 32)
+
+    with raises_unsupported_algorithm(
+        _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+    ):
+        MLDSA87PrivateKey.generate()
 
 
 @pytest.mark.supported(
@@ -176,6 +203,27 @@ class TestMLDSA:
                 assert key.public_key().public_bytes_raw() == pk
 
                 pub = MLDSA65PublicKey.from_public_bytes(pk)
+                pub.verify(expected_sig, msg, ctx)
+
+    def test_kat_vectors_87(self, backend, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join("asymmetric", "MLDSA", "kat_MLDSA_87_det_pure.rsp"),
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                xi = binascii.unhexlify(vector["xi"])
+                pk = binascii.unhexlify(vector["pk"])
+                msg = binascii.unhexlify(vector["msg"])
+                ctx = binascii.unhexlify(vector["ctx"])
+                sm = binascii.unhexlify(vector["sm"])
+                expected_sig = sm[:4627]
+
+                key = MLDSA87PrivateKey.from_seed_bytes(xi)
+                assert key.private_bytes_raw() == xi
+                assert key.public_key().public_bytes_raw() == pk
+
+                pub = MLDSA87PublicKey.from_public_bytes(pk)
                 pub.verify(expected_sig, msg, ctx)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)

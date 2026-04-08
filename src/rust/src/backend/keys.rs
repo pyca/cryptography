@@ -193,6 +193,11 @@ fn private_key_from_pkey<'p>(
                         .into_pyobject(py)?
                         .into_any())
                 }
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa87 => {
+                    Ok(crate::backend::mldsa::mldsa87_private_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
             }
         }
         _ => Err(CryptographyError::from(
@@ -361,6 +366,11 @@ fn public_key_from_pkey<'p>(
                 }
                 cryptography_openssl::mldsa::MlDsaVariant::MlDsa65 => {
                     Ok(crate::backend::mldsa::mldsa65_public_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa87 => {
+                    Ok(crate::backend::mldsa::mldsa87_public_key_from_pkey(pkey)
                         .into_pyobject(py)?
                         .into_any())
                 }

@@ -14,6 +14,7 @@ pub const PKEY_ID: openssl::pkey::Id = openssl::pkey::Id::from_raw(ffi::NID_PQDS
 pub enum MlDsaVariant {
     MlDsa44,
     MlDsa65,
+    MlDsa87,
 }
 
 impl MlDsaVariant {
@@ -21,6 +22,7 @@ impl MlDsaVariant {
         match self {
             MlDsaVariant::MlDsa44 => ffi::NID_MLDSA44,
             MlDsaVariant::MlDsa65 => ffi::NID_MLDSA65,
+            MlDsaVariant::MlDsa87 => ffi::NID_MLDSA87,
         }
     }
 
@@ -33,6 +35,7 @@ impl MlDsaVariant {
         match nid {
             ffi::NID_MLDSA44 => MlDsaVariant::MlDsa44,
             ffi::NID_MLDSA65 => MlDsaVariant::MlDsa65,
+            ffi::NID_MLDSA87 => MlDsaVariant::MlDsa87,
             _ => panic!("Unsupported ML-DSA variant"),
         }
     }
@@ -73,6 +76,26 @@ extern "C" {
     ) -> c_int;
 
     fn ml_dsa_65_verify(
+        public_key: *const u8,
+        sig: *const u8,
+        sig_len: usize,
+        message: *const u8,
+        message_len: usize,
+        ctx_string: *const u8,
+        ctx_string_len: usize,
+    ) -> c_int;
+
+    fn ml_dsa_87_sign(
+        private_key: *const u8,
+        sig: *mut u8,
+        sig_len: *mut usize,
+        message: *const u8,
+        message_len: usize,
+        ctx_string: *const u8,
+        ctx_string_len: usize,
+    ) -> c_int;
+
+    fn ml_dsa_87_verify(
         public_key: *const u8,
         sig: *const u8,
         sig_len: usize,
@@ -135,6 +158,7 @@ pub fn sign(
     let (signature_bytes, sign_func): (usize, SignFn) = match variant {
         MlDsaVariant::MlDsa44 => (2420, ml_dsa_44_sign),
         MlDsaVariant::MlDsa65 => (3309, ml_dsa_65_sign),
+        MlDsaVariant::MlDsa87 => (4627, ml_dsa_87_sign),
     };
 
     let mut sig = vec![0u8; signature_bytes];
@@ -190,6 +214,7 @@ pub fn verify(
     let verify_func: VerifyFn = match variant {
         MlDsaVariant::MlDsa44 => ml_dsa_44_verify,
         MlDsaVariant::MlDsa65 => ml_dsa_65_verify,
+        MlDsaVariant::MlDsa87 => ml_dsa_87_verify,
     };
 
     let msg_ptr = if data.is_empty() {

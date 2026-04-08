@@ -154,6 +154,17 @@ pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
             ))
         }
 
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        AlgorithmParameters::MlDsa87 => {
+            let MlDsaPrivateKey::Seed(seed) = asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
+            Ok(ParsedPrivateKey::Pkey(
+                cryptography_openssl::mldsa::new_raw_private_key(
+                    cryptography_openssl::mldsa::MlDsaVariant::MlDsa87,
+                    &seed,
+                )?,
+            ))
+        }
+
         _ => Err(KeyParsingError::UnsupportedKeyType(
             k.algorithm.oid().clone(),
         )),
@@ -495,6 +506,7 @@ pub fn serialize_private_key(key: &ParsedPrivateKey) -> crate::KeySerializationR
             let params = match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
                 cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => AlgorithmParameters::MlDsa44,
                 cryptography_openssl::mldsa::MlDsaVariant::MlDsa65 => AlgorithmParameters::MlDsa65,
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa87 => AlgorithmParameters::MlDsa87,
             };
             (params, private_key_der)
         }

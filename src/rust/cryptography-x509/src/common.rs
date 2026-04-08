@@ -57,6 +57,8 @@ pub enum AlgorithmParameters<'a> {
     MlDsa44,
     #[defined_by(oid::ML_DSA_65_OID)]
     MlDsa65,
+    #[defined_by(oid::ML_DSA_87_OID)]
+    MlDsa87,
 
     #[defined_by(oid::X25519_OID)]
     X25519,
