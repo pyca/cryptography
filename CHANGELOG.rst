@@ -94,7 +94,7 @@ Changelog
 
 .. v46-0-7:
 
-46.0.7 - 2026-01-27
+46.0.7 - 2026-04-07
 ~~~~~~~~~~~~~~~~~~~
 
 * **SECURITY ISSUE**: Fixed an issue where non-contiguous buffers could be
