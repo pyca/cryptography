@@ -219,7 +219,7 @@ pytest-xdist==3.6.1 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml)
 pytest-xdist==3.8.0 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml)
-python-discovery==1.2.1
+python-discovery==1.2.2
     # via virtualenv
 pytz==2026.1.post1 ; python_full_version < '3.9'
     # via babel
