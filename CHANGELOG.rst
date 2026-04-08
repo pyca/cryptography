@@ -92,6 +92,16 @@ Changelog
 * Added new :doc:`/hazmat/primitives/asymmetric/mldsa` module with
   support for ML-DSA signing and verification with the AWS-LC backend.
 
+.. v46-0-7:
+
+46.0.7 - 2026-01-27
+~~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE**: Fixed an issue where non-contiguous buffers could be
+  passed to APIs that accept Python buffers, which could lead to buffer
+  overflow. **CVE-2026-39892**
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.6.
+
 .. _v46-0-6:
 
 46.0.6 - 2026-03-25
