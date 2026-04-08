@@ -64,6 +64,7 @@ Asymmetric ciphers
   encrypted with ``AES-192-CBC``. The password is ``PolarSSLTest``.
 * ``asymmetric/PKCS8/ed25519-scrypt.pem`` a PKCS8 encoded Ed25519 key from
   RustCrypto using scrypt as the KDF. The password is ``hunter42``.
+* FIPS 203 ML-KEM-{512,768,1024} KAT vectors from `post-quantum-cryptography/KAT`_.
 * FIPS 204 ML-DSA-{44,65,87} KAT vectors from `post-quantum-cryptography/KAT`_.
 
 Custom asymmetric vectors
