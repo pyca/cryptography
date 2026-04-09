@@ -77,6 +77,7 @@ hazmat layer only when necessary.
     hazmat/primitives/index
     exceptions
     random-numbers
+    hazmat/asn1/index
     hazmat/decrepit/index
 
 .. toctree::
