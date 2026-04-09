@@ -417,8 +417,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Mar 17, 2026.
-            REF: f72218efff8a1e3e7ae4683793ad36d2f9610976
+            # Latest commit on the pyopenssl main branch, as of Apr 09, 2026.
+            REF: 12478f53977fa6510befca9fe044404876ac3502
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -427,8 +427,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Apr 08, 2026.
-            REF: 323c4c103414dea1ec7767eeef7a5fc04965a1ee
+            # Latest commit on the twisted trunk branch, as of Apr 09, 2026.
+            REF: 2801acc2132847c56b8b62fa54e8a60172c22987
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -452,8 +452,8 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Mar 24, 2026.
-            REF: 5a4a12888e73f6e0de2b7daf1eb91a21349ee814
+            # Latest commit on the mitmproxy main branch, as of Apr 09, 2026.
+            REF: b34f397b4f67bcfa4d1273a78b0e6af2720f290d
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
