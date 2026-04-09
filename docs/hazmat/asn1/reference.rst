@@ -63,13 +63,13 @@ ASN.1 types
 
 The following built-in Python types are supported as ASN.1 field types:
 
-* ``int`` -- INTEGER
-* ``bool`` -- BOOLEAN
-* ``bytes`` -- OCTET STRING
-* ``str`` -- UTF8String
+* ``int`` -- ``INTEGER``
+* ``bool`` -- ``BOOLEAN``
+* ``bytes`` -- ``OCTET STRING``
+* ``str`` -- ``UTF8String``
 
 Additionally, :class:`~cryptography.x509.ObjectIdentifier` maps to
-OBJECT IDENTIFIER.
+``OBJECT IDENTIFIER``.
 
 The following decorators and types are provided for the rest of the ASN.1 types
 that have no direct Python equivalent:
@@ -98,12 +98,12 @@ that have no direct Python equivalent:
 
 .. class:: PrintableString(value)
 
-    Wraps ASN.1 PrintableString values. PrintableString is a restricted
+    Wraps ASN.1 ``PrintableString`` values. ``PrintableString`` is a restricted
     subset of ASCII containing only letters, digits, and a limited set
     of punctuation characters.
 
     :param str value: The string value. Must contain only characters valid
-        for ASN.1 PrintableString.
+        for ASN.1 ``PrintableString``.
     :raises ValueError: If the string contains invalid characters.
 
     .. method:: as_str()
@@ -112,7 +112,7 @@ that have no direct Python equivalent:
 
 .. class:: IA5String(value)
 
-    Wraps ASN.1 IA5String values. IA5String is equivalent to ASCII.
+    Wraps ASN.1 ``IA5String`` values. ``IA5String`` is equivalent to ASCII.
 
     :param str value: The string value. Must contain only valid ASCII
         characters (0--127).
@@ -124,7 +124,7 @@ that have no direct Python equivalent:
 
 .. class:: UTCTime(value)
 
-    Wraps ASN.1 UTCTime values. UTCTime represents dates between 1950 and
+    Wraps ASN.1 ``UTCTime`` values. ``UTCTime`` represents dates between 1950 and
     2049 with second precision.
 
     :param value: An aware datetime object (must have ``tzinfo`` set).
@@ -140,7 +140,7 @@ that have no direct Python equivalent:
 
 .. class:: GeneralizedTime(value)
 
-    Wraps ASN.1 GeneralizedTime values. GeneralizedTime can represent any
+    Wraps ASN.1 ``GeneralizedTime`` values. ``GeneralizedTime`` can represent any
     date and supports microsecond precision.
 
     :param value: An aware datetime object (must have ``tzinfo`` set).
@@ -153,7 +153,7 @@ that have no direct Python equivalent:
 
 .. class:: BitString(data, padding_bits)
 
-    Wraps ASN.1 BIT STRING values.
+    Wraps ASN.1 ``BIT STRING`` values.
 
     :param bytes data: The raw bit string data.
     :param int padding_bits: The number of unused bits in the last byte
@@ -172,13 +172,13 @@ that have no direct Python equivalent:
 
 .. class:: Null()
 
-    Represents the ASN.1 NULL type. NULL has no value and is encoded as a
+    Represents the ASN.1 ``NULL`` type. ``NULL`` has no value and is encoded as a
     zero-length element.
 
 .. class:: TLV
 
     Represents a raw ASN.1 Tag-Length-Value element. This is useful for
-    decoding ASN.1 ANY fields, deferring the decoding of parts of a
+    decoding ASN.1 ``ANY`` fields, deferring the decoding of parts of a
     structure, or for handling fields whose type is not known at
     definition time.
 
@@ -223,7 +223,7 @@ that have no direct Python equivalent:
 
 .. class:: SetOf(values)
 
-    Represents an ASN.1 SET OF, an unordered collection of elements of a
+    Represents an ASN.1 ``SET OF``, an unordered collection of elements of a
     single type.
 
     :param list values: The list of values.
@@ -245,10 +245,10 @@ that have no direct Python equivalent:
 
 .. class:: Variant(value, tag)
 
-    A tagged variant for CHOICE fields where multiple alternatives share
+    A tagged variant for ``CHOICE`` fields where multiple alternatives share
     the same underlying type.
 
-    When a CHOICE field has multiple alternatives with different types,
+    When a ``CHOICE`` field has multiple alternatives with different types,
     use a :class:`~typing.Union` directly. When multiple alternatives share the same
     underlying type, use ``Variant`` to distinguish between them with a
     string tag.
@@ -285,7 +285,7 @@ that have no direct Python equivalent:
         'IntA'
 
 A field with a ``Union[X, None]`` (or ``X | None``) type annotation is
-treated as ASN.1 OPTIONAL. When the value is ``None``, the field is
+treated as ASN.1 ``OPTIONAL``. When the value is ``None``, the field is
 omitted from the encoding.
 
 .. doctest::
@@ -302,7 +302,7 @@ omitted from the encoding.
     True
 
 A field with a ``Union`` of multiple non-``None`` types is treated as an
-ASN.1 CHOICE. Each variant in the union must have a distinct ASN.1 tag.
+ASN.1 ``CHOICE``. Each variant in the union must have a distinct ASN.1 tag.
 
 .. doctest::
 
@@ -322,7 +322,7 @@ control ASN.1 encoding behavior.
 
 .. class:: Explicit(tag)
 
-    An annotation that applies EXPLICIT tagging to a field. EXPLICIT tagging
+    An annotation that applies ``EXPLICIT`` tagging to a field. ``EXPLICIT`` tagging
     wraps the original encoding in a new tag.
 
     :param int tag: The context-specific tag number.
@@ -339,10 +339,10 @@ control ASN.1 encoding behavior.
 
 .. class:: Implicit(tag)
 
-    An annotation that applies IMPLICIT tagging to a field. IMPLICIT tagging
+    An annotation that applies ``IMPLICIT`` tagging to a field. ``IMPLICIT`` tagging
     replaces the original tag with a context-specific tag.
 
-    Cannot be used with CHOICE types or :class:`TLV` fields.
+    Cannot be used with ``CHOICE`` types or :class:`TLV` fields.
 
     :param int tag: The context-specific tag number.
 
@@ -358,11 +358,11 @@ control ASN.1 encoding behavior.
 
 .. class:: Default(value)
 
-    An annotation that specifies a DEFAULT value for a field. When encoding,
+    An annotation that specifies a ``DEFAULT`` value for a field. When encoding,
     if the field's value equals the default, it is omitted from the output.
     When decoding, if the field is absent, the default value is used.
 
-    Cannot be used with OPTIONAL (``X | None``) fields or :class:`TLV`
+    Cannot be used with ``OPTIONAL`` (``X | None``) fields or :class:`TLV`
     fields.
 
     :param value: The default value for the field.
