@@ -10,4 +10,5 @@ ASN.1
 .. toctree::
     :maxdepth: 2
 
+    tutorial
     reference

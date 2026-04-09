@@ -3,7 +3,7 @@
 ASN.1 Reference
 ===============
 
-.. currentmodule:: cryptography.hazmat.asn1
+.. module:: cryptography.hazmat.asn1
 
 This module provides a declarative interface for defining ASN.1 structures
 and serializing/deserializing them to/from DER-encoded data.
