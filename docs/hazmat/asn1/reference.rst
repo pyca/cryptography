@@ -1,3 +1,5 @@
+.. hazmat::
+
 ASN.1 Reference
 ===============
 
@@ -5,6 +7,10 @@ ASN.1 Reference
 
 This module provides a declarative interface for defining ASN.1 structures
 and serializing/deserializing them to/from DER-encoded data.
+
+.. note::
+    While usable, these APIs should be considered unstable and not yet
+    subject to our backwards compatibility policy.
 
 .. versionadded:: 47.0.0
 
