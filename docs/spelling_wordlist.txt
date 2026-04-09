@@ -36,6 +36,7 @@ cryptographically
 de
 Debian
 deallocated
+declaratively
 decrypt
 decrypts
 Decrypts
