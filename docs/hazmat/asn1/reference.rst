@@ -63,7 +63,7 @@ ASN.1 types
 
 .. decorator:: sequence
 
-    A class decorator that registers a class as an ASN.1 SEQUENCE. Fields
+    A class decorator that registers a class as an ASN.1 ``SEQUENCE``. Fields
     are defined as class-level type annotations. The decorator adds an
     ``__init__`` method with keyword-only parameters.
 
