@@ -11,7 +11,7 @@ and serializing/deserializing them to/from DER-encoded data.
 Serialization
 -------------
 
-.. function:: decode_der(asn1_type, data)
+.. function:: decode_der(cls, data)
 
     Deserialize a DER-encoded byte string into an instance of ``cls``.
 
