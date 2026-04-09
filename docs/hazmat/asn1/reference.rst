@@ -61,6 +61,19 @@ Serialization
 ASN.1 types
 -----------
 
+The following built-in Python types are supported as ASN.1 field types:
+
+* ``int`` -- INTEGER
+* ``bool`` -- BOOLEAN
+* ``bytes`` -- OCTET STRING
+* ``str`` -- UTF8String
+
+Additionally, :class:`~cryptography.x509.ObjectIdentifier` maps to
+OBJECT IDENTIFIER.
+
+The following decorators and types are provided for the rest of the ASN.1 types
+that have no direct Python equivalent:
+
 .. decorator:: sequence
 
     A class decorator that registers a class as an ASN.1 ``SEQUENCE``. Fields
@@ -82,20 +95,6 @@ ASN.1 types
         >>> encoded = asn1.encode_der(AlgorithmIdentifier(algorithm=9, parameters=None))
         >>> asn1.decode_der(AlgorithmIdentifier, encoded).algorithm
         9
-
-The following built-in Python types are supported as field types in
-:func:`sequence`-decorated classes:
-
-* ``int`` -- INTEGER
-* ``bool`` -- BOOLEAN
-* ``bytes`` -- OCTET STRING
-* ``str`` -- UTF8String
-
-Additionally, :class:`~cryptography.x509.ObjectIdentifier` maps to
-OBJECT IDENTIFIER.
-
-The following wrapper types are provided for ASN.1 types that have no
-direct Python equivalent:
 
 .. class:: PrintableString(value)
 
