@@ -16,10 +16,7 @@ build:
   tools:
     python: "3.13"
     rust: "latest"
-
-python:
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - docs
+  jobs:
+    install:
+      - pip install -U pip
+      - pip install . --group docs
