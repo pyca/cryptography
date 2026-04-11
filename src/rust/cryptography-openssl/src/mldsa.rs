@@ -4,6 +4,7 @@
 
 use foreign_types_shared::{ForeignType, ForeignTypeRef};
 use openssl_sys as ffi;
+#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
 use std::os::raw::c_int;
 
 use crate::{cvt, cvt_p, OpenSSLResult};
@@ -44,18 +45,13 @@ impl MlDsaVariant {
     ) -> MlDsaVariant {
         cfg_if::cfg_if! {
             if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
-                // SAFETY: EVP_PKEY_id returns the type of a valid EVP_PKEY.
-                let nid = unsafe { ffi::EVP_PKEY_id(pkey.as_ptr()) };
-                match nid {
+                match pkey.id().as_raw() {
                     ffi::NID_ML_DSA_44 => MlDsaVariant::MlDsa44,
                     ffi::NID_ML_DSA_65 => MlDsaVariant::MlDsa65,
                     ffi::NID_ML_DSA_87 => MlDsaVariant::MlDsa87,
                     _ => panic!("Unsupported ML-DSA variant"),
                 }
             } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
-                // AWS-LC: All ML-DSA variants share NID_PQDSA as their EVP
-                // pkey type. EVP_PKEY_pqdsa_get_type returns the specific
-                // variant NID.
                 // SAFETY: EVP_PKEY_pqdsa_get_type returns the NID of the
                 // PQDSA algorithm for a valid PQDSA pkey.
                 let nid = unsafe { ffi::EVP_PKEY_pqdsa_get_type(pkey.as_ptr()) };
@@ -71,45 +67,14 @@ impl MlDsaVariant {
 }
 
 #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
-extern "C" {
-    fn EVP_pkey_ml_dsa_44() -> *const ffi::EVP_PKEY_ALG;
-    fn EVP_pkey_ml_dsa_65() -> *const ffi::EVP_PKEY_ALG;
-    fn EVP_pkey_ml_dsa_87() -> *const ffi::EVP_PKEY_ALG;
-
-    fn EVP_PKEY_from_private_seed(
-        alg: *const ffi::EVP_PKEY_ALG,
-        r#in: *const u8,
-        len: usize,
-    ) -> *mut ffi::EVP_PKEY;
-
-    fn EVP_PKEY_from_raw_public_key(
-        alg: *const ffi::EVP_PKEY_ALG,
-        r#in: *const u8,
-        len: usize,
-    ) -> *mut ffi::EVP_PKEY;
-
-    fn EVP_PKEY_get_private_seed(
-        pkey: *const ffi::EVP_PKEY,
-        out: *mut u8,
-        out_len: *mut usize,
-    ) -> c_int;
-
-    fn EVP_PKEY_CTX_set1_signature_context_string(
-        ctx: *mut ffi::EVP_PKEY_CTX,
-        context: *const u8,
-        context_len: usize,
-    ) -> c_int;
-}
-
-#[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
 fn evp_pkey_alg(variant: MlDsaVariant) -> *const ffi::EVP_PKEY_ALG {
     // SAFETY: These functions return static, non-null pointers to the
     // EVP_PKEY_ALG for each ML-DSA variant.
     unsafe {
         match variant {
-            MlDsaVariant::MlDsa44 => EVP_pkey_ml_dsa_44(),
-            MlDsaVariant::MlDsa65 => EVP_pkey_ml_dsa_65(),
-            MlDsaVariant::MlDsa87 => EVP_pkey_ml_dsa_87(),
+            MlDsaVariant::MlDsa44 => ffi::EVP_pkey_ml_dsa_44(),
+            MlDsaVariant::MlDsa65 => ffi::EVP_pkey_ml_dsa_65(),
+            MlDsaVariant::MlDsa87 => ffi::EVP_pkey_ml_dsa_87(),
         }
     }
 }
@@ -189,7 +154,7 @@ pub fn new_raw_private_key(
             // SAFETY: EVP_PKEY_from_private_seed creates a new EVP_PKEY from
             // the seed. evp_pkey_alg returns a valid algorithm pointer.
             unsafe {
-                let pkey = cvt_p(EVP_PKEY_from_private_seed(
+                let pkey = cvt_p(ffi::EVP_PKEY_from_private_seed(
                     evp_pkey_alg(variant),
                     data.as_ptr(),
                     data.len(),
@@ -221,7 +186,7 @@ pub fn new_raw_public_key(
             // SAFETY: EVP_PKEY_from_raw_public_key creates a new EVP_PKEY
             // from raw public key bytes.
             unsafe {
-                let pkey = cvt_p(EVP_PKEY_from_raw_public_key(
+                let pkey = cvt_p(ffi::EVP_PKEY_from_raw_public_key(
                     evp_pkey_alg(variant),
                     data.as_ptr(),
                     data.len(),
@@ -243,29 +208,6 @@ pub fn new_raw_public_key(
     }
 }
 
-#[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
-pub fn get_seed(pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>) -> OpenSSLResult<Vec<u8>> {
-    // SAFETY: EVP_PKEY_get_private_seed outputs the seed for ML-DSA keys.
-    // First call with null out gets the length, second call writes the seed.
-    unsafe {
-        let mut seed_len = 0usize;
-        // First call to get the required length.
-        cvt(EVP_PKEY_get_private_seed(
-            pkey.as_ptr(),
-            std::ptr::null_mut(),
-            &mut seed_len,
-        ))?;
-        let mut seed = vec![0u8; seed_len];
-        cvt(EVP_PKEY_get_private_seed(
-            pkey.as_ptr(),
-            seed.as_mut_ptr(),
-            &mut seed_len,
-        ))?;
-        seed.truncate(seed_len);
-        Ok(seed)
-    }
-}
-
 pub fn sign(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
     data: &[u8],
@@ -273,69 +215,46 @@ pub fn sign(
 ) -> OpenSSLResult<Vec<u8>> {
     cfg_if::cfg_if! {
         if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
-            // SAFETY: Uses EVP_DigestSign with
-            // EVP_PKEY_CTX_set1_signature_context_string for context support.
-            // All pointers come from valid OpenSSL objects. md_ctx is freed
-            // on all paths.
-            unsafe {
-                let md_ctx = ffi::EVP_MD_CTX_new();
-                assert!(!md_ctx.is_null());
-                let mut pctx: *mut ffi::EVP_PKEY_CTX = std::ptr::null_mut();
-                let r = ffi::EVP_DigestSignInit(
-                    md_ctx,
-                    &mut pctx,
-                    std::ptr::null(),
-                    std::ptr::null_mut(),
-                    pkey.as_ptr() as *mut ffi::EVP_PKEY,
-                );
-                if r != 1 {
-                    ffi::EVP_MD_CTX_free(md_ctx);
-                    return Err(openssl::error::ErrorStack::get());
-                }
-
-                if !context.is_empty() {
-                    let r = EVP_PKEY_CTX_set1_signature_context_string(
-                        pctx,
+            let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
+            let pkey_ctx = md_ctx.digest_sign_init(None, pkey)?;
+            if !context.is_empty() {
+                // SAFETY: EVP_PKEY_CTX_set1_signature_context_string sets the
+                // ML-DSA context string on an initialized signing context.
+                unsafe {
+                    cvt(ffi::EVP_PKEY_CTX_set1_signature_context_string(
+                        pkey_ctx.as_ptr(),
                         context.as_ptr(),
                         context.len(),
-                    );
-                    if r != 1 {
-                        ffi::EVP_MD_CTX_free(md_ctx);
-                        return Err(openssl::error::ErrorStack::get());
-                    }
+                    ))?;
                 }
-
-                // Get signature length.
-                let mut sig_len: usize = 0;
-                let msg_ptr = if data.is_empty() { std::ptr::null() } else { data.as_ptr() };
-                let r = ffi::EVP_DigestSign(
-                    md_ctx,
+            }
+            // Get signature length.
+            let mut sig_len = 0;
+            // SAFETY: EVP_DigestSign with null output queries the signature
+            // length.
+            unsafe {
+                cvt(ffi::EVP_DigestSign(
+                    md_ctx.as_ptr(),
                     std::ptr::null_mut(),
                     &mut sig_len,
-                    msg_ptr,
+                    data.as_ptr(),
                     data.len(),
-                );
-                if r != 1 {
-                    ffi::EVP_MD_CTX_free(md_ctx);
-                    return Err(openssl::error::ErrorStack::get());
-                }
-
-                let mut sig = vec![0u8; sig_len];
-                let r = ffi::EVP_DigestSign(
-                    md_ctx,
+                ))?;
+            }
+            let mut sig = vec![0u8; sig_len];
+            // SAFETY: EVP_DigestSign writes the signature into the provided
+            // buffer. sig has been allocated with sufficient length.
+            unsafe {
+                cvt(ffi::EVP_DigestSign(
+                    md_ctx.as_ptr(),
                     sig.as_mut_ptr(),
                     &mut sig_len,
-                    msg_ptr,
+                    data.as_ptr(),
                     data.len(),
-                );
-                ffi::EVP_MD_CTX_free(md_ctx);
-                if r != 1 {
-                    return Err(openssl::error::ErrorStack::get());
-                }
-
-                sig.truncate(sig_len);
-                Ok(sig)
+                ))?;
             }
+            sig.truncate(sig_len);
+            Ok(sig)
         } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
             let raw_key = pkey.raw_private_key()?;
             let variant = MlDsaVariant::from_pkey(pkey);
@@ -398,55 +317,34 @@ pub fn verify(
 ) -> OpenSSLResult<bool> {
     cfg_if::cfg_if! {
         if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
-            // SAFETY: Uses EVP_DigestVerify with
-            // EVP_PKEY_CTX_set1_signature_context_string for context support.
-            // All pointers come from valid OpenSSL objects. md_ctx is freed
-            // on all paths.
-            unsafe {
-                let md_ctx = ffi::EVP_MD_CTX_new();
-                assert!(!md_ctx.is_null());
-                let mut pctx: *mut ffi::EVP_PKEY_CTX = std::ptr::null_mut();
-                let r = ffi::EVP_DigestVerifyInit(
-                    md_ctx,
-                    &mut pctx,
-                    std::ptr::null(),
-                    std::ptr::null_mut(),
-                    pkey.as_ptr() as *mut ffi::EVP_PKEY,
-                );
-                if r != 1 {
-                    ffi::EVP_MD_CTX_free(md_ctx);
-                    let _ = openssl::error::ErrorStack::get();
-                    return Ok(false);
-                }
-
-                if !context.is_empty() {
-                    let r = EVP_PKEY_CTX_set1_signature_context_string(
-                        pctx,
+            let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
+            let pkey_ctx = md_ctx.digest_verify_init(None, pkey)?;
+            if !context.is_empty() {
+                // SAFETY: EVP_PKEY_CTX_set1_signature_context_string sets the
+                // ML-DSA context string on an initialized verification context.
+                unsafe {
+                    cvt(ffi::EVP_PKEY_CTX_set1_signature_context_string(
+                        pkey_ctx.as_ptr(),
                         context.as_ptr(),
                         context.len(),
-                    );
-                    if r != 1 {
-                        ffi::EVP_MD_CTX_free(md_ctx);
-                        let _ = openssl::error::ErrorStack::get();
-                        return Ok(false);
-                    }
+                    ))?;
                 }
-
-                let msg_ptr = if data.is_empty() { std::ptr::null() } else { data.as_ptr() };
-                let r = ffi::EVP_DigestVerify(
-                    md_ctx,
+            }
+            // SAFETY: EVP_DigestVerify verifies the signature against the
+            // data using the initialized verification context.
+            let r = unsafe {
+                ffi::EVP_DigestVerify(
+                    md_ctx.as_ptr(),
                     signature.as_ptr(),
                     signature.len(),
-                    msg_ptr,
+                    data.as_ptr(),
                     data.len(),
-                );
-                ffi::EVP_MD_CTX_free(md_ctx);
-
-                if r != 1 {
-                    let _ = openssl::error::ErrorStack::get();
-                }
-                Ok(r == 1)
+                )
+            };
+            if r != 1 {
+                let _ = openssl::error::ErrorStack::get();
             }
+            Ok(r == 1)
         } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
             let raw_key = pkey.raw_public_key()?;
             let variant = MlDsaVariant::from_pkey(pkey);

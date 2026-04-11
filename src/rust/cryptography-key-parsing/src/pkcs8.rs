@@ -35,7 +35,7 @@ pub enum MlDsaPrivateKey {
 /// AWS-LC's `raw_private_key()` returns the expanded key, not the seed.
 /// This function round-trips through the native PKCS#8 encoding to extract it.
 /// https://github.com/aws/aws-lc/issues/3072
-#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 pub fn mldsa_seed_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
 ) -> Result<MlDsaPrivateKey, openssl::error::ErrorStack> {
@@ -501,17 +501,7 @@ pub fn serialize_private_key(key: &ParsedPrivateKey) -> crate::KeySerializationR
             }
             #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
             id if cryptography_openssl::mldsa::is_mldsa_pkey_type(id) => {
-                let seed_key = {
-                    cfg_if::cfg_if! {
-                        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
-                            let seed = cryptography_openssl::mldsa::get_seed(pkey)?;
-                            MlDsaPrivateKey::Seed(seed.try_into().unwrap())
-                        } else {
-                            mldsa_seed_from_pkey(pkey)?
-                        }
-                    }
-                };
-                let private_key_der = asn1::write_single(&seed_key)?;
+                let private_key_der = asn1::write_single(&mldsa_seed_from_pkey(pkey)?)?;
                 let params = match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
                     cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => {
                         AlgorithmParameters::MlDsa44
