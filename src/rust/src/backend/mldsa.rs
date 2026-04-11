@@ -106,9 +106,16 @@ impl MlDsa44PrivateKey {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let cryptography_key_parsing::pkcs8::MlDsaPrivateKey::Seed(seed) =
-            cryptography_key_parsing::pkcs8::mldsa_seed_from_pkey(&self.pkey)?;
-        Ok(pyo3::types::PyBytes::new(py, &seed))
+        cfg_if::cfg_if! {
+            if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+                let seed = cryptography_openssl::mldsa::get_seed(&self.pkey)?;
+                Ok(pyo3::types::PyBytes::new(py, &seed))
+            } else {
+                let cryptography_key_parsing::pkcs8::MlDsaPrivateKey::Seed(seed) =
+                    cryptography_key_parsing::pkcs8::mldsa_seed_from_pkey(&self.pkey)?;
+                Ok(pyo3::types::PyBytes::new(py, &seed))
+            }
+        }
     }
 
     fn private_bytes<'p>(
@@ -307,9 +314,16 @@ impl MlDsa65PrivateKey {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let cryptography_key_parsing::pkcs8::MlDsaPrivateKey::Seed(seed) =
-            cryptography_key_parsing::pkcs8::mldsa_seed_from_pkey(&self.pkey)?;
-        Ok(pyo3::types::PyBytes::new(py, &seed))
+        cfg_if::cfg_if! {
+            if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+                let seed = cryptography_openssl::mldsa::get_seed(&self.pkey)?;
+                Ok(pyo3::types::PyBytes::new(py, &seed))
+            } else {
+                let cryptography_key_parsing::pkcs8::MlDsaPrivateKey::Seed(seed) =
+                    cryptography_key_parsing::pkcs8::mldsa_seed_from_pkey(&self.pkey)?;
+                Ok(pyo3::types::PyBytes::new(py, &seed))
+            }
+        }
     }
 
     fn private_bytes<'p>(
@@ -511,9 +525,16 @@ impl MlDsa87PrivateKey {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let cryptography_key_parsing::pkcs8::MlDsaPrivateKey::Seed(seed) =
-            cryptography_key_parsing::pkcs8::mldsa_seed_from_pkey(&self.pkey)?;
-        Ok(pyo3::types::PyBytes::new(py, &seed))
+        cfg_if::cfg_if! {
+            if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+                let seed = cryptography_openssl::mldsa::get_seed(&self.pkey)?;
+                Ok(pyo3::types::PyBytes::new(py, &seed))
+            } else {
+                let cryptography_key_parsing::pkcs8::MlDsaPrivateKey::Seed(seed) =
+                    cryptography_key_parsing::pkcs8::mldsa_seed_from_pkey(&self.pkey)?;
+                Ok(pyo3::types::PyBytes::new(py, &seed))
+            }
+        }
     }
 
     fn private_bytes<'p>(

@@ -23,14 +23,14 @@ pub struct PrivateKeyInfo<'a> {
 }
 
 // RFC 9881 Section 6.5
-#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub enum MlDsaPrivateKey {
     #[implicit(0)]
     Seed([u8; 32]),
 }
 
-/// Extract the 32-byte ML-DSA-65 seed from a private key.
+/// Extract the 32-byte ML-DSA seed from a private key.
 ///
 /// AWS-LC's `raw_private_key()` returns the expanded key, not the seed.
 /// This function round-trips through the native PKCS#8 encoding to extract it.
@@ -132,7 +132,7 @@ pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
             Ok(ParsedPrivateKey::Pkey(pkey))
         }
 
-        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
         AlgorithmParameters::MlDsa44 => {
             let MlDsaPrivateKey::Seed(seed) = asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
             Ok(ParsedPrivateKey::Pkey(
@@ -143,7 +143,7 @@ pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
             ))
         }
 
-        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
         AlgorithmParameters::MlDsa65 => {
             let MlDsaPrivateKey::Seed(seed) = asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
             Ok(ParsedPrivateKey::Pkey(
@@ -154,7 +154,7 @@ pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
             ))
         }
 
-        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
         AlgorithmParameters::MlDsa87 => {
             let MlDsaPrivateKey::Seed(seed) = asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
             Ok(ParsedPrivateKey::Pkey(
@@ -499,9 +499,19 @@ pub fn serialize_private_key(key: &ParsedPrivateKey) -> crate::KeySerializationR
 
                 (params, private_key_der)
             }
-            #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
-            cryptography_openssl::mldsa::PKEY_ID => {
-                let private_key_der = asn1::write_single(&mldsa_seed_from_pkey(pkey)?)?;
+            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+            id if cryptography_openssl::mldsa::is_mldsa_pkey_type(id) => {
+                let seed_key = {
+                    cfg_if::cfg_if! {
+                        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+                            let seed = cryptography_openssl::mldsa::get_seed(pkey)?;
+                            MlDsaPrivateKey::Seed(seed.try_into().unwrap())
+                        } else {
+                            mldsa_seed_from_pkey(pkey)?
+                        }
+                    }
+                };
+                let private_key_der = asn1::write_single(&seed_key)?;
                 let params = match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
                     cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => {
                         AlgorithmParameters::MlDsa44
