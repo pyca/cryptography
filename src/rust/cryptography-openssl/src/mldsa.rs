@@ -228,10 +228,12 @@ pub fn sign(
                     ))?;
                 }
             }
-            // Get signature length.
+            // MdCtx::digest_sign is not yet available for BoringSSL builds
+            // in the openssl crate (it's gated on ossl111 only), so we call
+            // EVP_DigestSign directly. MdCtx still handles the EVP_MD_CTX
+            // lifecycle.
             let mut sig_len = 0;
-            // SAFETY: EVP_DigestSign with null output queries the signature
-            // length.
+            // SAFETY: EVP_DigestSign with null output queries the length.
             unsafe {
                 cvt(ffi::EVP_DigestSign(
                     md_ctx.as_ptr(),
@@ -242,8 +244,8 @@ pub fn sign(
                 ))?;
             }
             let mut sig = vec![0u8; sig_len];
-            // SAFETY: EVP_DigestSign writes the signature into the provided
-            // buffer. sig has been allocated with sufficient length.
+            // SAFETY: EVP_DigestSign computes the signature into a buffer
+            // that was allocated with sufficient length.
             unsafe {
                 cvt(ffi::EVP_DigestSign(
                     md_ctx.as_ptr(),
@@ -330,6 +332,9 @@ pub fn verify(
                     ))?;
                 }
             }
+            // MdCtx::digest_verify is not yet available for BoringSSL
+            // builds in the openssl crate (gated on ossl111 only), so we
+            // call EVP_DigestVerify directly.
             // SAFETY: EVP_DigestVerify verifies the signature against the
             // data using the initialized verification context.
             let r = unsafe {
