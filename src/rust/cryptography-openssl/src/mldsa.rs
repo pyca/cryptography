@@ -228,34 +228,8 @@ pub fn sign(
                     ))?;
                 }
             }
-            // MdCtx::digest_sign is not yet available for BoringSSL builds
-            // in the openssl crate (it's gated on ossl111 only), so we call
-            // EVP_DigestSign directly. MdCtx still handles the EVP_MD_CTX
-            // lifecycle.
-            let mut sig_len = 0;
-            // SAFETY: EVP_DigestSign with null output queries the length.
-            unsafe {
-                cvt(ffi::EVP_DigestSign(
-                    md_ctx.as_ptr(),
-                    std::ptr::null_mut(),
-                    &mut sig_len,
-                    data.as_ptr(),
-                    data.len(),
-                ))?;
-            }
-            let mut sig = vec![0u8; sig_len];
-            // SAFETY: EVP_DigestSign computes the signature into a buffer
-            // that was allocated with sufficient length.
-            unsafe {
-                cvt(ffi::EVP_DigestSign(
-                    md_ctx.as_ptr(),
-                    sig.as_mut_ptr(),
-                    &mut sig_len,
-                    data.as_ptr(),
-                    data.len(),
-                ))?;
-            }
-            sig.truncate(sig_len);
+            let mut sig = vec![];
+            md_ctx.digest_sign_to_vec(data, &mut sig)?;
             Ok(sig)
         } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
             let raw_key = pkey.raw_private_key()?;
@@ -332,24 +306,7 @@ pub fn verify(
                     ))?;
                 }
             }
-            // MdCtx::digest_verify is not yet available for BoringSSL
-            // builds in the openssl crate (gated on ossl111 only), so we
-            // call EVP_DigestVerify directly.
-            // SAFETY: EVP_DigestVerify verifies the signature against the
-            // data using the initialized verification context.
-            let r = unsafe {
-                ffi::EVP_DigestVerify(
-                    md_ctx.as_ptr(),
-                    signature.as_ptr(),
-                    signature.len(),
-                    data.as_ptr(),
-                    data.len(),
-                )
-            };
-            if r != 1 {
-                let _ = openssl::error::ErrorStack::get();
-            }
-            Ok(r == 1)
+            Ok(md_ctx.digest_verify(data, signature).unwrap_or(false))
         } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
             let raw_key = pkey.raw_public_key()?;
             let variant = MlDsaVariant::from_pkey(pkey);
