@@ -38,7 +38,7 @@ else:
 if sys.version_info < (3, 10):
     NoneType = type(None)
 else:
-    NoneType = types.NoneType  # type: ignore[valid-type]
+    NoneType = types.NoneType  # type: ignore[nonetype-type]
 
 from cryptography.hazmat.bindings._rust import declarative_asn1
 

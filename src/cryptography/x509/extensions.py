@@ -1558,8 +1558,8 @@ class GeneralNames:
         # just one value.
         objs = (i for i in self if isinstance(i, type))
         if type != OtherName:
-            return [i.value for i in objs]
-        return list(objs)
+            return [i.value for i in objs]  # type: ignore[return-value]
+        return list(objs)  # type: ignore[return-value]
 
     def __repr__(self) -> str:
         return f"<GeneralNames({self._general_names})>"
