@@ -86,13 +86,14 @@ fn set_context_string<T>(
 ) -> OpenSSLResult<()> {
     // SAFETY: EVP_PKEY_CTX_set1_signature_context_string sets the ML-DSA
     // context string on an initialized sign/verify context.
-    unsafe {
-        cvt(ffi::EVP_PKEY_CTX_set1_signature_context_string(
+    let res = unsafe {
+        ffi::EVP_PKEY_CTX_set1_signature_context_string(
             pkey_ctx.as_ptr(),
             context.as_ptr(),
             context.len(),
-        ))?;
-    }
+        )
+    };
+    cvt(res)?;
     Ok(())
 }
 
