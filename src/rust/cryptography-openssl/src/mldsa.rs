@@ -79,6 +79,23 @@ fn evp_pkey_alg(variant: MlDsaVariant) -> *const ffi::EVP_PKEY_ALG {
     }
 }
 
+#[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+fn set_context_string<T>(
+    pkey_ctx: &mut openssl::pkey_ctx::PkeyCtxRef<T>,
+    context: &[u8],
+) -> OpenSSLResult<()> {
+    // SAFETY: EVP_PKEY_CTX_set1_signature_context_string sets the ML-DSA
+    // context string on an initialized sign/verify context.
+    unsafe {
+        cvt(ffi::EVP_PKEY_CTX_set1_signature_context_string(
+            pkey_ctx.as_ptr(),
+            context.as_ptr(),
+            context.len(),
+        ))?;
+    }
+    Ok(())
+}
+
 #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
 extern "C" {
     // We call ml_dsa_{44,65}_sign/verify directly instead of going through
@@ -218,15 +235,7 @@ pub fn sign(
             let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
             let pkey_ctx = md_ctx.digest_sign_init(None, pkey)?;
             if !context.is_empty() {
-                // SAFETY: EVP_PKEY_CTX_set1_signature_context_string sets the
-                // ML-DSA context string on an initialized signing context.
-                unsafe {
-                    cvt(ffi::EVP_PKEY_CTX_set1_signature_context_string(
-                        pkey_ctx.as_ptr(),
-                        context.as_ptr(),
-                        context.len(),
-                    ))?;
-                }
+                set_context_string(pkey_ctx, context)?;
             }
             let mut sig = vec![];
             md_ctx.digest_sign_to_vec(data, &mut sig)?;
@@ -296,15 +305,7 @@ pub fn verify(
             let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
             let pkey_ctx = md_ctx.digest_verify_init(None, pkey)?;
             if !context.is_empty() {
-                // SAFETY: EVP_PKEY_CTX_set1_signature_context_string sets the
-                // ML-DSA context string on an initialized verification context.
-                unsafe {
-                    cvt(ffi::EVP_PKEY_CTX_set1_signature_context_string(
-                        pkey_ctx.as_ptr(),
-                        context.as_ptr(),
-                        context.len(),
-                    ))?;
-                }
+                set_context_string(pkey_ctx, context)?;
             }
             Ok(md_ctx.digest_verify(data, signature).unwrap_or(false))
         } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
