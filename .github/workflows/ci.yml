@@ -417,8 +417,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Apr 09, 2026.
-            REF: 12478f53977fa6510befca9fe044404876ac3502
+            # Latest commit on the pyopenssl main branch, as of Apr 13, 2026.
+            REF: 402177b25d132380f6eeed2395f35c2932602763
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -452,18 +452,18 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Apr 11, 2026.
-            REF: d482bbaa20af168f8307a504f1de8927144f7f99
+            # Latest commit on the mitmproxy main branch, as of Apr 13, 2026.
+            REF: 5dbbd14aa666bbaadc314dadb07e87e0fa879abe
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Apr 11, 2026.
-            REF: 2e7c97fedb447d96e7ede231116d9ce3a5695968
+            # Latest commit on the scapy master branch, as of Apr 13, 2026.
+            REF: 66ef96a9e218f5314a1e645da4eeffddbd47625f
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Apr 11, 2026.
-            REF: 2e436a17ebf17847917d8d452563784dcb3929bc
+            # Latest commit on the sigstore-python main branch, as of Apr 13, 2026.
+            REF: 297888a0c4e351650faad1bc1feb4fda6d0dc341
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
