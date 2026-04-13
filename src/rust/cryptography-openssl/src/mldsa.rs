@@ -200,16 +200,15 @@ pub fn new_raw_public_key(
 ) -> OpenSSLResult<openssl::pkey::PKey<openssl::pkey::Public>> {
     cfg_if::cfg_if! {
         if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
-            // SAFETY: EVP_PKEY_from_raw_public_key creates a new EVP_PKEY
-            // from raw public key bytes.
-            unsafe {
-                let pkey = cvt_p(ffi::EVP_PKEY_from_raw_public_key(
-                    evp_pkey_alg(variant),
-                    data.as_ptr(),
-                    data.len(),
-                ))?;
-                Ok(openssl::pkey::PKey::from_ptr(pkey))
-            }
+            let nid = match variant {
+                MlDsaVariant::MlDsa44 => ffi::NID_ML_DSA_44,
+                MlDsaVariant::MlDsa65 => ffi::NID_ML_DSA_65,
+                MlDsaVariant::MlDsa87 => ffi::NID_ML_DSA_87,
+            };
+            openssl::pkey::PKey::public_key_from_raw_bytes(
+                data,
+                openssl::pkey::Id::from_raw(nid),
+            )
         } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
             // SAFETY: EVP_PKEY_pqdsa_new_raw_public_key creates a new
             // EVP_PKEY from raw public key bytes.
