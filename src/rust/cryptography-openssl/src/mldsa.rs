@@ -79,40 +79,19 @@ fn evp_pkey_alg(variant: MlDsaVariant) -> *const ffi::EVP_PKEY_ALG {
     }
 }
 
-/// A wrapper around a `PkeyCtxRef` that has been initialized for either a
-/// sign or verify digest operation. The only way to construct one is via
-/// [`InitializedPkeyCtxRef::sign_init`] or [`InitializedPkeyCtxRef::verify_init`],
-/// which perform the underlying `EVP_DigestSignInit`/`EVP_DigestVerifyInit`
-/// call. This lets `set_context_string` assume the underlying context is
-/// already initialized without having to document an implicit precondition.
+/// A marker type for a `PkeyCtxRef` that has been initialized for a sign or
+/// verify operation. Callers explicitly wrap the ref in this type immediately
+/// after calling `digest_sign_init` / `digest_verify_init`, which makes the
+/// precondition required by [`InitializedPkeyCtxRef::set_context_string`]
+/// visible in the source.
 #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
 struct InitializedPkeyCtxRef<'a, T>(&'a mut openssl::pkey_ctx::PkeyCtxRef<T>);
 
 #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
-impl<'a, T> InitializedPkeyCtxRef<'a, T> {
-    fn sign_init(
-        md_ctx: &'a mut openssl::md_ctx::MdCtx,
-        pkey: &openssl::pkey::PKeyRef<T>,
-    ) -> OpenSSLResult<Self>
-    where
-        T: openssl::pkey::HasPrivate,
-    {
-        Ok(Self(md_ctx.digest_sign_init(None, pkey)?))
-    }
-
-    fn verify_init(
-        md_ctx: &'a mut openssl::md_ctx::MdCtx,
-        pkey: &openssl::pkey::PKeyRef<T>,
-    ) -> OpenSSLResult<Self>
-    where
-        T: openssl::pkey::HasPublic,
-    {
-        Ok(Self(md_ctx.digest_verify_init(None, pkey)?))
-    }
-
+impl<T> InitializedPkeyCtxRef<'_, T> {
     fn set_context_string(&mut self, context: &[u8]) -> OpenSSLResult<()> {
-        // SAFETY: By construction, the wrapped pkey_ctx has been initialized
-        // via digest_sign_init or digest_verify_init.
+        // SAFETY: By construction, the caller has wrapped a pkey_ctx that
+        // has been initialized for a sign/verify operation.
         let res = unsafe {
             ffi::EVP_PKEY_CTX_set1_signature_context_string(
                 self.0.as_ptr(),
@@ -262,7 +241,7 @@ pub fn sign(
     cfg_if::cfg_if! {
         if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
             let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
-            let mut pkey_ctx = InitializedPkeyCtxRef::sign_init(&mut md_ctx, pkey)?;
+            let mut pkey_ctx = InitializedPkeyCtxRef(md_ctx.digest_sign_init(None, pkey)?);
             if !context.is_empty() {
                 pkey_ctx.set_context_string(context)?;
             }
@@ -332,7 +311,7 @@ pub fn verify(
     cfg_if::cfg_if! {
         if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
             let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
-            let mut pkey_ctx = InitializedPkeyCtxRef::verify_init(&mut md_ctx, pkey)?;
+            let mut pkey_ctx = InitializedPkeyCtxRef(md_ctx.digest_verify_init(None, pkey)?);
             if !context.is_empty() {
                 pkey_ctx.set_context_string(context)?;
             }
