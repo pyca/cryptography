@@ -427,8 +427,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Apr 12, 2026.
-            REF: 0006576764119c2abe56c05005ded994c5894dbe
+            # Latest commit on the twisted trunk branch, as of Apr 14, 2026.
+            REF: aee525cb905e1ee0bb888de39d8a614183952744
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -442,8 +442,8 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Apr 08, 2026.
-            REF: 0cc0844f2cd1a07c52c63f1d5b77ab80d7d59c6b
+            # Latest commit on the certbot main branch, as of Apr 14, 2026.
+            REF: 3a5c92c6be4efee8654051a497252fb1c4332ce2
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -452,18 +452,18 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Apr 13, 2026.
-            REF: 5dbbd14aa666bbaadc314dadb07e87e0fa879abe
+            # Latest commit on the mitmproxy main branch, as of Apr 14, 2026.
+            REF: d332cbf19b1b7710cd53daf3bf1e8b1e97424734
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Apr 13, 2026.
-            REF: 66ef96a9e218f5314a1e645da4eeffddbd47625f
+            # Latest commit on the scapy master branch, as of Apr 14, 2026.
+            REF: 50092339d2f3fe6b69252ddac3c91381570160f6
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Apr 13, 2026.
-            REF: 297888a0c4e351650faad1bc1feb4fda6d0dc341
+            # Latest commit on the sigstore-python main branch, as of Apr 14, 2026.
+            REF: cf8561b068bc4af204f60efda2d89125b1266606
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
