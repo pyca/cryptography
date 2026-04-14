@@ -46,7 +46,7 @@ Serialization
     Serialize an ASN.1 object into DER-encoded bytes.
 
     :param value: The ASN.1 object to encode. Must be an instance of a
-        class decorated with :func:`sequence`, or a primitive ASN.1 type
+        class decorated with :func:`sequence` or :func:`set`, or a primitive ASN.1 type
         (``int``, ``bool``, ``bytes``, ``str``,
         :class:`~cryptography.x509.ObjectIdentifier`,
         :class:`PrintableString`, :class:`IA5String`, :class:`UTCTime`,
@@ -101,6 +101,40 @@ that have no direct Python equivalent:
         >>> encoded = asn1.encode_der(AlgorithmIdentifier(algorithm=9, parameters=None))
         >>> asn1.decode_der(AlgorithmIdentifier, encoded).algorithm
         9
+
+.. decorator:: set
+
+    A class decorator that registers a class as an ASN.1 ``SET``. Fields
+    are defined as class-level type annotations. The decorator adds an
+    ``__init__`` method with keyword-only parameters.
+
+    ``SET`` is similar to ``SEQUENCE``, but the fields are encoded in
+    ascending order by tag, rather than in definition order. When
+    decoding, fields must appear in the correct ascending order.
+
+    Fields can be annotated with :class:`Explicit`, :class:`Implicit`,
+    :class:`Default`, and :class:`Size` using :class:`typing.Annotated`.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat import asn1
+        >>> @asn1.set
+        ... class Example:
+        ...     x: int
+        ...     y: int
+        >>> encoded = asn1.encode_der(Example(x=1, y=2))
+        >>> decoded = asn1.decode_der(Example, encoded)
+        >>> decoded.x
+        1
+        >>> decoded.y
+        2
+        >>> # Decoding DER data where fields are not in sorted order
+        >>> # raises an error:
+        >>> wrong_order = b'\x31\x06\x02\x01\x02\x02\x01\x01'
+        >>> asn1.decode_der(Example, wrong_order)
+        Traceback (most recent call last):
+            ...
+        ValueError: error parsing asn1 value: ...
 
 .. class:: PrintableString(value)
 
