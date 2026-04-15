@@ -2,12 +2,20 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use foreign_types_shared::{ForeignType, ForeignTypeRef};
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+use foreign_types_shared::ForeignType;
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+use foreign_types_shared::ForeignTypeRef;
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 use openssl_sys as ffi;
 #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
 use std::os::raw::c_int;
 
-use crate::{cvt, cvt_p, OpenSSLResult};
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+use crate::cvt;
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+use crate::cvt_p;
+use crate::OpenSSLResult;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MlDsaVariant {
@@ -19,6 +27,7 @@ pub enum MlDsaVariant {
 #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
 pub const PKEY_ID: openssl::pkey::Id = openssl::pkey::Id::from_raw(ffi::NID_PQDSA);
 
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 pub fn is_mldsa_pkey_type(id: openssl::pkey::Id) -> bool {
     cfg_if::cfg_if! {
         if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
@@ -28,6 +37,18 @@ pub fn is_mldsa_pkey_type(id: openssl::pkey::Id) -> bool {
             id == PKEY_ID
         }
     }
+}
+
+/// Check whether a PKey is an ML-DSA key for vanilla OpenSSL 3.5+.
+///
+/// OpenSSL 3.x provider-based keys return -1 from EVP_PKEY_get_id(), so
+/// NID-based matching does not work. `PKeyRef::is_a` queries by algorithm
+/// name instead.
+#[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+pub fn is_mldsa_pkey<T>(pkey: &openssl::pkey::PKeyRef<T>) -> bool {
+    pkey.is_a(openssl::pkey::KeyType::ML_DSA_44)
+        || pkey.is_a(openssl::pkey::KeyType::ML_DSA_65)
+        || pkey.is_a(openssl::pkey::KeyType::ML_DSA_87)
 }
 
 impl MlDsaVariant {
@@ -61,6 +82,15 @@ impl MlDsaVariant {
                     ffi::NID_MLDSA87 => MlDsaVariant::MlDsa87,
                     _ => panic!("Unsupported ML-DSA variant"),
                 }
+            } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
+                // Provider-based keys in OpenSSL 3.x return -1 from
+                // EVP_PKEY_get_id(), so we must use name-based lookup.
+                match pkey {
+                    p if p.is_a(openssl::pkey::KeyType::ML_DSA_44) => MlDsaVariant::MlDsa44,
+                    p if p.is_a(openssl::pkey::KeyType::ML_DSA_65) => MlDsaVariant::MlDsa65,
+                    p if p.is_a(openssl::pkey::KeyType::ML_DSA_87) => MlDsaVariant::MlDsa87,
+                    _ => panic!("Unsupported ML-DSA variant"),
+                }
             }
         }
     }
@@ -79,20 +109,26 @@ fn evp_pkey_alg(variant: MlDsaVariant) -> *const ffi::EVP_PKEY_ALG {
     }
 }
 
-#[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))]
 fn set_context_string<T>(
     pkey_ctx: &mut openssl::pkey_ctx::PkeyCtxRef<T>,
     context: &[u8],
 ) -> OpenSSLResult<()> {
-    // SAFETY: pkey_ctx is a valid EVP_PKEY_CTX.
-    let res = unsafe {
-        ffi::EVP_PKEY_CTX_set1_signature_context_string(
-            pkey_ctx.as_ptr(),
-            context.as_ptr(),
-            context.len(),
-        )
-    };
-    cvt(res)?;
+    cfg_if::cfg_if! {
+        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+            // SAFETY: pkey_ctx is a valid EVP_PKEY_CTX.
+            let res = unsafe {
+                ffi::EVP_PKEY_CTX_set1_signature_context_string(
+                    pkey_ctx.as_ptr(),
+                    context.as_ptr(),
+                    context.len(),
+                )
+            };
+            cvt(res)?;
+        } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
+            pkey_ctx.set_context_string(context)?;
+        }
+    }
     Ok(())
 }
 
@@ -162,6 +198,19 @@ extern "C" {
     ) -> c_int;
 }
 
+/// Extract the raw 32-byte seed from an ML-DSA private key.
+///
+/// Avoids the PKCS#8 round-trip that vanilla OpenSSL 3.5 encodes
+/// differently from BoringSSL/AWS-LC.
+#[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+pub fn mldsa_seed_raw(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+) -> OpenSSLResult<[u8; 32]> {
+    let mut seed = [0u8; 32];
+    pkey.seed_into(&mut seed)?;
+    Ok(seed)
+}
+
 pub fn new_raw_private_key(
     variant: MlDsaVariant,
     data: &[u8],
@@ -190,6 +239,13 @@ pub fn new_raw_private_key(
                 ))?;
                 Ok(openssl::pkey::PKey::from_ptr(pkey))
             }
+        } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
+            let key_type = match variant {
+                MlDsaVariant::MlDsa44 => openssl::pkey::KeyType::ML_DSA_44,
+                MlDsaVariant::MlDsa65 => openssl::pkey::KeyType::ML_DSA_65,
+                MlDsaVariant::MlDsa87 => openssl::pkey::KeyType::ML_DSA_87,
+            };
+            openssl::pkey::PKey::private_key_from_seed(None, key_type, None, data)
         }
     }
 }
@@ -220,6 +276,13 @@ pub fn new_raw_public_key(
                 ))?;
                 Ok(openssl::pkey::PKey::from_ptr(pkey))
             }
+        } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
+            let key_type = match variant {
+                MlDsaVariant::MlDsa44 => openssl::pkey::KeyType::ML_DSA_44,
+                MlDsaVariant::MlDsa65 => openssl::pkey::KeyType::ML_DSA_65,
+                MlDsaVariant::MlDsa87 => openssl::pkey::KeyType::ML_DSA_87,
+            };
+            openssl::pkey::PKey::public_key_from_raw_bytes_ex(None, key_type, None, data)
         }
     }
 }
@@ -230,7 +293,7 @@ pub fn sign(
     context: &[u8],
 ) -> OpenSSLResult<Vec<u8>> {
     cfg_if::cfg_if! {
-        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+        if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))] {
             let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
             let pkey_ctx = md_ctx.digest_sign_init(None, pkey)?;
             if !context.is_empty() {
@@ -300,7 +363,7 @@ pub fn verify(
     context: &[u8],
 ) -> OpenSSLResult<bool> {
     cfg_if::cfg_if! {
-        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+        if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))] {
             let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
             let pkey_ctx = md_ctx.digest_verify_init(None, pkey)?;
             if !context.is_empty() {

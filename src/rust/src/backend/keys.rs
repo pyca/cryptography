@@ -215,6 +215,26 @@ fn private_key_from_pkey<'p>(
                 }
             }
         }
+        #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+        _ if cryptography_openssl::mldsa::is_mldsa_pkey(pkey) => {
+            match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => {
+                    Ok(crate::backend::mldsa::mldsa44_private_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa65 => {
+                    Ok(crate::backend::mldsa::mldsa65_private_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa87 => {
+                    Ok(crate::backend::mldsa::mldsa87_private_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+            }
+        }
         _ => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
         )),
@@ -388,6 +408,26 @@ fn public_key_from_pkey<'p>(
 
         #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
         id if cryptography_openssl::mldsa::is_mldsa_pkey_type(id) => {
+            match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => {
+                    Ok(crate::backend::mldsa::mldsa44_public_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa65 => {
+                    Ok(crate::backend::mldsa::mldsa65_public_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa87 => {
+                    Ok(crate::backend::mldsa::mldsa87_public_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+            }
+        }
+        #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+        _ if cryptography_openssl::mldsa::is_mldsa_pkey(pkey) => {
             match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
                 cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => {
                     Ok(crate::backend::mldsa::mldsa44_public_key_from_pkey(pkey)
