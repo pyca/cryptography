@@ -4,6 +4,7 @@
 
 import binascii
 import copy
+import dataclasses
 import os
 
 import pytest
@@ -23,9 +24,34 @@ from ...utils import (
 )
 
 
+@dataclasses.dataclass
+class MLKEMVariant:
+    private_key_class: type
+    public_key_class: type
+    pub_key_size: int
+    ciphertext_size: int
+    shared_secret_size: int
+    seed_size: int
+
+
+ML_KEM_VARIANTS = [
+    pytest.param(
+        MLKEMVariant(
+            private_key_class=MLKEM768PrivateKey,
+            public_key_class=MLKEM768PublicKey,
+            pub_key_size=1184,
+            ciphertext_size=1088,
+            shared_secret_size=32,
+            seed_size=64,
+        ),
+        id="ML-KEM-768",
+    ),
+]
+
+
 @pytest.mark.supported(
     only_if=lambda backend: not backend.mlkem_supported(),
-    skip_message="Requires a backend without ML-KEM-768 support",
+    skip_message="Requires a backend without ML-KEM support",
 )
 def test_mlkem_unsupported(backend):
     with raises_unsupported_algorithm(
@@ -46,28 +72,31 @@ def test_mlkem_unsupported(backend):
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.mlkem_supported(),
-    skip_message="Requires a backend with ML-KEM-768 support",
+    skip_message="Requires a backend with ML-KEM support",
 )
-class TestMLKEM768:
-    def test_encapsulate_decapsulate(self, backend):
-        key = MLKEM768PrivateKey.generate()
+class TestMLKEM:
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    def test_encapsulate_decapsulate(self, variant, backend):
+        key = variant.private_key_class.generate()
         pub = key.public_key()
         shared_secret, ciphertext = pub.encapsulate()
         decapped = key.decapsulate(ciphertext)
         assert shared_secret == decapped
-        assert len(shared_secret) == 32
-        assert len(ciphertext) == 1088
+        assert len(shared_secret) == variant.shared_secret_size
+        assert len(ciphertext) == variant.ciphertext_size
 
-    def test_private_bytes_raw(self, backend):
-        key = MLKEM768PrivateKey.generate()
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    def test_private_bytes_raw(self, variant, backend):
+        key = variant.private_key_class.generate()
         raw = key.private_bytes_raw()
-        assert len(raw) == 64
+        assert len(raw) == variant.seed_size
         assert raw == key.private_bytes(
             serialization.Encoding.Raw,
             serialization.PrivateFormat.Raw,
             serialization.NoEncryption(),
         )
 
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
     @pytest.mark.parametrize(
         ("encoding", "fmt", "encryption", "passwd", "load_func"),
         [
@@ -102,15 +131,16 @@ class TestMLKEM768:
         ],
     )
     def test_round_trip_private_serialization(
-        self, encoding, fmt, encryption, passwd, load_func, backend
+        self, variant, encoding, fmt, encryption, passwd, load_func, backend
     ):
-        key = MLKEM768PrivateKey.generate()
+        key = variant.private_key_class.generate()
         serialized = key.private_bytes(encoding, fmt, encryption)
         loaded_key = load_func(serialized, passwd, backend)
-        assert isinstance(loaded_key, MLKEM768PrivateKey)
+        assert isinstance(loaded_key, variant.private_key_class)
         # Verify round-trip by checking seed matches
         assert loaded_key.private_bytes_raw() == key.private_bytes_raw()
 
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
     @pytest.mark.parametrize(
         ("encoding", "fmt", "load_func"),
         [
@@ -127,61 +157,26 @@ class TestMLKEM768:
         ],
     )
     def test_round_trip_public_serialization(
-        self, encoding, fmt, load_func, backend
+        self, variant, encoding, fmt, load_func, backend
     ):
-        key = MLKEM768PrivateKey.generate()
+        key = variant.private_key_class.generate()
         pub = key.public_key()
         serialized = pub.public_bytes(encoding, fmt)
         loaded_pub = load_func(serialized, backend)
-        assert isinstance(loaded_pub, MLKEM768PublicKey)
+        assert isinstance(loaded_pub, variant.public_key_class)
         assert loaded_pub == pub
 
-    def test_invalid_seed_length(self, backend):
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    def test_invalid_seed_length(self, variant, backend):
         with pytest.raises(ValueError):
-            MLKEM768PrivateKey.from_seed_bytes(b"a" * 10)
+            variant.private_key_class.from_seed_bytes(b"a" * 10)
 
-    def test_invalid_type_seed(self, backend):
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    def test_invalid_type_seed(self, variant, backend):
         with pytest.raises(TypeError):
-            MLKEM768PrivateKey.from_seed_bytes(
-                object()  # type: ignore[arg-type]
-            )
+            variant.private_key_class.from_seed_bytes(object())
 
-    def test_kat_serialization(self, backend):
-        vectors = load_vectors_from_file(
-            os.path.join("asymmetric", "MLKEM", "kat_MLKEM_768.rsp"),
-            load_nist_vectors,
-        )
-
-        first_vector = next(iter(vectors))
-        d = binascii.unhexlify(first_vector["d"])
-        z = binascii.unhexlify(first_vector["z"])
-        key = MLKEM768PrivateKey.from_seed_bytes(d + z)
-
-        serialized_pem = key.private_bytes(
-            serialization.Encoding.PEM,
-            serialization.PrivateFormat.PKCS8,
-            serialization.NoEncryption(),
-        )
-        kat_pem = load_vectors_from_file(
-            os.path.join("asymmetric", "MLKEM", "mlkem768.pem"),
-            lambda f: f.read(),
-            mode="rb",
-        )
-        assert serialized_pem == kat_pem
-
-        serialized_der = key.private_bytes(
-            serialization.Encoding.DER,
-            serialization.PrivateFormat.PKCS8,
-            serialization.NoEncryption(),
-        )
-        kat_der = load_vectors_from_file(
-            os.path.join("asymmetric", "MLKEM", "mlkem768.der"),
-            lambda f: f.read(),
-            mode="rb",
-        )
-        assert serialized_der == kat_der
-
-    def test_kat_vectors(self, subtests, backend):
+    def test_kat_vectors_768(self, backend, subtests):
         vectors = load_vectors_from_file(
             os.path.join("asymmetric", "MLKEM", "kat_MLKEM_768.rsp"),
             load_nist_vectors,
@@ -211,6 +206,7 @@ class TestMLKEM768:
                 ss_n = key.decapsulate(binascii.unhexlify(vector["ct_n"]))
                 assert ss_n == binascii.unhexlify(vector["ss_n"])
 
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
     @pytest.mark.parametrize(
         ("encoding", "fmt", "encryption", "err"),
         [
@@ -259,14 +255,15 @@ class TestMLKEM768:
         ],
     )
     def test_invalid_private_bytes(
-        self, encoding, fmt, encryption, err, backend
+        self, variant, encoding, fmt, encryption, err, backend
     ):
-        key = MLKEM768PrivateKey.generate()
+        key = variant.private_key_class.generate()
         with pytest.raises(err):
             key.private_bytes(encoding, fmt, encryption)
 
-    def test_invalid_public_bytes(self, backend):
-        key = MLKEM768PrivateKey.generate().public_key()
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    def test_invalid_public_bytes(self, variant, backend):
+        key = variant.private_key_class.generate().public_key()
         with pytest.raises(ValueError):
             key.public_bytes(
                 serialization.Encoding.Raw,
@@ -283,61 +280,81 @@ class TestMLKEM768:
                 serialization.PublicFormat.Raw,
             )
 
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    def test_public_key_equality(self, variant, backend):
+        key = variant.private_key_class.generate()
+        pub1 = key.public_key()
+        pub2 = key.public_key()
+        pub3 = variant.private_key_class.generate().public_key()
+        assert pub1 == pub2
+        assert pub1 != pub3
+        assert pub1 != object()
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mlkem_supported(),
-    skip_message="Requires a backend with ML-KEM-768 support",
-)
-def test_public_key_equality(backend):
-    key = MLKEM768PrivateKey.generate()
-    pub1 = key.public_key()
-    pub2 = key.public_key()
-    pub3 = MLKEM768PrivateKey.generate().public_key()
-    assert pub1 == pub2
-    assert pub1 != pub3
-    assert pub1 != object()
+        with pytest.raises(TypeError):
+            pub1 < pub2
 
-    with pytest.raises(TypeError):
-        pub1 < pub2  # type: ignore[operator]
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    def test_public_key_copy(self, variant, backend):
+        key = variant.private_key_class.generate()
+        pub1 = key.public_key()
+        pub2 = copy.copy(pub1)
+        assert pub1 == pub2
 
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    def test_public_key_deepcopy(self, variant, backend):
+        key = variant.private_key_class.generate()
+        pub1 = key.public_key()
+        pub2 = copy.deepcopy(pub1)
+        assert pub1 == pub2
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mlkem_supported(),
-    skip_message="Requires a backend with ML-KEM-768 support",
-)
-def test_public_key_copy(backend):
-    key = MLKEM768PrivateKey.generate()
-    pub1 = key.public_key()
-    pub2 = copy.copy(pub1)
-    assert pub1 == pub2
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    def test_private_key_copy(self, variant, backend):
+        key1 = variant.private_key_class.generate()
+        key2 = copy.copy(key1)
+        assert key1.private_bytes_raw() == key2.private_bytes_raw()
 
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mlkem_supported(),
-    skip_message="Requires a backend with ML-KEM-768 support",
-)
-def test_public_key_deepcopy(backend):
-    key = MLKEM768PrivateKey.generate()
-    pub1 = key.public_key()
-    pub2 = copy.deepcopy(pub1)
-    assert pub1 == pub2
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mlkem_supported(),
-    skip_message="Requires a backend with ML-KEM-768 support",
-)
-def test_private_key_copy(backend):
-    key1 = MLKEM768PrivateKey.generate()
-    key2 = copy.copy(key1)
-    assert key1.private_bytes_raw() == key2.private_bytes_raw()
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    def test_private_key_deepcopy(self, variant, backend):
+        key1 = variant.private_key_class.generate()
+        key2 = copy.deepcopy(key1)
+        assert key1.private_bytes_raw() == key2.private_bytes_raw()
 
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.mlkem_supported(),
-    skip_message="Requires a backend with ML-KEM-768 support",
+    skip_message="Requires a backend with ML-KEM support",
 )
-def test_private_key_deepcopy(backend):
-    key1 = MLKEM768PrivateKey.generate()
-    key2 = copy.deepcopy(key1)
-    assert key1.private_bytes_raw() == key2.private_bytes_raw()
+def test_mlkem768_kat_serialization(backend):
+    vectors = load_vectors_from_file(
+        os.path.join("asymmetric", "MLKEM", "kat_MLKEM_768.rsp"),
+        load_nist_vectors,
+    )
+
+    first_vector = next(iter(vectors))
+    d = binascii.unhexlify(first_vector["d"])
+    z = binascii.unhexlify(first_vector["z"])
+    key = MLKEM768PrivateKey.from_seed_bytes(d + z)
+
+    serialized_pem = key.private_bytes(
+        serialization.Encoding.PEM,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    )
+    kat_pem = load_vectors_from_file(
+        os.path.join("asymmetric", "MLKEM", "mlkem768.pem"),
+        lambda f: f.read(),
+        mode="rb",
+    )
+    assert serialized_pem == kat_pem
+
+    serialized_der = key.private_bytes(
+        serialization.Encoding.DER,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    )
+    kat_der = load_vectors_from_file(
+        os.path.join("asymmetric", "MLKEM", "mlkem768.der"),
+        lambda f: f.read(),
+        mode="rb",
+    )
+    assert serialized_der == kat_der
