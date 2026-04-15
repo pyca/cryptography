@@ -138,7 +138,7 @@ nox==2026.2.9 ; python_full_version < '3.9'
     # via cryptography (pyproject.toml:dev)
 nox==2026.4.10 ; python_full_version >= '3.9'
     # via cryptography (pyproject.toml:dev)
-packaging==26.0
+packaging==26.1
     # via
     #   build
     #   dependency-groups
