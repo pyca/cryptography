@@ -14,6 +14,8 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.mlkem import (
     MLKEM768PrivateKey,
     MLKEM768PublicKey,
+    MLKEM1024PrivateKey,
+    MLKEM1024PublicKey,
 )
 
 from ...doubles import DummyKeySerializationEncryption
@@ -46,6 +48,17 @@ ML_KEM_VARIANTS = [
         ),
         id="ML-KEM-768",
     ),
+    pytest.param(
+        MLKEMVariant(
+            private_key_class=MLKEM1024PrivateKey,
+            public_key_class=MLKEM1024PublicKey,
+            pub_key_size=1568,
+            ciphertext_size=1568,
+            shared_secret_size=32,
+            seed_size=64,
+        ),
+        id="ML-KEM-1024",
+    ),
 ]
 
 
@@ -68,6 +81,21 @@ def test_mlkem_unsupported(backend):
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
     ):
         MLKEM768PublicKey.from_public_bytes(b"0" * 1184)
+
+    with raises_unsupported_algorithm(
+        _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+    ):
+        MLKEM1024PrivateKey.from_seed_bytes(b"0" * 64)
+
+    with raises_unsupported_algorithm(
+        _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+    ):
+        MLKEM1024PrivateKey.generate()
+
+    with raises_unsupported_algorithm(
+        _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+    ):
+        MLKEM1024PublicKey.from_public_bytes(b"0" * 1568)
 
 
 @pytest.mark.supported(
@@ -188,6 +216,36 @@ class TestMLKEM:
 
                 seed = d + z
                 key = MLKEM768PrivateKey.from_seed_bytes(seed)
+                assert key.private_bytes_raw() == seed
+
+                # Verify public key matches
+                pub = key.public_key()
+                assert pub.public_bytes_raw() == binascii.unhexlify(
+                    vector["pk"]
+                )
+
+                # Verify decapsulation produces the expected shared secret
+                ss = key.decapsulate(binascii.unhexlify(vector["ct"]))
+                assert ss == binascii.unhexlify(vector["ss"])
+
+                # Decapsulating an invalid ciphertext should use
+                # implicit rejection, producing a deterministic but
+                # different shared secret.
+                ss_n = key.decapsulate(binascii.unhexlify(vector["ct_n"]))
+                assert ss_n == binascii.unhexlify(vector["ss_n"])
+
+    def test_kat_vectors_1024(self, backend, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join("asymmetric", "MLKEM", "kat_MLKEM_1024.rsp"),
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                d = binascii.unhexlify(vector["d"])
+                z = binascii.unhexlify(vector["z"])
+
+                seed = d + z
+                key = MLKEM1024PrivateKey.from_seed_bytes(seed)
                 assert key.private_bytes_raw() == seed
 
                 # Verify public key matches

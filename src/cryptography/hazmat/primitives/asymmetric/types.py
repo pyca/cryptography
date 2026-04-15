@@ -32,6 +32,7 @@ PublicKeyTypes = typing.Union[
     mldsa.MLDSA65PublicKey,
     mldsa.MLDSA87PublicKey,
     mlkem.MLKEM768PublicKey,
+    mlkem.MLKEM1024PublicKey,
     x25519.X25519PublicKey,
     x448.X448PublicKey,
 ]
@@ -52,6 +53,7 @@ PrivateKeyTypes = typing.Union[
     mldsa.MLDSA65PrivateKey,
     mldsa.MLDSA87PrivateKey,
     mlkem.MLKEM768PrivateKey,
+    mlkem.MLKEM1024PrivateKey,
     rsa.RSAPrivateKey,
     dsa.DSAPrivateKey,
     ec.EllipticCurvePrivateKey,

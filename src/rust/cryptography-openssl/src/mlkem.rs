@@ -13,12 +13,14 @@ pub const PKEY_ID: openssl::pkey::Id = openssl::pkey::Id::from_raw(ffi::NID_kem)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MlKemVariant {
     MlKem768,
+    MlKem1024,
 }
 
 impl MlKemVariant {
     pub fn nid(self) -> c_int {
         match self {
             MlKemVariant::MlKem768 => ffi::NID_MLKEM768,
+            MlKemVariant::MlKem1024 => ffi::NID_MLKEM1024,
         }
     }
 
@@ -33,6 +35,7 @@ impl MlKemVariant {
             .len();
         match len {
             1184 => MlKemVariant::MlKem768,
+            1568 => MlKemVariant::MlKem1024,
             _ => panic!("Unsupported ML-KEM variant"),
         }
     }
@@ -77,7 +80,7 @@ pub fn new_raw_private_key(
         ))?;
     }
     let expected_seed_len = match variant {
-        MlKemVariant::MlKem768 => 64,
+        MlKemVariant::MlKem768 | MlKemVariant::MlKem1024 => 64,
     };
     assert_eq!(seed_len, expected_seed_len);
     // SAFETY: EVP_PKEY_keygen_deterministic succeeded, pkey is valid.
@@ -105,6 +108,7 @@ pub fn encapsulate(
 ) -> OpenSSLResult<(Vec<u8>, Vec<u8>)> {
     let (ct_bytes, ss_bytes) = match MlKemVariant::from_pkey(pkey) {
         MlKemVariant::MlKem768 => (1088, 32),
+        MlKemVariant::MlKem1024 => (1568, 32),
     };
     let ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
 
@@ -134,7 +138,7 @@ pub fn decapsulate(
     let ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
 
     let ss_bytes: usize = match MlKemVariant::from_pkey(pkey) {
-        MlKemVariant::MlKem768 => 32,
+        MlKemVariant::MlKem768 | MlKemVariant::MlKem1024 => 32,
     };
     let mut shared_secret = vec![0u8; ss_bytes];
     let mut ss_len = ss_bytes;

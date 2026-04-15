@@ -164,6 +164,16 @@ pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
             Ok(ParsedPrivateKey::Pkey(pkey))
         }
 
+        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        AlgorithmParameters::MlKem1024 => {
+            let MlKemPrivateKey::Seed(seed) = asn1::parse_single::<MlKemPrivateKey>(k.private_key)?;
+            let pkey = cryptography_openssl::mlkem::new_raw_private_key(
+                cryptography_openssl::mlkem::MlKemVariant::MlKem1024,
+                &seed,
+            )?;
+            Ok(ParsedPrivateKey::Pkey(pkey))
+        }
+
         #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
         AlgorithmParameters::MlDsa44 => {
             let MlDsaPrivateKey::Seed(seed) = asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
@@ -537,6 +547,9 @@ pub fn serialize_private_key(key: &ParsedPrivateKey) -> crate::KeySerializationR
                 let params = match cryptography_openssl::mlkem::MlKemVariant::from_pkey(pkey) {
                     cryptography_openssl::mlkem::MlKemVariant::MlKem768 => {
                         AlgorithmParameters::MlKem768
+                    }
+                    cryptography_openssl::mlkem::MlKemVariant::MlKem1024 => {
+                        AlgorithmParameters::MlKem1024
                     }
                 };
                 (params, private_key_der)
