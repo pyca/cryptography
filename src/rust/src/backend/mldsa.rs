@@ -65,11 +65,14 @@ fn from_mldsa44_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa44PrivateKe
 }
 
 #[pyo3::pyfunction]
-fn from_mldsa44_public_bytes(data: &[u8]) -> pyo3::PyResult<MlDsa44PublicKey> {
-    let pkey = cryptography_openssl::mldsa::new_raw_public_key(MlDsaVariant::MlDsa44, data)
-        .map_err(|_| {
-            pyo3::exceptions::PyValueError::new_err("An ML-DSA-44 public key is 1312 bytes long")
-        })?;
+fn from_mldsa44_public_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa44PublicKey> {
+    let pkey =
+        cryptography_openssl::mldsa::new_raw_public_key(MlDsaVariant::MlDsa44, data.as_bytes())
+            .map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err(
+                    "An ML-DSA-44 public key is 1312 bytes long",
+                )
+            })?;
     Ok(MlDsa44PublicKey { pkey })
 }
 
@@ -266,11 +269,14 @@ fn from_mldsa65_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa65PrivateKe
 }
 
 #[pyo3::pyfunction]
-fn from_mldsa65_public_bytes(data: &[u8]) -> pyo3::PyResult<MlDsa65PublicKey> {
-    let pkey = cryptography_openssl::mldsa::new_raw_public_key(MlDsaVariant::MlDsa65, data)
-        .map_err(|_| {
-            pyo3::exceptions::PyValueError::new_err("An ML-DSA-65 public key is 1952 bytes long")
-        })?;
+fn from_mldsa65_public_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa65PublicKey> {
+    let pkey =
+        cryptography_openssl::mldsa::new_raw_public_key(MlDsaVariant::MlDsa65, data.as_bytes())
+            .map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err(
+                    "An ML-DSA-65 public key is 1952 bytes long",
+                )
+            })?;
     Ok(MlDsa65PublicKey { pkey })
 }
 
@@ -470,11 +476,14 @@ fn from_mldsa87_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa87PrivateKe
 }
 
 #[pyo3::pyfunction]
-fn from_mldsa87_public_bytes(data: &[u8]) -> pyo3::PyResult<MlDsa87PublicKey> {
-    let pkey = cryptography_openssl::mldsa::new_raw_public_key(MlDsaVariant::MlDsa87, data)
-        .map_err(|_| {
-            pyo3::exceptions::PyValueError::new_err("An ML-DSA-87 public key is 2592 bytes long")
-        })?;
+fn from_mldsa87_public_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa87PublicKey> {
+    let pkey =
+        cryptography_openssl::mldsa::new_raw_public_key(MlDsaVariant::MlDsa87, data.as_bytes())
+            .map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err(
+                    "An ML-DSA-87 public key is 2592 bytes long",
+                )
+            })?;
     Ok(MlDsa87PublicKey { pkey })
 }
 
