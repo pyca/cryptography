@@ -194,6 +194,12 @@ class TestAESKeyWrapWithPadding:
                 b"sixteen_byte_key", b"\x00" * 15, backend
             )
 
+    def test_wrap_empty_key_to_wrap(self, backend):
+        with pytest.raises(
+            ValueError, match="key_to_wrap must be between 1 and 2\\^32 bytes"
+        ):
+            keywrap.aes_key_wrap_with_padding(b"\x00" * 16, b"", backend)
+
     def test_wrap_invalid_key_length(self, backend):
         with pytest.raises(ValueError, match="must be a valid AES key length"):
             keywrap.aes_key_wrap_with_padding(b"badkey", b"\x00", backend)
