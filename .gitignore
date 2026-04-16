@@ -16,4 +16,3 @@ target/
 .rust-cov/
 *.lcov
 *.profdata
-aws-lc/
