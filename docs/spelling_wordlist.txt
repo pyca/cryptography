@@ -36,6 +36,9 @@ cryptographically
 de
 Debian
 deallocated
+decapsulate
+Decapsulate
+Decapsulation
 declaratively
 decrypt
 decrypts
@@ -49,7 +52,6 @@ deserialize
 deserialized
 Deserialization
 deserializing
-Diffie
 Diffie
 disambiguating
 Django
