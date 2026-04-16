@@ -13,24 +13,6 @@ use crate::error::CryptographyResult;
 #[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.mlkem",
-    name = "MLKEM512PrivateKey"
-)]
-pub(crate) struct MlKem512PrivateKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Private>,
-}
-
-#[pyo3::pyclass(
-    frozen,
-    module = "cryptography.hazmat.bindings._rust.openssl.mlkem",
-    name = "MLKEM512PublicKey"
-)]
-pub(crate) struct MlKem512PublicKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Public>,
-}
-
-#[pyo3::pyclass(
-    frozen,
-    module = "cryptography.hazmat.bindings._rust.openssl.mlkem",
     name = "MLKEM768PrivateKey"
 )]
 pub(crate) struct MlKem768PrivateKey {
@@ -64,22 +46,6 @@ pub(crate) struct MlKem1024PublicKey {
     pkey: openssl::pkey::PKey<openssl::pkey::Public>,
 }
 
-pub(crate) fn mlkem512_private_key_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
-) -> MlKem512PrivateKey {
-    MlKem512PrivateKey {
-        pkey: pkey.to_owned(),
-    }
-}
-
-pub(crate) fn mlkem512_public_key_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
-) -> MlKem512PublicKey {
-    MlKem512PublicKey {
-        pkey: pkey.to_owned(),
-    }
-}
-
 pub(crate) fn mlkem768_private_key_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
 ) -> MlKem768PrivateKey {
@@ -109,157 +75,6 @@ pub(crate) fn mlkem1024_public_key_from_pkey(
 ) -> MlKem1024PublicKey {
     MlKem1024PublicKey {
         pkey: pkey.to_owned(),
-    }
-}
-
-#[pyo3::pyfunction]
-fn generate_mlkem512_key() -> CryptographyResult<MlKem512PrivateKey> {
-    let mut seed = [0u8; 64];
-    cryptography_openssl::rand::rand_bytes(&mut seed)?;
-    let pkey = cryptography_openssl::mlkem::new_raw_private_key(MlKemVariant::MlKem512, &seed)?;
-    Ok(MlKem512PrivateKey { pkey })
-}
-
-#[pyo3::pyfunction]
-fn from_mlkem512_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlKem512PrivateKey> {
-    let pkey =
-        cryptography_openssl::mlkem::new_raw_private_key(MlKemVariant::MlKem512, data.as_bytes())
-            .map_err(|_| {
-            pyo3::exceptions::PyValueError::new_err("An ML-KEM-512 seed is 64 bytes long")
-        })?;
-    Ok(MlKem512PrivateKey { pkey })
-}
-
-#[pyo3::pymethods]
-impl MlKem512PrivateKey {
-    fn decapsulate<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-        ciphertext: CffiBuf<'_>,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let shared_secret =
-            cryptography_openssl::mlkem::decapsulate(&self.pkey, ciphertext.as_bytes()).map_err(
-                |_| pyo3::exceptions::PyValueError::new_err("Invalid ML-KEM-512 ciphertext"),
-            )?;
-        Ok(pyo3::types::PyBytes::new(py, &shared_secret))
-    }
-
-    fn public_key(&self) -> CryptographyResult<MlKem512PublicKey> {
-        let raw_bytes = self.pkey.raw_public_key()?;
-        Ok(MlKem512PublicKey {
-            pkey: cryptography_openssl::mlkem::new_raw_public_key(
-                MlKemVariant::MlKem512,
-                &raw_bytes,
-            )?,
-        })
-    }
-
-    fn private_bytes_raw<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let cryptography_key_parsing::pkcs8::MlKemPrivateKey::Seed(seed) =
-            cryptography_key_parsing::pkcs8::mlkem_seed_from_pkey(&self.pkey)?;
-        Ok(pyo3::types::PyBytes::new(py, &seed))
-    }
-
-    fn private_bytes<'p>(
-        slf: &pyo3::Bound<'p, Self>,
-        py: pyo3::Python<'p>,
-        encoding: crate::serialization::Encoding,
-        format: crate::serialization::PrivateFormat,
-        encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        // Intercept Raw/Raw/NoEncryption so we return the seed.
-        // The generic pkey_private_bytes raw path calls raw_private_key()
-        // which returns the expanded key on AWS-LC, not the seed.
-        if encoding == crate::serialization::Encoding::Raw
-            && format == crate::serialization::PrivateFormat::Raw
-            && encryption_algorithm.is_instance(&crate::types::NO_ENCRYPTION.get(py)?)?
-        {
-            return slf.borrow().private_bytes_raw(py);
-        }
-        utils::pkey_private_bytes(
-            py,
-            slf,
-            &slf.borrow().pkey,
-            encoding,
-            format,
-            encryption_algorithm,
-            true,
-            false,
-        )
-    }
-
-    fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
-        slf
-    }
-
-    fn __deepcopy__<'p>(
-        slf: pyo3::PyRef<'p, Self>,
-        _memo: &pyo3::Bound<'p, pyo3::PyAny>,
-    ) -> pyo3::PyRef<'p, Self> {
-        slf
-    }
-}
-
-#[pyo3::pyfunction]
-fn from_mlkem512_public_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlKem512PublicKey> {
-    let pkey =
-        cryptography_openssl::mlkem::new_raw_public_key(MlKemVariant::MlKem512, data.as_bytes())
-            .map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err(
-                    "An ML-KEM-512 public key is 800 bytes long",
-                )
-            })?;
-    Ok(MlKem512PublicKey { pkey })
-}
-
-#[pyo3::pymethods]
-impl MlKem512PublicKey {
-    fn encapsulate<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyTuple>> {
-        let (ciphertext, shared_secret) = cryptography_openssl::mlkem::encapsulate(&self.pkey)
-            .map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err("ML-KEM-512 encapsulation failed")
-            })?;
-        let ss = pyo3::types::PyBytes::new(py, &shared_secret);
-        let ct = pyo3::types::PyBytes::new(py, &ciphertext);
-        Ok(pyo3::types::PyTuple::new(py, [ss.as_any(), ct.as_any()])?)
-    }
-
-    fn public_bytes_raw<'p>(
-        &self,
-        py: pyo3::Python<'p>,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let raw_bytes = self.pkey.raw_public_key()?;
-        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
-    }
-
-    fn public_bytes<'p>(
-        slf: &pyo3::Bound<'p, Self>,
-        py: pyo3::Python<'p>,
-        encoding: crate::serialization::Encoding,
-        format: crate::serialization::PublicFormat,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, true)
-    }
-
-    fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> bool {
-        self.pkey.public_eq(&other.pkey)
-    }
-
-    fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
-        slf
-    }
-
-    fn __deepcopy__<'p>(
-        slf: pyo3::PyRef<'p, Self>,
-        _memo: &pyo3::Bound<'p, pyo3::PyAny>,
-    ) -> pyo3::PyRef<'p, Self> {
-        slf
     }
 }
 
@@ -567,10 +382,8 @@ impl MlKem1024PublicKey {
 pub(crate) mod mlkem {
     #[pymodule_export]
     use super::{
-        from_mlkem1024_public_bytes, from_mlkem1024_seed_bytes, from_mlkem512_public_bytes,
-        from_mlkem512_seed_bytes, from_mlkem768_public_bytes, from_mlkem768_seed_bytes,
-        generate_mlkem1024_key, generate_mlkem512_key, generate_mlkem768_key, MlKem1024PrivateKey,
-        MlKem1024PublicKey, MlKem512PrivateKey, MlKem512PublicKey, MlKem768PrivateKey,
-        MlKem768PublicKey,
+        from_mlkem1024_public_bytes, from_mlkem1024_seed_bytes, from_mlkem768_public_bytes,
+        from_mlkem768_seed_bytes, generate_mlkem1024_key, generate_mlkem768_key,
+        MlKem1024PrivateKey, MlKem1024PublicKey, MlKem768PrivateKey, MlKem768PublicKey,
     };
 }

@@ -113,7 +113,6 @@ pub const ML_DSA_44_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101,
 pub const ML_DSA_65_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 18);
 pub const ML_DSA_87_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 19);
 
-pub const ML_KEM_512_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 4, 1);
 pub const ML_KEM_768_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 4, 2);
 pub const ML_KEM_1024_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 4, 3);
 
