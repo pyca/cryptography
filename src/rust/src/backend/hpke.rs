@@ -985,8 +985,13 @@ pub(crate) mod hpke {
 
 #[cfg(test)]
 mod tests {
-    use super::kdf_params;
+    use super::{kdf_params, kem_params};
     use super::{KDF, KEM};
+
+    #[test]
+    fn test_mlkem768_secret_length() {
+        assert_eq!(KEM::MLKEM768.secret_length(), kem_params::MLKEM768_NSECRET);
+    }
 
     #[test]
     #[should_panic(expected = "ML-KEM-768 does not generate an ephemeral DH key")]
