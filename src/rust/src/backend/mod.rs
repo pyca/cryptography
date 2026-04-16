@@ -23,7 +23,7 @@ pub(crate) mod kdf;
 pub(crate) mod keys;
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 pub(crate) mod mldsa;
-#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 pub(crate) mod mlkem;
 pub(crate) mod poly1305;
 pub(crate) mod rand;

@@ -4,11 +4,24 @@
 
 use foreign_types_shared::ForeignType;
 use openssl_sys as ffi;
+#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
 use std::os::raw::c_int;
 
 use crate::{cvt, cvt_p, OpenSSLResult};
 
+#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
 pub const PKEY_ID: openssl::pkey::Id = openssl::pkey::Id::from_raw(ffi::NID_kem);
+
+pub fn is_mlkem_pkey_type(id: openssl::pkey::Id) -> bool {
+    cfg_if::cfg_if! {
+        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+            let raw = id.as_raw();
+            raw == ffi::NID_ML_KEM_768 || raw == ffi::NID_ML_KEM_1024
+        } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
+            id == PKEY_ID
+        }
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MlKemVariant {
@@ -17,6 +30,7 @@ pub enum MlKemVariant {
 }
 
 impl MlKemVariant {
+    #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
     pub fn nid(self) -> c_int {
         match self {
             MlKemVariant::MlKem768 => ffi::NID_MLKEM768,
@@ -27,20 +41,44 @@ impl MlKemVariant {
     pub fn from_pkey<T: openssl::pkey::HasPublic>(
         pkey: &openssl::pkey::PKeyRef<T>,
     ) -> MlKemVariant {
-        // AWS-LC is missing the equivalent `EVP_PKEY_pqdsa_get_type`, so we
-        // are using the key size as a discriminator to find the variant.
-        let len = pkey
-            .raw_public_key()
-            .expect("valid ML-KEM public key")
-            .len();
-        match len {
-            1184 => MlKemVariant::MlKem768,
-            1568 => MlKemVariant::MlKem1024,
-            _ => panic!("Unsupported ML-KEM variant"),
+        cfg_if::cfg_if! {
+            if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+                match pkey.id().as_raw() {
+                    ffi::NID_ML_KEM_768 => MlKemVariant::MlKem768,
+                    ffi::NID_ML_KEM_1024 => MlKemVariant::MlKem1024,
+                    _ => panic!("Unsupported ML-KEM variant"),
+                }
+            } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
+                // AWS-LC is missing the equivalent `EVP_PKEY_pqdsa_get_type`,
+                // so we are using the key size as a discriminator to find the
+                // variant.
+                let len = pkey
+                    .raw_public_key()
+                    .expect("valid ML-KEM public key")
+                    .len();
+                match len {
+                    1184 => MlKemVariant::MlKem768,
+                    1568 => MlKemVariant::MlKem1024,
+                    _ => panic!("Unsupported ML-KEM variant"),
+                }
+            }
         }
     }
 }
 
+#[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+fn evp_pkey_alg(variant: MlKemVariant) -> *const ffi::EVP_PKEY_ALG {
+    // SAFETY: These functions return static, non-null pointers to the
+    // EVP_PKEY_ALG for each ML-KEM variant.
+    unsafe {
+        match variant {
+            MlKemVariant::MlKem768 => ffi::EVP_pkey_ml_kem_768(),
+            MlKemVariant::MlKem1024 => ffi::EVP_pkey_ml_kem_1024(),
+        }
+    }
+}
+
+#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
 extern "C" {
     // Manually declared because this function is in an experimental header
     // in AWS-LC (April 2026).
@@ -57,49 +95,74 @@ pub fn new_raw_private_key(
     variant: MlKemVariant,
     seed: &[u8],
 ) -> OpenSSLResult<openssl::pkey::PKey<openssl::pkey::Private>> {
-    let ctx = openssl::pkey_ctx::PkeyCtx::new_id(PKEY_ID)?;
-    // SAFETY: ctx is a valid EVP_PKEY_CTX for KEM.
-    unsafe {
-        cvt(ffi::EVP_PKEY_CTX_kem_set_params(
-            ctx.as_ptr(),
-            variant.nid(),
-        ))?
-    };
-    // SAFETY: ctx is a valid EVP_PKEY_CTX with KEM params set.
-    unsafe { cvt(ffi::EVP_PKEY_keygen_init(ctx.as_ptr()))? };
+    cfg_if::cfg_if! {
+        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+            // SAFETY: EVP_PKEY_from_private_seed creates a new EVP_PKEY from
+            // the seed. evp_pkey_alg returns a valid algorithm pointer.
+            unsafe {
+                let pkey = cvt_p(ffi::EVP_PKEY_from_private_seed(
+                    evp_pkey_alg(variant),
+                    seed.as_ptr(),
+                    seed.len(),
+                ))?;
+                Ok(openssl::pkey::PKey::from_ptr(pkey))
+            }
+        } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
+            let ctx = openssl::pkey_ctx::PkeyCtx::new_id(PKEY_ID)?;
+            // SAFETY: ctx is a valid EVP_PKEY_CTX for KEM.
+            unsafe {
+                cvt(ffi::EVP_PKEY_CTX_kem_set_params(
+                    ctx.as_ptr(),
+                    variant.nid(),
+                ))?
+            };
+            // SAFETY: ctx is a valid EVP_PKEY_CTX with KEM params set.
+            unsafe { cvt(ffi::EVP_PKEY_keygen_init(ctx.as_ptr()))? };
 
-    let mut pkey: *mut ffi::EVP_PKEY = std::ptr::null_mut();
-    let mut seed_len = seed.len();
-    // SAFETY: ctx is initialized for keygen, seed points to valid memory.
-    unsafe {
-        cvt(EVP_PKEY_keygen_deterministic(
-            ctx.as_ptr(),
-            &mut pkey,
-            seed.as_ptr(),
-            &mut seed_len,
-        ))?;
+            let mut pkey: *mut ffi::EVP_PKEY = std::ptr::null_mut();
+            let mut seed_len = seed.len();
+            // SAFETY: ctx is initialized for keygen, seed points to valid memory.
+            unsafe {
+                cvt(EVP_PKEY_keygen_deterministic(
+                    ctx.as_ptr(),
+                    &mut pkey,
+                    seed.as_ptr(),
+                    &mut seed_len,
+                ))?;
+            }
+            assert_eq!(seed_len, 64);
+            // SAFETY: EVP_PKEY_keygen_deterministic succeeded, pkey is valid.
+            let pkey = unsafe { openssl::pkey::PKey::from_ptr(pkey) };
+            Ok(pkey)
+        }
     }
-    let expected_seed_len = match variant {
-        MlKemVariant::MlKem768 | MlKemVariant::MlKem1024 => 64,
-    };
-    assert_eq!(seed_len, expected_seed_len);
-    // SAFETY: EVP_PKEY_keygen_deterministic succeeded, pkey is valid.
-    let pkey = unsafe { openssl::pkey::PKey::from_ptr(pkey) };
-    Ok(pkey)
 }
 
 pub fn new_raw_public_key(
     variant: MlKemVariant,
     data: &[u8],
 ) -> OpenSSLResult<openssl::pkey::PKey<openssl::pkey::Public>> {
-    // SAFETY: data points to valid memory of the given length.
-    unsafe {
-        let pkey = cvt_p(ffi::EVP_PKEY_kem_new_raw_public_key(
-            variant.nid(),
-            data.as_ptr(),
-            data.len(),
-        ))?;
-        Ok(openssl::pkey::PKey::from_ptr(pkey))
+    cfg_if::cfg_if! {
+        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+            let nid = match variant {
+                MlKemVariant::MlKem768 => ffi::NID_ML_KEM_768,
+                MlKemVariant::MlKem1024 => ffi::NID_ML_KEM_1024,
+            };
+            openssl::pkey::PKey::public_key_from_raw_bytes(
+                data,
+                openssl::pkey::Id::from_raw(nid),
+            )
+        } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
+            // SAFETY: data points to valid memory of the given length.
+            unsafe {
+                let pkey = cvt_p(ffi::EVP_PKEY_kem_new_raw_public_key(
+                    variant.nid(),
+                    data.as_ptr(),
+                    data.len(),
+                ))?;
+                Ok(openssl::pkey::PKey::from_ptr(pkey))
+            }
+        }
     }
 }
 
@@ -111,6 +174,14 @@ pub fn encapsulate(
         MlKemVariant::MlKem1024 => (1568, 32),
     };
     let ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
+    // SAFETY: ctx is a valid EVP_PKEY_CTX for the KEM operation.
+    #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+    unsafe {
+        cvt(ffi::EVP_PKEY_encapsulate_init(
+            ctx.as_ptr(),
+            std::ptr::null(),
+        ))?;
+    }
 
     let mut ciphertext = vec![0u8; ct_bytes];
     let mut shared_secret = vec![0u8; ss_bytes];
@@ -136,10 +207,16 @@ pub fn decapsulate(
     ciphertext: &[u8],
 ) -> OpenSSLResult<Vec<u8>> {
     let ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
+    // SAFETY: ctx is a valid EVP_PKEY_CTX for the KEM operation.
+    #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+    unsafe {
+        cvt(ffi::EVP_PKEY_decapsulate_init(
+            ctx.as_ptr(),
+            std::ptr::null(),
+        ))?;
+    }
 
-    let ss_bytes: usize = match MlKemVariant::from_pkey(pkey) {
-        MlKemVariant::MlKem768 | MlKemVariant::MlKem1024 => 32,
-    };
+    let ss_bytes: usize = 32;
     let mut shared_secret = vec![0u8; ss_bytes];
     let mut ss_len = ss_bytes;
     // SAFETY: ctx is a valid EVP_PKEY_CTX, buffers are correctly sized.

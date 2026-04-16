@@ -273,7 +273,10 @@ class Backend:
         )
 
     def mlkem_supported(self) -> bool:
-        return rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        return (
+            rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+        )
 
     def mldsa_supported(self) -> bool:
         return (

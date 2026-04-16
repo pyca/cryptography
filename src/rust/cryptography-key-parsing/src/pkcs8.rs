@@ -23,7 +23,7 @@ pub struct PrivateKeyInfo<'a> {
 }
 
 // RFC 9935 Section 6
-#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub enum MlKemPrivateKey {
     #[implicit(0)]
@@ -43,7 +43,8 @@ pub enum MlDsaPrivateKey {
 /// AWS-LC's `raw_private_key()` returns the 2400-byte expanded key, not the seed.
 /// Since AWS-LC 1.72.0, `private_key_to_pkcs8()` produces RFC 9935 seed-format
 /// PKCS#8 when the key was created from a seed, so we round-trip through that.
-#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+/// BoringSSL's private key serialization also emits RFC 9935 seed-format PKCS#8.
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 pub fn mlkem_seed_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
 ) -> Result<MlKemPrivateKey, openssl::error::ErrorStack> {
@@ -154,7 +155,7 @@ pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
             Ok(ParsedPrivateKey::Pkey(pkey))
         }
 
-        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
         AlgorithmParameters::MlKem768 => {
             let MlKemPrivateKey::Seed(seed) = asn1::parse_single::<MlKemPrivateKey>(k.private_key)?;
             let pkey = cryptography_openssl::mlkem::new_raw_private_key(
@@ -164,7 +165,7 @@ pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
             Ok(ParsedPrivateKey::Pkey(pkey))
         }
 
-        #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+        #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
         AlgorithmParameters::MlKem1024 => {
             let MlKemPrivateKey::Seed(seed) = asn1::parse_single::<MlKemPrivateKey>(k.private_key)?;
             let pkey = cryptography_openssl::mlkem::new_raw_private_key(
@@ -541,8 +542,8 @@ pub fn serialize_private_key(key: &ParsedPrivateKey) -> crate::KeySerializationR
 
                 (params, private_key_der)
             }
-            #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
-            cryptography_openssl::mlkem::PKEY_ID => {
+            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+            id if cryptography_openssl::mlkem::is_mlkem_pkey_type(id) => {
                 let private_key_der = asn1::write_single(&mlkem_seed_from_pkey(pkey)?)?;
                 let params = match cryptography_openssl::mlkem::MlKemVariant::from_pkey(pkey) {
                     cryptography_openssl::mlkem::MlKemVariant::MlKem768 => {
