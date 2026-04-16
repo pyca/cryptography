@@ -314,8 +314,6 @@ impl KEM {
         }
     }
 
-    // --- DHKEM helpers (X25519, P-256, P-384, P-521 only) ---
-
     fn dhkem_encap<'p>(
         &self,
         py: pyo3::Python<'p>,
@@ -988,7 +986,59 @@ pub(crate) mod hpke {
 #[cfg(test)]
 mod tests {
     use super::kdf_params;
-    use super::KDF;
+    use super::{KDF, KEM};
+
+    #[test]
+    #[should_panic(expected = "ML-KEM-768 does not generate an ephemeral DH key")]
+    fn test_mlkem768_generate_key_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let _ = KEM::MLKEM768.generate_key(py);
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "ML-KEM-768 public keys are not serialized via this path")]
+    fn test_mlkem768_serialize_public_key_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let obj = py.None().into_bound(py);
+            let _ = KEM::MLKEM768.serialize_public_key(py, &obj);
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "ML-KEM-768 encapsulated key is a ciphertext, not a public key")]
+    fn test_mlkem768_deserialize_public_key_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let _ = KEM::MLKEM768.deserialize_public_key(py, b"");
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "ML-KEM-768 does not perform a Diffie-Hellman exchange")]
+    fn test_mlkem768_exchange_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let obj = py.None().into_bound(py);
+            let _ = KEM::MLKEM768.exchange(py, &obj, &obj);
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "ML-KEM-768 does not use a KEM hash algorithm")]
+    fn test_mlkem768_kem_hash_algorithm_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let _ = KEM::MLKEM768.kem_hash_algorithm(py);
+        });
+    }
 
     #[test]
     #[should_panic(expected = "SHAKE128 is a one-stage KDF")]
