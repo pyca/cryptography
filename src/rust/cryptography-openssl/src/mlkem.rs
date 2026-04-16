@@ -176,11 +176,11 @@ pub fn encapsulate(
     let ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
     // SAFETY: ctx is a valid EVP_PKEY_CTX for the KEM operation.
     #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
-    unsafe {
-        cvt(ffi::EVP_PKEY_encapsulate_init(
-            ctx.as_ptr(),
-            std::ptr::null(),
-        ))?;
+    {
+        let res = unsafe {
+            ffi::EVP_PKEY_encapsulate_init(ctx.as_ptr(), std::ptr::null())
+        };
+        cvt(res)?;
     }
 
     let mut ciphertext = vec![0u8; ct_bytes];
@@ -209,11 +209,11 @@ pub fn decapsulate(
     let ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
     // SAFETY: ctx is a valid EVP_PKEY_CTX for the KEM operation.
     #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
-    unsafe {
-        cvt(ffi::EVP_PKEY_decapsulate_init(
-            ctx.as_ptr(),
-            std::ptr::null(),
-        ))?;
+    {
+        let res = unsafe {
+            ffi::EVP_PKEY_decapsulate_init(ctx.as_ptr(), std::ptr::null())
+        };
+        cvt(res)?;
     }
 
     let ss_bytes: usize = 32;
