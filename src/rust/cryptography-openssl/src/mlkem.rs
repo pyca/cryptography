@@ -174,9 +174,9 @@ pub fn encapsulate(
         MlKemVariant::MlKem1024 => (1568, 32),
     };
     let ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
-    // SAFETY: ctx is a valid EVP_PKEY_CTX for the KEM operation.
     #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
     {
+        // SAFETY: ctx is a valid EVP_PKEY_CTX for the KEM operation.
         let res = unsafe {
             ffi::EVP_PKEY_encapsulate_init(ctx.as_ptr(), std::ptr::null())
         };
@@ -207,9 +207,9 @@ pub fn decapsulate(
     ciphertext: &[u8],
 ) -> OpenSSLResult<Vec<u8>> {
     let ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
-    // SAFETY: ctx is a valid EVP_PKEY_CTX for the KEM operation.
     #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
     {
+        // SAFETY: ctx is a valid EVP_PKEY_CTX for the KEM operation.
         let res = unsafe {
             ffi::EVP_PKEY_decapsulate_init(ctx.as_ptr(), std::ptr::null())
         };
