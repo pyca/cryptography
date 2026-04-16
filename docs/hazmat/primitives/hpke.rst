@@ -93,6 +93,18 @@ specifying auxiliary authenticated information.
 
         DHKEM(P-521, HKDF-SHA512)
 
+    .. attribute:: MLKEM768
+
+        ML-KEM-768, as defined in :rfc:`9180` and
+        ``draft-connolly-cfrg-hpke-mlkem``. Unlike the DHKEM variants,
+        ML-KEM-768 is a post-quantum KEM based on module lattices. The
+        ``enc`` value produced by :meth:`Suite.encrypt` is 1088 bytes.
+
+        Using this KEM requires an ``MLKEM768PublicKey`` /
+        ``MLKEM768PrivateKey`` from
+        :mod:`cryptography.hazmat.primitives.asymmetric.mlkem`, and is only
+        available on backends that support ML-KEM.
+
 .. class:: KDF
 
     An enumeration of key derivation functions.

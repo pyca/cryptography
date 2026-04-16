@@ -2,7 +2,7 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from cryptography.hazmat.primitives.asymmetric import ec, x25519
+from cryptography.hazmat.primitives.asymmetric import ec, mlkem, x25519
 from cryptography.utils import Buffer
 
 class KEM:
@@ -10,6 +10,7 @@ class KEM:
     P256: KEM
     P384: KEM
     P521: KEM
+    MLKEM768: KEM
 
 class KDF:
     HKDF_SHA256: KDF
@@ -28,27 +29,35 @@ class Suite:
     def encrypt(
         self,
         plaintext: Buffer,
-        public_key: x25519.X25519PublicKey | ec.EllipticCurvePublicKey,
+        public_key: x25519.X25519PublicKey
+        | ec.EllipticCurvePublicKey
+        | mlkem.MLKEM768PublicKey,
         info: Buffer | None = None,
     ) -> bytes: ...
     def decrypt(
         self,
         ciphertext: Buffer,
-        private_key: x25519.X25519PrivateKey | ec.EllipticCurvePrivateKey,
+        private_key: x25519.X25519PrivateKey
+        | ec.EllipticCurvePrivateKey
+        | mlkem.MLKEM768PrivateKey,
         info: Buffer | None = None,
     ) -> bytes: ...
 
 def _encrypt_with_aad(
     suite: Suite,
     plaintext: Buffer,
-    public_key: x25519.X25519PublicKey | ec.EllipticCurvePublicKey,
+    public_key: x25519.X25519PublicKey
+    | ec.EllipticCurvePublicKey
+    | mlkem.MLKEM768PublicKey,
     info: Buffer | None = None,
     aad: Buffer | None = None,
 ) -> bytes: ...
 def _decrypt_with_aad(
     suite: Suite,
     ciphertext: Buffer,
-    private_key: x25519.X25519PrivateKey | ec.EllipticCurvePrivateKey,
+    private_key: x25519.X25519PrivateKey
+    | ec.EllipticCurvePrivateKey
+    | mlkem.MLKEM768PrivateKey,
     info: Buffer | None = None,
     aad: Buffer | None = None,
 ) -> bytes: ...
