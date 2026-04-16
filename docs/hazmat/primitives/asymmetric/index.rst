@@ -24,6 +24,7 @@ private key is able to decrypt it.
     :maxdepth: 1
 
     mldsa
+    mlkem
     ed25519
     x25519
     ed448
