@@ -177,9 +177,7 @@ pub fn encapsulate(
     #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
     {
         // SAFETY: ctx is a valid EVP_PKEY_CTX for the KEM operation.
-        let res = unsafe {
-            ffi::EVP_PKEY_encapsulate_init(ctx.as_ptr(), std::ptr::null())
-        };
+        let res = unsafe { ffi::EVP_PKEY_encapsulate_init(ctx.as_ptr(), std::ptr::null()) };
         cvt(res)?;
     }
 
@@ -210,9 +208,7 @@ pub fn decapsulate(
     #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
     {
         // SAFETY: ctx is a valid EVP_PKEY_CTX for the KEM operation.
-        let res = unsafe {
-            ffi::EVP_PKEY_decapsulate_init(ctx.as_ptr(), std::ptr::null())
-        };
+        let res = unsafe { ffi::EVP_PKEY_decapsulate_init(ctx.as_ptr(), std::ptr::null()) };
         cvt(res)?;
     }
 
