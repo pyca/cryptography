@@ -65,6 +65,8 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::X448_OID)]
     X448,
 
+    #[defined_by(oid::ML_KEM_512_OID)]
+    MlKem512,
     #[defined_by(oid::ML_KEM_768_OID)]
     MlKem768,
     #[defined_by(oid::ML_KEM_1024_OID)]

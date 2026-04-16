@@ -12,6 +12,8 @@ import pytest
 from cryptography.exceptions import _Reasons
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.mlkem import (
+    MLKEM512PrivateKey,
+    MLKEM512PublicKey,
     MLKEM768PrivateKey,
     MLKEM768PublicKey,
     MLKEM1024PrivateKey,
@@ -37,6 +39,17 @@ class MLKEMVariant:
 
 
 ML_KEM_VARIANTS = [
+    pytest.param(
+        MLKEMVariant(
+            private_key_class=MLKEM512PrivateKey,
+            public_key_class=MLKEM512PublicKey,
+            pub_key_size=800,
+            ciphertext_size=768,
+            shared_secret_size=32,
+            seed_size=64,
+        ),
+        id="ML-KEM-512",
+    ),
     pytest.param(
         MLKEMVariant(
             private_key_class=MLKEM768PrivateKey,
@@ -67,6 +80,21 @@ ML_KEM_VARIANTS = [
     skip_message="Requires a backend without ML-KEM support",
 )
 def test_mlkem_unsupported(backend):
+    with raises_unsupported_algorithm(
+        _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+    ):
+        MLKEM512PrivateKey.from_seed_bytes(b"0" * 64)
+
+    with raises_unsupported_algorithm(
+        _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+    ):
+        MLKEM512PrivateKey.generate()
+
+    with raises_unsupported_algorithm(
+        _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
+    ):
+        MLKEM512PublicKey.from_public_bytes(b"0" * 800)
+
     with raises_unsupported_algorithm(
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
     ):
@@ -203,6 +231,36 @@ class TestMLKEM:
     def test_invalid_type_seed(self, variant, backend):
         with pytest.raises(TypeError):
             variant.private_key_class.from_seed_bytes(object())
+
+    def test_kat_vectors_512(self, backend, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join("asymmetric", "MLKEM", "kat_MLKEM_512.rsp"),
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                d = binascii.unhexlify(vector["d"])
+                z = binascii.unhexlify(vector["z"])
+
+                seed = d + z
+                key = MLKEM512PrivateKey.from_seed_bytes(seed)
+                assert key.private_bytes_raw() == seed
+
+                # Verify public key matches
+                pub = key.public_key()
+                assert pub.public_bytes_raw() == binascii.unhexlify(
+                    vector["pk"]
+                )
+
+                # Verify decapsulation produces the expected shared secret
+                ss = key.decapsulate(binascii.unhexlify(vector["ct"]))
+                assert ss == binascii.unhexlify(vector["ss"])
+
+                # Decapsulating an invalid ciphertext should use
+                # implicit rejection, producing a deterministic but
+                # different shared secret.
+                ss_n = key.decapsulate(binascii.unhexlify(vector["ct_n"]))
+                assert ss_n == binascii.unhexlify(vector["ss_n"])
 
     def test_kat_vectors_768(self, backend, subtests):
         vectors = load_vectors_from_file(
