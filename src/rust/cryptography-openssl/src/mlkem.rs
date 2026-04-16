@@ -82,10 +82,7 @@ pub fn new_raw_private_key(
             &mut seed_len,
         ))?;
     }
-    let expected_seed_len = match variant {
-        MlKemVariant::MlKem512 | MlKemVariant::MlKem768 | MlKemVariant::MlKem1024 => 64,
-    };
-    assert_eq!(seed_len, expected_seed_len);
+    assert_eq!(seed_len, 64);
     // SAFETY: EVP_PKEY_keygen_deterministic succeeded, pkey is valid.
     let pkey = unsafe { openssl::pkey::PKey::from_ptr(pkey) };
     Ok(pkey)
@@ -109,11 +106,12 @@ pub fn new_raw_public_key(
 pub fn encapsulate(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
 ) -> OpenSSLResult<(Vec<u8>, Vec<u8>)> {
-    let (ct_bytes, ss_bytes) = match MlKemVariant::from_pkey(pkey) {
-        MlKemVariant::MlKem512 => (768, 32),
-        MlKemVariant::MlKem768 => (1088, 32),
-        MlKemVariant::MlKem1024 => (1568, 32),
+    let ct_bytes = match MlKemVariant::from_pkey(pkey) {
+        MlKemVariant::MlKem512 => 768,
+        MlKemVariant::MlKem768 => 1088,
+        MlKemVariant::MlKem1024 => 1568,
     };
+    let ss_bytes = 32;
     let ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
 
     let mut ciphertext = vec![0u8; ct_bytes];
@@ -141,9 +139,7 @@ pub fn decapsulate(
 ) -> OpenSSLResult<Vec<u8>> {
     let ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
 
-    let ss_bytes: usize = match MlKemVariant::from_pkey(pkey) {
-        MlKemVariant::MlKem512 | MlKemVariant::MlKem768 | MlKemVariant::MlKem1024 => 32,
-    };
+    let ss_bytes: usize = 32;
     let mut shared_secret = vec![0u8; ss_bytes];
     let mut ss_len = ss_bytes;
     // SAFETY: ctx is a valid EVP_PKEY_CTX, buffers are correctly sized.
