@@ -43,7 +43,7 @@ Key interfaces
 
 .. class:: MLDSA44PrivateKey
 
-    .. versionadded:: 47.0
+    .. versionadded:: 47.0.0
 
     .. classmethod:: generate()
 
@@ -144,7 +144,7 @@ Key interfaces
 
 .. class:: MLDSA44PublicKey
 
-    .. versionadded:: 47.0
+    .. versionadded:: 47.0.0
 
     .. classmethod:: from_public_bytes(data)
 
@@ -229,7 +229,7 @@ Key interfaces
 
 .. class:: MLDSA65PrivateKey
 
-    .. versionadded:: 47.0
+    .. versionadded:: 47.0.0
 
     .. classmethod:: generate()
 
@@ -330,7 +330,7 @@ Key interfaces
 
 .. class:: MLDSA65PublicKey
 
-    .. versionadded:: 47.0
+    .. versionadded:: 47.0.0
 
     .. classmethod:: from_public_bytes(data)
 
@@ -415,7 +415,7 @@ Key interfaces
 
 .. class:: MLDSA87PrivateKey
 
-    .. versionadded:: 47.0
+    .. versionadded:: 47.0.0
 
     .. classmethod:: generate()
 
@@ -516,7 +516,7 @@ Key interfaces
 
 .. class:: MLDSA87PublicKey
 
-    .. versionadded:: 47.0
+    .. versionadded:: 47.0.0
 
     .. classmethod:: from_public_bytes(data)
 

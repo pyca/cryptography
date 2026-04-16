@@ -27,7 +27,7 @@ Key interfaces
 
 .. class:: MLKEM768PrivateKey
 
-    .. versionadded:: 47.0
+    .. versionadded:: 47.0.0
 
     .. classmethod:: generate()
 
@@ -125,7 +125,7 @@ Key interfaces
 
 .. class:: MLKEM768PublicKey
 
-    .. versionadded:: 47.0
+    .. versionadded:: 47.0.0
 
     .. classmethod:: from_public_bytes(data)
 
@@ -198,7 +198,7 @@ Key interfaces
 
 .. class:: MLKEM1024PrivateKey
 
-    .. versionadded:: 47.0
+    .. versionadded:: 47.0.0
 
     .. classmethod:: generate()
 
@@ -296,7 +296,7 @@ Key interfaces
 
 .. class:: MLKEM1024PublicKey
 
-    .. versionadded:: 47.0
+    .. versionadded:: 47.0.0
 
     .. classmethod:: from_public_bytes(data)
 
