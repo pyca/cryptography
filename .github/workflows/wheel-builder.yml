@@ -44,11 +44,11 @@ jobs:
         run: uv build --build-constraint=$BUILD_REQUIREMENTS_PATH --require-hashes --sdist
       - name: Make sdist and wheel (vectors)
         run: uv build --build-constraint=$BUILD_REQUIREMENTS_PATH --require-hashes vectors/
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "cryptography-sdist"
           path: dist/cryptography*
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "vectors-sdist-wheel"
           path: vectors/dist/cryptography*
@@ -170,7 +170,7 @@ jobs:
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
           test-pip: ${{ startsWith(matrix.PYTHON.VERSION, 'cp') }}
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
           path: wheelhouse/
@@ -301,7 +301,7 @@ jobs:
 
       - run: |
           echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls wheelhouse/cryptography*.whl))" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "${{ env.CRYPTOGRAPHY_WHEEL_NAME }}"
           path: wheelhouse/
@@ -384,7 +384,7 @@ jobs:
         with:
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
           path: wheelhouse\
