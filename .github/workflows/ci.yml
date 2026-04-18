@@ -432,8 +432,8 @@ jobs:
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
-            # Latest commit on the aws-encryption-sdk-python master branch, as of Apr 07, 2026.
-            REF: 01cde29c4332f12bd31dab0e277ffe60ba2c505d
+            # Latest commit on the aws-encryption-sdk-python master branch, as of Apr 18, 2026.
+            REF: 73c7ddb0963b18499e622b5e626db03ef71a8aca
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: aws-dynamodb-encryption-python
             REPO: awslabs/aws-dynamodb-encryption-python
@@ -462,8 +462,8 @@ jobs:
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Apr 17, 2026.
-            REF: 9f406853b4fb70235225113545693eb85376e852
+            # Latest commit on the sigstore-python main branch, as of Apr 18, 2026.
+            REF: 49c246d8c76fa50ec2e9f3559d367972ef76fab0
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
