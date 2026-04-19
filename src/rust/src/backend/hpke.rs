@@ -1052,15 +1052,14 @@ fn mlkem768_x25519_combine<'p>(
     ct_x: &[u8],
     pk_x: &[u8],
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let md = openssl::hash::MessageDigest::sha3_256();
-    let mut hasher = openssl::hash::Hasher::new(md)?;
-    hasher.update(ss_m)?;
-    hasher.update(ss_x)?;
-    hasher.update(ct_x)?;
-    hasher.update(pk_x)?;
-    hasher.update(MLKEM768_X25519_LABEL)?;
-    let digest = hasher.finish()?;
-    Ok(pyo3::types::PyBytes::new(py, &digest))
+    let algorithm = types::SHA3_256.get(py)?.call0()?;
+    let mut hash = Hash::new(py, &algorithm, None)?;
+    hash.update_bytes(ss_m)?;
+    hash.update_bytes(ss_x)?;
+    hash.update_bytes(ct_x)?;
+    hash.update_bytes(pk_x)?;
+    hash.update_bytes(MLKEM768_X25519_LABEL)?;
+    hash.finalize(py)
 }
 
 #[pyo3::pyclass(
