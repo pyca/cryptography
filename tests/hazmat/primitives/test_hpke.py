@@ -80,7 +80,7 @@ class TestHPKE:
         ):
             pytest.skip("SHAKE256 not supported")
         if (
-            kem in (KEM.MLKEM768, KEM.MLKEM1024)
+            kem in [KEM.MLKEM768, KEM.MLKEM1024]
             and not backend.mlkem_supported()
         ):
             pytest.skip("ML-KEM not supported")
@@ -122,7 +122,7 @@ class TestHPKE:
         ):
             pytest.skip("SHAKE256 not supported")
         if (
-            kem in (KEM.MLKEM768, KEM.MLKEM1024)
+            kem in [KEM.MLKEM768, KEM.MLKEM1024]
             and not backend.mlkem_supported()
         ):
             pytest.skip("ML-KEM not supported")
@@ -357,9 +357,11 @@ class TestHPKE:
         # enc (133 bytes) + ct (4 bytes pt + 16 bytes tag)
         assert len(ciphertext) == P521_ENC_LENGTH + 4 + 16
 
-    def test_ciphertext_format_mlkem768(self, backend):
-        if not backend.mlkem_supported():
-            pytest.skip("ML-KEM not supported")
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mlkem_supported(),
+        skip_message="Requires ML-KEM support",
+    )
+    def test_ciphertext_format_mlkem768(self):
         suite = Suite(KEM.MLKEM768, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
         sk_r = mlkem.MLKEM768PrivateKey.generate()
@@ -370,9 +372,11 @@ class TestHPKE:
         # enc (1088 bytes) + ct (4 bytes pt + 16 bytes tag)
         assert len(ciphertext) == MLKEM768_ENC_LENGTH + 4 + 16
 
-    def test_wrong_key_mlkem768(self, backend):
-        if not backend.mlkem_supported():
-            pytest.skip("ML-KEM not supported")
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mlkem_supported(),
+        skip_message="Requires ML-KEM support",
+    )
+    def test_wrong_key_mlkem768(self):
         suite = Suite(KEM.MLKEM768, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
         sk_r = mlkem.MLKEM768PrivateKey.generate()
         pk_r = sk_r.public_key()
@@ -393,18 +397,22 @@ class TestHPKE:
         with pytest.raises(TypeError):
             suite.decrypt(ciphertext, x25519_sk)
 
-    def test_mlkem768_wrong_kem_with_ec(self, backend):
-        if not backend.mlkem_supported():
-            pytest.skip("ML-KEM not supported")
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mlkem_supported(),
+        skip_message="Requires ML-KEM support",
+    )
+    def test_mlkem768_wrong_kem_with_ec(self):
         # ML-KEM public key with EC-based KEM suite should fail
         suite = Suite(KEM.P256, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
         mlkem_pk = mlkem.MLKEM768PrivateKey.generate().public_key()
         with pytest.raises(TypeError):
             suite.encrypt(b"test", mlkem_pk)
 
-    def test_ciphertext_format_mlkem1024(self, backend):
-        if not backend.mlkem_supported():
-            pytest.skip("ML-KEM not supported")
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mlkem_supported(),
+        skip_message="Requires ML-KEM support",
+    )
+    def test_ciphertext_format_mlkem1024(self):
         suite = Suite(KEM.MLKEM1024, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
         sk_r = mlkem.MLKEM1024PrivateKey.generate()
@@ -415,9 +423,11 @@ class TestHPKE:
         # enc (1568 bytes) + ct (4 bytes pt + 16 bytes tag)
         assert len(ciphertext) == MLKEM1024_ENC_LENGTH + 4 + 16
 
-    def test_wrong_key_mlkem1024(self, backend):
-        if not backend.mlkem_supported():
-            pytest.skip("ML-KEM not supported")
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mlkem_supported(),
+        skip_message="Requires ML-KEM support",
+    )
+    def test_wrong_key_mlkem1024(self):
         suite = Suite(KEM.MLKEM1024, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
         sk_r = mlkem.MLKEM1024PrivateKey.generate()
         pk_r = sk_r.public_key()
@@ -447,9 +457,11 @@ class TestHPKE:
         with pytest.raises(TypeError):
             suite.decrypt(ciphertext, mlkem768_sk)
 
-    def test_mlkem1024_wrong_kem_with_ec(self, backend):
-        if not backend.mlkem_supported():
-            pytest.skip("ML-KEM not supported")
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mlkem_supported(),
+        skip_message="Requires ML-KEM support",
+    )
+    def test_mlkem1024_wrong_kem_with_ec(self):
         # ML-KEM-1024 public key with EC-based KEM suite should fail
         suite = Suite(KEM.P256, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
         mlkem_pk = mlkem.MLKEM1024PrivateKey.generate().public_key()
@@ -641,7 +653,7 @@ class TestHPKE:
                 ):
                     continue
                 if (
-                    kem in (KEM.MLKEM768, KEM.MLKEM1024)
+                    kem in [KEM.MLKEM768, KEM.MLKEM1024]
                     and not backend.mlkem_supported()
                 ):
                     continue

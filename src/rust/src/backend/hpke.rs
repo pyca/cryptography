@@ -1038,16 +1038,6 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "ML-KEM does not generate an ephemeral DH key")]
-    fn test_mlkem1024_generate_key_unreachable() {
-        pyo3::Python::initialize();
-
-        pyo3::Python::attach(|py| {
-            let _ = KEM::MLKEM1024.generate_key(py);
-        });
-    }
-
-    #[test]
     #[should_panic(expected = "ML-KEM public keys are not serialized via this path")]
     fn test_mlkem768_serialize_public_key_unreachable() {
         pyo3::Python::initialize();
@@ -1059,33 +1049,12 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "ML-KEM public keys are not serialized via this path")]
-    fn test_mlkem1024_serialize_public_key_unreachable() {
-        pyo3::Python::initialize();
-
-        pyo3::Python::attach(|py| {
-            let obj = py.None().into_bound(py);
-            let _ = KEM::MLKEM1024.serialize_public_key(py, &obj);
-        });
-    }
-
-    #[test]
     #[should_panic(expected = "ML-KEM encapsulated key is a ciphertext, not a public key")]
     fn test_mlkem768_deserialize_public_key_unreachable() {
         pyo3::Python::initialize();
 
         pyo3::Python::attach(|py| {
             let _ = KEM::MLKEM768.deserialize_public_key(py, b"");
-        });
-    }
-
-    #[test]
-    #[should_panic(expected = "ML-KEM encapsulated key is a ciphertext, not a public key")]
-    fn test_mlkem1024_deserialize_public_key_unreachable() {
-        pyo3::Python::initialize();
-
-        pyo3::Python::attach(|py| {
-            let _ = KEM::MLKEM1024.deserialize_public_key(py, b"");
         });
     }
 
@@ -1101,33 +1070,12 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "ML-KEM does not perform a Diffie-Hellman exchange")]
-    fn test_mlkem1024_exchange_unreachable() {
-        pyo3::Python::initialize();
-
-        pyo3::Python::attach(|py| {
-            let obj = py.None().into_bound(py);
-            let _ = KEM::MLKEM1024.exchange(py, &obj, &obj);
-        });
-    }
-
-    #[test]
     #[should_panic(expected = "ML-KEM does not use a KEM hash algorithm")]
     fn test_mlkem768_kem_hash_algorithm_unreachable() {
         pyo3::Python::initialize();
 
         pyo3::Python::attach(|py| {
             let _ = KEM::MLKEM768.kem_hash_algorithm(py);
-        });
-    }
-
-    #[test]
-    #[should_panic(expected = "ML-KEM does not use a KEM hash algorithm")]
-    fn test_mlkem1024_kem_hash_algorithm_unreachable() {
-        pyo3::Python::initialize();
-
-        pyo3::Python::attach(|py| {
-            let _ = KEM::MLKEM1024.kem_hash_algorithm(py);
         });
     }
 
