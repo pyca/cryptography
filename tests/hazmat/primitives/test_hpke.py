@@ -100,6 +100,10 @@ class TestHPKE:
             and not backend.mlkem_supported()
         ):
             pytest.skip("ML-KEM not supported")
+        if kem == KEM.MLKEM768_X25519 and not backend.hash_supported(
+            hashes.SHA3_256()
+        ):
+            pytest.skip("SHA3-256 not supported")
         suite = Suite(kem, kdf, aead)
 
         sk_r: (
@@ -148,6 +152,10 @@ class TestHPKE:
             and not backend.mlkem_supported()
         ):
             pytest.skip("ML-KEM not supported")
+        if kem == KEM.MLKEM768_X25519 and not backend.hash_supported(
+            hashes.SHA3_256()
+        ):
+            pytest.skip("SHA3-256 not supported")
         suite = Suite(kem, kdf, aead)
 
         sk_r: (
@@ -497,8 +505,11 @@ class TestHPKE:
             suite.encrypt(b"test", mlkem_pk)
 
     @pytest.mark.supported(
-        only_if=lambda backend: backend.mlkem_supported(),
-        skip_message="Requires ML-KEM support",
+        only_if=lambda backend: (
+            backend.mlkem_supported()
+            and backend.hash_supported(hashes.SHA3_256())
+        ),
+        skip_message="Requires ML-KEM and SHA3-256 support",
     )
     def test_ciphertext_format_mlkem768_x25519(self):
         suite = Suite(KEM.MLKEM768_X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
@@ -515,8 +526,11 @@ class TestHPKE:
         assert len(ciphertext) == MLKEM768_X25519_ENC_LENGTH + 4 + 16
 
     @pytest.mark.supported(
-        only_if=lambda backend: backend.mlkem_supported(),
-        skip_message="Requires ML-KEM support",
+        only_if=lambda backend: (
+            backend.mlkem_supported()
+            and backend.hash_supported(hashes.SHA3_256())
+        ),
+        skip_message="Requires ML-KEM and SHA3-256 support",
     )
     def test_wrong_key_mlkem768_x25519(self):
         suite = Suite(KEM.MLKEM768_X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
@@ -760,6 +774,10 @@ class TestHPKE:
                 if (
                     kem in [KEM.MLKEM768, KEM.MLKEM1024, KEM.MLKEM768_X25519]
                     and not backend.mlkem_supported()
+                ):
+                    continue
+                if kem == KEM.MLKEM768_X25519 and not backend.hash_supported(
+                    hashes.SHA3_256()
                 ):
                     continue
 
