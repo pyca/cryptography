@@ -99,7 +99,6 @@ pub(crate) enum KEM {
     P521,
     MLKEM768,
     MLKEM1024,
-    #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
     MLKEM768_X25519,
 }
 
@@ -166,7 +165,6 @@ impl KEM {
             KEM::P521 => kem_params::P521_ID,
             KEM::MLKEM768 => kem_params::MLKEM768_ID,
             KEM::MLKEM1024 => kem_params::MLKEM1024_ID,
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
             KEM::MLKEM768_X25519 => kem_params::MLKEM768_X25519_ID,
         }
     }
@@ -179,7 +177,6 @@ impl KEM {
             KEM::P521 => kem_params::P521_NSECRET,
             KEM::MLKEM768 => kem_params::MLKEM768_NSECRET,
             KEM::MLKEM1024 => kem_params::MLKEM1024_NSECRET,
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
             KEM::MLKEM768_X25519 => kem_params::MLKEM768_X25519_NSECRET,
         }
     }
@@ -192,7 +189,6 @@ impl KEM {
             KEM::P521 => kem_params::P521_NENC,
             KEM::MLKEM768 => kem_params::MLKEM768_NENC,
             KEM::MLKEM1024 => kem_params::MLKEM1024_NENC,
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
             KEM::MLKEM768_X25519 => kem_params::MLKEM768_X25519_NENC,
         }
     }
@@ -251,7 +247,6 @@ impl KEM {
                     ));
                 }
             }
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
             KEM::MLKEM768_X25519 => {
                 if !key.is_instance_of::<MlKem768X25519PublicKey>() {
                     return Err(CryptographyError::from(
@@ -319,7 +314,6 @@ impl KEM {
                     ));
                 }
             }
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
             KEM::MLKEM768_X25519 => {
                 if !key.is_instance_of::<MlKem768X25519PrivateKey>() {
                     return Err(CryptographyError::from(
@@ -347,7 +341,6 @@ impl KEM {
                 let result = pk_r.call_method0(pyo3::intern!(py, "encapsulate"))?;
                 Ok(result.extract()?)
             }
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
             KEM::MLKEM768_X25519 => {
                 let hybrid = pk_r.cast::<MlKem768X25519PublicKey>()?;
                 hybrid.borrow().encapsulate(py)
@@ -372,7 +365,6 @@ impl KEM {
                     .call_method1(pyo3::intern!(py, "decapsulate"), (enc_bytes,))?
                     .extract()?)
             }
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
             KEM::MLKEM768_X25519 => {
                 let hybrid = sk_r.cast::<MlKem768X25519PrivateKey>()?;
                 hybrid.borrow().decapsulate(py, enc)
@@ -515,11 +507,7 @@ impl KEM {
                         .into_any(),
                 )
             }
-            KEM::MLKEM768 | KEM::MLKEM1024 => {
-                unreachable!("ML-KEM does not generate an ephemeral DH key")
-            }
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
-            KEM::MLKEM768_X25519 => {
+            KEM::MLKEM768 | KEM::MLKEM1024 | KEM::MLKEM768_X25519 => {
                 unreachable!("ML-KEM does not generate an ephemeral DH key")
             }
         }
@@ -543,11 +531,7 @@ impl KEM {
                     ),
                 )?
                 .extract()?),
-            KEM::MLKEM768 | KEM::MLKEM1024 => {
-                unreachable!("ML-KEM public keys are not serialized via this path")
-            }
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
-            KEM::MLKEM768_X25519 => {
+            KEM::MLKEM768 | KEM::MLKEM1024 | KEM::MLKEM768_X25519 => {
                 unreachable!("ML-KEM public keys are not serialized via this path")
             }
         }
@@ -572,11 +556,7 @@ impl KEM {
                 let secp521r1 = types::SECP521R1.get(py)?.call0()?;
                 Ok(pyo3::Bound::new(py, ec::from_public_bytes(py, secp521r1, data)?)?.into_any())
             }
-            KEM::MLKEM768 | KEM::MLKEM1024 => {
-                unreachable!("ML-KEM encapsulated key is a ciphertext, not a public key")
-            }
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
-            KEM::MLKEM768_X25519 => {
+            KEM::MLKEM768 | KEM::MLKEM1024 | KEM::MLKEM768_X25519 => {
                 unreachable!("ML-KEM encapsulated key is a ciphertext, not a public key")
             }
         }
@@ -596,11 +576,7 @@ impl KEM {
                 let ecdh = types::ECDH.get(py)?.call0()?;
                 Ok(private_key.call_method1(pyo3::intern!(py, "exchange"), (&ecdh, public_key))?)
             }
-            KEM::MLKEM768 | KEM::MLKEM1024 => {
-                unreachable!("ML-KEM does not perform a Diffie-Hellman exchange")
-            }
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
-            KEM::MLKEM768_X25519 => {
+            KEM::MLKEM768 | KEM::MLKEM1024 | KEM::MLKEM768_X25519 => {
                 unreachable!("ML-KEM does not perform a Diffie-Hellman exchange")
             }
         }
@@ -614,11 +590,7 @@ impl KEM {
             KEM::X25519 | KEM::P256 => Ok(types::SHA256.get(py)?.call0()?),
             KEM::P384 => Ok(types::SHA384.get(py)?.call0()?),
             KEM::P521 => Ok(types::SHA512.get(py)?.call0()?),
-            KEM::MLKEM768 | KEM::MLKEM1024 => {
-                unreachable!("ML-KEM does not use a KEM hash algorithm")
-            }
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
-            KEM::MLKEM768_X25519 => {
+            KEM::MLKEM768 | KEM::MLKEM1024 | KEM::MLKEM768_X25519 => {
                 unreachable!("ML-KEM does not use a KEM hash algorithm")
             }
         }
@@ -1068,15 +1040,11 @@ fn _decrypt_with_aad<'p>(
 // 0x647A, specified in draft-connolly-cfrg-xwing-kem and draft-ietf-hpke-pq.
 // Only a constructor is exposed to Python; all encap/decap logic lives here.
 
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 const MLKEM768_X25519_MLKEM_CT_LENGTH: usize = 1088;
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 const MLKEM768_X25519_X25519_CT_LENGTH: usize = 32;
 // `\./` + `/^\` — the X-Wing combiner label.
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 const MLKEM768_X25519_LABEL: &[u8; 6] = b"\\.//^\\";
 
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 fn mlkem768_x25519_combine<'p>(
     py: pyo3::Python<'p>,
     ss_m: &[u8],
@@ -1095,18 +1063,16 @@ fn mlkem768_x25519_combine<'p>(
     Ok(pyo3::types::PyBytes::new(py, &digest))
 }
 
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 #[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.hpke",
     name = "MLKEM768X25519PrivateKey"
 )]
 pub(crate) struct MlKem768X25519PrivateKey {
-    mlkem_key: pyo3::Py<crate::backend::mlkem::MlKem768PrivateKey>,
-    x25519_key: pyo3::Py<crate::backend::x25519::X25519PrivateKey>,
+    mlkem_key: pyo3::Py<pyo3::PyAny>,
+    x25519_key: pyo3::Py<pyo3::PyAny>,
 }
 
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 impl MlKem768X25519PrivateKey {
     fn decapsulate<'p>(
         &self,
@@ -1123,57 +1089,69 @@ impl MlKem768X25519PrivateKey {
         }
         let (ct_m, ct_x) = enc.split_at(MLKEM768_X25519_MLKEM_CT_LENGTH);
 
-        let mlkem_key = self.mlkem_key.bind(py).borrow();
-        let ss_m =
-            cryptography_openssl::mlkem::decapsulate(mlkem_key.pkey(), ct_m).map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err("Invalid ML-KEM-768/X25519 ciphertext")
-            })?;
+        let mlkem_key = self.mlkem_key.bind(py);
+        let ss_m = mlkem_key
+            .call_method1(
+                pyo3::intern!(py, "decapsulate"),
+                (pyo3::types::PyBytes::new(py, ct_m),),
+            )?
+            .extract::<pyo3::Bound<'_, pyo3::types::PyBytes>>()?;
 
-        let ct_x_pkey =
-            openssl::pkey::PKey::public_key_from_raw_bytes(ct_x, openssl::pkey::Id::X25519)?;
-        let x25519_key = self.x25519_key.bind(py).borrow();
-        let mut deriver = openssl::derive::Deriver::new(x25519_key.pkey())?;
-        deriver.set_peer(&ct_x_pkey)?;
-        let ss_x = {
-            let mut buf = vec![0u8; deriver.len()?];
-            let n = deriver.derive(&mut buf)?;
-            assert_eq!(n, buf.len());
-            buf
-        };
+        let x25519_key = self.x25519_key.bind(py);
+        let ct_x_pk = pyo3::Bound::new(py, x25519::from_public_bytes(ct_x)?)?;
+        let ss_x = x25519_key
+            .call_method1(pyo3::intern!(py, "exchange"), (ct_x_pk,))?
+            .extract::<pyo3::Bound<'_, pyo3::types::PyBytes>>()?;
+        let pk_x = x25519_key
+            .call_method0(pyo3::intern!(py, "public_key"))?
+            .call_method0(pyo3::intern!(py, "public_bytes_raw"))?
+            .extract::<pyo3::Bound<'_, pyo3::types::PyBytes>>()?;
 
-        let pk_x = x25519_key.pkey().raw_public_key()?;
-
-        mlkem768_x25519_combine(py, &ss_m, &ss_x, ct_x, &pk_x)
+        mlkem768_x25519_combine(py, ss_m.as_bytes(), ss_x.as_bytes(), ct_x, pk_x.as_bytes())
     }
 }
 
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 #[pyo3::pymethods]
 impl MlKem768X25519PrivateKey {
     #[new]
     fn new(
-        mlkem_key: pyo3::Py<crate::backend::mlkem::MlKem768PrivateKey>,
-        x25519_key: pyo3::Py<crate::backend::x25519::X25519PrivateKey>,
-    ) -> Self {
-        MlKem768X25519PrivateKey {
+        py: pyo3::Python<'_>,
+        mlkem_key: pyo3::Py<pyo3::PyAny>,
+        x25519_key: pyo3::Py<pyo3::PyAny>,
+    ) -> CryptographyResult<Self> {
+        if !mlkem_key
+            .bind(py)
+            .is_instance(&types::MLKEM768_PRIVATE_KEY.get(py)?)?
+        {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err("Expected MLKEM768PrivateKey for mlkem_key"),
+            ));
+        }
+        if !x25519_key
+            .bind(py)
+            .is_instance(&types::X25519_PRIVATE_KEY.get(py)?)?
+        {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err("Expected X25519PrivateKey for x25519_key"),
+            ));
+        }
+        Ok(MlKem768X25519PrivateKey {
             mlkem_key,
             x25519_key,
-        }
+        })
     }
 }
 
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 #[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.hpke",
     name = "MLKEM768X25519PublicKey"
 )]
 pub(crate) struct MlKem768X25519PublicKey {
-    mlkem_key: pyo3::Py<crate::backend::mlkem::MlKem768PublicKey>,
-    x25519_key: pyo3::Py<crate::backend::x25519::X25519PublicKey>,
+    mlkem_key: pyo3::Py<pyo3::PyAny>,
+    x25519_key: pyo3::Py<pyo3::PyAny>,
 }
 
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 impl MlKem768X25519PublicKey {
     fn encapsulate<'p>(
         &self,
@@ -1182,30 +1160,41 @@ impl MlKem768X25519PublicKey {
         pyo3::Bound<'p, pyo3::types::PyBytes>,
         pyo3::Bound<'p, pyo3::types::PyBytes>,
     )> {
-        let mlkem_key = self.mlkem_key.bind(py).borrow();
-        let (ct_m, ss_m) =
-            cryptography_openssl::mlkem::encapsulate(mlkem_key.pkey()).map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err("ML-KEM-768/X25519 encapsulation failed")
-            })?;
+        let (ss_m, ct_m) = self
+            .mlkem_key
+            .bind(py)
+            .call_method0(pyo3::intern!(py, "encapsulate"))?
+            .extract::<(
+                pyo3::Bound<'_, pyo3::types::PyBytes>,
+                pyo3::Bound<'_, pyo3::types::PyBytes>,
+            )>()?;
 
-        let ephemeral = openssl::pkey::PKey::generate_x25519()?;
-        let ct_x = ephemeral.raw_public_key()?;
-        let x25519_key = self.x25519_key.bind(py).borrow();
-        let mut deriver = openssl::derive::Deriver::new(&ephemeral)?;
-        deriver.set_peer(x25519_key.pkey())?;
-        let ss_x = {
-            let mut buf = vec![0u8; deriver.len()?];
-            let n = deriver.derive(&mut buf)?;
-            assert_eq!(n, buf.len());
-            buf
-        };
+        let x25519_key = self.x25519_key.bind(py);
+        let ephemeral = pyo3::Bound::new(py, x25519::generate_key()?)?;
+        let ct_x = ephemeral
+            .call_method0(pyo3::intern!(py, "public_key"))?
+            .call_method0(pyo3::intern!(py, "public_bytes_raw"))?
+            .extract::<pyo3::Bound<'_, pyo3::types::PyBytes>>()?;
+        let ss_x = ephemeral
+            .call_method1(pyo3::intern!(py, "exchange"), (x25519_key,))?
+            .extract::<pyo3::Bound<'_, pyo3::types::PyBytes>>()?;
+        let pk_x = x25519_key
+            .call_method0(pyo3::intern!(py, "public_bytes_raw"))?
+            .extract::<pyo3::Bound<'_, pyo3::types::PyBytes>>()?;
 
-        let pk_x = x25519_key.pkey().raw_public_key()?;
-        let shared_secret = mlkem768_x25519_combine(py, &ss_m, &ss_x, &ct_x, &pk_x)?;
+        let shared_secret = mlkem768_x25519_combine(
+            py,
+            ss_m.as_bytes(),
+            ss_x.as_bytes(),
+            ct_x.as_bytes(),
+            pk_x.as_bytes(),
+        )?;
 
-        let enc = pyo3::types::PyBytes::new_with(py, ct_m.len() + ct_x.len(), |buf| {
-            buf[..ct_m.len()].copy_from_slice(&ct_m);
-            buf[ct_m.len()..].copy_from_slice(&ct_x);
+        let ct_m_bytes = ct_m.as_bytes();
+        let ct_x_bytes = ct_x.as_bytes();
+        let enc = pyo3::types::PyBytes::new_with(py, ct_m_bytes.len() + ct_x_bytes.len(), |buf| {
+            buf[..ct_m_bytes.len()].copy_from_slice(ct_m_bytes);
+            buf[ct_m_bytes.len()..].copy_from_slice(ct_x_bytes);
             Ok(())
         })?;
 
@@ -1213,18 +1202,34 @@ impl MlKem768X25519PublicKey {
     }
 }
 
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 #[pyo3::pymethods]
 impl MlKem768X25519PublicKey {
     #[new]
     fn new(
-        mlkem_key: pyo3::Py<crate::backend::mlkem::MlKem768PublicKey>,
-        x25519_key: pyo3::Py<crate::backend::x25519::X25519PublicKey>,
-    ) -> Self {
-        MlKem768X25519PublicKey {
+        py: pyo3::Python<'_>,
+        mlkem_key: pyo3::Py<pyo3::PyAny>,
+        x25519_key: pyo3::Py<pyo3::PyAny>,
+    ) -> CryptographyResult<Self> {
+        if !mlkem_key
+            .bind(py)
+            .is_instance(&types::MLKEM768_PUBLIC_KEY.get(py)?)?
+        {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err("Expected MLKEM768PublicKey for mlkem_key"),
+            ));
+        }
+        if !x25519_key
+            .bind(py)
+            .is_instance(&types::X25519_PUBLIC_KEY.get(py)?)?
+        {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err("Expected X25519PublicKey for x25519_key"),
+            ));
+        }
+        Ok(MlKem768X25519PublicKey {
             mlkem_key,
             x25519_key,
-        }
+        })
     }
 }
 
@@ -1233,10 +1238,10 @@ pub(crate) mod hpke {
     // stable and nightly rustfmt disagree on import ordering
     #[rustfmt::skip]
     #[pymodule_export]
-    use super::{_decrypt_with_aad, _encrypt_with_aad, Suite, AEAD, KDF, KEM};
-    #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
-    #[pymodule_export]
-    use super::{MlKem768X25519PrivateKey, MlKem768X25519PublicKey};
+    use super::{
+        _decrypt_with_aad, _encrypt_with_aad, MlKem768X25519PrivateKey,
+        MlKem768X25519PublicKey, Suite, AEAD, KDF, KEM,
+    };
 }
 
 #[cfg(test)]

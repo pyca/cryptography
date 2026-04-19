@@ -78,18 +78,6 @@ pub(crate) fn mlkem1024_public_key_from_pkey(
     }
 }
 
-impl MlKem768PrivateKey {
-    pub(crate) fn pkey(&self) -> &openssl::pkey::PKeyRef<openssl::pkey::Private> {
-        &self.pkey
-    }
-}
-
-impl MlKem768PublicKey {
-    pub(crate) fn pkey(&self) -> &openssl::pkey::PKeyRef<openssl::pkey::Public> {
-        &self.pkey
-    }
-}
-
 #[pyo3::pyfunction]
 fn generate_mlkem768_key() -> CryptographyResult<MlKem768PrivateKey> {
     let mut seed = [0u8; 64];

@@ -105,11 +105,10 @@ specifying auxiliary authenticated information.
 
     .. attribute:: MLKEM768_X25519
 
-        Hybrid KEM combining ML-KEM-768 with X25519 (also known as X-Wing;
-        KEM ID ``0x647A``). Provides both classical and post-quantum
-        security. Public and private keys are :class:`MLKEM768X25519PublicKey`
-        and :class:`MLKEM768X25519PrivateKey`. Only available on backends
-        that support ML-KEM.
+        A hybrid KEM combining ML-KEM-768 with X25519 (also known as X-Wing).
+        Post-quantum secure. Only available on backends that support ML-KEM.
+        Public and private keys are :class:`MLKEM768X25519PublicKey` and
+        :class:`MLKEM768X25519PrivateKey`.
 
 .. class:: MLKEM768X25519PrivateKey(mlkem_key, x25519_key)
 

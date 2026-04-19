@@ -9,11 +9,9 @@ from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 AEAD = rust_openssl.hpke.AEAD
 KDF = rust_openssl.hpke.KDF
 KEM = rust_openssl.hpke.KEM
+MLKEM768X25519PrivateKey = rust_openssl.hpke.MLKEM768X25519PrivateKey
+MLKEM768X25519PublicKey = rust_openssl.hpke.MLKEM768X25519PublicKey
 Suite = rust_openssl.hpke.Suite
-
-if hasattr(rust_openssl.hpke, "MLKEM768X25519PrivateKey"):
-    MLKEM768X25519PrivateKey = rust_openssl.hpke.MLKEM768X25519PrivateKey
-    MLKEM768X25519PublicKey = rust_openssl.hpke.MLKEM768X25519PublicKey
 
 __all__ = [
     "AEAD",

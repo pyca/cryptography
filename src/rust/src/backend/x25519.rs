@@ -39,18 +39,6 @@ pub(crate) fn public_key_from_pkey(
     }
 }
 
-impl X25519PrivateKey {
-    pub(crate) fn pkey(&self) -> &openssl::pkey::PKeyRef<openssl::pkey::Private> {
-        &self.pkey
-    }
-}
-
-impl X25519PublicKey {
-    pub(crate) fn pkey(&self) -> &openssl::pkey::PKeyRef<openssl::pkey::Public> {
-        &self.pkey
-    }
-}
-
 #[pyo3::pyfunction]
 fn from_private_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<X25519PrivateKey> {
     let pkey =
