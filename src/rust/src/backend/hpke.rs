@@ -1061,11 +1061,13 @@ fn mlkem768_x25519_combine<'p>(
     hash.finalize(py)
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(
     frozen,
     module = "cryptography.hazmat.bindings._rust.openssl.hpke",
     name = "MLKEM768X25519PrivateKey"
 )]
+// NO-COVERAGE-END
 pub(crate) struct MlKem768X25519PrivateKey {
     mlkem_key: pyo3::Py<pyo3::PyAny>,
     x25519_key: pyo3::Py<pyo3::PyAny>,
