@@ -122,18 +122,10 @@ class TestHPKE:
         elif kem == KEM.MLKEM1024:
             sk_r = mlkem.MLKEM1024PrivateKey.generate()
         else:
-            mlkem_sk = mlkem.MLKEM768PrivateKey.generate()
-            x25519_sk = x25519.X25519PrivateKey.generate()
-            sk_r = MLKEM768X25519PrivateKey(mlkem_sk, x25519_sk)
-            pk_r_value = MLKEM768X25519PublicKey(
-                mlkem_sk.public_key(), x25519_sk.public_key()
+            sk_r = MLKEM768X25519PrivateKey(
+                mlkem.MLKEM768PrivateKey.generate(),
+                x25519.X25519PrivateKey.generate(),
             )
-            ciphertext = suite.encrypt(
-                b"Hello, HPKE!", pk_r_value, info=b"test"
-            )
-            plaintext = suite.decrypt(ciphertext, sk_r, info=b"test")
-            assert plaintext == b"Hello, HPKE!"
-            return
         pk_r = sk_r.public_key()
 
         ciphertext = suite.encrypt(b"Hello, HPKE!", pk_r, info=b"test")
@@ -178,16 +170,10 @@ class TestHPKE:
         elif kem == KEM.MLKEM1024:
             sk_r = mlkem.MLKEM1024PrivateKey.generate()
         else:
-            mlkem_sk = mlkem.MLKEM768PrivateKey.generate()
-            x25519_sk = x25519.X25519PrivateKey.generate()
-            sk_r = MLKEM768X25519PrivateKey(mlkem_sk, x25519_sk)
-            pk_r_value = MLKEM768X25519PublicKey(
-                mlkem_sk.public_key(), x25519_sk.public_key()
+            sk_r = MLKEM768X25519PrivateKey(
+                mlkem.MLKEM768PrivateKey.generate(),
+                x25519.X25519PrivateKey.generate(),
             )
-            ciphertext = suite.encrypt(b"Hello!", pk_r_value)
-            plaintext = suite.decrypt(ciphertext, sk_r)
-            assert plaintext == b"Hello!"
-            return
         pk_r = sk_r.public_key()
 
         ciphertext = suite.encrypt(b"Hello!", pk_r)

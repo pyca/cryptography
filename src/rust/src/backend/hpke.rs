@@ -1140,6 +1140,23 @@ impl MlKem768X25519PrivateKey {
             x25519_key,
         })
     }
+
+    fn public_key(&self, py: pyo3::Python<'_>) -> CryptographyResult<MlKem768X25519PublicKey> {
+        let mlkem_pub = self
+            .mlkem_key
+            .bind(py)
+            .call_method0(pyo3::intern!(py, "public_key"))?
+            .unbind();
+        let x25519_pub = self
+            .x25519_key
+            .bind(py)
+            .call_method0(pyo3::intern!(py, "public_key"))?
+            .unbind();
+        Ok(MlKem768X25519PublicKey {
+            mlkem_key: mlkem_pub,
+            x25519_key: x25519_pub,
+        })
+    }
 }
 
 #[pyo3::pyclass(

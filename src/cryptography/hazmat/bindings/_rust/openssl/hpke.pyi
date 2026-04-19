@@ -32,6 +32,7 @@ class MLKEM768X25519PrivateKey:
         mlkem_key: mlkem.MLKEM768PrivateKey,
         x25519_key: x25519.X25519PrivateKey,
     ) -> None: ...
+    def public_key(self) -> MLKEM768X25519PublicKey: ...
 
 class MLKEM768X25519PublicKey:
     def __init__(

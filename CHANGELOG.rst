@@ -89,12 +89,6 @@ Changelog
   method for computing hashes.
 * Added :doc:`/hazmat/primitives/hpke` support implementing :rfc:`9180` for
   hybrid authenticated encryption.
-* Added support for the ML-KEM-768/X25519 hybrid KEM (X-Wing, KEM ID
-  ``0x647A``) in HPKE via
-  :attr:`~cryptography.hazmat.primitives.hpke.KEM.MLKEM768_X25519`, plus new
-  :class:`~cryptography.hazmat.primitives.hpke.MLKEM768X25519PrivateKey` and
-  :class:`~cryptography.hazmat.primitives.hpke.MLKEM768X25519PublicKey`
-  key types that compose existing ML-KEM-768 and X25519 key objects.
 * Added new :doc:`/hazmat/primitives/asymmetric/mldsa` module with
   support for ML-DSA signing and verification with AWS-LC and BoringSSL.
 * Added new :doc:`/hazmat/asn1/index` module with support for declaratively

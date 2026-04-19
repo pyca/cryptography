@@ -127,6 +127,10 @@ specifying auxiliary authenticated information.
     :param x25519_key: The X25519 private key component.
     :type x25519_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`
 
+    .. method:: public_key()
+
+        :returns: :class:`MLKEM768X25519PublicKey`
+
 .. class:: MLKEM768X25519PublicKey(mlkem_key, x25519_key)
 
     .. versionadded:: 47.0.0
