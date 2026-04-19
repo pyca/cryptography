@@ -98,6 +98,11 @@ specifying auxiliary authenticated information.
         ML-KEM-768. Post-quantum secure. Only available on backends that
         support ML-KEM.
 
+    .. attribute:: MLKEM1024
+
+        ML-KEM-1024. Post-quantum secure. Only available on backends that
+        support ML-KEM.
+
 .. class:: KDF
 
     An enumeration of key derivation functions.

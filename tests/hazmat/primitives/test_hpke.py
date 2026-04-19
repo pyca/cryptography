@@ -28,10 +28,18 @@ P256_ENC_LENGTH = 65
 P384_ENC_LENGTH = 97
 P521_ENC_LENGTH = 133
 MLKEM768_ENC_LENGTH = 1088
+MLKEM1024_ENC_LENGTH = 1568
 
 SUPPORTED_SUITES = list(
     itertools.product(
-        [KEM.X25519, KEM.P256, KEM.P384, KEM.P521, KEM.MLKEM768],
+        [
+            KEM.X25519,
+            KEM.P256,
+            KEM.P384,
+            KEM.P521,
+            KEM.MLKEM768,
+            KEM.MLKEM1024,
+        ],
         [
             KDF.HKDF_SHA256,
             KDF.HKDF_SHA384,
@@ -71,7 +79,10 @@ class TestHPKE:
             hashes.SHAKE256(digest_size=64)
         ):
             pytest.skip("SHAKE256 not supported")
-        if kem == KEM.MLKEM768 and not backend.mlkem_supported():
+        if (
+            kem in (KEM.MLKEM768, KEM.MLKEM1024)
+            and not backend.mlkem_supported()
+        ):
             pytest.skip("ML-KEM not supported")
         suite = Suite(kem, kdf, aead)
 
@@ -79,6 +90,7 @@ class TestHPKE:
             x25519.X25519PrivateKey
             | ec.EllipticCurvePrivateKey
             | mlkem.MLKEM768PrivateKey
+            | mlkem.MLKEM1024PrivateKey
         )
         if kem == KEM.X25519:
             sk_r = x25519.X25519PrivateKey.generate()
@@ -88,8 +100,10 @@ class TestHPKE:
             sk_r = ec.generate_private_key(ec.SECP384R1())
         elif kem == KEM.P521:
             sk_r = ec.generate_private_key(ec.SECP521R1())
-        else:
+        elif kem == KEM.MLKEM768:
             sk_r = mlkem.MLKEM768PrivateKey.generate()
+        else:
+            sk_r = mlkem.MLKEM1024PrivateKey.generate()
         pk_r = sk_r.public_key()
 
         ciphertext = suite.encrypt(b"Hello, HPKE!", pk_r, info=b"test")
@@ -107,7 +121,10 @@ class TestHPKE:
             hashes.SHAKE256(digest_size=64)
         ):
             pytest.skip("SHAKE256 not supported")
-        if kem == KEM.MLKEM768 and not backend.mlkem_supported():
+        if (
+            kem in (KEM.MLKEM768, KEM.MLKEM1024)
+            and not backend.mlkem_supported()
+        ):
             pytest.skip("ML-KEM not supported")
         suite = Suite(kem, kdf, aead)
 
@@ -115,6 +132,7 @@ class TestHPKE:
             x25519.X25519PrivateKey
             | ec.EllipticCurvePrivateKey
             | mlkem.MLKEM768PrivateKey
+            | mlkem.MLKEM1024PrivateKey
         )
         if kem == KEM.X25519:
             sk_r = x25519.X25519PrivateKey.generate()
@@ -124,8 +142,10 @@ class TestHPKE:
             sk_r = ec.generate_private_key(ec.SECP384R1())
         elif kem == KEM.P521:
             sk_r = ec.generate_private_key(ec.SECP521R1())
-        else:
+        elif kem == KEM.MLKEM768:
             sk_r = mlkem.MLKEM768PrivateKey.generate()
+        else:
+            sk_r = mlkem.MLKEM1024PrivateKey.generate()
         pk_r = sk_r.public_key()
 
         ciphertext = suite.encrypt(b"Hello!", pk_r)
@@ -382,6 +402,60 @@ class TestHPKE:
         with pytest.raises(TypeError):
             suite.encrypt(b"test", mlkem_pk)
 
+    def test_ciphertext_format_mlkem1024(self, backend):
+        if not backend.mlkem_supported():
+            pytest.skip("ML-KEM not supported")
+        suite = Suite(KEM.MLKEM1024, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
+
+        sk_r = mlkem.MLKEM1024PrivateKey.generate()
+        pk_r = sk_r.public_key()
+
+        ciphertext = suite.encrypt(b"test", pk_r)
+
+        # enc (1568 bytes) + ct (4 bytes pt + 16 bytes tag)
+        assert len(ciphertext) == MLKEM1024_ENC_LENGTH + 4 + 16
+
+    def test_wrong_key_mlkem1024(self, backend):
+        if not backend.mlkem_supported():
+            pytest.skip("ML-KEM not supported")
+        suite = Suite(KEM.MLKEM1024, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
+        sk_r = mlkem.MLKEM1024PrivateKey.generate()
+        pk_r = sk_r.public_key()
+        ciphertext = suite.encrypt(b"test", pk_r)
+
+        # Wrong key of correct type
+        sk_wrong = mlkem.MLKEM1024PrivateKey.generate()
+        with pytest.raises(InvalidTag):
+            suite.decrypt(ciphertext, sk_wrong)
+
+        # Wrong key type for encrypt
+        x25519_pk = x25519.X25519PrivateKey.generate().public_key()
+        with pytest.raises(TypeError):
+            suite.encrypt(b"test", x25519_pk)
+
+        # Wrong key type for decrypt
+        x25519_sk = x25519.X25519PrivateKey.generate()
+        with pytest.raises(TypeError):
+            suite.decrypt(ciphertext, x25519_sk)
+
+        # ML-KEM-768 key with ML-KEM-1024 suite should fail
+        mlkem768_pk = mlkem.MLKEM768PrivateKey.generate().public_key()
+        with pytest.raises(TypeError):
+            suite.encrypt(b"test", mlkem768_pk)
+
+        mlkem768_sk = mlkem.MLKEM768PrivateKey.generate()
+        with pytest.raises(TypeError):
+            suite.decrypt(ciphertext, mlkem768_sk)
+
+    def test_mlkem1024_wrong_kem_with_ec(self, backend):
+        if not backend.mlkem_supported():
+            pytest.skip("ML-KEM not supported")
+        # ML-KEM-1024 public key with EC-based KEM suite should fail
+        suite = Suite(KEM.P256, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
+        mlkem_pk = mlkem.MLKEM1024PrivateKey.generate().public_key()
+        with pytest.raises(TypeError):
+            suite.encrypt(b"test", mlkem_pk)
+
     def test_empty_plaintext(self):
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
@@ -529,6 +603,7 @@ class TestHPKE:
             0x0012: KEM.P521,
             0x0020: KEM.X25519,
             0x0041: KEM.MLKEM768,
+            0x0042: KEM.MLKEM1024,
         }
         kdf_map = {
             0x0001: KDF.HKDF_SHA256,
@@ -565,7 +640,10 @@ class TestHPKE:
                     hashes.SHAKE256(digest_size=64)
                 ):
                     continue
-                if kem == KEM.MLKEM768 and not backend.mlkem_supported():
+                if (
+                    kem in (KEM.MLKEM768, KEM.MLKEM1024)
+                    and not backend.mlkem_supported()
+                ):
                     continue
 
                 suite = Suite(kem, kdf, aead)
@@ -575,6 +653,7 @@ class TestHPKE:
                     x25519.X25519PrivateKey
                     | ec.EllipticCurvePrivateKey
                     | mlkem.MLKEM768PrivateKey
+                    | mlkem.MLKEM1024PrivateKey
                 )
                 if kem == KEM.X25519:
                     sk_r = x25519.X25519PrivateKey.from_private_bytes(
@@ -589,8 +668,12 @@ class TestHPKE:
                 elif kem == KEM.P521:
                     private_value = int.from_bytes(sk_r_bytes, "big")
                     sk_r = ec.derive_private_key(private_value, ec.SECP521R1())
-                else:
+                elif kem == KEM.MLKEM768:
                     sk_r = mlkem.MLKEM768PrivateKey.from_seed_bytes(sk_r_bytes)
+                else:
+                    sk_r = mlkem.MLKEM1024PrivateKey.from_seed_bytes(
+                        sk_r_bytes
+                    )
 
                 enc = bytes.fromhex(vector["enc"])
                 info = bytes.fromhex(vector["info"])

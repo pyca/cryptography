@@ -45,6 +45,10 @@ mod kem_params {
     pub const MLKEM768_ID: u16 = 0x0041;
     pub const MLKEM768_NSECRET: usize = 32;
     pub const MLKEM768_NENC: usize = 1088;
+
+    pub const MLKEM1024_ID: u16 = 0x0042;
+    pub const MLKEM1024_NSECRET: usize = 32;
+    pub const MLKEM1024_NENC: usize = 1568;
 }
 
 mod kdf_params {
@@ -89,6 +93,7 @@ pub(crate) enum KEM {
     P384,
     P521,
     MLKEM768,
+    MLKEM1024,
 }
 
 impl KEM {
@@ -153,6 +158,7 @@ impl KEM {
             KEM::P384 => kem_params::P384_ID,
             KEM::P521 => kem_params::P521_ID,
             KEM::MLKEM768 => kem_params::MLKEM768_ID,
+            KEM::MLKEM1024 => kem_params::MLKEM1024_ID,
         }
     }
 
@@ -163,6 +169,7 @@ impl KEM {
             KEM::P384 => kem_params::P384_NSECRET,
             KEM::P521 => kem_params::P521_NSECRET,
             KEM::MLKEM768 => kem_params::MLKEM768_NSECRET,
+            KEM::MLKEM1024 => kem_params::MLKEM1024_NSECRET,
         }
     }
 
@@ -173,6 +180,7 @@ impl KEM {
             KEM::P384 => kem_params::P384_NENC,
             KEM::P521 => kem_params::P521_NENC,
             KEM::MLKEM768 => kem_params::MLKEM768_NENC,
+            KEM::MLKEM1024 => kem_params::MLKEM1024_NENC,
         }
     }
 
@@ -217,6 +225,15 @@ impl KEM {
                     return Err(CryptographyError::from(
                         pyo3::exceptions::PyTypeError::new_err(
                             "Expected MLKEM768PublicKey for KEM.MLKEM768",
+                        ),
+                    ));
+                }
+            }
+            KEM::MLKEM1024 => {
+                if !key.is_instance(&types::MLKEM1024_PUBLIC_KEY.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected MLKEM1024PublicKey for KEM.MLKEM1024",
                         ),
                     ));
                 }
@@ -270,6 +287,15 @@ impl KEM {
                     ));
                 }
             }
+            KEM::MLKEM1024 => {
+                if !key.is_instance(&types::MLKEM1024_PRIVATE_KEY.get(py)?)? {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyTypeError::new_err(
+                            "Expected MLKEM1024PrivateKey for KEM.MLKEM1024",
+                        ),
+                    ));
+                }
+            }
         }
         Ok(())
     }
@@ -284,7 +310,7 @@ impl KEM {
         pyo3::Bound<'p, pyo3::types::PyBytes>,
     )> {
         match self {
-            KEM::MLKEM768 => {
+            KEM::MLKEM768 | KEM::MLKEM1024 => {
                 let result = pk_r.call_method0(pyo3::intern!(py, "encapsulate"))?;
                 Ok(result.extract()?)
             }
@@ -302,7 +328,7 @@ impl KEM {
         kem_suite_id: &[u8; 5],
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         match self {
-            KEM::MLKEM768 => {
+            KEM::MLKEM768 | KEM::MLKEM1024 => {
                 let enc_bytes = pyo3::types::PyBytes::new(py, enc);
                 Ok(sk_r
                     .call_method1(pyo3::intern!(py, "decapsulate"), (enc_bytes,))?
@@ -446,8 +472,8 @@ impl KEM {
                         .into_any(),
                 )
             }
-            KEM::MLKEM768 => {
-                unreachable!("ML-KEM-768 does not generate an ephemeral DH key")
+            KEM::MLKEM768 | KEM::MLKEM1024 => {
+                unreachable!("ML-KEM does not generate an ephemeral DH key")
             }
         }
     }
@@ -470,8 +496,8 @@ impl KEM {
                     ),
                 )?
                 .extract()?),
-            KEM::MLKEM768 => {
-                unreachable!("ML-KEM-768 public keys are not serialized via this path")
+            KEM::MLKEM768 | KEM::MLKEM1024 => {
+                unreachable!("ML-KEM public keys are not serialized via this path")
             }
         }
     }
@@ -495,8 +521,8 @@ impl KEM {
                 let secp521r1 = types::SECP521R1.get(py)?.call0()?;
                 Ok(pyo3::Bound::new(py, ec::from_public_bytes(py, secp521r1, data)?)?.into_any())
             }
-            KEM::MLKEM768 => {
-                unreachable!("ML-KEM-768 encapsulated key is a ciphertext, not a public key")
+            KEM::MLKEM768 | KEM::MLKEM1024 => {
+                unreachable!("ML-KEM encapsulated key is a ciphertext, not a public key")
             }
         }
     }
@@ -515,8 +541,8 @@ impl KEM {
                 let ecdh = types::ECDH.get(py)?.call0()?;
                 Ok(private_key.call_method1(pyo3::intern!(py, "exchange"), (&ecdh, public_key))?)
             }
-            KEM::MLKEM768 => {
-                unreachable!("ML-KEM-768 does not perform a Diffie-Hellman exchange")
+            KEM::MLKEM768 | KEM::MLKEM1024 => {
+                unreachable!("ML-KEM does not perform a Diffie-Hellman exchange")
             }
         }
     }
@@ -529,8 +555,8 @@ impl KEM {
             KEM::X25519 | KEM::P256 => Ok(types::SHA256.get(py)?.call0()?),
             KEM::P384 => Ok(types::SHA384.get(py)?.call0()?),
             KEM::P521 => Ok(types::SHA512.get(py)?.call0()?),
-            KEM::MLKEM768 => {
-                unreachable!("ML-KEM-768 does not use a KEM hash algorithm")
+            KEM::MLKEM768 | KEM::MLKEM1024 => {
+                unreachable!("ML-KEM does not use a KEM hash algorithm")
             }
         }
     }
@@ -994,7 +1020,15 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "ML-KEM-768 does not generate an ephemeral DH key")]
+    fn test_mlkem1024_secret_length() {
+        assert_eq!(
+            KEM::MLKEM1024.secret_length(),
+            kem_params::MLKEM1024_NSECRET
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "ML-KEM does not generate an ephemeral DH key")]
     fn test_mlkem768_generate_key_unreachable() {
         pyo3::Python::initialize();
 
@@ -1004,7 +1038,17 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "ML-KEM-768 public keys are not serialized via this path")]
+    #[should_panic(expected = "ML-KEM does not generate an ephemeral DH key")]
+    fn test_mlkem1024_generate_key_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let _ = KEM::MLKEM1024.generate_key(py);
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "ML-KEM public keys are not serialized via this path")]
     fn test_mlkem768_serialize_public_key_unreachable() {
         pyo3::Python::initialize();
 
@@ -1015,7 +1059,18 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "ML-KEM-768 encapsulated key is a ciphertext, not a public key")]
+    #[should_panic(expected = "ML-KEM public keys are not serialized via this path")]
+    fn test_mlkem1024_serialize_public_key_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let obj = py.None().into_bound(py);
+            let _ = KEM::MLKEM1024.serialize_public_key(py, &obj);
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "ML-KEM encapsulated key is a ciphertext, not a public key")]
     fn test_mlkem768_deserialize_public_key_unreachable() {
         pyo3::Python::initialize();
 
@@ -1025,7 +1080,17 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "ML-KEM-768 does not perform a Diffie-Hellman exchange")]
+    #[should_panic(expected = "ML-KEM encapsulated key is a ciphertext, not a public key")]
+    fn test_mlkem1024_deserialize_public_key_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let _ = KEM::MLKEM1024.deserialize_public_key(py, b"");
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "ML-KEM does not perform a Diffie-Hellman exchange")]
     fn test_mlkem768_exchange_unreachable() {
         pyo3::Python::initialize();
 
@@ -1036,12 +1101,33 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "ML-KEM-768 does not use a KEM hash algorithm")]
+    #[should_panic(expected = "ML-KEM does not perform a Diffie-Hellman exchange")]
+    fn test_mlkem1024_exchange_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let obj = py.None().into_bound(py);
+            let _ = KEM::MLKEM1024.exchange(py, &obj, &obj);
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "ML-KEM does not use a KEM hash algorithm")]
     fn test_mlkem768_kem_hash_algorithm_unreachable() {
         pyo3::Python::initialize();
 
         pyo3::Python::attach(|py| {
             let _ = KEM::MLKEM768.kem_hash_algorithm(py);
+        });
+    }
+
+    #[test]
+    #[should_panic(expected = "ML-KEM does not use a KEM hash algorithm")]
+    fn test_mlkem1024_kem_hash_algorithm_unreachable() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let _ = KEM::MLKEM1024.kem_hash_algorithm(py);
         });
     }
 
