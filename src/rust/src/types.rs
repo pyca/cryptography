@@ -431,6 +431,14 @@ pub static MLKEM1024_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.mlkem",
     &["MLKEM1024PrivateKey"],
 );
+pub static MLKEM768_X25519_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.mlkem",
+    &["MLKEM768X25519PublicKey"],
+);
+pub static MLKEM768_X25519_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
+    "cryptography.hazmat.primitives.asymmetric.mlkem",
+    &["MLKEM768X25519PrivateKey"],
+);
 
 pub static ED25519_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.ed25519",

@@ -25,6 +25,8 @@ pub(crate) mod keys;
 pub(crate) mod mldsa;
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 pub(crate) mod mlkem;
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+pub(crate) mod mlkem768_x25519;
 pub(crate) mod poly1305;
 pub(crate) mod rand;
 pub(crate) mod rsa;

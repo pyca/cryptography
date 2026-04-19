@@ -103,6 +103,16 @@ specifying auxiliary authenticated information.
         ML-KEM-1024. Post-quantum secure. Only available on backends that
         support ML-KEM.
 
+    .. attribute:: MLKEM768_X25519
+
+        Hybrid KEM combining ML-KEM-768 with X25519 (also known as X-Wing;
+        KEM ID ``0x647A``). Provides both classical and post-quantum
+        security. Public and private keys are
+        :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768X25519PublicKey`
+        and
+        :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768X25519PrivateKey`.
+        Only available on backends that support ML-KEM.
+
 .. class:: KDF
 
     An enumeration of key derivation functions.

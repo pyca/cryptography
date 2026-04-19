@@ -248,6 +248,9 @@ mod _rust {
         #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
         #[pymodule_export]
         use crate::backend::mlkem::mlkem;
+        #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+        #[pymodule_export]
+        use crate::backend::mlkem768_x25519::mlkem768_x25519;
         #[pymodule_export]
         use crate::backend::poly1305::poly1305;
         #[pymodule_export]

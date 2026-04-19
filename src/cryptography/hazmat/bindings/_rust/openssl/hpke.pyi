@@ -12,6 +12,7 @@ class KEM:
     P521: KEM
     MLKEM768: KEM
     MLKEM1024: KEM
+    MLKEM768_X25519: KEM
 
 class KDF:
     HKDF_SHA256: KDF
@@ -33,7 +34,8 @@ class Suite:
         public_key: x25519.X25519PublicKey
         | ec.EllipticCurvePublicKey
         | mlkem.MLKEM768PublicKey
-        | mlkem.MLKEM1024PublicKey,
+        | mlkem.MLKEM1024PublicKey
+        | mlkem.MLKEM768X25519PublicKey,
         info: Buffer | None = None,
     ) -> bytes: ...
     def decrypt(
@@ -42,7 +44,8 @@ class Suite:
         private_key: x25519.X25519PrivateKey
         | ec.EllipticCurvePrivateKey
         | mlkem.MLKEM768PrivateKey
-        | mlkem.MLKEM1024PrivateKey,
+        | mlkem.MLKEM1024PrivateKey
+        | mlkem.MLKEM768X25519PrivateKey,
         info: Buffer | None = None,
     ) -> bytes: ...
 
@@ -52,7 +55,8 @@ def _encrypt_with_aad(
     public_key: x25519.X25519PublicKey
     | ec.EllipticCurvePublicKey
     | mlkem.MLKEM768PublicKey
-    | mlkem.MLKEM1024PublicKey,
+    | mlkem.MLKEM1024PublicKey
+    | mlkem.MLKEM768X25519PublicKey,
     info: Buffer | None = None,
     aad: Buffer | None = None,
 ) -> bytes: ...
@@ -62,7 +66,8 @@ def _decrypt_with_aad(
     private_key: x25519.X25519PrivateKey
     | ec.EllipticCurvePrivateKey
     | mlkem.MLKEM768PrivateKey
-    | mlkem.MLKEM1024PrivateKey,
+    | mlkem.MLKEM1024PrivateKey
+    | mlkem.MLKEM768X25519PrivateKey,
     info: Buffer | None = None,
     aad: Buffer | None = None,
 ) -> bytes: ...
