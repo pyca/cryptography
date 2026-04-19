@@ -11,9 +11,15 @@ KDF = rust_openssl.hpke.KDF
 KEM = rust_openssl.hpke.KEM
 Suite = rust_openssl.hpke.Suite
 
+if hasattr(rust_openssl.hpke, "MLKEM768X25519PrivateKey"):
+    MLKEM768X25519PrivateKey = rust_openssl.hpke.MLKEM768X25519PrivateKey
+    MLKEM768X25519PublicKey = rust_openssl.hpke.MLKEM768X25519PublicKey
+
 __all__ = [
     "AEAD",
     "KDF",
     "KEM",
+    "MLKEM768X25519PrivateKey",
+    "MLKEM768X25519PublicKey",
     "Suite",
 ]

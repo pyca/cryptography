@@ -26,6 +26,20 @@ class AEAD:
     AES_256_GCM: AEAD
     CHACHA20_POLY1305: AEAD
 
+class MLKEM768X25519PrivateKey:
+    def __init__(
+        self,
+        mlkem_key: mlkem.MLKEM768PrivateKey,
+        x25519_key: x25519.X25519PrivateKey,
+    ) -> None: ...
+
+class MLKEM768X25519PublicKey:
+    def __init__(
+        self,
+        mlkem_key: mlkem.MLKEM768PublicKey,
+        x25519_key: x25519.X25519PublicKey,
+    ) -> None: ...
+
 class Suite:
     def __init__(self, kem: KEM, kdf: KDF, aead: AEAD) -> None: ...
     def encrypt(
@@ -35,7 +49,7 @@ class Suite:
         | ec.EllipticCurvePublicKey
         | mlkem.MLKEM768PublicKey
         | mlkem.MLKEM1024PublicKey
-        | mlkem.MLKEM768X25519PublicKey,
+        | MLKEM768X25519PublicKey,
         info: Buffer | None = None,
     ) -> bytes: ...
     def decrypt(
@@ -45,7 +59,7 @@ class Suite:
         | ec.EllipticCurvePrivateKey
         | mlkem.MLKEM768PrivateKey
         | mlkem.MLKEM1024PrivateKey
-        | mlkem.MLKEM768X25519PrivateKey,
+        | MLKEM768X25519PrivateKey,
         info: Buffer | None = None,
     ) -> bytes: ...
 
@@ -56,7 +70,7 @@ def _encrypt_with_aad(
     | ec.EllipticCurvePublicKey
     | mlkem.MLKEM768PublicKey
     | mlkem.MLKEM1024PublicKey
-    | mlkem.MLKEM768X25519PublicKey,
+    | MLKEM768X25519PublicKey,
     info: Buffer | None = None,
     aad: Buffer | None = None,
 ) -> bytes: ...
@@ -67,7 +81,7 @@ def _decrypt_with_aad(
     | ec.EllipticCurvePrivateKey
     | mlkem.MLKEM768PrivateKey
     | mlkem.MLKEM1024PrivateKey
-    | mlkem.MLKEM768X25519PrivateKey,
+    | MLKEM768X25519PrivateKey,
     info: Buffer | None = None,
     aad: Buffer | None = None,
 ) -> bytes: ...

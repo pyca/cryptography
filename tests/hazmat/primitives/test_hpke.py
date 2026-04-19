@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import itertools
 import json
 import os
@@ -14,17 +15,27 @@ from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, mlkem, x25519
-from cryptography.hazmat.primitives.asymmetric.mlkem import (
-    MLKEM768X25519PrivateKey,
-)
 from cryptography.hazmat.primitives.hpke import (
     AEAD,
     KDF,
     KEM,
+    MLKEM768X25519PrivateKey,
+    MLKEM768X25519PublicKey,
     Suite,
 )
 
 from ...utils import load_vectors_from_file
+
+
+def _hybrid_from_xwing_seed(
+    seed: bytes,
+) -> MLKEM768X25519PrivateKey:
+    # X-Wing seed expansion: SHAKE256(seed, 96) -> (d || z || sk_X).
+    expanded = hashlib.shake_256(seed).digest(96)
+    mlkem_sk = mlkem.MLKEM768PrivateKey.from_seed_bytes(expanded[:64])
+    x25519_sk = x25519.X25519PrivateKey.from_private_bytes(expanded[64:96])
+    return MLKEM768X25519PrivateKey(mlkem_sk, x25519_sk)
+
 
 X25519_ENC_LENGTH = 32
 P256_ENC_LENGTH = 65
@@ -111,7 +122,18 @@ class TestHPKE:
         elif kem == KEM.MLKEM1024:
             sk_r = mlkem.MLKEM1024PrivateKey.generate()
         else:
-            sk_r = MLKEM768X25519PrivateKey.generate()
+            mlkem_sk = mlkem.MLKEM768PrivateKey.generate()
+            x25519_sk = x25519.X25519PrivateKey.generate()
+            sk_r = MLKEM768X25519PrivateKey(mlkem_sk, x25519_sk)
+            pk_r_value = MLKEM768X25519PublicKey(
+                mlkem_sk.public_key(), x25519_sk.public_key()
+            )
+            ciphertext = suite.encrypt(
+                b"Hello, HPKE!", pk_r_value, info=b"test"
+            )
+            plaintext = suite.decrypt(ciphertext, sk_r, info=b"test")
+            assert plaintext == b"Hello, HPKE!"
+            return
         pk_r = sk_r.public_key()
 
         ciphertext = suite.encrypt(b"Hello, HPKE!", pk_r, info=b"test")
@@ -156,7 +178,16 @@ class TestHPKE:
         elif kem == KEM.MLKEM1024:
             sk_r = mlkem.MLKEM1024PrivateKey.generate()
         else:
-            sk_r = MLKEM768X25519PrivateKey.generate()
+            mlkem_sk = mlkem.MLKEM768PrivateKey.generate()
+            x25519_sk = x25519.X25519PrivateKey.generate()
+            sk_r = MLKEM768X25519PrivateKey(mlkem_sk, x25519_sk)
+            pk_r_value = MLKEM768X25519PublicKey(
+                mlkem_sk.public_key(), x25519_sk.public_key()
+            )
+            ciphertext = suite.encrypt(b"Hello!", pk_r_value)
+            plaintext = suite.decrypt(ciphertext, sk_r)
+            assert plaintext == b"Hello!"
+            return
         pk_r = sk_r.public_key()
 
         ciphertext = suite.encrypt(b"Hello!", pk_r)
@@ -486,8 +517,11 @@ class TestHPKE:
     def test_ciphertext_format_mlkem768_x25519(self):
         suite = Suite(KEM.MLKEM768_X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
-        sk_r = MLKEM768X25519PrivateKey.generate()
-        pk_r = sk_r.public_key()
+        mlkem_sk = mlkem.MLKEM768PrivateKey.generate()
+        x25519_sk = x25519.X25519PrivateKey.generate()
+        pk_r = MLKEM768X25519PublicKey(
+            mlkem_sk.public_key(), x25519_sk.public_key()
+        )
 
         ciphertext = suite.encrypt(b"test", pk_r)
 
@@ -500,24 +534,33 @@ class TestHPKE:
     )
     def test_wrong_key_mlkem768_x25519(self):
         suite = Suite(KEM.MLKEM768_X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
-        sk_r = MLKEM768X25519PrivateKey.generate()
-        pk_r = sk_r.public_key()
+        mlkem_sk = mlkem.MLKEM768PrivateKey.generate()
+        x25519_sk = x25519.X25519PrivateKey.generate()
+        sk_r = MLKEM768X25519PrivateKey(mlkem_sk, x25519_sk)
+        pk_r = MLKEM768X25519PublicKey(
+            mlkem_sk.public_key(), x25519_sk.public_key()
+        )
         ciphertext = suite.encrypt(b"test", pk_r)
+        # Correct key decrypts successfully.
+        assert suite.decrypt(ciphertext, sk_r) == b"test"
 
         # Wrong key of correct type
-        sk_wrong = MLKEM768X25519PrivateKey.generate()
+        sk_wrong = MLKEM768X25519PrivateKey(
+            mlkem.MLKEM768PrivateKey.generate(),
+            x25519.X25519PrivateKey.generate(),
+        )
         with pytest.raises(InvalidTag):
             suite.decrypt(ciphertext, sk_wrong)
 
         # Wrong key type for encrypt
-        x25519_pk = x25519.X25519PrivateKey.generate().public_key()
+        stray_x25519_pk = x25519.X25519PrivateKey.generate().public_key()
         with pytest.raises(TypeError):
-            suite.encrypt(b"test", x25519_pk)
+            suite.encrypt(b"test", stray_x25519_pk)
 
         # Wrong key type for decrypt
-        x25519_sk = x25519.X25519PrivateKey.generate()
+        stray_x25519_sk = x25519.X25519PrivateKey.generate()
         with pytest.raises(TypeError):
-            suite.decrypt(ciphertext, x25519_sk)
+            suite.decrypt(ciphertext, stray_x25519_sk)
 
         # ML-KEM-768 key with hybrid suite should fail
         mlkem768_pk = mlkem.MLKEM768PrivateKey.generate().public_key()
@@ -535,28 +578,13 @@ class TestHPKE:
     def test_mlkem768_x25519_wrong_kem_with_ec(self):
         # Hybrid public key with EC-based KEM suite should fail
         suite = Suite(KEM.P256, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
-        hybrid_pk = MLKEM768X25519PrivateKey.generate().public_key()
+        mlkem_sk = mlkem.MLKEM768PrivateKey.generate()
+        x25519_sk = x25519.X25519PrivateKey.generate()
+        hybrid_pk = MLKEM768X25519PublicKey(
+            mlkem_sk.public_key(), x25519_sk.public_key()
+        )
         with pytest.raises(TypeError):
             suite.encrypt(b"test", hybrid_pk)
-
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.mlkem_supported(),
-        skip_message="Requires ML-KEM support",
-    )
-    def test_mlkem768_x25519_key_roundtrip(self):
-        sk = MLKEM768X25519PrivateKey.generate()
-        seed = sk.private_bytes_raw()
-        assert len(seed) == 32
-
-        sk2 = MLKEM768X25519PrivateKey.from_seed_bytes(seed)
-        pk1 = sk.public_key().public_bytes_raw()
-        pk2 = sk2.public_key().public_bytes_raw()
-        assert pk1 == pk2
-        assert len(pk1) == 1216
-
-        pk_roundtrip = mlkem.MLKEM768X25519PublicKey.from_public_bytes(pk1)
-        assert pk_roundtrip.public_bytes_raw() == pk1
-        assert pk_roundtrip == sk.public_key()
 
     def test_empty_plaintext(self):
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
@@ -779,7 +807,7 @@ class TestHPKE:
                         sk_r_bytes
                     )
                 else:
-                    sk_r = MLKEM768X25519PrivateKey.from_seed_bytes(sk_r_bytes)
+                    sk_r = _hybrid_from_xwing_seed(sk_r_bytes)
 
                 enc = bytes.fromhex(vector["enc"])
                 info = bytes.fromhex(vector["info"])

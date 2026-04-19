@@ -107,11 +107,43 @@ specifying auxiliary authenticated information.
 
         Hybrid KEM combining ML-KEM-768 with X25519 (also known as X-Wing;
         KEM ID ``0x647A``). Provides both classical and post-quantum
-        security. Public and private keys are
-        :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768X25519PublicKey`
-        and
-        :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768X25519PrivateKey`.
-        Only available on backends that support ML-KEM.
+        security. Public and private keys are :class:`MLKEM768X25519PublicKey`
+        and :class:`MLKEM768X25519PrivateKey`. Only available on backends
+        that support ML-KEM.
+
+.. class:: MLKEM768X25519PrivateKey(mlkem_key, x25519_key)
+
+    .. versionadded:: 47.0.0
+
+    A hybrid ML-KEM-768 / X25519 private key for use with
+    :attr:`KEM.MLKEM768_X25519`. Combines an
+    :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PrivateKey`
+    and an
+    :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`
+    into a single recipient key.
+
+    :param mlkem_key: The ML-KEM-768 private key component.
+    :type mlkem_key: :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PrivateKey`
+
+    :param x25519_key: The X25519 private key component.
+    :type x25519_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`
+
+.. class:: MLKEM768X25519PublicKey(mlkem_key, x25519_key)
+
+    .. versionadded:: 47.0.0
+
+    A hybrid ML-KEM-768 / X25519 public key for use with
+    :attr:`KEM.MLKEM768_X25519`. Combines an
+    :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PublicKey`
+    and an
+    :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
+    into a single recipient key.
+
+    :param mlkem_key: The ML-KEM-768 public key component.
+    :type mlkem_key: :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PublicKey`
+
+    :param x25519_key: The X25519 public key component.
+    :type x25519_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
 
 .. class:: KDF
 
