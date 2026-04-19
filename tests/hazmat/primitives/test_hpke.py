@@ -586,6 +586,30 @@ class TestHPKE:
         with pytest.raises(TypeError):
             suite.encrypt(b"test", hybrid_pk)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mlkem_supported(),
+        skip_message="Requires ML-KEM support",
+    )
+    def test_mlkem768_x25519_constructor_type_errors(self):
+        mlkem_sk = mlkem.MLKEM768PrivateKey.generate()
+        mlkem_pk = mlkem_sk.public_key()
+        x25519_sk = x25519.X25519PrivateKey.generate()
+        x25519_pk = x25519_sk.public_key()
+
+        # Wrong type for mlkem_key in private constructor.
+        with pytest.raises(TypeError):
+            MLKEM768X25519PrivateKey(x25519_sk, x25519_sk)  # type: ignore[arg-type]
+        # Wrong type for x25519_key in private constructor.
+        with pytest.raises(TypeError):
+            MLKEM768X25519PrivateKey(mlkem_sk, mlkem_sk)  # type: ignore[arg-type]
+
+        # Wrong type for mlkem_key in public constructor.
+        with pytest.raises(TypeError):
+            MLKEM768X25519PublicKey(x25519_pk, x25519_pk)  # type: ignore[arg-type]
+        # Wrong type for x25519_key in public constructor.
+        with pytest.raises(TypeError):
+            MLKEM768X25519PublicKey(mlkem_pk, mlkem_pk)  # type: ignore[arg-type]
+
     def test_empty_plaintext(self):
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 

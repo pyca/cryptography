@@ -1041,7 +1041,6 @@ fn _decrypt_with_aad<'p>(
 // Only a constructor is exposed to Python; all encap/decap logic lives here.
 
 const MLKEM768_X25519_MLKEM_CT_LENGTH: usize = 1088;
-const MLKEM768_X25519_X25519_CT_LENGTH: usize = 32;
 // `\./` + `/^\` — the X-Wing combiner label.
 const MLKEM768_X25519_LABEL: &[u8; 6] = b"\\.//^\\";
 
@@ -1078,14 +1077,8 @@ impl MlKem768X25519PrivateKey {
         py: pyo3::Python<'p>,
         enc: &[u8],
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let expected_len = MLKEM768_X25519_MLKEM_CT_LENGTH + MLKEM768_X25519_X25519_CT_LENGTH;
-        if enc.len() != expected_len {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "An ML-KEM-768/X25519 ciphertext is 1120 bytes long",
-                ),
-            ));
-        }
+        // `enc` is guaranteed by Suite::decrypt_inner to be exactly
+        // `enc_length()` bytes (1120), so we can split without a length check.
         let (ct_m, ct_x) = enc.split_at(MLKEM768_X25519_MLKEM_CT_LENGTH);
 
         let mlkem_key = self.mlkem_key.bind(py);
@@ -1275,6 +1268,14 @@ mod tests {
         assert_eq!(
             KEM::MLKEM1024.secret_length(),
             kem_params::MLKEM1024_NSECRET
+        );
+    }
+
+    #[test]
+    fn test_mlkem768_x25519_secret_length() {
+        assert_eq!(
+            KEM::MLKEM768_X25519.secret_length(),
+            kem_params::MLKEM768_X25519_NSECRET
         );
     }
 
