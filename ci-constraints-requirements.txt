@@ -92,7 +92,7 @@ humanize==4.13.0 ; python_full_version == '3.9.*'
     # via nox
 humanize==4.15.0 ; python_full_version >= '3.10'
     # via nox
-idna==3.11
+idna==3.12
     # via requests
 imagesize==1.5.0 ; python_full_version < '3.10'
     # via sphinx
