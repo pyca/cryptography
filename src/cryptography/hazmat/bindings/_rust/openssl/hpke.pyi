@@ -13,6 +13,7 @@ class KEM:
     MLKEM768: KEM
     MLKEM1024: KEM
     MLKEM768_X25519: KEM
+    MLKEM1024_P384: KEM
 
 class KDF:
     HKDF_SHA256: KDF
@@ -41,6 +42,21 @@ class MLKEM768X25519PublicKey:
         x25519_key: x25519.X25519PublicKey,
     ) -> None: ...
 
+class MLKEM1024P384PrivateKey:
+    def __init__(
+        self,
+        mlkem_key: mlkem.MLKEM1024PrivateKey,
+        p384_key: ec.EllipticCurvePrivateKey,
+    ) -> None: ...
+    def public_key(self) -> MLKEM1024P384PublicKey: ...
+
+class MLKEM1024P384PublicKey:
+    def __init__(
+        self,
+        mlkem_key: mlkem.MLKEM1024PublicKey,
+        p384_key: ec.EllipticCurvePublicKey,
+    ) -> None: ...
+
 class Suite:
     def __init__(self, kem: KEM, kdf: KDF, aead: AEAD) -> None: ...
     def encrypt(
@@ -50,7 +66,8 @@ class Suite:
         | ec.EllipticCurvePublicKey
         | mlkem.MLKEM768PublicKey
         | mlkem.MLKEM1024PublicKey
-        | MLKEM768X25519PublicKey,
+        | MLKEM768X25519PublicKey
+        | MLKEM1024P384PublicKey,
         info: Buffer | None = None,
     ) -> bytes: ...
     def decrypt(
@@ -60,7 +77,8 @@ class Suite:
         | ec.EllipticCurvePrivateKey
         | mlkem.MLKEM768PrivateKey
         | mlkem.MLKEM1024PrivateKey
-        | MLKEM768X25519PrivateKey,
+        | MLKEM768X25519PrivateKey
+        | MLKEM1024P384PrivateKey,
         info: Buffer | None = None,
     ) -> bytes: ...
 
@@ -71,7 +89,8 @@ def _encrypt_with_aad(
     | ec.EllipticCurvePublicKey
     | mlkem.MLKEM768PublicKey
     | mlkem.MLKEM1024PublicKey
-    | MLKEM768X25519PublicKey,
+    | MLKEM768X25519PublicKey
+    | MLKEM1024P384PublicKey,
     info: Buffer | None = None,
     aad: Buffer | None = None,
 ) -> bytes: ...
@@ -82,7 +101,8 @@ def _decrypt_with_aad(
     | ec.EllipticCurvePrivateKey
     | mlkem.MLKEM768PrivateKey
     | mlkem.MLKEM1024PrivateKey
-    | MLKEM768X25519PrivateKey,
+    | MLKEM768X25519PrivateKey
+    | MLKEM1024P384PrivateKey,
     info: Buffer | None = None,
     aad: Buffer | None = None,
 ) -> bytes: ...

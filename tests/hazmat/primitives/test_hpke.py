@@ -21,6 +21,8 @@ from cryptography.hazmat.primitives.hpke import (
     KEM,
     MLKEM768X25519PrivateKey,
     MLKEM768X25519PublicKey,
+    MLKEM1024P384PrivateKey,
+    MLKEM1024P384PublicKey,
     Suite,
 )
 
@@ -37,6 +39,18 @@ def _hybrid_from_xwing_seed(
     return MLKEM768X25519PrivateKey(mlkem_sk, x25519_sk)
 
 
+def _hybrid_from_mlkem1024_p384_seed(
+    seed: bytes,
+) -> MLKEM1024P384PrivateKey:
+    # MLKEM1024-P384 seed expansion: SHAKE256(seed, 112) -> (seed_PQ (64) ||
+    # seed_T (48)).
+    expanded = hashlib.shake_256(seed).digest(112)
+    mlkem_sk = mlkem.MLKEM1024PrivateKey.from_seed_bytes(expanded[:64])
+    p384_value = int.from_bytes(expanded[64:112], "big")
+    p384_sk = ec.derive_private_key(p384_value, ec.SECP384R1())
+    return MLKEM1024P384PrivateKey(mlkem_sk, p384_sk)
+
+
 X25519_ENC_LENGTH = 32
 P256_ENC_LENGTH = 65
 P384_ENC_LENGTH = 97
@@ -44,6 +58,7 @@ P521_ENC_LENGTH = 133
 MLKEM768_ENC_LENGTH = 1088
 MLKEM1024_ENC_LENGTH = 1568
 MLKEM768_X25519_ENC_LENGTH = 1120
+MLKEM1024_P384_ENC_LENGTH = 1665
 
 SUPPORTED_SUITES = list(
     itertools.product(
@@ -55,6 +70,7 @@ SUPPORTED_SUITES = list(
             KEM.MLKEM768,
             KEM.MLKEM1024,
             KEM.MLKEM768_X25519,
+            KEM.MLKEM1024_P384,
         ],
         [
             KDF.HKDF_SHA256,
@@ -96,13 +112,20 @@ class TestHPKE:
         ):
             pytest.skip("SHAKE256 not supported")
         if (
-            kem in [KEM.MLKEM768, KEM.MLKEM1024, KEM.MLKEM768_X25519]
+            kem
+            in [
+                KEM.MLKEM768,
+                KEM.MLKEM1024,
+                KEM.MLKEM768_X25519,
+                KEM.MLKEM1024_P384,
+            ]
             and not backend.mlkem_supported()
         ):
             pytest.skip("ML-KEM not supported")
-        if kem == KEM.MLKEM768_X25519 and not backend.hash_supported(
-            hashes.SHA3_256()
-        ):
+        if kem in [
+            KEM.MLKEM768_X25519,
+            KEM.MLKEM1024_P384,
+        ] and not backend.hash_supported(hashes.SHA3_256()):
             pytest.skip("SHA3-256 not supported")
         suite = Suite(kem, kdf, aead)
 
@@ -112,6 +135,7 @@ class TestHPKE:
             | mlkem.MLKEM768PrivateKey
             | mlkem.MLKEM1024PrivateKey
             | MLKEM768X25519PrivateKey
+            | MLKEM1024P384PrivateKey
         )
         if kem == KEM.X25519:
             sk_r = x25519.X25519PrivateKey.generate()
@@ -125,10 +149,15 @@ class TestHPKE:
             sk_r = mlkem.MLKEM768PrivateKey.generate()
         elif kem == KEM.MLKEM1024:
             sk_r = mlkem.MLKEM1024PrivateKey.generate()
-        else:
+        elif kem == KEM.MLKEM768_X25519:
             sk_r = MLKEM768X25519PrivateKey(
                 mlkem.MLKEM768PrivateKey.generate(),
                 x25519.X25519PrivateKey.generate(),
+            )
+        else:
+            sk_r = MLKEM1024P384PrivateKey(
+                mlkem.MLKEM1024PrivateKey.generate(),
+                ec.generate_private_key(ec.SECP384R1()),
             )
         pk_r = sk_r.public_key()
 
@@ -148,13 +177,20 @@ class TestHPKE:
         ):
             pytest.skip("SHAKE256 not supported")
         if (
-            kem in [KEM.MLKEM768, KEM.MLKEM1024, KEM.MLKEM768_X25519]
+            kem
+            in [
+                KEM.MLKEM768,
+                KEM.MLKEM1024,
+                KEM.MLKEM768_X25519,
+                KEM.MLKEM1024_P384,
+            ]
             and not backend.mlkem_supported()
         ):
             pytest.skip("ML-KEM not supported")
-        if kem == KEM.MLKEM768_X25519 and not backend.hash_supported(
-            hashes.SHA3_256()
-        ):
+        if kem in [
+            KEM.MLKEM768_X25519,
+            KEM.MLKEM1024_P384,
+        ] and not backend.hash_supported(hashes.SHA3_256()):
             pytest.skip("SHA3-256 not supported")
         suite = Suite(kem, kdf, aead)
 
@@ -164,6 +200,7 @@ class TestHPKE:
             | mlkem.MLKEM768PrivateKey
             | mlkem.MLKEM1024PrivateKey
             | MLKEM768X25519PrivateKey
+            | MLKEM1024P384PrivateKey
         )
         if kem == KEM.X25519:
             sk_r = x25519.X25519PrivateKey.generate()
@@ -177,10 +214,15 @@ class TestHPKE:
             sk_r = mlkem.MLKEM768PrivateKey.generate()
         elif kem == KEM.MLKEM1024:
             sk_r = mlkem.MLKEM1024PrivateKey.generate()
-        else:
+        elif kem == KEM.MLKEM768_X25519:
             sk_r = MLKEM768X25519PrivateKey(
                 mlkem.MLKEM768PrivateKey.generate(),
                 x25519.X25519PrivateKey.generate(),
+            )
+        else:
+            sk_r = MLKEM1024P384PrivateKey(
+                mlkem.MLKEM1024PrivateKey.generate(),
+                ec.generate_private_key(ec.SECP384R1()),
             )
         pk_r = sk_r.public_key()
 
@@ -610,6 +652,121 @@ class TestHPKE:
         with pytest.raises(TypeError):
             MLKEM768X25519PublicKey(mlkem_pk, mlkem_pk)  # type: ignore[arg-type]
 
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            backend.mlkem_supported()
+            and backend.hash_supported(hashes.SHA3_256())
+        ),
+        skip_message="Requires ML-KEM and SHA3-256 support",
+    )
+    def test_ciphertext_format_mlkem1024_p384(self):
+        suite = Suite(KEM.MLKEM1024_P384, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
+
+        mlkem_sk = mlkem.MLKEM1024PrivateKey.generate()
+        p384_sk = ec.generate_private_key(ec.SECP384R1())
+        pk_r = MLKEM1024P384PublicKey(
+            mlkem_sk.public_key(), p384_sk.public_key()
+        )
+
+        ciphertext = suite.encrypt(b"test", pk_r)
+
+        # enc (1665 bytes) + ct (4 bytes pt + 16 bytes tag)
+        assert len(ciphertext) == MLKEM1024_P384_ENC_LENGTH + 4 + 16
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            backend.mlkem_supported()
+            and backend.hash_supported(hashes.SHA3_256())
+        ),
+        skip_message="Requires ML-KEM and SHA3-256 support",
+    )
+    def test_wrong_key_mlkem1024_p384(self):
+        suite = Suite(KEM.MLKEM1024_P384, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
+        mlkem_sk = mlkem.MLKEM1024PrivateKey.generate()
+        p384_sk = ec.generate_private_key(ec.SECP384R1())
+        sk_r = MLKEM1024P384PrivateKey(mlkem_sk, p384_sk)
+        pk_r = MLKEM1024P384PublicKey(
+            mlkem_sk.public_key(), p384_sk.public_key()
+        )
+        ciphertext = suite.encrypt(b"test", pk_r)
+        # Correct key decrypts successfully.
+        assert suite.decrypt(ciphertext, sk_r) == b"test"
+
+        # Wrong key of correct type
+        sk_wrong = MLKEM1024P384PrivateKey(
+            mlkem.MLKEM1024PrivateKey.generate(),
+            ec.generate_private_key(ec.SECP384R1()),
+        )
+        with pytest.raises(InvalidTag):
+            suite.decrypt(ciphertext, sk_wrong)
+
+        # Wrong key type for encrypt
+        stray_p384_pk = ec.generate_private_key(ec.SECP384R1()).public_key()
+        with pytest.raises(TypeError):
+            suite.encrypt(b"test", stray_p384_pk)
+
+        # Wrong key type for decrypt
+        stray_p384_sk = ec.generate_private_key(ec.SECP384R1())
+        with pytest.raises(TypeError):
+            suite.decrypt(ciphertext, stray_p384_sk)
+
+        # ML-KEM-1024 key with hybrid suite should fail
+        mlkem1024_pk = mlkem.MLKEM1024PrivateKey.generate().public_key()
+        with pytest.raises(TypeError):
+            suite.encrypt(b"test", mlkem1024_pk)
+
+        mlkem1024_sk = mlkem.MLKEM1024PrivateKey.generate()
+        with pytest.raises(TypeError):
+            suite.decrypt(ciphertext, mlkem1024_sk)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mlkem_supported(),
+        skip_message="Requires ML-KEM support",
+    )
+    def test_mlkem1024_p384_wrong_kem_with_ec(self):
+        # Hybrid public key with EC-based KEM suite should fail
+        suite = Suite(KEM.P256, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
+        mlkem_sk = mlkem.MLKEM1024PrivateKey.generate()
+        p384_sk = ec.generate_private_key(ec.SECP384R1())
+        hybrid_pk = MLKEM1024P384PublicKey(
+            mlkem_sk.public_key(), p384_sk.public_key()
+        )
+        with pytest.raises(TypeError):
+            suite.encrypt(b"test", hybrid_pk)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mlkem_supported(),
+        skip_message="Requires ML-KEM support",
+    )
+    def test_mlkem1024_p384_constructor_type_errors(self):
+        mlkem_sk = mlkem.MLKEM1024PrivateKey.generate()
+        mlkem_pk = mlkem_sk.public_key()
+        p384_sk = ec.generate_private_key(ec.SECP384R1())
+        p384_pk = p384_sk.public_key()
+        # Wrong-curve EC keys for curve validation paths.
+        p256_sk = ec.generate_private_key(ec.SECP256R1())
+        p256_pk = p256_sk.public_key()
+
+        # Wrong type for mlkem_key in private constructor.
+        with pytest.raises(TypeError):
+            MLKEM1024P384PrivateKey(p384_sk, p384_sk)  # type: ignore[arg-type]
+        # Wrong type for p384_key in private constructor.
+        with pytest.raises(TypeError):
+            MLKEM1024P384PrivateKey(mlkem_sk, mlkem_sk)  # type: ignore[arg-type]
+        # Wrong EC curve for p384_key in private constructor.
+        with pytest.raises(TypeError):
+            MLKEM1024P384PrivateKey(mlkem_sk, p256_sk)
+
+        # Wrong type for mlkem_key in public constructor.
+        with pytest.raises(TypeError):
+            MLKEM1024P384PublicKey(p384_pk, p384_pk)  # type: ignore[arg-type]
+        # Wrong type for p384_key in public constructor.
+        with pytest.raises(TypeError):
+            MLKEM1024P384PublicKey(mlkem_pk, mlkem_pk)  # type: ignore[arg-type]
+        # Wrong EC curve for p384_key in public constructor.
+        with pytest.raises(TypeError):
+            MLKEM1024P384PublicKey(mlkem_pk, p256_pk)
+
     def test_empty_plaintext(self):
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)
 
@@ -758,6 +915,7 @@ class TestHPKE:
             0x0020: KEM.X25519,
             0x0041: KEM.MLKEM768,
             0x0042: KEM.MLKEM1024,
+            0x0051: KEM.MLKEM1024_P384,
             0x647A: KEM.MLKEM768_X25519,
         }
         kdf_map = {
@@ -796,13 +954,20 @@ class TestHPKE:
                 ):
                     continue
                 if (
-                    kem in [KEM.MLKEM768, KEM.MLKEM1024, KEM.MLKEM768_X25519]
+                    kem
+                    in [
+                        KEM.MLKEM768,
+                        KEM.MLKEM1024,
+                        KEM.MLKEM768_X25519,
+                        KEM.MLKEM1024_P384,
+                    ]
                     and not backend.mlkem_supported()
                 ):
                     continue
-                if kem == KEM.MLKEM768_X25519 and not backend.hash_supported(
-                    hashes.SHA3_256()
-                ):
+                if kem in [
+                    KEM.MLKEM768_X25519,
+                    KEM.MLKEM1024_P384,
+                ] and not backend.hash_supported(hashes.SHA3_256()):
                     continue
 
                 suite = Suite(kem, kdf, aead)
@@ -814,6 +979,7 @@ class TestHPKE:
                     | mlkem.MLKEM768PrivateKey
                     | mlkem.MLKEM1024PrivateKey
                     | MLKEM768X25519PrivateKey
+                    | MLKEM1024P384PrivateKey
                 )
                 if kem == KEM.X25519:
                     sk_r = x25519.X25519PrivateKey.from_private_bytes(
@@ -834,8 +1000,10 @@ class TestHPKE:
                     sk_r = mlkem.MLKEM1024PrivateKey.from_seed_bytes(
                         sk_r_bytes
                     )
-                else:
+                elif kem == KEM.MLKEM768_X25519:
                     sk_r = _hybrid_from_xwing_seed(sk_r_bytes)
+                else:
+                    sk_r = _hybrid_from_mlkem1024_p384_seed(sk_r_bytes)
 
                 enc = bytes.fromhex(vector["enc"])
                 info = bytes.fromhex(vector["info"])

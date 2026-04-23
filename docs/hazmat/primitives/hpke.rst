@@ -110,6 +110,13 @@ specifying auxiliary authenticated information.
         Public and private keys are :class:`MLKEM768X25519PublicKey` and
         :class:`MLKEM768X25519PrivateKey`.
 
+    .. attribute:: MLKEM1024_P384
+
+        A hybrid KEM combining ML-KEM-1024 with P-384. Post-quantum secure.
+        Only available on backends that support ML-KEM. Public and private
+        keys are :class:`MLKEM1024P384PublicKey` and
+        :class:`MLKEM1024P384PrivateKey`.
+
 .. class:: MLKEM768X25519PrivateKey(mlkem_key, x25519_key)
 
     .. versionadded:: 47.0.0
@@ -147,6 +154,44 @@ specifying auxiliary authenticated information.
 
     :param x25519_key: The X25519 public key component.
     :type x25519_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
+
+.. class:: MLKEM1024P384PrivateKey(mlkem_key, p384_key)
+
+    .. versionadded:: 47.0.0
+
+    A hybrid ML-KEM-1024 / P-384 private key for use with
+    :attr:`KEM.MLKEM1024_P384`. Combines an
+    :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM1024PrivateKey`
+    and an
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+    on the SECP384R1 curve into a single recipient key.
+
+    :param mlkem_key: The ML-KEM-1024 private key component.
+    :type mlkem_key: :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM1024PrivateKey`
+
+    :param p384_key: The P-384 private key component.
+    :type p384_key: :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+
+    .. method:: public_key()
+
+        :returns: :class:`MLKEM1024P384PublicKey`
+
+.. class:: MLKEM1024P384PublicKey(mlkem_key, p384_key)
+
+    .. versionadded:: 47.0.0
+
+    A hybrid ML-KEM-1024 / P-384 public key for use with
+    :attr:`KEM.MLKEM1024_P384`. Combines an
+    :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM1024PublicKey`
+    and an
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+    on the SECP384R1 curve into a single recipient key.
+
+    :param mlkem_key: The ML-KEM-1024 public key component.
+    :type mlkem_key: :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM1024PublicKey`
+
+    :param p384_key: The P-384 public key component.
+    :type p384_key: :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
 
 .. class:: KDF
 
