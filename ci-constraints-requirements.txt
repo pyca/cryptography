@@ -22,7 +22,7 @@ build==1.4.3 ; python_full_version >= '3.9'
     # via
     #   cryptography (pyproject.toml:dev)
     #   check-sdist
-certifi==2026.2.25
+certifi==2026.4.22
     # via
     #   cryptography (pyproject.toml:dev)
     #   requests
