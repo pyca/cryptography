@@ -147,7 +147,7 @@ packaging==26.1
     #   sphinx
 pathspec==0.12.1 ; python_full_version < '3.9'
     # via check-sdist
-pathspec==1.0.4 ; python_full_version >= '3.9'
+pathspec==1.1.0 ; python_full_version >= '3.9'
     # via
     #   check-sdist
     #   mypy
