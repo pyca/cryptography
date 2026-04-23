@@ -1070,28 +1070,34 @@ fn _decrypt_with_aad<'p>(
     suite.decrypt_inner(py, ciphertext, private_key, info, aad)
 }
 
-// MLKEM768-X25519 hybrid KEM (also known as X-Wing) used by HPKE KEM ID
-// 0x647A, specified in draft-connolly-cfrg-xwing-kem and draft-ietf-hpke-pq.
-// Only a constructor is exposed to Python; all encap/decap logic lives here.
+// MLKEM768-X25519 (HPKE KEM ID 0x647A, specified in
+// draft-connolly-cfrg-xwing-kem and draft-ietf-hpke-pq) and MLKEM1024-P384
+// (HPKE KEM ID 0x0051, specified in draft-ietf-hpke-pq) are both constructed
+// by the same QSF-style SHA3-256 combiner over (ss_PQ || ss_T || ct_T || ek_T
+// || Label), and only the recipient-key constructors are exposed to Python;
+// the encap/decap logic lives in this module.
 
 const MLKEM768_X25519_MLKEM_CT_LENGTH: usize = 1088;
+const MLKEM1024_P384_MLKEM_CT_LENGTH: usize = 1568;
 // `\./` + `/^\` — the X-Wing combiner label.
-const MLKEM768_X25519_LABEL: &[u8; 6] = b"\\.//^\\";
+const MLKEM768_X25519_LABEL: &[u8] = b"\\.//^\\";
+const MLKEM1024_P384_LABEL: &[u8] = b"MLKEM1024-P384";
 
-fn mlkem768_x25519_combine<'p>(
+fn hybrid_kem_combine<'p>(
     py: pyo3::Python<'p>,
-    ss_m: &[u8],
-    ss_x: &[u8],
-    ct_x: &[u8],
-    pk_x: &[u8],
+    ss_pq: &[u8],
+    ss_t: &[u8],
+    ct_t: &[u8],
+    ek_t: &[u8],
+    label: &[u8],
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let algorithm = types::SHA3_256.get(py)?.call0()?;
     let mut hash = Hash::new(py, &algorithm, None)?;
-    hash.update_bytes(ss_m)?;
-    hash.update_bytes(ss_x)?;
-    hash.update_bytes(ct_x)?;
-    hash.update_bytes(pk_x)?;
-    hash.update_bytes(MLKEM768_X25519_LABEL)?;
+    hash.update_bytes(ss_pq)?;
+    hash.update_bytes(ss_t)?;
+    hash.update_bytes(ct_t)?;
+    hash.update_bytes(ek_t)?;
+    hash.update_bytes(label)?;
     hash.finalize(py)
 }
 
@@ -1135,7 +1141,14 @@ impl MlKem768X25519PrivateKey {
             .call_method0(pyo3::intern!(py, "public_bytes_raw"))?
             .extract::<pyo3::Bound<'_, pyo3::types::PyBytes>>()?;
 
-        mlkem768_x25519_combine(py, ss_m.as_bytes(), ss_x.as_bytes(), ct_x, pk_x.as_bytes())
+        hybrid_kem_combine(
+            py,
+            ss_m.as_bytes(),
+            ss_x.as_bytes(),
+            ct_x,
+            pk_x.as_bytes(),
+            MLKEM768_X25519_LABEL,
+        )
     }
 }
 
@@ -1227,12 +1240,13 @@ impl MlKem768X25519PublicKey {
             .call_method0(pyo3::intern!(py, "public_bytes_raw"))?
             .extract::<pyo3::Bound<'_, pyo3::types::PyBytes>>()?;
 
-        let shared_secret = mlkem768_x25519_combine(
+        let shared_secret = hybrid_kem_combine(
             py,
             ss_m.as_bytes(),
             ss_x.as_bytes(),
             ct_x.as_bytes(),
             pk_x.as_bytes(),
+            MLKEM768_X25519_LABEL,
         )?;
 
         let ct_m_bytes = ct_m.as_bytes();
@@ -1276,30 +1290,6 @@ impl MlKem768X25519PublicKey {
             x25519_key,
         })
     }
-}
-
-// MLKEM1024-P384 hybrid KEM used by HPKE KEM ID 0x0051, specified in
-// draft-ietf-hpke-pq. Only a constructor is exposed to Python; all encap/decap
-// logic lives here.
-
-const MLKEM1024_P384_MLKEM_CT_LENGTH: usize = 1568;
-const MLKEM1024_P384_LABEL: &[u8; 14] = b"MLKEM1024-P384";
-
-fn mlkem1024_p384_combine<'p>(
-    py: pyo3::Python<'p>,
-    ss_pq: &[u8],
-    ss_t: &[u8],
-    ct_t: &[u8],
-    ek_t: &[u8],
-) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let algorithm = types::SHA3_256.get(py)?.call0()?;
-    let mut hash = Hash::new(py, &algorithm, None)?;
-    hash.update_bytes(ss_pq)?;
-    hash.update_bytes(ss_t)?;
-    hash.update_bytes(ct_t)?;
-    hash.update_bytes(ek_t)?;
-    hash.update_bytes(MLKEM1024_P384_LABEL)?;
-    hash.finalize(py)
 }
 
 fn serialize_p384_public_key<'p>(
@@ -1357,7 +1347,14 @@ impl MlKem1024P384PrivateKey {
         let ek_t_pk = p384_key.call_method0(pyo3::intern!(py, "public_key"))?;
         let ek_t = serialize_p384_public_key(py, &ek_t_pk)?;
 
-        mlkem1024_p384_combine(py, ss_pq.as_bytes(), ss_t.as_bytes(), ct_t, ek_t.as_bytes())
+        hybrid_kem_combine(
+            py,
+            ss_pq.as_bytes(),
+            ss_t.as_bytes(),
+            ct_t,
+            ek_t.as_bytes(),
+            MLKEM1024_P384_LABEL,
+        )
     }
 }
 
@@ -1448,12 +1445,13 @@ impl MlKem1024P384PublicKey {
             .extract::<pyo3::Bound<'_, pyo3::types::PyBytes>>()?;
         let ek_t = serialize_p384_public_key(py, p384_key)?;
 
-        let shared_secret = mlkem1024_p384_combine(
+        let shared_secret = hybrid_kem_combine(
             py,
             ss_pq.as_bytes(),
             ss_t.as_bytes(),
             ct_t.as_bytes(),
             ek_t.as_bytes(),
+            MLKEM1024_P384_LABEL,
         )?;
 
         let ct_pq_bytes = ct_pq.as_bytes();
