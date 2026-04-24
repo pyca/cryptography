@@ -41,18 +41,18 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.1.2"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.1"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.3.1"}}
-          # Latest commit on the BoringSSL main branch, as of Apr 23, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "b3a767e321751c7ada86b93f3528b288abf91914"}}
+          # Latest commit on the BoringSSL main branch, as of Apr 24, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "439e53783a5f3829769f84bdd70a46f218fa10ed"}}
           # Latest tag of AWS-LC main branch, as of Apr 14, 2026.
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.72.0"}}
-          # Latest commit on the OpenSSL master branch, as of Apr 22, 2026.
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "6e9f47be2e8ae71358a5805f826cd9c3e932e3de"}}
+          # Latest commit on the OpenSSL master branch, as of Apr 24, 2026.
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "d31fbbeded371bf30695727841b2e8da855c7ffa"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # noclippy due to: https://github.com/PyO3/pyo3/issues/5768
           - {VERSION: "3.14", NOXSESSION: "rust-noclippy,tests", RUST: "1.83.0"}
           - {VERSION: "3.14", NOXSESSION: "rust-noclippy,tests", RUST: "1.83.0", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.72.0"}}
-          - {VERSION: "3.14", NOXSESSION: "rust-noclippy,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "b3a767e321751c7ada86b93f3528b288abf91914"}}
+          - {VERSION: "3.14", NOXSESSION: "rust-noclippy,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "439e53783a5f3829769f84bdd70a46f218fa10ed"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.14", NOXSESSION: "tests-rust-debug"}
