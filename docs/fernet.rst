@@ -239,7 +239,7 @@ such functions; it is generally recommended to use
     ...     length=32,
     ...     iterations=1,
     ...     lanes=4,
-    ...     memory_cost=2^21
+    ...     memory_cost=2**21
     ... )
     >>> key = base64.urlsafe_b64encode(kdf.derive(password))
     >>> f = Fernet(key)
@@ -255,7 +255,7 @@ to derive the same key from the password in the future.
 The :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id` parameters
 in the above code example are based on the recommendations of `IRTF RFC 9106`_
 for general applications. For memory-constrained applications, the RFC
-recommends ``iterations=3`` and ``memory_cost=2^16``. See that document for
+recommends ``iterations=3`` and ``memory_cost=2**16``. See that document for
 more information.
 
 Implementation
