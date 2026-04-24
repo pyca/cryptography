@@ -235,7 +235,7 @@ such functions; it is generally recommended to use
     >>> password = b"password"
     >>> salt = os.urandom(16)
     >>> kdf = Argon2id(
-    ...     salt=salt,    
+    ...     salt=salt,
     ...     length=32,
     ...     iterations=1,
     ...     lanes=4,
