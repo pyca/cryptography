@@ -231,7 +231,7 @@ such functions; it is generally recommended to use
     >>> import os
     >>> from cryptography.fernet import Fernet
     >>> from cryptography.hazmat.primitives import hashes
-    >>> from cryptography.hazmat.primitives.kdf.pbkdf2 import Argon2id
+    >>> from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
     >>> password = b"password"
     >>> salt = os.urandom(16)
     >>> kdf = Argon2id(
