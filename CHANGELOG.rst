@@ -3,10 +3,8 @@ Changelog
 
 .. _v47-0-0:
 
-47.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+47.0.0 - 2026-04-24
+~~~~~~~~~~~~~~~~~~~
 
 * Support for Python 3.8 is deprecated and will be removed in the next
   ``cryptography`` release.
@@ -93,8 +91,14 @@ Changelog
   support for ML-DSA signing and verification with AWS-LC and BoringSSL.
 * Added new :doc:`/hazmat/asn1/index` module with support for declaratively
   defining custom ASN.1 types and encoding/decoding them.
+* Fixed compilation when using LibreSSL 4.3.0.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 4.0.0.
+* **Note:** This release adds support for post-quantum algorithms with AWS-LC
+  and BoringSSL. However, as we ship our wheels with OpenSSL, most users
+  will not have access to the new APIs yet. See
+  :doc:`/statements/state-of-openssl` for more information on OpenSSL support.
 
-.. v46-0-7:
+.. _v46-0-7:
 
 46.0.7 - 2026-04-07
 ~~~~~~~~~~~~~~~~~~~
