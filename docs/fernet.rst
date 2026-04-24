@@ -285,4 +285,4 @@ unsuitable for very large files at this time.
 
 .. _`Fernet`: https://github.com/fernet/spec/
 .. _`specification`: https://github.com/fernet/spec/blob/master/Spec.md
- .._`IRTF RFC 9106`: https://datatracker.ietf.org/doc/html/rfc9106#name-parameter-choice
+.. _`IRTF RFC 9106`: https://datatracker.ietf.org/doc/html/rfc9106#name-parameter-choice
