@@ -162,6 +162,7 @@ jobs:
           - {IMAGE: "sid", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-jammy", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-noble", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
+          - {IMAGE: "ubuntu-resolute", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "ubuntu-rolling", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "fedora", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "centos-stream9", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
