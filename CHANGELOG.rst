@@ -87,16 +87,24 @@ Changelog
   method for computing hashes.
 * Added :doc:`/hazmat/primitives/hpke` support implementing :rfc:`9180` for
   hybrid authenticated encryption.
+* Added new :doc:`/hazmat/primitives/asymmetric/mlkem` module with
+  support for ML-KEM key encapsulation with AWS-LC and BoringSSL.
+
+  * **Note:** Post-quantum algorithm support requires AWS-LC or BoringSSL.
+    As we ship our wheels with OpenSSL, most users will not have access to
+    these APIs yet. See :doc:`/statements/state-of-openssl` for more
+    information on OpenSSL support.
 * Added new :doc:`/hazmat/primitives/asymmetric/mldsa` module with
   support for ML-DSA signing and verification with AWS-LC and BoringSSL.
+
+  * **Note:** Post-quantum algorithm support requires AWS-LC or BoringSSL.
+    As we ship our wheels with OpenSSL, most users will not have access to
+    these APIs yet. See :doc:`/statements/state-of-openssl` for more
+    information on OpenSSL support.
 * Added new :doc:`/hazmat/asn1/index` module with support for declaratively
   defining custom ASN.1 types and encoding/decoding them.
-* Fixed compilation when using LibreSSL 4.3.0.
+* Fixed compilation when using LibreSSL 4.3.0 and OpenSSL 4.0.0.
 * Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 4.0.0.
-* **Note:** This release adds support for post-quantum algorithms with AWS-LC
-  and BoringSSL. However, as we ship our wheels with OpenSSL, most users
-  will not have access to the new APIs yet. See
-  :doc:`/statements/state-of-openssl` for more information on OpenSSL support.
 
 .. _v46-0-7:
 
