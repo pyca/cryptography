@@ -287,7 +287,7 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
         exclude:
-          # We only test latest Python on arm64. py39 won't work since there's no universal2 binary
+          # We only test latest Python on arm64.
           - PYTHON: {VERSION: "3.9", NOXSESSION: "tests"}
             RUNNER: {OS: 'macos-15', ARCH: 'arm64'}
     timeout-minutes: 15
