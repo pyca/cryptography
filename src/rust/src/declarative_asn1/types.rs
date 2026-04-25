@@ -473,7 +473,7 @@ impl Null {
 }
 
 #[derive(pyo3::FromPyObject)]
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+#[pyo3::pyclass(frozen, generic, module = "cryptography.hazmat.bindings._rust.asn1")]
 pub struct SetOf {
     pub(crate) inner: pyo3::Py<pyo3::types::PyList>,
 }
@@ -496,19 +496,6 @@ impl SetOf {
 
     fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
         Ok(format!("SetOf({})", self.inner.bind(py).repr()?))
-    }
-
-    // TODO: replace this manual `__class_getitem__` with
-    // `#[pyclass(generic)]`, which uses `pyo3::types::PyGenericAlias` to
-    // create `types.GenericAlias` objects.
-    #[classmethod]
-    fn __class_getitem__(
-        cls: &pyo3::Bound<'_, pyo3::types::PyType>,
-        py: pyo3::Python<'_>,
-        item: &pyo3::Bound<'_, pyo3::PyAny>,
-    ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
-        let generic_alias = crate::types::TYPES_GENERICALIAS.get(py)?;
-        Ok(generic_alias.call1((cls, item))?.unbind())
     }
 }
 
