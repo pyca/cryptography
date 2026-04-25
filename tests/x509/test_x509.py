@@ -573,11 +573,14 @@ class TestCertificateRevocationList:
         assert isinstance(public_key, rsa.RSAPublicKey)
         assert not crl.is_signature_valid(public_key)
 
-        crl = _load_cert(
+    def test_load_inner_outer_mismatch(self, backend):
+        data = load_vectors_from_file(
             os.path.join("x509", "custom", "crl_inner_outer_mismatch.der"),
-            x509.load_der_x509_crl,
+            lambda f: f.read(),
+            mode="rb",
         )
-        assert not crl.is_signature_valid(public_key)
+        with pytest.raises(ValueError, match="Inner and outer"):
+            x509.load_der_x509_crl(data)
 
     def test_verify_good(self, backend):
         crl = _load_cert(

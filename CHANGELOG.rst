@@ -10,6 +10,10 @@ Changelog
 
 * **BACKWARDS INCOMPATIBLE:** Support for Python 3.8 has been removed.
   ``cryptography`` now requires Python 3.9 or later.
+* **BACKWARDS INCOMPATIBLE:** Loading an X.509 CRL whose inner
+  ``TBSCertList.signature`` algorithm does not match the outer
+  ``signatureAlgorithm`` now raises ``ValueError``. Previously, such CRLs
+  were parsed successfully and only rejected during signature validation.
 
 
 .. _v47-0-0:

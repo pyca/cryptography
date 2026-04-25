@@ -43,6 +43,16 @@ pub(crate) fn load_der_x509_crl(
         ));
     }
 
+    if owned.borrow_dependent().tbs_cert_list.signature
+        != owned.borrow_dependent().signature_algorithm
+    {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "Inner and outer signature algorithms do not match. This is an invalid CRL.",
+            ),
+        ));
+    }
+
     Ok(CertificateRevocationList {
         owned,
         revoked_certs: pyo3::sync::PyOnceLock::new(),
@@ -412,12 +422,6 @@ impl CertificateRevocationList {
         py: pyo3::Python<'p>,
         public_key: pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<bool> {
-        if slf.owned.borrow_dependent().tbs_cert_list.signature
-            != slf.owned.borrow_dependent().signature_algorithm
-        {
-            return Ok(false);
-        };
-
         // Error on invalid public key -- below we treat any error as just
         // being an invalid signature.
         sign::identify_public_key_type(py, public_key.clone())?;
