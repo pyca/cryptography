@@ -102,7 +102,7 @@ nh3==0.3.4
     # via readme-renderer
 nox==2026.4.10
     # via cryptography (pyproject.toml:dev)
-packaging==26.1
+packaging==26.2
     # via
     #   build
     #   dependency-groups
