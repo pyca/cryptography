@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Support for Python 3.8 has been removed.
+  ``cryptography`` now requires Python 3.9 or later.
+
 
 .. _v47-0-0:
 

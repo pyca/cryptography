@@ -7,13 +7,9 @@ import datetime
 import re
 import sys
 import typing
+from typing import Annotated
 
 import pytest
-
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated
-else:
-    from typing import Annotated
 
 from cryptography import x509
 from cryptography.hazmat import asn1
@@ -25,7 +21,7 @@ U = typing.TypeVar("U")
 # to `sequence`, except that it also adds an __eq__ method.
 # We use it for the objects under test in order to easily
 # compare them with their expected values.
-def _comparable_dataclass(cls: typing.Type[U]) -> typing.Type[U]:
+def _comparable_dataclass(cls: type[U]) -> type[U]:
     if sys.version_info >= (3, 10):
         return dataclasses.dataclass(
             repr=False,
@@ -47,7 +43,7 @@ def _comparable_dataclass(cls: typing.Type[U]) -> typing.Type[U]:
 # Checks that the encoding-decoding roundtrip results
 # in the expected values and is consistent.
 def assert_roundtrips(
-    test_cases: typing.List[typing.Tuple[U, bytes]],
+    test_cases: list[tuple[U, bytes]],
 ) -> None:
     for obj, obj_bytes in test_cases:
         encoded = asn1.encode_der(obj)
@@ -392,7 +388,7 @@ class TestSequence:
         @asn1.sequence
         @_comparable_dataclass
         class Example:
-            a: typing.List[int]
+            a: list[int]
 
         assert_roundtrips(
             [
@@ -413,7 +409,7 @@ class TestSequence:
         @asn1.sequence
         @_comparable_dataclass
         class Example:
-            a: typing.List[MyType]
+            a: list[MyType]
 
         assert_roundtrips(
             [
@@ -543,7 +539,7 @@ class TestSequence:
             d: typing.Union[asn1.PrintableString, None]
             e: typing.Union[asn1.UTCTime, None]
             f: typing.Union[asn1.GeneralizedTime, None]
-            g: typing.Union[typing.List[int], None]
+            g: typing.Union[list[int], None]
             g2: typing.Union[asn1.SetOf[int], None]
             h: typing.Union[asn1.BitString, None]
             i: typing.Union[asn1.IA5String, None]
@@ -617,7 +613,7 @@ class TestSequence:
                 asn1.GeneralizedTime,
                 asn1.Default(asn1.GeneralizedTime(default_time)),
             ]
-            f: Annotated[typing.List[int], asn1.Default([1])]
+            f: Annotated[list[int], asn1.Default([1])]
             g: Annotated[
                 asn1.BitString,
                 asn1.Default(
@@ -1140,7 +1136,7 @@ class TestSize:
         @asn1.sequence
         @_comparable_dataclass
         class Example:
-            a: Annotated[typing.List[int], asn1.Size(min=1, max=4)]
+            a: Annotated[list[int], asn1.Size(min=1, max=4)]
 
         assert_roundtrips(
             [
@@ -1155,7 +1151,7 @@ class TestSize:
         @asn1.sequence
         @_comparable_dataclass
         class Example:
-            a: Annotated[typing.List[int], asn1.Size(min=1, max=None)]
+            a: Annotated[list[int], asn1.Size(min=1, max=None)]
 
         assert_roundtrips(
             [
@@ -1170,7 +1166,7 @@ class TestSize:
         @asn1.sequence
         @_comparable_dataclass
         class Example:
-            a: Annotated[typing.List[int], asn1.Size.exact(4)]
+            a: Annotated[list[int], asn1.Size.exact(4)]
 
         assert_roundtrips(
             [
@@ -1185,7 +1181,7 @@ class TestSize:
         @asn1.sequence
         @_comparable_dataclass
         class Example:
-            a: Annotated[typing.List[int], asn1.Size(min=1, max=2)]
+            a: Annotated[list[int], asn1.Size(min=1, max=2)]
 
         with pytest.raises(
             ValueError,
@@ -1205,7 +1201,7 @@ class TestSize:
         @asn1.sequence
         @_comparable_dataclass
         class Example:
-            a: Annotated[typing.List[int], asn1.Size(min=5, max=6)]
+            a: Annotated[list[int], asn1.Size(min=5, max=6)]
 
         with pytest.raises(
             ValueError,
@@ -1225,7 +1221,7 @@ class TestSize:
         @asn1.sequence
         @_comparable_dataclass
         class Example:
-            a: Annotated[typing.List[int], asn1.Size.exact(5)]
+            a: Annotated[list[int], asn1.Size.exact(5)]
 
         with pytest.raises(
             ValueError,

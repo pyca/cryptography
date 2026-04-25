@@ -6,13 +6,9 @@ import datetime
 import re
 import sys
 import typing
+from typing import Annotated
 
 import pytest
-
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated
-else:
-    from typing import Annotated
 
 from cryptography.hazmat import asn1
 
@@ -378,7 +374,7 @@ class TestSequenceAPI:
         set_of = declarative_asn1.Type.SetOf(ann_type)
         assert set_of._0 is ann_type
 
-        my_list: typing.List[int] = list()
+        my_list: list[int] = list()
         choice = declarative_asn1.Type.Choice(my_list)
         assert choice._0 is my_list
 

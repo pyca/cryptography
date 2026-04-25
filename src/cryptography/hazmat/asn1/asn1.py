@@ -14,33 +14,20 @@ if sys.version_info < (3, 11):
     import typing_extensions
 
     LiteralString = typing_extensions.LiteralString
-
-    # We use the `include_extras` parameter of `get_type_hints`, which was
-    # added in Python 3.9. This can be replaced by the `typing` version
-    # once the min version is >= 3.9
-    if sys.version_info < (3, 9):
-        get_type_hints = typing_extensions.get_type_hints
-        get_type_args = typing_extensions.get_args
-        get_type_origin = typing_extensions.get_origin
-        Annotated = typing_extensions.Annotated
-    else:
-        get_type_hints = typing.get_type_hints
-        get_type_args = typing.get_args
-        get_type_origin = typing.get_origin
-        Annotated = typing.Annotated
 else:
-    get_type_hints = typing.get_type_hints
-    get_type_args = typing.get_args
-    get_type_origin = typing.get_origin
-    Annotated = typing.Annotated
     LiteralString = typing.LiteralString
+
+from cryptography.hazmat.bindings._rust import declarative_asn1
+
+get_type_hints = typing.get_type_hints
+get_type_args = typing.get_args
+get_type_origin = typing.get_origin
+Annotated = typing.Annotated
 
 if sys.version_info < (3, 10):
     NoneType = type(None)
 else:
     NoneType = types.NoneType  # type: ignore[nonetype-type]
-
-from cryptography.hazmat.bindings._rust import declarative_asn1
 
 T = typing.TypeVar("T", covariant=True)
 U = typing.TypeVar("U")

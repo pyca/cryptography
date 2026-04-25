@@ -87,8 +87,8 @@ fn main() {
 
     // Enable abi3 mode if we're not using PyPy or the free-threaded build
     if !(python_impl == "PyPy" || is_free_threaded) {
-        // cp38 (Python 3.8 to help our grep when we some day drop 3.8 support)
-        build.define("Py_LIMITED_API", "0x030800f0");
+        // cp39 (Python 3.9 to help our grep when we some day drop 3.9 support)
+        build.define("Py_LIMITED_API", "0x030900f0");
     }
 
     if cfg!(windows) {

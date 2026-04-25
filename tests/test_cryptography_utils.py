@@ -18,7 +18,7 @@ class TestCachedProperty:
                 accesses.append(None)
                 return 14
 
-        accesses: typing.List[typing.Optional[T]] = []
+        accesses: list[typing.Optional[T]] = []
 
         assert T.t
         t = T()
@@ -40,7 +40,7 @@ class TestCachedProperty:
                 accesses.append(None)
                 return 14
 
-        accesses: typing.List[typing.Optional[T]] = []
+        accesses: list[typing.Optional[T]] = []
         t = T()
         with pytest.raises(AttributeError):
             t.t = None

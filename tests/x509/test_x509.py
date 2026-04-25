@@ -6019,7 +6019,7 @@ class TestOtherCertificate:
 
 class TestNameAttribute:
     EXPECTED_TYPES: typing.ClassVar[
-        typing.List[typing.Tuple[x509.ObjectIdentifier, _ASN1Type]]
+        list[tuple[x509.ObjectIdentifier, _ASN1Type]]
     ] = [
         (NameOID.COMMON_NAME, _ASN1Type.UTF8String),
         (NameOID.COUNTRY_NAME, _ASN1Type.PrintableString),

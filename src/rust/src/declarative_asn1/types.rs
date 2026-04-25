@@ -498,23 +498,17 @@ impl SetOf {
         Ok(format!("SetOf({})", self.inner.bind(py).repr()?))
     }
 
-    // TODO: Once the minimum Python version is >= 3.9, replace this manual
-    // `__class_getitem__` with `#[pyclass(generic)]`, which uses
-    // `pyo3::types::PyGenericAlias` to create `types.GenericAlias` objects.
+    // TODO: replace this manual `__class_getitem__` with
+    // `#[pyclass(generic)]`, which uses `pyo3::types::PyGenericAlias` to
+    // create `types.GenericAlias` objects.
     #[classmethod]
     fn __class_getitem__(
         cls: &pyo3::Bound<'_, pyo3::types::PyType>,
         py: pyo3::Python<'_>,
         item: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
-        // types.GenericAlias is available from Python 3.9+.
-        // Fall back to typing._GenericAlias for Python 3.8.
-        if let Ok(generic_alias) = crate::types::TYPES_GENERICALIAS.get(py) {
-            Ok(generic_alias.call1((cls, item))?.unbind())
-        } else {
-            let generic_alias = crate::types::TYPING_GENERICALIAS.get(py)?;
-            Ok(generic_alias.call1((cls, (item,)))?.unbind())
-        }
+        let generic_alias = crate::types::TYPES_GENERICALIAS.get(py)?;
+        Ok(generic_alias.call1((cls, item))?.unbind())
     }
 }
 

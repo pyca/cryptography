@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - {VERSION: "3.8", NOXSESSION: "flake"}
+          - {VERSION: "3.9", NOXSESSION: "flake"}
           - {VERSION: "3.14", NOXSESSION: "flake"}
           - {VERSION: "3.14", NOXSESSION: "rust"}
           - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "3.6.2"}}
@@ -129,7 +129,8 @@ jobs:
         with:
           # We have both the Python version from the matrix and from the
           # setup-python step because the latter doesn't distinguish
-          # pypy3-3.8 and pypy3-3.9 -- both of them show up as 7.3.11.
+          # different Python versions of PyPy that share the same PyPy
+          # version number.
           key: "${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ env.OPENSSL_HASH }}-0"
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
@@ -282,12 +283,12 @@ jobs:
           - {OS: 'macos-15-intel', ARCH: 'x86_64'}
           - {OS: 'macos-15', ARCH: 'arm64'}
         PYTHON:
-          - {VERSION: "3.8", NOXSESSION: "tests"}
+          - {VERSION: "3.9", NOXSESSION: "tests"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
         exclude:
-          # We only test latest Python on arm64. py38 won't work since there's no universal2 binary
-          - PYTHON: {VERSION: "3.8", NOXSESSION: "tests"}
+          # We only test latest Python on arm64. py39 won't work since there's no universal2 binary
+          - PYTHON: {VERSION: "3.9", NOXSESSION: "tests"}
             RUNNER: {OS: 'macos-15', ARCH: 'arm64'}
     timeout-minutes: 15
     steps:
@@ -351,7 +352,7 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32', RUNNER: 'windows-latest'}
           - {ARCH: 'x64', WINDOWS: 'win64', RUNNER: 'windows-latest'}
         PYTHON:
-          - {VERSION: "3.8", NOXSESSION: "tests-nocoverage"}
+          - {VERSION: "3.9", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
     timeout-minutes: 15

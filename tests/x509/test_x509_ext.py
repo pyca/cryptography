@@ -584,7 +584,7 @@ class TestPolicyInformation:
         assert list(pi.policy_qualifiers) == qual
 
     def test_repr(self):
-        pq: typing.List[typing.Union[str, x509.UserNotice]] = [
+        pq: list[typing.Union[str, x509.UserNotice]] = [
             "string",
             x509.UserNotice(None, "hi"),
         ]

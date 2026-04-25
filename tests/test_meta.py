@@ -6,12 +6,11 @@ import os
 import pkgutil
 import subprocess
 import sys
-import typing
 
 import cryptography
 
 
-def find_all_modules() -> typing.List[str]:
+def find_all_modules() -> list[str]:
     return sorted(
         mod
         for _, mod, _ in pkgutil.walk_packages(

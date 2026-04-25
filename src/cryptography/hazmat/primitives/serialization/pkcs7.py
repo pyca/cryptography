@@ -40,7 +40,7 @@ PKCS7PrivateKeyTypes = typing.Union[
 ]
 
 ContentEncryptionAlgorithm = typing.Union[
-    typing.Type[algorithms.AES128], typing.Type[algorithms.AES256]
+    type[algorithms.AES128], type[algorithms.AES256]
 ]
 
 

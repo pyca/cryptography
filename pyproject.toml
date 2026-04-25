@@ -5,8 +5,7 @@ requires = [
     "maturin>=1.9.4,<2,!=1.12.0",
 
     # Must be kept in sync with `project.dependencies`
-    "cffi>=1.14; platform_python_implementation != 'PyPy' and python_version == '3.8'",
-    "cffi>=2.0.0; platform_python_implementation != 'PyPy' and python_version >= '3.9'",
+    "cffi>=2.0.0; platform_python_implementation != 'PyPy'",
     # Used by cffi (which import distutils, and in Python 3.12, distutils has
     # been removed from the stdlib, but installing setuptools puts it back) as
     # well as our build.rs for the rust/cffi bridge.
@@ -36,7 +35,6 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -48,11 +46,10 @@ classifiers = [
     "Programming Language :: Python :: Free Threading :: 3 - Stable",
     "Topic :: Security :: Cryptography",
 ]
-requires-python = ">=3.8,!=3.9.0,!=3.9.1"
+requires-python = ">=3.9,!=3.9.0,!=3.9.1"
 dependencies = [
     # Must be kept in sync with `build-system.requires`
-    "cffi>=1.14; platform_python_implementation != 'PyPy' and python_version == '3.8'",
-    "cffi>=2.0.0; platform_python_implementation != 'PyPy' and python_version >= '3.9'",
+    "cffi>=2.0.0; platform_python_implementation != 'PyPy'",
     # Must be kept in sync with ./.github/requirements/build-requirements.{in,txt}
     "typing-extensions>=4.13.2; python_version < '3.11'",
 ]

@@ -66,7 +66,7 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - { VERSION: "cp311-cp311", ABI_VERSION: 'py38' }
+          - { VERSION: "cp311-cp311", ABI_VERSION: 'py39' }
           - { VERSION: "cp311-cp311", ABI_VERSION: 'py311' }
           - { VERSION: "cp314-cp314t" }
           - { VERSION: "pp311-pypy311_pp73" }
@@ -183,7 +183,7 @@ jobs:
       matrix:
         PYTHON:
           - VERSION: '3.11'
-            ABI_VERSION: 'py38'
+            ABI_VERSION: 'py39'
             # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.14/bin/python3'
@@ -316,7 +316,7 @@ jobs:
           - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc', RUNNER: 'windows-latest'}
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc', RUNNER: 'windows-latest'}
         PYTHON:
-          - {VERSION: "3.14", "ABI_VERSION": "py38"}
+          - {VERSION: "3.14", "ABI_VERSION": "py39"}
           - {VERSION: "3.14", "ABI_VERSION": "py311"}
           - {VERSION: "3.14t"}
           - {VERSION: "pypy-3.11"}
