@@ -81,9 +81,10 @@ def tests(session: nox.Session) -> None:
     else:
         install(session, install_spec)
 
-    # TODO: update to use `pip install --group`
-    pyproject_data = load_pyproject_toml()
-    install(session, *nox.project.dependency_groups(pyproject_data, *groups))
+    install(
+        session,
+        *itertools.chain.from_iterable(("--group", g) for g in groups),
+    )
 
     session.run("uv", "pip", "list")
 
@@ -120,14 +121,15 @@ def tests(session: nox.Session) -> None:
 
 @nox.session
 def docs(session: nox.Session) -> None:
-    # TODO: update to use `pip install --group`
-    pyproject_data = load_pyproject_toml()
     install(session, ".[ssh]")
     install(
         session,
-        *nox.project.dependency_groups(
-            pyproject_data, "docs", "docstest", "sdist"
-        ),
+        "--group",
+        "docs",
+        "--group",
+        "docstest",
+        "--group",
+        "sdist",
     )
 
     temp_dir = session.create_tmp()
@@ -190,11 +192,7 @@ def docs(session: nox.Session) -> None:
 
 @nox.session(name="docs-linkcheck")
 def docs_linkcheck(session: nox.Session) -> None:
-    # TODO: update to use `pip install --group`
-    pyproject_data = load_pyproject_toml()
-    install(
-        session, ".", *nox.project.dependency_groups(pyproject_data, "docs")
-    )
+    install(session, ".", "--group", "docs")
 
     session.run(
         "sphinx-build", "-W", "-b", "linkcheck", "docs", "docs/_build/html"
@@ -205,16 +203,18 @@ def docs_linkcheck(session: nox.Session) -> None:
 def flake(session: nox.Session) -> None:
     # TODO: Ideally there'd be a pip flag to install just our dependencies,
     # but not install us.
-    # TODO: update to use `pip install --group`
     pyproject_data = load_pyproject_toml()
     install(session, "-e", "vectors/")
     install(
         session,
         *pyproject_data["build-system"]["requires"],
         *pyproject_data["project"]["optional-dependencies"]["ssh"],
-        *nox.project.dependency_groups(
-            pyproject_data, "pep8test", "test", "nox"
-        ),
+        "--group",
+        "pep8test",
+        "--group",
+        "test",
+        "--group",
+        "nox",
     )
 
     session.run("ruff", "check")
