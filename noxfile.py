@@ -81,6 +81,7 @@ def tests(session: nox.Session) -> None:
     else:
         install(session, install_spec)
 
+    # TODO: update to use `pip install --group`
     pyproject_data = load_pyproject_toml()
     install(session, *nox.project.dependency_groups(pyproject_data, *groups))
 
@@ -119,6 +120,7 @@ def tests(session: nox.Session) -> None:
 
 @nox.session
 def docs(session: nox.Session) -> None:
+    # TODO: update to use `pip install --group`
     pyproject_data = load_pyproject_toml()
     install(session, ".[ssh]")
     install(
@@ -188,6 +190,7 @@ def docs(session: nox.Session) -> None:
 
 @nox.session(name="docs-linkcheck")
 def docs_linkcheck(session: nox.Session) -> None:
+    # TODO: update to use `pip install --group`
     pyproject_data = load_pyproject_toml()
     install(
         session, ".", *nox.project.dependency_groups(pyproject_data, "docs")
@@ -202,6 +205,7 @@ def docs_linkcheck(session: nox.Session) -> None:
 def flake(session: nox.Session) -> None:
     # TODO: Ideally there'd be a pip flag to install just our dependencies,
     # but not install us.
+    # TODO: update to use `pip install --group`
     pyproject_data = load_pyproject_toml()
     install(session, "-e", "vectors/")
     install(

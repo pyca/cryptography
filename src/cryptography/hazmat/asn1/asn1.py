@@ -19,11 +19,6 @@ else:
 
 from cryptography.hazmat.bindings._rust import declarative_asn1
 
-get_type_hints = typing.get_type_hints
-get_type_args = typing.get_args
-get_type_origin = typing.get_origin
-Annotated = typing.Annotated
-
 if sys.version_info < (3, 10):
     NoneType = type(None)
 else:
@@ -70,7 +65,7 @@ def _is_union(field_type: type) -> bool:
         if hasattr(types, "UnionType")
         else (typing.Union,)
     )
-    return get_type_origin(field_type) in union_types
+    return typing.get_origin(field_type) in union_types
 
 
 def _extract_annotation(
@@ -113,14 +108,14 @@ def _normalize_field_type(
 ) -> declarative_asn1.AnnotatedType:
     # Strip the `Annotated[...]` off, and populate the annotation
     # from it if it exists.
-    if get_type_origin(field_type) is Annotated:
+    if typing.get_origin(field_type) is typing.Annotated:
         annotation = _extract_annotation(field_type.__metadata__, field_name)
-        field_type, *_ = get_type_args(field_type)
+        field_type, *_ = typing.get_args(field_type)
     else:
         annotation = declarative_asn1.Annotation()
 
     if annotation.size is not None and (
-        get_type_origin(field_type) not in (builtins.list, SetOf)
+        typing.get_origin(field_type) not in (builtins.list, SetOf)
         and field_type
         not in (
             builtins.bytes,
@@ -160,7 +155,7 @@ def _normalize_field_type(
             typing.cast(declarative_asn1.Type, root_type), annotation
         )
     elif _is_union(field_type):
-        union_args = get_type_args(field_type)
+        union_args = typing.get_args(field_type)
         if len(union_args) == 2 and NoneType in union_args:
             # A Union between a type and None is an OPTIONAL
             optional_type = (
@@ -234,14 +229,14 @@ def _normalize_field_type(
                 else rust_choice_type
             )
 
-    elif get_type_origin(field_type) is builtins.list:
+    elif typing.get_origin(field_type) is builtins.list:
         inner_type = _normalize_field_type(
-            get_type_args(field_type)[0], field_name
+            typing.get_args(field_type)[0], field_name
         )
         rust_field_type = declarative_asn1.Type.SequenceOf(inner_type)
-    elif get_type_origin(field_type) is SetOf:
+    elif typing.get_origin(field_type) is SetOf:
         inner_type = _normalize_field_type(
-            get_type_args(field_type)[0], field_name
+            typing.get_args(field_type)[0], field_name
         )
         rust_field_type = declarative_asn1.Type.SetOf(inner_type)
     else:
@@ -255,19 +250,19 @@ def _normalize_field_type(
 def _type_to_variant(
     t: typing.Any, field_name: str
 ) -> declarative_asn1.Variant:
-    is_annotated = get_type_origin(t) is Annotated
-    inner_type = get_type_args(t)[0] if is_annotated else t
+    is_annotated = typing.get_origin(t) is typing.Annotated
+    inner_type = typing.get_args(t)[0] if is_annotated else t
 
     # Check if this is a Variant[T, Tag] type
-    if get_type_origin(inner_type) is Variant:
-        value_type, tag_literal = get_type_args(inner_type)
-        if get_type_origin(tag_literal) is not typing.Literal:
+    if typing.get_origin(inner_type) is Variant:
+        value_type, tag_literal = typing.get_args(inner_type)
+        if typing.get_origin(tag_literal) is not typing.Literal:
             raise TypeError(
                 "When using `asn1.Variant` in a type annotation, the second "
                 "type parameter must be a `typing.Literal` type. E.g: "
                 '`Variant[int, typing.Literal["MyInt"]]`.'
             )
-        tag_name = get_type_args(tag_literal)[0]
+        tag_name = typing.get_args(tag_literal)[0]
 
         if hasattr(value_type, "__asn1_root__"):
             rust_type = value_type.__asn1_root__
@@ -309,14 +304,14 @@ def _annotate_fields(
 
 
 def _register_asn1_sequence(cls: type[U]) -> None:
-    raw_fields = get_type_hints(cls, include_extras=True)
+    raw_fields = typing.get_type_hints(cls, include_extras=True)
     root = declarative_asn1.Type.Sequence(cls, _annotate_fields(raw_fields))
 
     setattr(cls, "__asn1_root__", root)
 
 
 def _register_asn1_set(cls: type[U]) -> None:
-    raw_fields = get_type_hints(cls, include_extras=True)
+    raw_fields = typing.get_type_hints(cls, include_extras=True)
     root = declarative_asn1.Type.Set(cls, _annotate_fields(raw_fields))
 
     setattr(cls, "__asn1_root__", root)
@@ -324,10 +319,8 @@ def _register_asn1_set(cls: type[U]) -> None:
 
 # Due to https://github.com/python/mypy/issues/19731, we can't define an alias
 # for `dataclass_transform` that conditionally points to `typing` or
-# `typing_extensions` depending on the Python version (like we do for
-# `get_type_hints`).
-# We work around it by making the whole decorated class conditional on the
-# Python version.
+# `typing_extensions` depending on the Python version. We work around it by
+# making the whole decorated class conditional on the Python version.
 if sys.version_info < (3, 11):
 
     @typing_extensions.dataclass_transform(kw_only_default=True)
