@@ -286,10 +286,6 @@ jobs:
           - {VERSION: "3.9", NOXSESSION: "tests"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
-        exclude:
-          # We only test latest Python on arm64.
-          - PYTHON: {VERSION: "3.9", NOXSESSION: "tests"}
-            RUNNER: {OS: 'macos-15', ARCH: 'arm64'}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
