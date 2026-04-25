@@ -183,38 +183,24 @@ jobs:
         PYTHON:
           - VERSION: '3.11'
             ABI_VERSION: 'py39'
-            # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.14/bin/python3'
-            DEPLOYMENT_TARGET: '10.13'
-            # This archflags is default, but let's be explicit
-            ARCHFLAGS: '-arch x86_64 -arch arm64'
-            # See https://github.com/pypa/cibuildwheel/blob/8602e864d4d22919d7d8eefb2346f2f89ea23252/cibuildwheel/platforms/macos.py#L317
-            # This will change in the future as we change the base Python we
-            # build against
-            _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
+            DEPLOYMENT_TARGET: '11.0'
+            ARCHFLAGS: '-arch arm64'
+            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
           - VERSION: '3.14'
             ABI_VERSION: 'py311'
-            # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.14/bin/python3'
-            DEPLOYMENT_TARGET: '10.13'
-            # This archflags is default, but let's be explicit
-            ARCHFLAGS: '-arch x86_64 -arch arm64'
-            # See https://github.com/pypa/cibuildwheel/blob/c8876b5c54a6c6b08de5d4b1586906b56203bd9e/cibuildwheel/macos.py#L257-L269
-            # This will change in the future as we change the base Python we
-            # build against
-            _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
+            DEPLOYMENT_TARGET: '11.0'
+            ARCHFLAGS: '-arch arm64'
+            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
           - VERSION: '3.14t'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/PythonT.framework/Versions/3.14/bin/python3.14t'
-            DEPLOYMENT_TARGET: '10.13'
-            # This archflags is default, but let's be explicit
-            ARCHFLAGS: '-arch x86_64 -arch arm64'
-            # See https://github.com/pypa/cibuildwheel/blob/c8876b5c54a6c6b08de5d4b1586906b56203bd9e/cibuildwheel/macos.py#L257-L269
-            # This will change in the future as we change the base Python we
-            # build against
-            _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
+            DEPLOYMENT_TARGET: '11.0'
+            ARCHFLAGS: '-arch arm64'
+            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
           - VERSION: 'pypy-3.11'
             BIN_PATH: 'pypy3'
             DEPLOYMENT_TARGET: '11.0'
@@ -265,8 +251,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
         with:
           toolchain: stable
-          # Add the x86-64 target in addition to the native arch (arm64)
-          target: x86_64-apple-darwin
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: cryptography-sdist
@@ -312,17 +296,12 @@ jobs:
       fail-fast: false
       matrix:
         WINDOWS:
-          - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc', RUNNER: 'windows-latest'}
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc', RUNNER: 'windows-latest'}
         PYTHON:
           - {VERSION: "3.14", "ABI_VERSION": "py39"}
           - {VERSION: "3.14", "ABI_VERSION": "py311"}
           - {VERSION: "3.14t"}
           - {VERSION: "pypy-3.11"}
-        exclude:
-          # We need to exclude the below configuration because there is no 32-bit pypy3
-          - WINDOWS: {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
-            PYTHON: {VERSION: "pypy-3.11"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - name: Get build-requirements.txt from repository

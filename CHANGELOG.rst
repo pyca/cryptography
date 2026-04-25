@@ -8,6 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Support for ``x86_64`` macOS has been removed.
+  We now only publish ``arm64`` wheels for macOS.
+* **BACKWARDS INCOMPATIBLE:** Support for 32-bit Windows has been removed.
+  Users should move to a 64-bit Python installation.
+
 .. _v48-0-0:
 
 48.0.0 - 2026-05-04
