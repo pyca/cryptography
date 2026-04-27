@@ -109,7 +109,7 @@ packaging==26.2
     #   nox
     #   pytest
     #   sphinx
-pathspec==1.1.0
+pathspec==1.1.1
     # via
     #   check-sdist
     #   mypy
