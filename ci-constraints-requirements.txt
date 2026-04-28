@@ -246,7 +246,7 @@ typing-extensions==4.15.0
     #   virtualenv
 urllib3==2.6.3
     # via requests
-uv==0.11.7
+uv==0.11.8
     # via nox
 virtualenv==21.2.4
     # via nox
