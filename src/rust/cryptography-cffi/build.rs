@@ -33,12 +33,13 @@ fn main() {
     // FIXME: maybe pyo3-build-config should provide a way to do this?
     let python = env::var("PYO3_PYTHON").unwrap_or_else(|_| "python3".to_string());
     println!("cargo:rerun-if-env-changed=PYO3_PYTHON");
-    println!("cargo:rerun-if-env-changed=USE_CONST_X509");
+    println!("cargo:rerun-if-env-changed=DEP_OPENSSL_BORINGSSL");
+    println!("cargo:rerun-if-env-changed=DEP_OPENSSL_AWSLC");
     println!("cargo:rerun-if-changed=../../_cffi_src/");
     println!("cargo:rerun-if-changed=../../cryptography/__about__.py");
     let output = Command::new(&python)
         .env("OUT_DIR", &out_dir)
-        .env("USE_CONST_X509", &use_const_x509)
+        .env("USE_CONST_X509", use_const_x509)
         .arg("../../_cffi_src/build_openssl.py")
         .output()
         .expect("failed to execute build_openssl.py");

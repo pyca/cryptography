@@ -37,7 +37,7 @@ typedef struct {
 """
 # BoringSSL and AWS-LC use const X509 (OpenSSL does not)
 if os.environ.get("USE_CONST_X509") == "1":
-    TYPES = TYPES.replace("X509 *", "const X509 *");
+    TYPES = TYPES.replace("X509 *", "const X509 *")
 
 
 FUNCTIONS = """
