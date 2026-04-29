@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import os
+
 INCLUDES = """
 #include <openssl/x509v3.h>
 """
@@ -33,6 +35,9 @@ typedef struct {
     ...;
 } GENERAL_NAME;
 """
+# BoringSSL and AWS-LC use const X509 (OpenSSL does not)
+if os.environ.get("USE_CONST_X509") == "1":
+    TYPES = TYPES.replace("X509 *", "const X509 *");
 
 
 FUNCTIONS = """
