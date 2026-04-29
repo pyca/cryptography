@@ -26,12 +26,14 @@ fn main() {
     let mut use_const_x509 = "";
     if env::var("DEP_OPENSSL_BORINGSSL").is_ok() || env::var("DEP_OPENSSL_AWSLC").is_ok() {
         use_const_x509 = "1";
+        println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_BORINGSSL_OR_AWSLC");
     }
 
     let out_dir = env::var("OUT_DIR").unwrap();
     // FIXME: maybe pyo3-build-config should provide a way to do this?
     let python = env::var("PYO3_PYTHON").unwrap_or_else(|_| "python3".to_string());
     println!("cargo:rerun-if-env-changed=PYO3_PYTHON");
+    println!("cargo:rerun-if-env-changed=USE_CONST_X509");
     println!("cargo:rerun-if-changed=../../_cffi_src/");
     println!("cargo:rerun-if-changed=../../cryptography/__about__.py");
     let output = Command::new(&python)
