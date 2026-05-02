@@ -14,8 +14,8 @@ TYPES = f"""
 typedef ... CONF;
 
 typedef struct {{
-    {os.environ.get("CONST_X509") or "X509"} *issuer_cert;
-    {os.environ.get("CONST_X509") or "X509"} *subject_cert;
+    {"const X509" if os.environ.get("USE_CONST_X509") else "X509"} *issuer_cert;
+    {"const X509" if os.environ.get("USE_CONST_X509") else "X509"} *subject_cert;
     ...;
 }} X509V3_CTX;
 
