@@ -375,24 +375,15 @@ impl BaseArgon2 {
             self.memory_cost,
             output,
         )
-        .map_err(|e| {
-            // ERR_R_MALLOC_FAILURE = 256, PROV_R_INVALID_MEMORY_SIZE = 235.
-            // OpenSSL's argon2 provider raises one or both when it can't
-            // allocate the memory matrix. In theory other init issues
-            // (e.g. PROV_R_INVALID_THREAD_POOL_SIZE on builds without
-            // thread-pool support) can also occur, but we strictly map
-            // these reason codes to MemoryError.
-            if e.errors()
-                .iter()
-                .any(|err| matches!(err.reason_code(), 256 | 235))
-            {
-                CryptographyError::from(pyo3::exceptions::PyMemoryError::new_err(format!(
-                    "Not enough memory to derive key. These parameters require {}KiB of memory.",
-                    self.memory_cost
-                )))
-            } else {
-                CryptographyError::from(e)
-            }
+        .map_err(|_| {
+            // In theory other init issues (e.g. PROV_R_INVALID_THREAD_POOL_SIZE
+            // on builds without thread-pool support) can also occur here, but
+            // in practice failures from OpenSSL's argon2 provider at this point
+            // are memory-allocation failures, so we strictly map to MemoryError.
+            CryptographyError::from(pyo3::exceptions::PyMemoryError::new_err(format!(
+                "Not enough memory to derive key. These parameters require {}KiB of memory.",
+                self.memory_cost
+            )))
         })?;
 
         Ok(self.length)
