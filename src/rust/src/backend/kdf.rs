@@ -375,11 +375,21 @@ impl BaseArgon2 {
             self.memory_cost,
             output,
         )
-        .map_err(|_| {
-            CryptographyError::from(pyo3::exceptions::PyMemoryError::new_err(format!(
-                "Not enough memory to derive key. These parameters require {}KiB of memory.",
-                self.memory_cost
-            )))
+        .map_err(|e| {
+            // ERR_R_MALLOC_FAILURE = 256, PROV_R_INVALID_MEMORY_SIZE = 235.
+            // OpenSSL's argon2 provider raises one or both when it can't
+            // allocate the memory matrix.
+            if e.errors()
+                .iter()
+                .any(|err| matches!(err.reason_code(), 256 | 235))
+            {
+                CryptographyError::from(pyo3::exceptions::PyMemoryError::new_err(format!(
+                    "Not enough memory to derive key. These parameters require {}KiB of memory.",
+                    self.memory_cost
+                )))
+            } else {
+                CryptographyError::from(e)
+            }
         })?;
 
         Ok(self.length)
