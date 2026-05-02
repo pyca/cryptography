@@ -992,7 +992,7 @@ class WycheproofTest:
 
 def load_wycheproof_tests(wycheproof: str, test_file: str, subdir: str):
     path = os.path.join(wycheproof, subdir, test_file)
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
         for group in data.pop("testGroups"):
             cases = group.pop("tests")
