@@ -378,7 +378,10 @@ impl BaseArgon2 {
         .map_err(|e| {
             // ERR_R_MALLOC_FAILURE = 256, PROV_R_INVALID_MEMORY_SIZE = 235.
             // OpenSSL's argon2 provider raises one or both when it can't
-            // allocate the memory matrix.
+            // allocate the memory matrix. In theory other init issues
+            // (e.g. PROV_R_INVALID_THREAD_POOL_SIZE on builds without
+            // thread-pool support) can also occur, but we strictly map
+            // these reason codes to MemoryError.
             if e.errors()
                 .iter()
                 .any(|err| matches!(err.reason_code(), 256 | 235))
