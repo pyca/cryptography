@@ -10,14 +10,14 @@ INCLUDES = """
 #include <openssl/x509v3.h>
 """
 
-TYPES = """
+TYPES = f"""
 typedef ... CONF;
 
-typedef struct {
-    X509 *issuer_cert;
-    X509 *subject_cert;
+typedef struct {{
+    {os.environ.get("CONST_X509") or "X509"} *issuer_cert;
+    {os.environ.get("CONST_X509") or "X509"} *subject_cert;
     ...;
-} X509V3_CTX;
+}} X509V3_CTX;
 
 static const int GEN_EMAIL;
 static const int GEN_DNS;
@@ -26,19 +26,15 @@ static const int GEN_URI;
 typedef ... GENERAL_NAMES;
 
 /* Only include the one union element used by pyOpenSSL. */
-typedef struct {
+typedef struct {{
     int type;
-    union {
+    union {{
         ASN1_IA5STRING *ia5;   /* rfc822Name, dNSName, */
                                /*   uniformResourceIdentifier */
-    } d;
+    }} d;
     ...;
-} GENERAL_NAME;
+}} GENERAL_NAME;
 """
-# BoringSSL and AWS-LC use const X509 (OpenSSL does not)
-if os.environ.get("USE_CONST_X509") == "1":
-    TYPES = TYPES.replace("X509 *", "const X509 *")
-
 
 FUNCTIONS = """
 void X509V3_set_ctx(X509V3_CTX *, X509 *, X509 *, X509_REQ *, X509_CRL *, int);

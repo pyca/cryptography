@@ -23,23 +23,19 @@ fn main() {
     }
 
     // BoringSSL and AWS-LC use const X509 (OpenSSL does not)
-    let mut use_const_x509 = "";
-    if env::var("DEP_OPENSSL_BORINGSSL").is_ok() || env::var("DEP_OPENSSL_AWSLC").is_ok() {
-        use_const_x509 = "1";
-        println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_BORINGSSL_OR_AWSLC");
-    }
+    let is_boringssl = env::var("DEP_OPENSSL_BORINGSSL").is_ok();
+    let is_awslc = env::var("DEP_OPENSSL_AWSLC").is_ok();
+    let const_x509 = if is_boringssl || is_awslc { "const X509" } else { "" };
 
     let out_dir = env::var("OUT_DIR").unwrap();
     // FIXME: maybe pyo3-build-config should provide a way to do this?
     let python = env::var("PYO3_PYTHON").unwrap_or_else(|_| "python3".to_string());
     println!("cargo:rerun-if-env-changed=PYO3_PYTHON");
-    println!("cargo:rerun-if-env-changed=DEP_OPENSSL_BORINGSSL");
-    println!("cargo:rerun-if-env-changed=DEP_OPENSSL_AWSLC");
     println!("cargo:rerun-if-changed=../../_cffi_src/");
     println!("cargo:rerun-if-changed=../../cryptography/__about__.py");
     let output = Command::new(&python)
         .env("OUT_DIR", &out_dir)
-        .env("USE_CONST_X509", use_const_x509)
+        .env("CONST_X509", const_x509)
         .arg("../../_cffi_src/build_openssl.py")
         .output()
         .expect("failed to execute build_openssl.py");
