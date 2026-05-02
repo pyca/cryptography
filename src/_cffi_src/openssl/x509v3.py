@@ -10,12 +10,14 @@ INCLUDES = """
 #include <openssl/x509v3.h>
 """
 
+USE_CONST_X509 = bool(os.environ.get("USE_CONST_X509"))
+
 TYPES = f"""
 typedef ... CONF;
 
 typedef struct {{
-    {"const X509" if os.environ.get("USE_CONST_X509") else "X509"} *issuer_cert;
-    {"const X509" if os.environ.get("USE_CONST_X509") else "X509"} *subject_cert;
+    {"const X509" if USE_CONST_X509 else "X509"} *issuer_cert;
+    {"const X509" if USE_CONST_X509 else "X509"} *subject_cert;
     ...;
 }} X509V3_CTX;
 
