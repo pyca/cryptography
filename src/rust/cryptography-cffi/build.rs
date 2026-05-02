@@ -23,9 +23,7 @@ fn main() {
     }
 
     // BoringSSL and AWS-LC use const X509 (OpenSSL does not)
-    let is_boringssl = env::var("DEP_OPENSSL_BORINGSSL").is_ok();
-    let is_awslc = env::var("DEP_OPENSSL_AWSLC").is_ok();
-    let const_x509 = if is_boringssl || is_awslc { "const X509" } else { "" };
+    let const_x509 = if env::var("DEP_OPENSSL_BORINGSSL").is_ok() || env::var("DEP_OPENSSL_AWSLC").is_ok() { "const X509" } else { "" };
 
     let out_dir = env::var("OUT_DIR").unwrap();
     // FIXME: maybe pyo3-build-config should provide a way to do this?
