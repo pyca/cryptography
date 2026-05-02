@@ -180,8 +180,12 @@ fn private_key_from_pkey<'p>(
         openssl::pkey::Id::DHX => Ok(crate::backend::dh::private_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
-        #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
-        id if cryptography_openssl::mlkem::is_mlkem_pkey_type(id) => {
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        _ if cryptography_openssl::mlkem::is_mlkem_pkey(pkey) => {
             match cryptography_openssl::mlkem::MlKemVariant::from_pkey(pkey) {
                 cryptography_openssl::mlkem::MlKemVariant::MlKem768 => {
                     Ok(crate::backend::mlkem::mlkem768_private_key_from_pkey(pkey)
@@ -374,8 +378,12 @@ fn public_key_from_pkey<'p>(
         openssl::pkey::Id::DHX => Ok(crate::backend::dh::public_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
-        #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
-        id if cryptography_openssl::mlkem::is_mlkem_pkey_type(id) => {
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        _ if cryptography_openssl::mlkem::is_mlkem_pkey(pkey) => {
             match cryptography_openssl::mlkem::MlKemVariant::from_pkey(pkey) {
                 cryptography_openssl::mlkem::MlKemVariant::MlKem768 => {
                     Ok(crate::backend::mlkem::mlkem768_public_key_from_pkey(pkey)

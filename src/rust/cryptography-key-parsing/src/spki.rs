@@ -109,7 +109,11 @@ pub fn parse_public_key(data: &[u8]) -> KeyParsingResult<ParsedPublicKey> {
 
             Ok(ParsedPublicKey::Pkey(openssl::pkey::PKey::from_dh(dh)?))
         }
-        #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
         AlgorithmParameters::MlKem768 => Ok(ParsedPublicKey::Pkey(
             cryptography_openssl::mlkem::new_raw_public_key(
                 cryptography_openssl::mlkem::MlKemVariant::MlKem768,
@@ -117,7 +121,11 @@ pub fn parse_public_key(data: &[u8]) -> KeyParsingResult<ParsedPublicKey> {
             )
             .map_err(|_| KeyParsingError::InvalidKey)?,
         )),
-        #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
         AlgorithmParameters::MlKem1024 => Ok(ParsedPublicKey::Pkey(
             cryptography_openssl::mlkem::new_raw_public_key(
                 cryptography_openssl::mlkem::MlKemVariant::MlKem1024,
@@ -276,8 +284,12 @@ pub fn serialize_public_key(
 
             (params, pub_key_der)
         }
-        #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
-        id if cryptography_openssl::mlkem::is_mlkem_pkey_type(id) => {
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        _ if cryptography_openssl::mlkem::is_mlkem_pkey(pkey) => {
             let raw_bytes = pkey.raw_public_key()?;
             let params = match cryptography_openssl::mlkem::MlKemVariant::from_pkey(pkey) {
                 cryptography_openssl::mlkem::MlKemVariant::MlKem768 => {
