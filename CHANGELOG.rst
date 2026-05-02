@@ -14,6 +14,11 @@ Changelog
   ``TBSCertList.signature`` algorithm does not match the outer
   ``signatureAlgorithm`` now raises ``ValueError``. Previously, such CRLs
   were parsed successfully and only rejected during signature validation.
+* :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id`,
+  :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2i`, and
+  :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2d` now raise
+  ``MemoryError`` when there is insufficient memory to derive a key with the
+  chosen ``memory_cost`` parameter, instead of an opaque ``InternalError``.
 
 
 .. _v47-0-0:

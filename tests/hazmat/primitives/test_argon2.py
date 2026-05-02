@@ -140,6 +140,19 @@ class TestArgon2:
                 memory_cost=memory_cost,
             )
 
+    def test_argon2_malloc_failure(self, clazz, backend):
+        # memory_cost is in KiB, so 2**32 - 1 KiB is ~4 TiB. This should
+        # fail to allocate on any reasonable system.
+        argon2 = clazz(
+            salt=b"salt" * 2,
+            length=32,
+            iterations=1,
+            lanes=1,
+            memory_cost=2**32 - 1,
+        )
+        with pytest.raises(MemoryError):
+            argon2.derive(b"password")
+
     def test_already_finalized(self, clazz, backend):
         argon2id = clazz(
             salt=b"salt" * 2, length=32, iterations=1, lanes=1, memory_cost=32

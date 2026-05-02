@@ -375,7 +375,12 @@ impl BaseArgon2 {
             self.memory_cost,
             output,
         )
-        .map_err(CryptographyError::from)?;
+        .map_err(|_| {
+            CryptographyError::from(pyo3::exceptions::PyMemoryError::new_err(format!(
+                "Not enough memory to derive key. These parameters require {}KiB of memory.",
+                self.memory_cost
+            )))
+        })?;
 
         Ok(self.length)
     }
