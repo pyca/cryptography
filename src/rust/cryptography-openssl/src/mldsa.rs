@@ -27,28 +27,29 @@ pub enum MlDsaVariant {
 #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
 pub const PKEY_ID: openssl::pkey::Id = openssl::pkey::Id::from_raw(ffi::NID_PQDSA);
 
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
-pub fn is_mldsa_pkey_type(id: openssl::pkey::Id) -> bool {
-    cfg_if::cfg_if! {
-        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
-            let raw = id.as_raw();
-            raw == ffi::NID_ML_DSA_44 || raw == ffi::NID_ML_DSA_65 || raw == ffi::NID_ML_DSA_87
-        } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
-            id == PKEY_ID
-        }
-    }
-}
-
-/// Check whether a PKey is an ML-DSA key for vanilla OpenSSL 3.5+.
+/// Check whether a PKey is an ML-DSA key.
 ///
 /// OpenSSL 3.x provider-based keys return -1 from EVP_PKEY_get_id(), so
 /// NID-based matching does not work. `PKeyRef::is_a` queries by algorithm
 /// name instead.
-#[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+#[cfg(any(
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC,
+    CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+))]
 pub fn is_mldsa_pkey<T>(pkey: &openssl::pkey::PKeyRef<T>) -> bool {
-    pkey.is_a(openssl::pkey::KeyType::ML_DSA_44)
-        || pkey.is_a(openssl::pkey::KeyType::ML_DSA_65)
-        || pkey.is_a(openssl::pkey::KeyType::ML_DSA_87)
+    cfg_if::cfg_if! {
+        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+            let raw = pkey.id().as_raw();
+            raw == ffi::NID_ML_DSA_44 || raw == ffi::NID_ML_DSA_65 || raw == ffi::NID_ML_DSA_87
+        } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
+            pkey.id() == PKEY_ID
+        } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
+            pkey.is_a(openssl::pkey::KeyType::ML_DSA_44)
+                || pkey.is_a(openssl::pkey::KeyType::ML_DSA_65)
+                || pkey.is_a(openssl::pkey::KeyType::ML_DSA_87)
+        }
+    }
 }
 
 impl MlDsaVariant {
@@ -85,11 +86,14 @@ impl MlDsaVariant {
             } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
                 // Provider-based keys in OpenSSL 3.x return -1 from
                 // EVP_PKEY_get_id(), so we must use name-based lookup.
-                match pkey {
-                    p if p.is_a(openssl::pkey::KeyType::ML_DSA_44) => MlDsaVariant::MlDsa44,
-                    p if p.is_a(openssl::pkey::KeyType::ML_DSA_65) => MlDsaVariant::MlDsa65,
-                    p if p.is_a(openssl::pkey::KeyType::ML_DSA_87) => MlDsaVariant::MlDsa87,
-                    _ => panic!("Unsupported ML-DSA variant"),
+                if pkey.is_a(openssl::pkey::KeyType::ML_DSA_44) {
+                    MlDsaVariant::MlDsa44
+                } else if pkey.is_a(openssl::pkey::KeyType::ML_DSA_65) {
+                    MlDsaVariant::MlDsa65
+                } else if pkey.is_a(openssl::pkey::KeyType::ML_DSA_87) {
+                    MlDsaVariant::MlDsa87
+                } else {
+                    panic!("Unsupported ML-DSA variant")
                 }
             }
         }

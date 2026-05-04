@@ -585,23 +585,11 @@ pub fn serialize_private_key(key: &ParsedPrivateKey) -> crate::KeySerializationR
                 };
                 (params, private_key_der)
             }
-            #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
-            id if cryptography_openssl::mldsa::is_mldsa_pkey_type(id) => {
-                let private_key_der = asn1::write_single(&mldsa_seed_from_pkey(pkey)?)?;
-                let params = match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
-                    cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => {
-                        AlgorithmParameters::MlDsa44
-                    }
-                    cryptography_openssl::mldsa::MlDsaVariant::MlDsa65 => {
-                        AlgorithmParameters::MlDsa65
-                    }
-                    cryptography_openssl::mldsa::MlDsaVariant::MlDsa87 => {
-                        AlgorithmParameters::MlDsa87
-                    }
-                };
-                (params, private_key_der)
-            }
-            #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+            #[cfg(any(
+                CRYPTOGRAPHY_IS_BORINGSSL,
+                CRYPTOGRAPHY_IS_AWSLC,
+                CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+            ))]
             _ if cryptography_openssl::mldsa::is_mldsa_pkey(pkey) => {
                 let private_key_der = asn1::write_single(&mldsa_seed_from_pkey(pkey)?)?;
                 let params = match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
