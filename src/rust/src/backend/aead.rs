@@ -1135,6 +1135,7 @@ impl AesSiv {
         data: CffiBuf<'_>,
         associated_data: Option<pyo3::Bound<'p, pyo3::types::PyList>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        check_length(data.as_bytes())?;
         Ok(pyo3::types::PyBytes::new_with(
             py,
             data.as_bytes().len() + self.ctx.tag_len,
