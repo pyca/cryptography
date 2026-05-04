@@ -45,8 +45,8 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "aef0e2df53d9b2357c2e7ee7e93fc869214a00b4"}}
           # Latest tag of AWS-LC main branch, as of Apr 29, 2026.
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v1.72.1"}}
-          # Latest commit on the OpenSSL master branch, as of May 03, 2026.
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3ecae5960a16317c0195c01a9e640ea884c16871"}}
+          # Latest commit on the OpenSSL master branch, as of May 04, 2026.
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "fa442ca7b5f21b11a864868dd89bb9728caccb19"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # noclippy due to: https://github.com/PyO3/pyo3/issues/5768
