@@ -155,8 +155,8 @@ fn derive_private_key(
     let private_value = utils::py_int_to_bn(py, py_private_value)?;
 
     let mut point = openssl::ec::EcPoint::new(&curve)?;
-    let bn_ctx = openssl::bn::BigNumContext::new()?;
-    point.mul_generator(&curve, &private_value, &bn_ctx)?;
+    let mut bn_ctx = openssl::bn::BigNumContext::new()?;
+    point.mul_generator2(&curve, &private_value, &mut bn_ctx)?;
     let ec = openssl::ec::EcKey::from_private_components(&curve, &private_value, &point)
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid EC key"))?;
     ec.check_key().map_err(|_| {
@@ -555,7 +555,7 @@ impl EllipticCurvePrivateNumbers {
 
         let mut bn_ctx = openssl::bn::BigNumContext::new()?;
         let mut expected_pub = openssl::ec::EcPoint::new(&curve)?;
-        expected_pub.mul_generator(&curve, &private_value, &bn_ctx)?;
+        expected_pub.mul_generator2(&curve, &private_value, &mut bn_ctx)?;
         if !expected_pub.eq(&curve, public_key.public_key(), &mut bn_ctx)? {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("Invalid EC key."),

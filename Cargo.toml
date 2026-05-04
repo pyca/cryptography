@@ -27,8 +27,8 @@ cc = "1.2.61"
 cfg-if = "1"
 foreign-types = "0.3"
 foreign-types-shared = "0.1"
-openssl = "0.10.77"
-openssl-sys = "0.9.111"
+openssl = "0.10.79"
+openssl-sys = "0.9.115"
 pem = { version = "3", default-features = false }
 pyo3 = { version = "0.28", features = ["abi3"] }
 pyo3-build-config = { version = "0.28" }
