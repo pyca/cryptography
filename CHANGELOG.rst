@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v49-0-0:
+
+49.0.0 - `main`_
+~~~~~~~~~~~~~~~~
+
+.. note:: This version is not yet released and is under active development.
+
 .. _v48-0-0:
 
 48.0.0 - 2026-05-04

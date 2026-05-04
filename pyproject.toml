@@ -15,7 +15,7 @@ build-backend = "maturin"
 
 [project]
 name = "cryptography"
-version = "48.0.0"
+version = "49.0.0.dev1"
 authors = [
     { name = "The Python Cryptographic Authority and individual contributors", email = "cryptography-dev@python.org" },
 ]
@@ -75,7 +75,7 @@ dev = [
 ]
 nox = ["nox[uv] >=2024.04.15"]
 test = [
-    "cryptography_vectors==48.0.0",
+    "cryptography_vectors",
     "pytest >=7.4.0",
     "pytest-benchmark >=4.0",
     "pytest-cov >=2.10.1",
