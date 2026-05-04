@@ -443,7 +443,7 @@ fn hash_oid_py_hash(
         None => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err(format!(
                 "Signature algorithm OID: {} not recognized",
-                &oid
+                oid
             )),
         )),
     }
