@@ -80,10 +80,12 @@ impl MlKemVariant {
             } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
                 // Provider-based keys in OpenSSL 3.x return -1 from
                 // EVP_PKEY_get_id(), so we must use name-based lookup.
-                match pkey {
-                    p if p.is_a(openssl::pkey::KeyType::ML_KEM_768) => MlKemVariant::MlKem768,
-                    p if p.is_a(openssl::pkey::KeyType::ML_KEM_1024) => MlKemVariant::MlKem1024,
-                    _ => panic!("Unsupported ML-KEM variant"),
+                if pkey.is_a(openssl::pkey::KeyType::ML_KEM_768) {
+                    MlKemVariant::MlKem768
+                } else if pkey.is_a(openssl::pkey::KeyType::ML_KEM_1024) {
+                    MlKemVariant::MlKem1024
+                } else {
+                    panic!("Unsupported ML-KEM variant")
                 }
             }
         }
