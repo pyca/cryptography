@@ -54,8 +54,8 @@ pub enum MlDsaPrivateKey {
 /// seed-format PKCS#8 when the key was created from a seed. BoringSSL's
 /// private key serialization also emits RFC 9935 seed-format PKCS#8.
 ///
-/// For vanilla OpenSSL 3.5+, uses EVP_PKEY_get_params with the "seed" OSSL_PARAM
-/// directly, since OpenSSL 3.5's PKCS#8 inner encoding differs from BoringSSL/AWS-LC.
+/// For vanilla OpenSSL 3.5+, calls `PKey::seed_into` to read the seed
+/// directly, avoiding the PKCS#8 round-trip.
 #[cfg(any(
     CRYPTOGRAPHY_IS_BORINGSSL,
     CRYPTOGRAPHY_IS_AWSLC,
