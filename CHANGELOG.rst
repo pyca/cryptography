@@ -14,6 +14,14 @@ Changelog
   ``TBSCertList.signature`` algorithm does not match the outer
   ``signatureAlgorithm`` now raises ``ValueError``. Previously, such CRLs
   were parsed successfully and only rejected during signature validation.
+* Added support for :doc:`/hazmat/primitives/asymmetric/mlkem` and
+  :doc:`/hazmat/primitives/asymmetric/mldsa` when using OpenSSL 3.5.0 or
+  later, in addition to the existing AWS-LC and BoringSSL support. This means
+  post-quantum algorithms are now available to users of our wheels.
+
+  * **Note:** Going forward, we do not guarantee that all functionality
+    in ``cryptography`` will be available when building against
+    OpenSSL. See :doc:`/statements/state-of-openssl` for more information.
 
 
 .. _v47-0-0:
