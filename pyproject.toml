@@ -200,4 +200,6 @@ git-only = [
     "ci-constraints-requirements.txt",
     ".gitattributes",
     ".gitignore",
+    "AGENTS.md",
+    "CLAUDE.md",
 ]
