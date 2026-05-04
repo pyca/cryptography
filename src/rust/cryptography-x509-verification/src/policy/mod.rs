@@ -519,7 +519,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         {
             return Err(ValidationError::new(ValidationErrorKind::Other(format!(
                 "Forbidden public key algorithm: {:?}",
-                &issuer.certificate().tbs_cert.spki.algorithm
+                issuer.certificate().tbs_cert.spki.algorithm
             ))));
         }
 
@@ -535,7 +535,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         {
             return Err(ValidationError::new(ValidationErrorKind::Other(format!(
                 "Forbidden signature algorithm: {:?}",
-                &child.certificate().signature_alg
+                child.certificate().signature_alg
             ))));
         }
 
