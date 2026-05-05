@@ -44,14 +44,18 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install uv
+        run: pip install -c ./cryptography-pr/ci-constraints-requirements.txt uv
       - name: Create virtualenv (base)
         run: |
-          python -m venv .venv-base
-          .venv-base/bin/pip install -v -c ./cryptography-base/ci-constraints-requirements.txt "./cryptography-base[test]" ./cryptography-base/vectors/
+          uv venv .venv-base
+          . .venv-base/bin/activate
+          uv pip install -v -c ./cryptography-base/ci-constraints-requirements.txt ./cryptography-base ./cryptography-base/vectors/ --group ./cryptography-base/pyproject.toml:test
       - name: Create virtualenv (PR)
         run: |
-          python -m venv .venv-pr
-          .venv-pr/bin/pip install -v -c ./cryptography-pr/ci-constraints-requirements.txt "./cryptography-pr[test]" ./cryptography-pr/vectors/
+          uv venv .venv-pr
+          . .venv-pr/bin/activate
+          uv pip install -v -c ./cryptography-pr/ci-constraints-requirements.txt ./cryptography-pr ./cryptography-pr/vectors/ --group ./cryptography-pr/pyproject.toml:test
 
       - name: Run benchmarks (base)
         run: .venv-base/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-base.json --x509-limbo-root=x509-limbo/

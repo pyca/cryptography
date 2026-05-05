@@ -707,7 +707,10 @@ mod tests {
         oid: ObjectIdentifier,
         critical: bool,
         ext: &T,
-    ) -> Vec<u8> {
+    ) -> Vec<u8>
+    where
+        <T as SimpleAsn1Writable>::Error: std::fmt::Debug,
+    {
         let ext_value = asn1::write_single(ext).unwrap();
         let ext = Extension {
             extn_id: oid,

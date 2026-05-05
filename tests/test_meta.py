@@ -6,12 +6,13 @@ import os
 import pkgutil
 import subprocess
 import sys
-import typing
+
+import pytest
 
 import cryptography
 
 
-def find_all_modules() -> typing.List[str]:
+def find_all_modules() -> list[str]:
     return sorted(
         mod
         for _, mod, _ in pkgutil.walk_packages(
@@ -21,7 +22,8 @@ def find_all_modules() -> typing.List[str]:
     )
 
 
-def test_no_circular_imports(subtests):
+@pytest.mark.parametrize("module", find_all_modules())
+def test_no_circular_imports(module):
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(sys.path)
 
@@ -32,7 +34,5 @@ def test_no_circular_imports(subtests):
     env.pop("COV_CORE_DATAFILE", None)
     env.pop("COV_CORE_SOURCE", None)
 
-    for module in find_all_modules():
-        with subtests.test():
-            argv = [sys.executable, "-c", f"__import__({module!r})"]
-            subprocess.check_call(argv, env=env)
+    argv = [sys.executable, "-c", f"__import__({module!r})"]
+    subprocess.check_call(argv, env=env)

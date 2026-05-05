@@ -85,3 +85,7 @@ class TestPBKDF2HMAC:
         kdf.derive_into(b"password", buf)
         with pytest.raises(AlreadyFinalized):
             kdf.derive_into(b"password2", buf)
+
+    def test_zero_iterations(self, backend):
+        with pytest.raises(ValueError, match="iterations must be"):
+            PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 0, backend)

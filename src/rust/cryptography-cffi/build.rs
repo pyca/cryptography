@@ -22,6 +22,14 @@ fn main() {
         }
     }
 
+    // BoringSSL and AWS-LC use const X509 (OpenSSL does not)
+    let use_const_x509 =
+        if env::var("DEP_OPENSSL_BORINGSSL").is_ok() || env::var("DEP_OPENSSL_AWSLC").is_ok() {
+            "1"
+        } else {
+            ""
+        };
+
     let out_dir = env::var("OUT_DIR").unwrap();
     // FIXME: maybe pyo3-build-config should provide a way to do this?
     let python = env::var("PYO3_PYTHON").unwrap_or_else(|_| "python3".to_string());
@@ -30,6 +38,7 @@ fn main() {
     println!("cargo:rerun-if-changed=../../cryptography/__about__.py");
     let output = Command::new(&python)
         .env("OUT_DIR", &out_dir)
+        .env("USE_CONST_X509", use_const_x509)
         .arg("../../_cffi_src/build_openssl.py")
         .output()
         .expect("failed to execute build_openssl.py");
@@ -87,8 +96,8 @@ fn main() {
 
     // Enable abi3 mode if we're not using PyPy or the free-threaded build
     if !(python_impl == "PyPy" || is_free_threaded) {
-        // cp38 (Python 3.8 to help our grep when we some day drop 3.8 support)
-        build.define("Py_LIMITED_API", "0x030800f0");
+        // cp39 (Python 3.9 to help our grep when we some day drop 3.9 support)
+        build.define("Py_LIMITED_API", "0x030900f0");
     }
 
     if cfg!(windows) {

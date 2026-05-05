@@ -8,7 +8,7 @@ use pyo3::types::PyAnyMethods;
 use crate::asn1::encode_der_data;
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::{types, x509};
+use crate::x509;
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
 pub(crate) struct DHPrivateKey {
@@ -220,11 +220,11 @@ impl DHPrivateKey {
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
-        format: &pyo3::Bound<'p, pyo3::PyAny>,
+        encoding: crate::serialization::Encoding,
+        format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !format.is(&types::PRIVATE_FORMAT_PKCS8.get(py)?) {
+        if format != crate::serialization::PrivateFormat::PKCS8 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "DH private keys support only PKCS8 serialization",
@@ -266,10 +266,10 @@ impl DHPublicKey {
     fn public_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
-        format: &pyo3::Bound<'p, pyo3::PyAny>,
+        encoding: crate::serialization::Encoding,
+        format: crate::serialization::PublicFormat,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !format.is(&types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?) {
+        if format != crate::serialization::PublicFormat::SubjectPublicKeyInfo {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "DH public keys support only SubjectPublicKeyInfo serialization",
@@ -359,13 +359,11 @@ impl DHParameters {
     fn parameter_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-        encoding: pyo3::Bound<'p, pyo3::PyAny>,
-        format: pyo3::Bound<'p, pyo3::PyAny>,
+        encoding: crate::serialization::Encoding,
+        format: crate::serialization::ParameterFormat,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if !format.is(&types::PARAMETER_FORMAT_PKCS3.get(py)?) {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("Only PKCS3 serialization is supported"),
-            ));
+        match format {
+            crate::serialization::ParameterFormat::PKCS3 => {}
         }
 
         let p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(self.dh.prime_p())?;
@@ -386,7 +384,7 @@ impl DHParameters {
         } else {
             "X9.42 DH PARAMETERS"
         };
-        encode_der_data(py, tag.to_string(), data, &encoding)
+        encode_der_data(py, tag.to_string(), data, encoding)
     }
 }
 

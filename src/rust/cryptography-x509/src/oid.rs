@@ -3,7 +3,7 @@
 // for complete details.
 
 // X.509v3 extensions
-pub const EXTENSION_REQUEST: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 14);
+pub const EXTENSION_REQUEST_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 1, 9, 14);
 pub const MS_EXTENSION_REQUEST: asn1::ObjectIdentifier =
     asn1::oid!(1, 3, 6, 1, 4, 1, 311, 2, 1, 14);
 pub const MS_CERTIFICATE_TEMPLATE: asn1::ObjectIdentifier =
@@ -19,6 +19,7 @@ pub const SUBJECT_INFORMATION_ACCESS_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 3, 6, 1, 5, 5, 7, 1, 11);
 pub const TLS_FEATURE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 1, 24);
 pub const CP_CPS_URI_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 2, 1);
+pub const OCSP_BASIC_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 1);
 pub const CP_USER_NOTICE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 2, 2);
 pub const NONCE_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 2);
 pub const OCSP_NO_CHECK_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 6, 1, 5, 5, 7, 48, 1, 5);
@@ -57,19 +58,6 @@ pub const EC_SECP384R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 34);
 pub const EC_SECP521R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 35);
 
 pub const EC_SECP256K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 10);
-
-pub const EC_SECT233R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 27);
-pub const EC_SECT283R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 17);
-pub const EC_SECT409R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 37);
-pub const EC_SECT571R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 39);
-
-pub const EC_SECT163R2: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 15);
-
-pub const EC_SECT163K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 1);
-pub const EC_SECT233K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 26);
-pub const EC_SECT283K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 16);
-pub const EC_SECT409K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 36);
-pub const EC_SECT571K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 38);
 
 pub const EC_BRAINPOOLP256R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 36, 3, 3, 2, 8, 1, 1, 7);
 pub const EC_BRAINPOOLP384R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 36, 3, 3, 2, 8, 1, 1, 11);
@@ -120,6 +108,13 @@ pub const X448_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 101, 111);
 
 pub const ED25519_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 101, 112);
 pub const ED448_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 101, 113);
+
+pub const ML_DSA_44_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 17);
+pub const ML_DSA_65_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 18);
+pub const ML_DSA_87_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 19);
+
+pub const ML_KEM_768_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 4, 2);
+pub const ML_KEM_1024_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 4, 3);
 
 // Hashes
 pub const SHA1_OID: asn1::ObjectIdentifier = asn1::oid!(1, 3, 14, 3, 2, 26);

@@ -6,13 +6,9 @@ import datetime
 import re
 import sys
 import typing
+from typing import Annotated
 
 import pytest
-
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated
-else:
-    from typing import Annotated
 
 from cryptography.hazmat import asn1
 
@@ -49,13 +45,13 @@ class TestTypesAPI:
         dt = datetime.datetime(
             2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
         )
-        assert asn1.UtcTime(dt).as_datetime() == dt
+        assert asn1.UTCTime(dt).as_datetime() == dt
 
     def test_repr_utc_time(self) -> None:
         dt = datetime.datetime(
             2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
         )
-        assert repr(asn1.UtcTime(dt)) == f"UtcTime({dt!r})"
+        assert repr(asn1.UTCTime(dt)) == f"UTCTime({dt!r})"
 
     def test_invalid_utc_time(self) -> None:
         with pytest.raises(
@@ -63,19 +59,19 @@ class TestTypesAPI:
             match="cannot initialize with naive datetime object",
         ):
             # We don't allow naive datetime objects
-            asn1.UtcTime(datetime.datetime(2000, 1, 1, 10, 10, 10))
+            asn1.UTCTime(datetime.datetime(2000, 1, 1, 10, 10, 10))
 
-        with pytest.raises(ValueError, match="invalid UtcTime"):
-            # UtcTime does not support dates before 1950
-            asn1.UtcTime(
+        with pytest.raises(ValueError, match="invalid UTCTime"):
+            # UTCTime does not support dates before 1950
+            asn1.UTCTime(
                 datetime.datetime(
                     1940, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
                 )
             )
 
-        with pytest.raises(ValueError, match="invalid UtcTime"):
-            # UtcTime does not support dates after 2050
-            asn1.UtcTime(
+        with pytest.raises(ValueError, match="invalid UTCTime"):
+            # UTCTime does not support dates after 2050
+            asn1.UTCTime(
                 datetime.datetime(
                     2090, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
                 )
@@ -83,10 +79,10 @@ class TestTypesAPI:
 
         with pytest.raises(
             ValueError,
-            match="invalid UtcTime: fractional seconds are not supported",
+            match="invalid UTCTime: fractional seconds are not supported",
         ):
-            # UtcTime does not support fractional seconds
-            asn1.UtcTime(
+            # UTCTime does not support fractional seconds
+            asn1.UTCTime(
                 datetime.datetime(
                     2020,
                     1,
@@ -147,6 +143,13 @@ class TestTypesAPI:
         ):
             # Padding bits have to be zero
             asn1.BitString(data=b"\x01\x02\x03", padding_bits=2)
+
+    def test_setof_as_list(self) -> None:
+        my_list = [1, 2, 3]
+        assert asn1.SetOf(my_list).as_list() == my_list
+
+    def test_repr_setof(self) -> None:
+        assert repr(asn1.SetOf([1, 2, 3])) == "SetOf([1, 2, 3])"
 
     def test_repr_null(self) -> None:
         assert repr(asn1.Null()) == "Null()"
@@ -230,7 +233,7 @@ class TestSequenceAPI:
     def test_fail_unsupported_size_annotation(self) -> None:
         with pytest.raises(
             TypeError,
-            match="field invalid has a SIZE annotation, but SIZE "
+            match="field 'invalid' has a SIZE annotation, but SIZE "
             "annotations are only supported for fields of types: ",
         ):
 
@@ -355,6 +358,10 @@ class TestSequenceAPI:
         assert seq._0 is type(None)
         assert seq._1 == {}
 
+        set = declarative_asn1.Type.Set(type(None), {})
+        assert set._0 is type(None)
+        assert set._1 == {}
+
         ann_type = declarative_asn1.AnnotatedType(
             seq, declarative_asn1.Annotation()
         )
@@ -364,7 +371,10 @@ class TestSequenceAPI:
         seq_of = declarative_asn1.Type.SequenceOf(ann_type)
         assert seq_of._0 is ann_type
 
-        my_list: typing.List[int] = list()
+        set_of = declarative_asn1.Type.SetOf(ann_type)
+        assert set_of._0 is ann_type
+
+        my_list: list[int] = list()
         choice = declarative_asn1.Type.Choice(my_list)
         assert choice._0 is my_list
 
@@ -413,3 +423,107 @@ class TestSequenceAPI:
                         asn1.Implicit(1),
                     ],
                 ]
+
+    def test_fail_tlv_with_implicit_encoding(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "field 'invalid' has an IMPLICIT annotation, but IMPLICIT "
+                "annotations are not supported for TLV types."
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[asn1.TLV, asn1.Implicit(0)]
+
+    def test_fail_tlv_with_default_encoding(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "field 'invalid' has a DEFAULT annotation, but DEFAULT "
+                "annotations are not supported for TLV types."
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: Annotated[asn1.TLV, asn1.Default(value=9)]
+
+    def test_fail_optional_tlv(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "optional TLV types (`TLV | None`) are not currently supported"
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: typing.Union[asn1.TLV, None]
+
+
+class TestSetAPI:
+    def test_fail_unsupported_field(self) -> None:
+        class Unsupported:
+            foo: int
+
+        with pytest.raises(TypeError, match="cannot handle type"):
+
+            @asn1.set
+            class Example:
+                foo: Unsupported
+
+    def test_fail_init_incorrect_field_name(self) -> None:
+        @asn1.set
+        class Example:
+            foo: int
+
+        with pytest.raises(
+            TypeError, match="got an unexpected keyword argument 'bar'"
+        ):
+            Example(bar=3)  # type: ignore[call-arg]
+
+    def test_fail_init_missing_field_name(self) -> None:
+        @asn1.set
+        class Example:
+            foo: int
+
+        expected_err = (
+            "missing 1 required keyword-only argument: 'foo'"
+            if sys.version_info >= (3, 10)
+            else "missing 1 required positional argument: 'foo'"
+        )
+
+        with pytest.raises(TypeError, match=expected_err):
+            Example()  # type: ignore[call-arg]
+
+    def test_fail_positional_field_initialization(self) -> None:
+        @asn1.set
+        class Example:
+            foo: int
+
+        # The kw-only init is only enforced in Python >= 3.10, which is
+        # when the parameter `kw_only` for `dataclasses.datalass` was
+        # added.
+        if sys.version_info < (3, 10):
+            assert Example(5).foo == 5  # type: ignore[misc]
+        else:
+            with pytest.raises(
+                TypeError,
+                match="takes 1 positional argument but 2 were given",
+            ):
+                Example(5)  # type: ignore[misc]
+
+    def test_fail_malformed_root_type(self) -> None:
+        @asn1.set
+        class Invalid:
+            foo: int
+
+        setattr(Invalid, "__asn1_root__", int)
+
+        with pytest.raises(TypeError, match="unsupported root type"):
+
+            @asn1.set
+            class Example:
+                foo: Invalid

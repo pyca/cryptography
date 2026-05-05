@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::oid::OCSP_BASIC_OID;
 use crate::{certificate, common, crl, extensions, name, ocsp_req};
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
@@ -13,8 +14,15 @@ pub struct OCSPResponse<'a> {
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct ResponseBytes<'a> {
-    pub response_type: asn1::ObjectIdentifier,
-    pub response: asn1::OctetStringEncoded<BasicOCSPResponse<'a>>,
+    pub response_type: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
+    #[defined_by(response_type)]
+    pub response: Response<'a>,
+}
+
+#[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite)]
+pub enum Response<'a> {
+    #[defined_by(OCSP_BASIC_OID)]
+    Basic(asn1::OctetStringEncoded<BasicOCSPResponse<'a>>),
 }
 
 pub type OCSPCerts<'a> = Option<

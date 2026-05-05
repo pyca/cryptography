@@ -7,6 +7,12 @@ from __future__ import annotations
 import abc
 
 from cryptography import utils
+from cryptography.hazmat.bindings._rust import Encoding as Encoding
+from cryptography.hazmat.bindings._rust import (
+    ParameterFormat as ParameterFormat,
+)
+from cryptography.hazmat.bindings._rust import PrivateFormat as PrivateFormat
+from cryptography.hazmat.bindings._rust import PublicFormat as PublicFormat
 from cryptography.hazmat.primitives.hashes import HashAlgorithm
 
 # This exists to break an import cycle. These classes are normally accessible
@@ -16,44 +22,6 @@ from cryptography.hazmat.primitives.hashes import HashAlgorithm
 class PBES(utils.Enum):
     PBESv1SHA1And3KeyTripleDESCBC = "PBESv1 using SHA1 and 3-Key TripleDES"
     PBESv2SHA256AndAES256CBC = "PBESv2 using SHA256 PBKDF2 and AES256 CBC"
-
-
-class Encoding(utils.Enum):
-    PEM = "PEM"
-    DER = "DER"
-    OpenSSH = "OpenSSH"
-    Raw = "Raw"
-    X962 = "ANSI X9.62"
-    SMIME = "S/MIME"
-
-
-class PrivateFormat(utils.Enum):
-    PKCS8 = "PKCS8"
-    TraditionalOpenSSL = "TraditionalOpenSSL"
-    Raw = "Raw"
-    OpenSSH = "OpenSSH"
-    PKCS12 = "PKCS12"
-
-    def encryption_builder(self) -> KeySerializationEncryptionBuilder:
-        if self not in (PrivateFormat.OpenSSH, PrivateFormat.PKCS12):
-            raise ValueError(
-                "encryption_builder only supported with PrivateFormat.OpenSSH"
-                " and PrivateFormat.PKCS12"
-            )
-        return KeySerializationEncryptionBuilder(self)
-
-
-class PublicFormat(utils.Enum):
-    SubjectPublicKeyInfo = "X.509 subjectPublicKeyInfo with PKCS#1"
-    PKCS1 = "Raw PKCS#1"
-    OpenSSH = "OpenSSH"
-    Raw = "Raw"
-    CompressedPoint = "X9.62 Compressed Point"
-    UncompressedPoint = "X9.62 Uncompressed Point"
-
-
-class ParameterFormat(utils.Enum):
-    PKCS3 = "PKCS3"
 
 
 class KeySerializationEncryption(metaclass=abc.ABCMeta):

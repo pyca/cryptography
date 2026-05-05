@@ -6,7 +6,7 @@
 import base64
 import binascii
 import os
-from typing import List, Tuple
+import sys
 
 import pytest
 
@@ -24,7 +24,7 @@ from tests.utils import (
 
 variants = (Argon2d, Argon2i, Argon2id)
 
-vectors: List[Tuple[type, dict]] = []
+vectors: list[tuple[type, dict]] = []
 for clazz in variants:
     vectors.extend(
         (clazz, x)
@@ -140,6 +140,27 @@ class TestArgon2:
                 lanes=lanes,
                 memory_cost=memory_cost,
             )
+
+    @pytest.mark.skipif(
+        sys.platform == "darwin",
+        reason=(
+            "macOS overcommits the 4 TiB virtual reservation, then the "
+            "subsequent memset triggers an OOM-kill before MemoryError "
+            "can be raised."
+        ),
+    )
+    def test_argon2_malloc_failure(self, clazz, backend):
+        # memory_cost is in KiB, so 2**32 - 1 KiB is ~4 TiB. This should
+        # fail to allocate on any reasonable system.
+        argon2 = clazz(
+            salt=b"salt" * 2,
+            length=32,
+            iterations=1,
+            lanes=1,
+            memory_cost=2**32 - 1,
+        )
+        with pytest.raises(MemoryError):
+            argon2.derive(b"password")
 
     def test_already_finalized(self, clazz, backend):
         argon2id = clazz(

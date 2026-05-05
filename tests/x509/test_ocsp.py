@@ -195,7 +195,7 @@ class TestOCSPRequest:
             os.path.join("x509", "ocsp", "req-sha1.der"),
             ocsp.load_der_ocsp_request,
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             req.public_bytes("invalid")
         with pytest.raises(ValueError):
             req.public_bytes(serialization.Encoding.PEM)
@@ -1577,7 +1577,7 @@ class TestOCSPResponse:
             os.path.join("x509", "ocsp", "resp-revoked.der"),
             ocsp.load_der_ocsp_response,
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             resp.public_bytes("invalid")
         with pytest.raises(ValueError):
             resp.public_bytes(serialization.Encoding.PEM)
@@ -1638,10 +1638,6 @@ class TestOCSPResponse:
 
 
 class TestOCSPEdDSA:
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support / OCSP",
-    )
     def test_invalid_algorithm(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
@@ -1670,10 +1666,6 @@ class TestOCSPEdDSA:
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256())
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support / OCSP",
-    )
     def test_sign_ed25519(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()

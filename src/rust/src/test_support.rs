@@ -64,18 +64,16 @@ fn test_parse_certificate(data: &[u8]) -> CryptographyResult<TestCertificate> {
 #[pyo3(signature = (encoding, sig, msg, certs, options))]
 fn pkcs7_verify(
     py: pyo3::Python<'_>,
-    encoding: pyo3::Bound<'_, pyo3::PyAny>,
+    encoding: crate::serialization::Encoding,
     sig: &[u8],
     msg: Option<CffiBuf<'_>>,
     certs: Vec<pyo3::Py<PyCertificate>>,
     options: pyo3::Bound<'_, pyo3::types::PyList>,
 ) -> CryptographyResult<()> {
-    let p7 = if encoding.is(&types::ENCODING_DER.get(py)?) {
-        openssl::pkcs7::Pkcs7::from_der(sig)?
-    } else if encoding.is(&types::ENCODING_PEM.get(py)?) {
-        openssl::pkcs7::Pkcs7::from_pem(sig)?
-    } else {
-        openssl::pkcs7::Pkcs7::from_smime(sig)?.0
+    let p7 = match encoding {
+        crate::serialization::Encoding::DER => openssl::pkcs7::Pkcs7::from_der(sig)?,
+        crate::serialization::Encoding::PEM => openssl::pkcs7::Pkcs7::from_pem(sig)?,
+        _ => openssl::pkcs7::Pkcs7::from_smime(sig)?.0,
     };
 
     let mut flags = openssl::pkcs7::Pkcs7Flags::empty();

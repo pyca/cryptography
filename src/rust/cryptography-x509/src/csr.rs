@@ -25,7 +25,7 @@ impl CertificationRequestInfo<'_> {
         &self,
     ) -> Result<Option<extensions::RawExtensions<'_>>, asn1::ParseError> {
         for attribute in self.attributes.unwrap_read().clone() {
-            if attribute.type_id == oid::EXTENSION_REQUEST
+            if attribute.type_id == oid::EXTENSION_REQUEST_OID
                 || attribute.type_id == oid::MS_EXTENSION_REQUEST
             {
                 check_attribute_length(attribute.values.unwrap_read().clone())?;

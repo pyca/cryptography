@@ -17,7 +17,7 @@ while IFS=: read -r downstream repo ref; do
 
     # Extract branch name and determine if it's a tag from the comment in ci.yml
     # Find the comment line for this downstream by looking for the REF line and getting the comment above it
-    comment_line=$(grep -B1 "REF: $ref" .github/workflows/ci.yml | grep "^[[:space:]]*#" | tail -1)
+    comment_line=$(grep -B1 -F "REF: $ref" .github/workflows/ci.yml | grep "^[[:space:]]*#" | tail -1)
 
     # Parse the comment to determine branch and whether it's a tag
     if echo "$comment_line" | grep -q "release tag"; then
@@ -34,8 +34,9 @@ while IFS=: read -r downstream repo ref; do
 
     echo "Using branch: $branch, tag_args: $tag_args"
 
-    # Create pattern to match REF in ci.yml
-    ref_pattern="REF: ($ref)"
+    # Create pattern to match REF in ci.yml (escape regex special chars in ref)
+    escaped_ref=$(python3 -c "import re, sys; print(re.escape(sys.argv[1]))" "$ref")
+    ref_pattern="REF: ($escaped_ref)"
     replacement_pattern="REF: {new_version}"
 
     # Create a temporary file for this downstream's commit message

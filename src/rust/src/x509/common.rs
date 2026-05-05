@@ -393,7 +393,7 @@ pub(crate) fn parse_and_cache_extensions<
                 Err(DuplicateExtensionsError(oid)) => {
                     let oid_obj = oid_to_py_oid(py, &oid)?;
                     return Err(exceptions::DuplicateExtension::new_err((
-                        format!("Duplicate {} extension found", &oid),
+                        format!("Duplicate {} extension found", oid),
                         oid_obj.unbind(),
                     )));
                 }

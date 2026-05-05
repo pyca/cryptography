@@ -50,6 +50,10 @@ extensions = [
     "sphinx_inline_tabs",
 ]
 
+doctest_global_setup = """
+from cryptography.hazmat.backends.openssl.backend import backend as _backend
+"""
+
 if spelling is not None:
     extensions.append("sphinxcontrib.spelling")
 

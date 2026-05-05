@@ -41,6 +41,9 @@ self_cell::self_cell!(
 pub(crate) struct Certificate {
     pub(crate) raw: OwnedCertificate,
     pub(crate) cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    pub(crate) cached_issuer: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    pub(crate) cached_subject: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
+    pub(crate) cached_public_key: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
 #[pyo3::pymethods]
@@ -78,10 +81,17 @@ impl Certificate {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        keys::load_der_public_key_bytes(
-            py,
-            self.raw.borrow_dependent().tbs_cert.spki.tlv().full_data(),
-        )
+        Ok(self
+            .cached_public_key
+            .get_or_try_init(py, || {
+                keys::load_der_public_key_bytes(
+                    py,
+                    self.raw.borrow_dependent().tbs_cert.spki.tlv().full_data(),
+                )
+                .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -110,7 +120,7 @@ impl Certificate {
     fn public_bytes<'p>(
         &self,
         py: pyo3::Python<'p>,
-        encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+        encoding: crate::serialization::Encoding,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let result = asn1::write_single(self.raw.borrow_dependent())?;
 
@@ -138,14 +148,28 @@ impl Certificate {
 
     #[getter]
     fn issuer<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        Ok(x509::parse_name(py, self.raw.borrow_dependent().issuer())
-            .map_err(|e| e.add_location(asn1::ParseLocation::Field("issuer")))?)
+        Ok(self
+            .cached_issuer
+            .get_or_try_init(py, || {
+                x509::parse_name(py, self.raw.borrow_dependent().issuer())
+                    .map_err(|e| e.add_location(asn1::ParseLocation::Field("issuer")))
+                    .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
     fn subject<'p>(&self, py: pyo3::Python<'p>) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        Ok(x509::parse_name(py, self.raw.borrow_dependent().subject())
-            .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))?)
+        Ok(self
+            .cached_subject
+            .get_or_try_init(py, || {
+                x509::parse_name(py, self.raw.borrow_dependent().subject())
+                    .map_err(|e| e.add_location(asn1::ParseLocation::Field("subject")))
+                    .map(|v| v.unbind())
+            })?
+            .bind(py)
+            .clone())
     }
 
     #[getter]
@@ -193,7 +217,7 @@ impl Certificate {
             Err(DuplicateExtensionsError(oid)) => {
                 let oid_obj = oid_to_py_oid(py, &oid)?;
                 Err(exceptions::DuplicateExtension::new_err((
-                    format!("Duplicate {} extension found", &oid),
+                    format!("Duplicate {} extension found", oid),
                     oid_obj.unbind(),
                 ))
                 .into())
@@ -441,6 +465,9 @@ pub(crate) fn load_der_x509_certificate(
     Ok(Certificate {
         raw,
         cached_extensions: pyo3::sync::PyOnceLock::new(),
+        cached_issuer: pyo3::sync::PyOnceLock::new(),
+        cached_subject: pyo3::sync::PyOnceLock::new(),
+        cached_public_key: pyo3::sync::PyOnceLock::new(),
     })
 }
 
@@ -670,10 +697,10 @@ pub(crate) fn encode_distribution_point_reasons(
             .extract::<usize>()?;
         set_bit(&mut bits, bit, true);
     }
-    if bits[1] == 0 {
-        bits.truncate(1);
+    while bits.last() == Some(&0) {
+        bits.pop();
     }
-    let unused_bits = bits.last().unwrap().trailing_zeros() as u8;
+    let unused_bits = bits.last().map_or(0, |b| b.trailing_zeros() as u8);
     Ok(asn1::OwnedBitString::new(bits, unused_bits).unwrap())
 }
 
@@ -1021,11 +1048,15 @@ pub(crate) fn create_x509_certificate(
         rsa_padding.clone(),
     )?;
 
-    let der = types::ENCODING_DER.get(py)?;
-    let spki = types::PUBLIC_FORMAT_SUBJECT_PUBLIC_KEY_INFO.get(py)?;
     let spki_bytes = builder
         .getattr(pyo3::intern!(py, "_public_key"))?
-        .call_method1(pyo3::intern!(py, "public_bytes"), (der, spki))?
+        .call_method1(
+            pyo3::intern!(py, "public_bytes"),
+            (
+                crate::serialization::Encoding::DER,
+                crate::serialization::PublicFormat::SubjectPublicKeyInfo,
+            ),
+        )?
         .extract::<pyo3::pybacked::PyBackedBytes>()?;
 
     let py_serial = builder

@@ -272,12 +272,24 @@ class Backend:
             and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
         )
 
+    def mlkem_supported(self) -> bool:
+        return (
+            rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            or rust_openssl.CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        )
+
+    def mldsa_supported(self) -> bool:
+        return (
+            rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            or rust_openssl.CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        )
+
     def ed25519_supported(self) -> bool:
-        return not self._fips_enabled
+        return True
 
     def ed448_supported(self) -> bool:
-        if self._fips_enabled:
-            return False
         return (
             not rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
             and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL

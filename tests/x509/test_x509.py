@@ -573,11 +573,14 @@ class TestCertificateRevocationList:
         assert isinstance(public_key, rsa.RSAPublicKey)
         assert not crl.is_signature_valid(public_key)
 
-        crl = _load_cert(
+    def test_load_inner_outer_mismatch(self, backend):
+        data = load_vectors_from_file(
             os.path.join("x509", "custom", "crl_inner_outer_mismatch.der"),
-            x509.load_der_x509_crl,
+            lambda f: f.read(),
+            mode="rb",
         )
-        assert not crl.is_signature_valid(public_key)
+        with pytest.raises(ValueError, match="Inner and outer"):
+            x509.load_der_x509_crl(data)
 
     def test_verify_good(self, backend):
         crl = _load_cert(
@@ -1028,6 +1031,10 @@ class TestRSACertificate:
             os.path.join("x509", "custom", "bad_country.pem"),
             x509.load_pem_x509_certificate,
         )
+        # Both warnings are emitted during the first parse_name call (when
+        # cert.subject is first accessed); subsequent accesses return the
+        # cached Name object without re-parsing, so both checks must live
+        # inside a single pytest.warns block.
         with pytest.warns(UserWarning):
             assert (
                 cert.subject.get_attributes_for_oid(x509.NameOID.COUNTRY_NAME)[
@@ -1035,8 +1042,6 @@ class TestRSACertificate:
                 ].value
                 == "too long"
             )
-
-        with pytest.warns(UserWarning):
             assert (
                 cert.subject.get_attributes_for_oid(
                     x509.NameOID.JURISDICTION_COUNTRY_NAME
@@ -1832,9 +1837,7 @@ class TestRSACertificate:
             cert.verify_directly_issued_by(ca2)
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            backend.ed25519_supported() and backend.x25519_supported()
-        ),
+        only_if=lambda backend: backend.x25519_supported(),
         skip_message="Requires OpenSSL with Ed25519 and X25519 support",
     )
     def test_verify_directly_issued_by_unsupported_key_type(self, backend):
@@ -3359,10 +3362,6 @@ class TestCertificateBuilder:
         with pytest.raises(TypeError):
             builder.sign(private_key, algorithm, backend)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support",
-    )
     def test_sign_with_unsupported_hash_ed25519(self, backend):
         private_key = ed25519.Ed25519PrivateKey.generate()
         builder = (
@@ -3722,10 +3721,6 @@ class TestCertificateBuilder:
         assert cert.issuer == issuer
         assert cert.subject == subject
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support",
-    )
     def test_build_cert_with_ed25519(self, backend):
         issuer_private_key = ed25519.Ed25519PrivateKey.generate()
         subject_private_key = ed25519.Ed25519PrivateKey.generate()
@@ -3785,10 +3780,6 @@ class TestCertificateBuilder:
             x509.DNSName("cryptography.io"),
         ]
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support",
-    )
     def test_build_cert_with_public_ed25519_rsa_sig(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
@@ -4325,6 +4316,22 @@ class TestCertificateBuilder:
                     )
                 ]
             ),
+            # Regression test: empty frozenset reasons previously panicked
+            # in encode_distribution_point_reasons (trailing_zeros(0) == 8).
+            x509.CRLDistributionPoints(
+                [
+                    x509.DistributionPoint(
+                        full_name=[
+                            x509.UniformResourceIdentifier(
+                                "http://crl.example.com/root.crl"
+                            )
+                        ],
+                        relative_name=None,
+                        reasons=frozenset(),
+                        crl_issuer=None,
+                    )
+                ]
+            ),
             x509.FreshestCRL(
                 [
                     x509.DistributionPoint(
@@ -4599,10 +4606,6 @@ class TestCertificateSigningRequestBuilder:
                 backend,
             )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support",
-    )
     def test_request_with_unsupported_hash_ed25519(self, backend):
         private_key = ed25519.Ed25519PrivateKey.generate()
         builder = x509.CertificateSigningRequestBuilder().subject_name(
@@ -4910,10 +4913,6 @@ class TestCertificateSigningRequestBuilder:
                 ecdsa_deterministic=True,
             )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support",
-    )
     def test_build_ca_request_with_ed25519(self, backend):
         private_key = ed25519.Ed25519PrivateKey.generate()
 
@@ -6023,7 +6022,7 @@ class TestOtherCertificate:
 
 class TestNameAttribute:
     EXPECTED_TYPES: typing.ClassVar[
-        typing.List[typing.Tuple[x509.ObjectIdentifier, _ASN1Type]]
+        list[tuple[x509.ObjectIdentifier, _ASN1Type]]
     ] = [
         (NameOID.COMMON_NAME, _ASN1Type.UTF8String),
         (NameOID.COUNTRY_NAME, _ASN1Type.PrintableString),
@@ -6537,10 +6536,6 @@ class TestName:
         )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.ed25519_supported(),
-    skip_message="Requires OpenSSL with Ed25519 support",
-)
 class TestEd25519Certificate:
     def test_load_pem_cert(self, backend):
         cert = _load_cert(

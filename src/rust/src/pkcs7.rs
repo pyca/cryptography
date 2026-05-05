@@ -50,7 +50,7 @@ static OIDS_TO_MIC_NAME: LazyLock<HashMap<&asn1::ObjectIdentifier, &str>> = Lazy
 fn serialize_certificates<'p>(
     py: pyo3::Python<'p>,
     py_certs: Vec<pyo3::PyRef<'p, x509::certificate::Certificate>>,
-    encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+    encoding: crate::serialization::Encoding,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     if py_certs.is_empty() {
         return Err(pyo3::exceptions::PyTypeError::new_err(
@@ -92,7 +92,7 @@ fn encrypt_and_serialize<'p>(
     py: pyo3::Python<'p>,
     builder: &pyo3::Bound<'p, pyo3::PyAny>,
     content_encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
-    encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+    encoding: crate::serialization::Encoding,
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let raw_data: CffiBuf<'p> = builder.getattr(pyo3::intern!(py, "_data"))?.extract()?;
@@ -130,6 +130,7 @@ fn encrypt_and_serialize<'p>(
     for cert in py_recipients.iter() {
         // Currently, keys are encrypted with RSA (PKCS #1 v1.5), which the S/MIME v3.2 RFC
         // specifies as MUST support (https://datatracker.ietf.org/doc/html/rfc5751#section-2.3)
+        // however rest of S/MIME v3.2 is not currently supported
         let encrypted_key = cert
             .call_method0(pyo3::intern!(py, "public_key"))?
             .call_method1(pyo3::intern!(py, "encrypt"), (&key, &padding))?
@@ -178,7 +179,7 @@ fn encrypt_and_serialize<'p>(
     };
     let ci_bytes = asn1::write_single(&content_info)?;
 
-    if encoding.is(&types::ENCODING_SMIME.get(py)?) {
+    if encoding == crate::serialization::Encoding::SMIME {
         Ok(types::SMIME_ENVELOPED_ENCODE
             .get(py)?
             .call1((&*ci_bytes,))?
@@ -293,7 +294,7 @@ fn decrypt_der<'p>(
             // The function can decrypt content encrypted with AES-128-CBC, which the S/MIME v3.2
             // RFC specifies as MUST support, and AES-256-CBC, which is specified as SHOULD+
             // support. More info: https://datatracker.ietf.org/doc/html/rfc5751#section-2.7
-            // TODO: implement the possible algorithms from S/MIME 3.2 (and 4.0?)
+            // however rest of S/MIME v3.2 is not currently supported
             let algorithm_identifier = enveloped_data
                 .encrypted_content_info
                 .content_encryption_algorithm;
@@ -460,7 +461,7 @@ pub(crate) fn symmetric_decrypt(
 fn sign_and_serialize<'p>(
     py: pyo3::Python<'p>,
     builder: &pyo3::Bound<'p, pyo3::PyAny>,
-    encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+    encoding: crate::serialization::Encoding,
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let raw_data: CffiBuf<'p> = builder.getattr(pyo3::intern!(py, "_data"))?.extract()?;
@@ -639,7 +640,7 @@ fn sign_and_serialize<'p>(
     };
     let ci_bytes = asn1::write_single(&content_info)?;
 
-    if encoding.is(&types::ENCODING_SMIME.get(py)?) {
+    if encoding == crate::serialization::Encoding::SMIME {
         let mic_algs = digest_algs
             .iter()
             .map(|d| OIDS_TO_MIC_NAME[&d.oid()])
@@ -768,6 +769,9 @@ where
             x509::certificate::Certificate {
                 raw: raw_cert,
                 cached_extensions: pyo3::sync::PyOnceLock::new(),
+                cached_issuer: pyo3::sync::PyOnceLock::new(),
+                cached_subject: pyo3::sync::PyOnceLock::new(),
+                cached_public_key: pyo3::sync::PyOnceLock::new(),
             },
         )?)?;
 

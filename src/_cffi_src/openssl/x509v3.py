@@ -4,18 +4,22 @@
 
 from __future__ import annotations
 
+import os
+
 INCLUDES = """
 #include <openssl/x509v3.h>
 """
 
-TYPES = """
+USE_CONST_X509 = bool(os.environ.get("USE_CONST_X509"))
+
+TYPES = f"""
 typedef ... CONF;
 
-typedef struct {
-    X509 *issuer_cert;
-    X509 *subject_cert;
+typedef struct {{
+    {"const X509" if USE_CONST_X509 else "X509"} *issuer_cert;
+    {"const X509" if USE_CONST_X509 else "X509"} *subject_cert;
     ...;
-} X509V3_CTX;
+}} X509V3_CTX;
 
 static const int GEN_EMAIL;
 static const int GEN_DNS;
@@ -24,16 +28,15 @@ static const int GEN_URI;
 typedef ... GENERAL_NAMES;
 
 /* Only include the one union element used by pyOpenSSL. */
-typedef struct {
+typedef struct {{
     int type;
-    union {
+    union {{
         ASN1_IA5STRING *ia5;   /* rfc822Name, dNSName, */
                                /*   uniformResourceIdentifier */
-    } d;
+    }} d;
     ...;
-} GENERAL_NAME;
+}} GENERAL_NAME;
 """
-
 
 FUNCTIONS = """
 void X509V3_set_ctx(X509V3_CTX *, X509 *, X509 *, X509_REQ *, X509_CRL *, int);

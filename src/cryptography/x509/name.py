@@ -304,7 +304,7 @@ class Name:
             ]
         elif all(isinstance(x, RelativeDistinguishedName) for x in attributes):
             self._attributes = typing.cast(
-                typing.List[RelativeDistinguishedName], attributes
+                list[RelativeDistinguishedName], attributes
             )
         else:
             raise TypeError(

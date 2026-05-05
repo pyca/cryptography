@@ -13,10 +13,6 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 from .utils import wycheproof_tests
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.ed25519_supported(),
-    skip_message="Requires OpenSSL with Ed25519 support",
-)
 @wycheproof_tests("ed25519_test.json")
 def test_ed25519_signature(backend, wycheproof):
     # We want to fail if/when wycheproof adds more edwards curve tests

@@ -17,9 +17,14 @@ def test_keywrap_with_padding(backend, wycheproof):
     key_to_wrap = binascii.unhexlify(wycheproof.testcase["msg"])
     expected = binascii.unhexlify(wycheproof.testcase["ct"])
 
-    result = keywrap.aes_key_wrap_with_padding(
-        wrapping_key, key_to_wrap, backend
-    )
+    try:
+        result = keywrap.aes_key_wrap_with_padding(
+            wrapping_key, key_to_wrap, backend
+        )
+    except ValueError:
+        # Some invalid inputs raise errors during wrapping while others fail
+        # later
+        assert wycheproof.invalid
     if wycheproof.valid or wycheproof.acceptable:
         assert result == expected
 

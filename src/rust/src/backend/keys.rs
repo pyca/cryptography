@@ -33,14 +33,28 @@ pub(crate) fn load_der_private_key_bytes<'p>(
     password: Option<&[u8]>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    let parsers: [fn(&[u8]) -> cryptography_key_parsing::KeyParsingResult<_>; 4] = [
+    type Parser = fn(
+        &[u8],
+    ) -> cryptography_key_parsing::KeyParsingResult<
+        cryptography_key_parsing::ParsedPrivateKey,
+    >;
+    let parsers: [Parser; 4] = [
         cryptography_key_parsing::pkcs8::parse_private_key,
-        |d| cryptography_key_parsing::ec::parse_pkcs1_private_key(d, None),
-        cryptography_key_parsing::rsa::parse_pkcs1_private_key,
-        cryptography_key_parsing::dsa::parse_pkcs1_private_key,
+        |d| {
+            cryptography_key_parsing::ec::parse_pkcs1_private_key(d, None)
+                .map(cryptography_key_parsing::ParsedPrivateKey::Pkey)
+        },
+        |d| {
+            cryptography_key_parsing::rsa::parse_pkcs1_private_key(d)
+                .map(cryptography_key_parsing::ParsedPrivateKey::Pkey)
+        },
+        |d| {
+            cryptography_key_parsing::dsa::parse_pkcs1_private_key(d)
+                .map(cryptography_key_parsing::ParsedPrivateKey::Pkey)
+        },
     ];
 
-    let pkey = parsers.iter().find_map(|parser| match parser(data) {
+    let parsed = parsers.iter().find_map(|parser| match parser(data) {
         Ok(key) => Some(Ok(key)),
         // Try next parser
         Err(cryptography_key_parsing::KeyParsingError::Parse(_)) => None,
@@ -48,7 +62,7 @@ pub(crate) fn load_der_private_key_bytes<'p>(
         Err(e) => Some(Err(e)),
     });
 
-    if let Some(Ok(pkey)) = pkey {
+    if let Some(Ok(parsed)) = parsed {
         if password.is_some() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyTypeError::new_err(
@@ -56,14 +70,13 @@ pub(crate) fn load_der_private_key_bytes<'p>(
                 ),
             ));
         }
-        return private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation);
-    } else if let Some(Err(e)) = pkey {
+        return private_key_from_parsed(py, parsed, unsafe_skip_rsa_key_validation);
+    } else if let Some(Err(e)) = parsed {
         return Err(e.into());
     }
 
-    let pkey = cryptography_key_parsing::pkcs8::parse_encrypted_private_key(data, password)?;
-
-    private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
+    let parsed = cryptography_key_parsing::pkcs8::parse_encrypted_private_key(data, password)?;
+    private_key_from_parsed(py, parsed, unsafe_skip_rsa_key_validation)
 }
 
 #[pyo3::pyfunction]
@@ -85,15 +98,15 @@ fn load_pem_private_key<'p>(
     let password = password.as_ref().map(|v| v.as_bytes());
     let (data, mut password_used) = cryptography_key_parsing::pem::decrypt_pem(&p, password)?;
 
-    let pkey = match p.tag() {
+    let parsed = match p.tag() {
         "PRIVATE KEY" => cryptography_key_parsing::pkcs8::parse_private_key(&data)?,
-        "RSA PRIVATE KEY" => cryptography_key_parsing::rsa::parse_pkcs1_private_key(&data).map_err(|e| {
+        "RSA PRIVATE KEY" => cryptography_key_parsing::rsa::parse_pkcs1_private_key(&data).map(cryptography_key_parsing::ParsedPrivateKey::Pkey).map_err(|e| {
             CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
         })?,
-        "EC PRIVATE KEY" => cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None).map_err(|e| {
+        "EC PRIVATE KEY" => cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None).map(cryptography_key_parsing::ParsedPrivateKey::Pkey).map_err(|e| {
             CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
         })?,
-        "DSA PRIVATE KEY" => cryptography_key_parsing::dsa::parse_pkcs1_private_key(&data).map_err(|e| {
+        "DSA PRIVATE KEY" => cryptography_key_parsing::dsa::parse_pkcs1_private_key(&data).map(cryptography_key_parsing::ParsedPrivateKey::Pkey).map_err(|e| {
             CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
         })?,
         _ => {
@@ -109,7 +122,7 @@ fn load_pem_private_key<'p>(
             ),
         ));
     }
-    private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
+    private_key_from_parsed(py, parsed, unsafe_skip_rsa_key_validation)
 }
 
 fn private_key_from_pkey<'p>(
@@ -167,9 +180,75 @@ fn private_key_from_pkey<'p>(
         openssl::pkey::Id::DHX => Ok(crate::backend::dh::private_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        _ if cryptography_openssl::mlkem::is_mlkem_pkey(pkey) => {
+            match cryptography_openssl::mlkem::MlKemVariant::from_pkey(pkey) {
+                cryptography_openssl::mlkem::MlKemVariant::MlKem768 => {
+                    Ok(crate::backend::mlkem::mlkem768_private_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+                cryptography_openssl::mlkem::MlKemVariant::MlKem1024 => {
+                    Ok(crate::backend::mlkem::mlkem1024_private_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+            }
+        }
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        _ if cryptography_openssl::mldsa::is_mldsa_pkey(pkey) => {
+            match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => {
+                    Ok(crate::backend::mldsa::mldsa44_private_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa65 => {
+                    Ok(crate::backend::mldsa::mldsa65_private_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa87 => {
+                    Ok(crate::backend::mldsa::mldsa87_private_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+            }
+        }
         _ => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
         )),
+    }
+}
+
+fn private_key_from_parsed<'p>(
+    py: pyo3::Python<'p>,
+    parsed: cryptography_key_parsing::ParsedPrivateKey,
+    unsafe_skip_rsa_key_validation: bool,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    match parsed {
+        cryptography_key_parsing::ParsedPrivateKey::Pkey(pkey) => {
+            private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
+        }
+    }
+}
+
+fn public_key_from_parsed<'p>(
+    py: pyo3::Python<'p>,
+    parsed: cryptography_key_parsing::ParsedPublicKey,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    match parsed {
+        cryptography_key_parsing::ParsedPublicKey::Pkey(pkey) => {
+            public_key_from_pkey(py, &pkey, pkey.id())
+        }
     }
 }
 
@@ -189,7 +268,7 @@ pub(crate) fn load_der_public_key_bytes<'p>(
     data: &[u8],
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     match cryptography_key_parsing::spki::parse_public_key(data) {
-        Ok(pkey) => public_key_from_pkey(py, &pkey, pkey.id()),
+        Ok(parsed) => public_key_from_parsed(py, parsed),
         // It's not a (RSA/DSA/ECDSA) subjectPublicKeyInfo, but we still need
         // to check to see if it is a pure PKCS1 RSA public key (not embedded
         // in a subjectPublicKeyInfo)
@@ -197,7 +276,7 @@ pub(crate) fn load_der_public_key_bytes<'p>(
             // Use the original error.
             let pkey =
                 cryptography_key_parsing::rsa::parse_pkcs1_public_key(data).map_err(|_| e)?;
-            public_key_from_pkey(py, &pkey, pkey.id())
+            public_key_from_parsed(py, cryptography_key_parsing::ParsedPublicKey::Pkey(pkey))
         }
     }
 }
@@ -211,24 +290,30 @@ fn load_pem_public_key<'p>(
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let _ = backend;
     let p = pem::parse(data.as_bytes())?;
-    let pkey = match p.tag() {
+    let parsed = match p.tag() {
         "RSA PUBLIC KEY" => {
             // We try to parse it as a PKCS1 first since that's the PEM delimiter, and if
             // that fails we try to parse it as an SPKI. This is to match the permissiveness
             // of OpenSSL, which doesn't care about the delimiter.
             match cryptography_key_parsing::rsa::parse_pkcs1_public_key(p.contents()) {
-                Ok(pkey) => pkey,
+                Ok(pkey) => cryptography_key_parsing::ParsedPublicKey::Pkey(pkey),
                 Err(err) => {
-                    let pkey = cryptography_key_parsing::spki::parse_public_key(p.contents())
+                    let parsed = cryptography_key_parsing::spki::parse_public_key(p.contents())
                         .map_err(|_| err)?;
-                    if pkey.id() != openssl::pkey::Id::RSA {
-                        return Err(CryptographyError::from(
-                            pyo3::exceptions::PyValueError::new_err(
-                                "Incorrect PEM delimiter for key type.",
-                            ),
-                        ));
+                    match parsed {
+                        cryptography_key_parsing::ParsedPublicKey::Pkey(ref pkey)
+                            if pkey.id() == openssl::pkey::Id::RSA =>
+                        {
+                            parsed
+                        }
+                        _ => {
+                            return Err(CryptographyError::from(
+                                pyo3::exceptions::PyValueError::new_err(
+                                    "Incorrect PEM delimiter for key type.",
+                                ),
+                            ));
+                        }
                     }
-                    pkey
                 }
             }
         }
@@ -237,7 +322,7 @@ fn load_pem_public_key<'p>(
             "Valid PEM but no BEGIN PUBLIC KEY/END PUBLIC KEY delimiters. Are you sure this is a public key?"
         ))),
     };
-    public_key_from_pkey(py, &pkey, pkey.id())
+    public_key_from_parsed(py, parsed)
 }
 
 fn public_key_from_pkey<'p>(
@@ -293,7 +378,50 @@ fn public_key_from_pkey<'p>(
         openssl::pkey::Id::DHX => Ok(crate::backend::dh::public_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        _ if cryptography_openssl::mlkem::is_mlkem_pkey(pkey) => {
+            match cryptography_openssl::mlkem::MlKemVariant::from_pkey(pkey) {
+                cryptography_openssl::mlkem::MlKemVariant::MlKem768 => {
+                    Ok(crate::backend::mlkem::mlkem768_public_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+                cryptography_openssl::mlkem::MlKemVariant::MlKem1024 => {
+                    Ok(crate::backend::mlkem::mlkem1024_public_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+            }
+        }
 
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        _ if cryptography_openssl::mldsa::is_mldsa_pkey(pkey) => {
+            match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => {
+                    Ok(crate::backend::mldsa::mldsa44_public_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa65 => {
+                    Ok(crate::backend::mldsa::mldsa65_public_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa87 => {
+                    Ok(crate::backend::mldsa::mldsa87_public_key_from_pkey(pkey)
+                        .into_pyobject(py)?
+                        .into_any())
+                }
+            }
+        }
         _ => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
         )),

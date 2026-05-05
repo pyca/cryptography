@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import abc
 
-from cryptography.exceptions import UnsupportedAlgorithm, _Reasons
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization
 from cryptography.utils import Buffer
@@ -15,14 +14,6 @@ from cryptography.utils import Buffer
 class Ed25519PublicKey(metaclass=abc.ABCMeta):
     @classmethod
     def from_public_bytes(cls, data: bytes) -> Ed25519PublicKey:
-        from cryptography.hazmat.backends.openssl.backend import backend
-
-        if not backend.ed25519_supported():
-            raise UnsupportedAlgorithm(
-                "ed25519 is not supported by this version of OpenSSL.",
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
-            )
-
         return rust_openssl.ed25519.from_public_bytes(data)
 
     @abc.abstractmethod
@@ -73,26 +64,10 @@ Ed25519PublicKey.register(rust_openssl.ed25519.Ed25519PublicKey)
 class Ed25519PrivateKey(metaclass=abc.ABCMeta):
     @classmethod
     def generate(cls) -> Ed25519PrivateKey:
-        from cryptography.hazmat.backends.openssl.backend import backend
-
-        if not backend.ed25519_supported():
-            raise UnsupportedAlgorithm(
-                "ed25519 is not supported by this version of OpenSSL.",
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
-            )
-
         return rust_openssl.ed25519.generate_key()
 
     @classmethod
     def from_private_bytes(cls, data: Buffer) -> Ed25519PrivateKey:
-        from cryptography.hazmat.backends.openssl.backend import backend
-
-        if not backend.ed25519_supported():
-            raise UnsupportedAlgorithm(
-                "ed25519 is not supported by this version of OpenSSL.",
-                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
-            )
-
         return rust_openssl.ed25519.from_private_bytes(data)
 
     @abc.abstractmethod

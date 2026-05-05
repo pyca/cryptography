@@ -5,7 +5,6 @@
 
 import binascii
 import os
-import typing
 
 import pytest
 
@@ -392,9 +391,7 @@ def generate_kbkdf_counter_mode_test(param_loader, path, file_names):
 
 
 def _kbkdf_hmac_counter_mode_test(backend, prf, ctr_loc, brk_loc, params):
-    supported_hash_algorithms: typing.Dict[
-        str, typing.Type[hashes.HashAlgorithm]
-    ] = {
+    supported_hash_algorithms: dict[str, type[hashes.HashAlgorithm]] = {
         "hmac_sha1": hashes.SHA1,
         "hmac_sha224": hashes.SHA224,
         "hmac_sha256": hashes.SHA256,
@@ -425,9 +422,7 @@ def _kbkdf_hmac_counter_mode_test(backend, prf, ctr_loc, brk_loc, params):
 
 
 def _kbkdf_cmac_counter_mode_test(backend, prf, ctr_loc, brk_loc, params):
-    supported_cipher_algorithms: typing.Dict[
-        str, typing.Type[BlockCipherAlgorithm]
-    ] = {
+    supported_cipher_algorithms: dict[str, type[BlockCipherAlgorithm]] = {
         "cmac_aes128": algorithms.AES,
         "cmac_aes192": algorithms.AES,
         "cmac_aes256": algorithms.AES,

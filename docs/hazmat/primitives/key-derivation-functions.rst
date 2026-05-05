@@ -119,6 +119,9 @@ Each of the classes constructors and parameters are the same; only details of Ar
         :return bytes: the derived key.
         :raises TypeError: This exception is raised if ``key_material`` is not
                            ``bytes``.
+        :raises MemoryError: This exception is raised if there is insufficient
+                             memory to derive the key with the chosen
+                             ``memory_cost``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
                                                           :meth:`derive`,
                                                           :meth:`derive_into`,
@@ -142,6 +145,9 @@ Each of the classes constructors and parameters are the same; only details of Ar
                            ``bytes``.
         :raises ValueError: This exception is raised if the buffer is too small
                            for the derived key.
+        :raises MemoryError: This exception is raised if there is insufficient
+                             memory to derive the key with the chosen
+                             ``memory_cost``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
                                                           :meth:`derive`,
                                                           :meth:`derive_into`,

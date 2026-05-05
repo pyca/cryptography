@@ -21,12 +21,12 @@ fn check_length(data: &[u8]) -> CryptographyResult<()> {
     Ok(())
 }
 
-enum Aad<'a> {
+pub(crate) enum Aad<'a> {
     Single(CffiBuf<'a>),
     List(pyo3::Bound<'a, pyo3::types::PyList>),
 }
 
-struct EvpCipherAead {
+pub(crate) struct EvpCipherAead {
     base_encryption_ctx: openssl::cipher_ctx::CipherCtx,
     base_decryption_ctx: openssl::cipher_ctx::CipherCtx,
     tag_len: usize,
@@ -34,7 +34,7 @@ struct EvpCipherAead {
 }
 
 impl EvpCipherAead {
-    fn new(
+    pub(crate) fn new(
         cipher: &openssl::cipher::CipherRef,
         key: &[u8],
         tag_len: usize,
@@ -127,7 +127,7 @@ impl EvpCipherAead {
         Ok(())
     }
 
-    fn encrypt_into(
+    pub(crate) fn encrypt_into(
         &self,
         // We have this arg so we have consistent arguments with encrypt_into in
         // LazyEvpCipherAead. We can remove it when we remove LazyEvpCipherAead.
@@ -192,7 +192,7 @@ impl EvpCipherAead {
         Ok(())
     }
 
-    fn decrypt_into(
+    pub(crate) fn decrypt_into(
         &self,
         // We have this arg so we have consistent arguments with decrypt_into in
         // LazyEvpCipherAead. We can remove it when we remove LazyEvpCipherAead.
@@ -419,7 +419,7 @@ impl EvpAead {
 }
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.aead")]
-struct ChaCha20Poly1305 {
+pub(crate) struct ChaCha20Poly1305 {
     #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
     ctx: EvpAead,
     #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, CRYPTOGRAPHY_IS_LIBRESSL))]
@@ -436,7 +436,10 @@ struct ChaCha20Poly1305 {
 #[pyo3::pymethods]
 impl ChaCha20Poly1305 {
     #[new]
-    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<Self> {
+    pub(crate) fn new(
+        py: pyo3::Python<'_>,
+        key: pyo3::Py<pyo3::PyAny>,
+    ) -> CryptographyResult<Self> {
         let key_buf = key.extract::<CffiBuf<'_>>(py)?;
         if key_buf.as_bytes().len() != 32 {
             return Err(CryptographyError::from(
@@ -495,7 +498,7 @@ impl ChaCha20Poly1305 {
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
-    fn encrypt<'p>(
+    pub(crate) fn encrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         nonce: CffiBuf<'_>,
@@ -553,7 +556,7 @@ impl ChaCha20Poly1305 {
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
-    fn decrypt<'p>(
+    pub(crate) fn decrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         nonce: CffiBuf<'_>,
@@ -626,7 +629,7 @@ impl ChaCha20Poly1305 {
     name = "AESGCM"
 )]
 // NO-COVERAGE-END
-struct AesGcm {
+pub(crate) struct AesGcm {
     #[cfg(any(
         CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
         CRYPTOGRAPHY_IS_LIBRESSL,
@@ -647,7 +650,10 @@ struct AesGcm {
 #[pyo3::pymethods]
 impl AesGcm {
     #[new]
-    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesGcm> {
+    pub(crate) fn new(
+        py: pyo3::Python<'_>,
+        key: pyo3::Py<pyo3::PyAny>,
+    ) -> CryptographyResult<AesGcm> {
         let key_buf = key.extract::<CffiBuf<'_>>(py)?;
         let cipher = match key_buf.as_bytes().len() {
             16 => openssl::cipher::Cipher::aes_128_gcm(),
@@ -696,7 +702,7 @@ impl AesGcm {
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
-    fn encrypt<'p>(
+    pub(crate) fn encrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         nonce: CffiBuf<'_>,
@@ -754,7 +760,7 @@ impl AesGcm {
     }
 
     #[pyo3(signature = (nonce, data, associated_data))]
-    fn decrypt<'p>(
+    pub(crate) fn decrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         nonce: CffiBuf<'_>,
@@ -1129,6 +1135,7 @@ impl AesSiv {
         data: CffiBuf<'_>,
         associated_data: Option<pyo3::Bound<'p, pyo3::types::PyList>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        check_length(data.as_bytes())?;
         Ok(pyo3::types::PyBytes::new_with(
             py,
             data.as_bytes().len() + self.ctx.tag_len,

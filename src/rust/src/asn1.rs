@@ -8,7 +8,7 @@ use pyo3::types::{IntoPyDict, PyAnyMethods};
 use pyo3::IntoPyObject;
 
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::types;
+use crate::serialization::Encoding;
 
 pub(crate) fn py_oid_to_oid(
     py_oid: pyo3::Bound<'_, pyo3::PyAny>,
@@ -102,24 +102,22 @@ pub(crate) fn encode_der_data<'p>(
     py: pyo3::Python<'p>,
     pem_tag: String,
     data: Vec<u8>,
-    encoding: &pyo3::Bound<'p, pyo3::PyAny>,
+    encoding: Encoding,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    if encoding.is(&types::ENCODING_DER.get(py)?) {
-        Ok(pyo3::types::PyBytes::new(py, &data))
-    } else if encoding.is(&types::ENCODING_PEM.get(py)?) {
-        Ok(pyo3::types::PyBytes::new(
+    match encoding {
+        Encoding::DER => Ok(pyo3::types::PyBytes::new(py, &data)),
+        Encoding::PEM => Ok(pyo3::types::PyBytes::new(
             py,
             &pem::encode_config(
                 &pem::Pem::new(pem_tag, data),
                 cryptography_key_parsing::pem::ENCODE_CONFIG,
             )
             .into_bytes(),
-        ))
-    } else {
-        Err(
-            pyo3::exceptions::PyTypeError::new_err("encoding must be Encoding.DER or Encoding.PEM")
-                .into(),
+        )),
+        _ => Err(pyo3::exceptions::PyTypeError::new_err(
+            "encoding must be Encoding.DER or Encoding.PEM",
         )
+        .into()),
     }
 }
 

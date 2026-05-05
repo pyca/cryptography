@@ -1,15 +1,49 @@
 Changelog
 =========
 
-.. _v47-0-0:
+.. _v49-0-0:
 
-47.0.0 - `main`_
+49.0.0 - `main`_
 ~~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
 
+* **BACKWARDS INCOMPATIBLE:** Support for ``x86_64`` macOS has been removed.
+  We now only publish ``arm64`` wheels for macOS.
+* **BACKWARDS INCOMPATIBLE:** Support for 32-bit Windows has been removed.
+  Users should move to a 64-bit Python installation.
+
+.. _v48-0-0:
+
+48.0.0 - 2026-05-04
+~~~~~~~~~~~~~~~~~~~
+
+* **BACKWARDS INCOMPATIBLE:** Support for Python 3.8 has been removed.
+  ``cryptography`` now requires Python 3.9 or later.
+* **BACKWARDS INCOMPATIBLE:** Loading an X.509 CRL whose inner
+  ``TBSCertList.signature`` algorithm does not match the outer
+  ``signatureAlgorithm`` now raises ``ValueError``. Previously, such CRLs
+  were parsed successfully and only rejected during signature validation.
+* Added support for :doc:`/hazmat/primitives/asymmetric/mlkem` and
+  :doc:`/hazmat/primitives/asymmetric/mldsa` when using OpenSSL 3.5.0 or
+  later, in addition to the existing AWS-LC and BoringSSL support. This means
+  post-quantum algorithms are now available to users of our wheels.
+
+  * **Note:** Going forward, we do not guarantee that all functionality
+    in ``cryptography`` will be available when building against
+    OpenSSL. See :doc:`/statements/state-of-openssl` for more information.
+
+
+.. _v47-0-0:
+
+47.0.0 - 2026-04-24
+~~~~~~~~~~~~~~~~~~~
+
 * Support for Python 3.8 is deprecated and will be removed in the next
   ``cryptography`` release.
+* **BACKWARDS INCOMPATIBLE:** Support for binary elliptic curves
+  (``SECT*`` classes) has been removed. These curves are rarely used and
+  have additional security considerations that make them undesirable.
 * **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.x has been removed.
   OpenSSL 3.0.0 or later is now required. LibreSSL, BoringSSL, and AWS-LC
   continue to be supported.
@@ -84,6 +118,47 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.utils.NoDigestInfo`.
 * Added :meth:`~cryptography.hazmat.primitives.hashes.Hash.hash`, a one-shot
   method for computing hashes.
+* Added :doc:`/hazmat/primitives/hpke` support implementing :rfc:`9180` for
+  hybrid authenticated encryption.
+* Added new :doc:`/hazmat/primitives/asymmetric/mlkem` module with
+  support for ML-KEM key encapsulation with AWS-LC and BoringSSL.
+
+  * **Note:** Post-quantum algorithm support requires AWS-LC or BoringSSL.
+    As we ship our wheels with OpenSSL, most users will not have access to
+    these APIs yet. See :doc:`/statements/state-of-openssl` for more
+    information on OpenSSL support.
+* Added new :doc:`/hazmat/primitives/asymmetric/mldsa` module with
+  support for ML-DSA signing and verification with AWS-LC and BoringSSL.
+
+  * **Note:** Post-quantum algorithm support requires AWS-LC or BoringSSL.
+    As we ship our wheels with OpenSSL, most users will not have access to
+    these APIs yet. See :doc:`/statements/state-of-openssl` for more
+    information on OpenSSL support.
+* Added new :doc:`/hazmat/asn1/index` module with support for declaratively
+  defining custom ASN.1 types and encoding/decoding them.
+* Fixed compilation when using LibreSSL 4.3.0 and OpenSSL 4.0.0.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 4.0.0.
+
+.. _v46-0-7:
+
+46.0.7 - 2026-04-07
+~~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE**: Fixed an issue where non-contiguous buffers could be
+  passed to APIs that accept Python buffers, which could lead to buffer
+  overflow. **CVE-2026-39892**
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.6.
+
+.. _v46-0-6:
+
+46.0.6 - 2026-03-25
+~~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE**: Fixed a bug where name constraints were not applied
+  to peer names during verification when the leaf certificate contains a
+  wildcard DNS SAN. Ordinary X.509 topologies are not affected by this bug,
+  including those used by the Web PKI. Credit to **Oleh Konko (1seal)** for
+  reporting the issue. **CVE-2026-34073**
 
 .. _v46-0-5:
 

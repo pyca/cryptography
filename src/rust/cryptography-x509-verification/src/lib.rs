@@ -162,9 +162,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
                 // match exactly one subdomain of `foo.com`. Therefore, the NC's matching
                 // set is a strict superset of any possible wildcard SAN pattern.
                 match (DNSConstraint::new(constraint.0), DNSPattern::new(name.0)) {
-                    (Some(constraint), Some(name)) => {
-                        Ok(Applied(constraint.matches(name.inner_name())))
-                    }
+                    (Some(constraint), Some(name)) => Ok(Applied(constraint.matches(&name))),
                     (_, None) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
                         "unsatisfiable DNS name constraint: malformed SAN {}",
                         name.0

@@ -41,6 +41,7 @@ pub(crate) mod oid;
 mod padding;
 mod pkcs12;
 mod pkcs7;
+pub(crate) mod serialization;
 mod test_support;
 pub(crate) mod types;
 mod x509;
@@ -144,6 +145,8 @@ mod _rust {
     #[pymodule_export]
     use crate::pkcs7::pkcs7_mod;
     #[pymodule_export]
+    use crate::serialization::{Encoding, ParameterFormat, PrivateFormat, PublicFormat};
+    #[pymodule_export]
     use crate::test_support::test_support;
 
     #[pyo3::pymodule(gil_used = false)]
@@ -153,7 +156,8 @@ mod _rust {
         #[pymodule_export]
         use crate::declarative_asn1::types::{
             non_root_python_to_rust, AnnotatedType, Annotation, BitString, Encoding,
-            GeneralizedTime, IA5String, Null, PrintableString, Size, Type, UtcTime, Variant,
+            GeneralizedTime, IA5String, Null, PrintableString, SetOf, Size, Tlv, Type, UtcTime,
+            Variant,
         };
     }
 
@@ -233,9 +237,25 @@ mod _rust {
         #[pymodule_export]
         use crate::backend::hmac::hmac;
         #[pymodule_export]
+        use crate::backend::hpke::hpke;
+        #[pymodule_export]
         use crate::backend::kdf::kdf;
         #[pymodule_export]
         use crate::backend::keys::keys;
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        #[pymodule_export]
+        use crate::backend::mldsa::mldsa;
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        #[pymodule_export]
+        use crate::backend::mlkem::mlkem;
         #[pymodule_export]
         use crate::backend::poly1305::poly1305;
         #[pymodule_export]

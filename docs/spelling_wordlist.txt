@@ -36,6 +36,10 @@ cryptographically
 de
 Debian
 deallocated
+decapsulate
+Decapsulate
+Decapsulation
+declaratively
 decrypt
 decrypts
 Decrypts
@@ -48,7 +52,6 @@ deserialize
 deserialized
 Deserialization
 deserializing
-Diffie
 Diffie
 disambiguating
 Django
@@ -161,6 +164,7 @@ unencrypted
 unicode
 unpadded
 unpadding
+unsafety
 validator
 Ventura
 verifier

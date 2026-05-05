@@ -53,10 +53,22 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::ED448_OID)]
     Ed448,
 
+    #[defined_by(oid::ML_DSA_44_OID)]
+    MlDsa44,
+    #[defined_by(oid::ML_DSA_65_OID)]
+    MlDsa65,
+    #[defined_by(oid::ML_DSA_87_OID)]
+    MlDsa87,
+
     #[defined_by(oid::X25519_OID)]
     X25519,
     #[defined_by(oid::X448_OID)]
     X448,
+
+    #[defined_by(oid::ML_KEM_768_OID)]
+    MlKem768,
+    #[defined_by(oid::ML_KEM_1024_OID)]
+    MlKem1024,
 
     // These encodings are only used in SPKI AlgorithmIdentifiers.
     #[defined_by(oid::EC_OID)]
@@ -256,6 +268,7 @@ impl<'a> asn1::Asn1Readable<'a> for RawTlv<'a> {
     }
 }
 impl asn1::Asn1Writable for RawTlv<'_> {
+    type Error = asn1::WriteError;
     fn write(&self, w: &mut asn1::Writer<'_>) -> asn1::WriteResult {
         w.write_tlv(self.tag, Some(self.value.len()), move |dest| {
             dest.push_slice(self.value)
@@ -315,9 +328,12 @@ impl<'a, T: asn1::SimpleAsn1Readable<'a>, U> asn1::SimpleAsn1Readable<'a>
     }
 }
 
-impl<T: asn1::SimpleAsn1Writable, U: asn1::SimpleAsn1Writable> asn1::SimpleAsn1Writable
-    for Asn1ReadableOrWritable<T, U>
+impl<
+        T: asn1::SimpleAsn1Writable<Error = asn1::WriteError>,
+        U: asn1::SimpleAsn1Writable<Error = asn1::WriteError>,
+    > asn1::SimpleAsn1Writable for Asn1ReadableOrWritable<T, U>
 {
+    type Error = asn1::WriteError;
     const TAG: asn1::Tag = U::TAG;
     fn write_data(&self, w: &mut asn1::WriteBuf) -> asn1::WriteResult {
         match self {
@@ -655,6 +671,7 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for UnvalidatedVisibleString<'a> {
 }
 
 impl asn1::SimpleAsn1Writable for UnvalidatedVisibleString<'_> {
+    type Error = asn1::WriteError;
     const TAG: asn1::Tag = asn1::VisibleString::TAG;
     fn write_data(&self, _: &mut asn1::WriteBuf) -> asn1::WriteResult {
         unimplemented!();
@@ -675,6 +692,7 @@ impl<'a> Utf8StoredBMPString<'a> {
 }
 
 impl asn1::SimpleAsn1Writable for Utf8StoredBMPString<'_> {
+    type Error = asn1::WriteError;
     const TAG: asn1::Tag = asn1::BMPString::TAG;
     fn write_data(&self, writer: &mut asn1::WriteBuf) -> asn1::WriteResult {
         for ch in self.0.encode_utf16() {
@@ -723,7 +741,8 @@ impl<'a, T: asn1::Asn1Readable<'a>> asn1::Asn1Readable<'a> for WithTlv<'a, T> {
 }
 
 impl<T: asn1::Asn1Writable> asn1::Asn1Writable for WithTlv<'_, T> {
-    fn write(&self, w: &mut asn1::Writer<'_>) -> asn1::WriteResult<()> {
+    type Error = T::Error;
+    fn write(&self, w: &mut asn1::Writer<'_>) -> Result<(), T::Error> {
         self.value.write(w)
     }
 

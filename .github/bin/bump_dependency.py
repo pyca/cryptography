@@ -35,12 +35,11 @@ def get_remote_latest_tag(repo_url: str, tag_pattern: str) -> str:
     return sorted(tags, key=version_key)[-1]
 
 
-def get_current_version_from_file(file_path: str, pattern: str) -> str:
+def get_current_versions_from_file(file_path: str, pattern: str) -> list[str]:
     with open(file_path) as f:
         content = f.read()
 
-    match = re.search(pattern, content)
-    return match.group(1)
+    return re.findall(pattern, content)
 
 
 def update_file_version(
@@ -148,22 +147,23 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    current_version = get_current_version_from_file(
-        args.file_path, args.current_version_pattern
-    )
-
     if args.tag:
         latest_version = get_remote_latest_tag(args.repo_url, args.tag_pattern)
     else:
         latest_version = get_remote_commit_sha(args.repo_url, args.branch)
 
-    if current_version == latest_version:
-        print(f"{args.name}: No update needed (current: {current_version})")
+    current_versions = get_current_versions_from_file(
+        args.file_path, args.current_version_pattern
+    )
+
+    if all(v == latest_version for v in current_versions):
+        print(f"{args.name}: No update needed (current: {latest_version})")
         if not args.commit_message_fd:
             with open(os.environ["GITHUB_OUTPUT"], "a") as f:
                 f.write("HAS_UPDATES=false\n")
         return 0
 
+    current_version = next(v for v in current_versions if v != latest_version)
     print(
         f"{args.name}: Update available "
         f"({current_version} -> {latest_version})"

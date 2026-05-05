@@ -57,8 +57,7 @@ impl Pbkdf2Hmac {
             self.iterations,
             self.md,
             output,
-        )
-        .unwrap();
+        )?;
 
         Ok(self.length)
     }
@@ -77,6 +76,13 @@ impl Pbkdf2Hmac {
         backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
     ) -> CryptographyResult<Self> {
         _ = backend;
+        if iterations < 1 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "iterations must be greater than or equal to 1.",
+                ),
+            ));
+        }
         let md = hashes::message_digest_from_algorithm(py, &algorithm)?;
 
         Ok(Pbkdf2Hmac {
@@ -369,7 +375,16 @@ impl BaseArgon2 {
             self.memory_cost,
             output,
         )
-        .map_err(CryptographyError::from)?;
+        .map_err(|_| {
+            // In theory other init issues (e.g. PROV_R_INVALID_THREAD_POOL_SIZE
+            // on builds without thread-pool support) can also occur here, but
+            // in practice failures from OpenSSL's argon2 provider at this point
+            // are memory-allocation failures, so we strictly map to MemoryError.
+            CryptographyError::from(pyo3::exceptions::PyMemoryError::new_err(format!(
+                "Not enough memory to derive key. These parameters require {}KiB of memory.",
+                self.memory_cost
+            )))
+        })?;
 
         Ok(self.length)
     }
@@ -954,23 +969,18 @@ struct Hkdf {
     used: bool,
 }
 
-fn hkdf_extract(
+pub(crate) fn hkdf_extract(
     py: pyo3::Python<'_>,
     algorithm: &pyo3::Py<pyo3::PyAny>,
-    salt: Option<&pyo3::Py<pyo3::types::PyBytes>>,
+    salt: Option<&[u8]>,
     key_material: &CffiBuf<'_>,
 ) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
     let algorithm_bound = algorithm.bind(py);
     let digest_size = algorithm_bound
         .getattr(pyo3::intern!(py, "digest_size"))?
         .extract::<usize>()?;
-    let salt_bound = salt.map(|s| s.bind(py));
     let default_salt = vec![0; digest_size];
-    let salt_bytes: &[u8] = if let Some(bound) = salt_bound {
-        bound.as_bytes()
-    } else {
-        &default_salt
-    };
+    let salt_bytes = salt.unwrap_or(&default_salt);
 
     let mut hmac = Hmac::new_bytes(py, salt_bytes, algorithm_bound)?;
     hmac.update_bytes(key_material.as_bytes())?;
@@ -999,7 +1009,12 @@ impl Hkdf {
         }
 
         let buf = CffiBuf::from_bytes(py, key_material);
-        let prk = hkdf_extract(py, &self.algorithm, self.salt.as_ref(), &buf)?;
+        let prk = hkdf_extract(
+            py,
+            &self.algorithm,
+            self.salt.as_ref().map(|s| s.bind(py)).map(|s| s.as_bytes()),
+            &buf,
+        )?;
         let mut hkdf_expand = HkdfExpand::new(
             py,
             self.algorithm.clone_ref(py),
@@ -1056,10 +1071,10 @@ impl Hkdf {
     fn extract<'p>(
         py: pyo3::Python<'p>,
         algorithm: pyo3::Py<pyo3::PyAny>,
-        salt: Option<pyo3::Py<pyo3::types::PyBytes>>,
+        salt: Option<&[u8]>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let prk = hkdf_extract(py, &algorithm, salt.as_ref(), &key_material)?;
+        let prk = hkdf_extract(py, &algorithm, salt, &key_material)?;
         Ok(pyo3::types::PyBytes::new(py, &prk))
     }
 
@@ -1068,7 +1083,12 @@ impl Hkdf {
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let prk = hkdf_extract(py, &self.algorithm, self.salt.as_ref(), &key_material)?;
+        let prk = hkdf_extract(
+            py,
+            &self.algorithm,
+            self.salt.as_ref().map(|s| s.bind(py)).map(|s| s.as_bytes()),
+            &key_material,
+        )?;
         Ok(pyo3::types::PyBytes::new(py, &prk))
     }
 
@@ -1118,7 +1138,7 @@ impl Hkdf {
     name = "HKDFExpand"
 )]
 // NO-COVERAGE-END
-struct HkdfExpand {
+pub(crate) struct HkdfExpand {
     algorithm: pyo3::Py<pyo3::PyAny>,
     info: pyo3::Py<pyo3::types::PyBytes>,
     length: usize,
@@ -1181,7 +1201,7 @@ impl HkdfExpand {
 impl HkdfExpand {
     #[new]
     #[pyo3(signature = (algorithm, length, info, backend=None))]
-    fn new(
+    pub(crate) fn new(
         py: pyo3::Python<'_>,
         algorithm: pyo3::Py<pyo3::PyAny>,
         length: usize,
@@ -1231,7 +1251,7 @@ impl HkdfExpand {
         self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
     }
 
-    fn derive<'p>(
+    pub(crate) fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
         key_material: CffiBuf<'_>,

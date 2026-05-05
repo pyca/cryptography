@@ -6,7 +6,7 @@ import datetime
 import os
 from functools import lru_cache
 from ipaddress import IPv4Address
-from typing import Optional, Type
+from typing import Optional
 
 import pytest
 
@@ -330,7 +330,7 @@ class TestCustomExtensionPolicies:
             )
 
     @staticmethod
-    def _make_validator_cb(extension_type: Type[ExtensionType]):
+    def _make_validator_cb(extension_type: type[ExtensionType]):
         def validator_cb(policy, cert, ext: Optional[ExtensionType]):
             assert isinstance(policy, Policy)
             assert (
@@ -415,7 +415,7 @@ class TestCustomExtensionPolicies:
             ),
         )
 
-        def make_pattern(extension_type: Type[ExtensionType]):
+        def make_pattern(extension_type: type[ExtensionType]):
             return (
                 f"invalid extension: {extension_type.oid.dotted_string}:"
                 " Certificate extension has incorrect criticality"
@@ -439,7 +439,7 @@ class TestCustomExtensionPolicies:
         "extension_type",
         SUPPORTED_EXTENSION_TYPES,
     )
-    def test_custom_cb_pass(self, extension_type: Type[x509.ExtensionType]):
+    def test_custom_cb_pass(self, extension_type: type[x509.ExtensionType]):
         ca_ext_policy = ExtensionPolicy.webpki_defaults_ca()
         ee_ext_policy = ExtensionPolicy.webpki_defaults_ee()
 

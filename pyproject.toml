@@ -2,11 +2,10 @@
 # These requirements must be kept sync with the requirements in
 # ./.github/requirements/build-requirements.{in,txt}
 requires = [
-    "maturin>=1.9.4,<2,!=1.11.0",
+    "maturin>=1.9.4,<2,!=1.12.0",
 
     # Must be kept in sync with `project.dependencies`
-    "cffi>=1.14; platform_python_implementation != 'PyPy' and python_version == '3.8'",
-    "cffi>=2.0.0; platform_python_implementation != 'PyPy' and python_version >= '3.9'",
+    "cffi>=2.0.0; platform_python_implementation != 'PyPy'",
     # Used by cffi (which import distutils, and in Python 3.12, distutils has
     # been removed from the stdlib, but installing setuptools puts it back) as
     # well as our build.rs for the rust/cffi bridge.
@@ -16,7 +15,7 @@ build-backend = "maturin"
 
 [project]
 name = "cryptography"
-version = "47.0.0.dev1"
+version = "49.0.0.dev1"
 authors = [
     { name = "The Python Cryptographic Authority and individual contributors", email = "cryptography-dev@python.org" },
 ]
@@ -36,7 +35,6 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -48,11 +46,10 @@ classifiers = [
     "Programming Language :: Python :: Free Threading :: 3 - Stable",
     "Topic :: Security :: Cryptography",
 ]
-requires-python = ">=3.8,!=3.9.0,!=3.9.1"
+requires-python = ">=3.9,!=3.9.0,!=3.9.1"
 dependencies = [
     # Must be kept in sync with `build-system.requires`
-    "cffi>=1.14; platform_python_implementation != 'PyPy' and python_version == '3.8'",
-    "cffi>=2.0.0; platform_python_implementation != 'PyPy' and python_version >= '3.9'",
+    "cffi>=2.0.0; platform_python_implementation != 'PyPy'",
     # Must be kept in sync with ./.github/requirements/build-requirements.{in,txt}
     "typing-extensions>=4.13.2; python_version < '3.11'",
 ]
@@ -67,7 +64,15 @@ changelog = "https://cryptography.io/en/latest/changelog/"
 [project.optional-dependencies]
 ssh = ["bcrypt >=3.1.5"]
 
-# All the following are used for our own testing.
+[dependency-groups]
+dev = [
+    {include-group = "nox"},
+    {include-group = "test-randomorder"},
+    {include-group = "docs"},
+    {include-group = "docstest"},
+    {include-group = "sdist"},
+    {include-group = "pep8test"},
+]
 nox = ["nox[uv] >=2024.04.15"]
 test = [
     "cryptography_vectors",
@@ -78,7 +83,7 @@ test = [
     "pretend >=0.7",
     "certifi >=2024",
 ]
-test-randomorder = ["pytest-randomly"]
+test-randomorder = [{include-group = "test"}, "pytest-randomly"]
 docs = [
     "sphinx >=5.3.0",
     "sphinx-rtd-theme >=3.0.0",
@@ -195,4 +200,6 @@ git-only = [
     "ci-constraints-requirements.txt",
     ".gitattributes",
     ".gitignore",
+    "AGENTS.md",
+    "CLAUDE.md",
 ]
