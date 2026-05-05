@@ -68,7 +68,7 @@ pub fn mlkem_seed_from_pkey(
             let pkcs8_der = pkey.private_key_to_pkcs8()?;
             let pki = asn1::parse_single::<PrivateKeyInfo<'_>>(&pkcs8_der).unwrap();
             Ok(asn1::parse_single::<MlKemPrivateKey>(pki.private_key).unwrap())
-        } else if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))] {
+        } else {
             let seed = cryptography_openssl::mlkem::mlkem_seed_raw(pkey)?;
             Ok(MlKemPrivateKey::Seed(seed))
         }
@@ -96,7 +96,7 @@ pub fn mldsa_seed_from_pkey(
             let pkcs8_der = pkey.private_key_to_pkcs8()?;
             let pki = asn1::parse_single::<PrivateKeyInfo<'_>>(&pkcs8_der).unwrap();
             Ok(asn1::parse_single::<MlDsaPrivateKey>(pki.private_key).unwrap())
-        } else if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))] {
+        } else {
             let seed = cryptography_openssl::mldsa::mldsa_seed_raw(pkey)?;
             Ok(MlDsaPrivateKey::Seed(seed))
         }
