@@ -48,14 +48,13 @@ pub enum MlDsaPrivateKey {
 
 /// Extract the ML-KEM seed from a private key.
 ///
-/// For BoringSSL/AWS-LC, round-trips through PKCS#8 encoding to extract the
-/// seed. AWS-LC's `raw_private_key()` returns the 2400-byte expanded key, not
-/// the seed; since AWS-LC 1.72.0, `private_key_to_pkcs8()` produces RFC 9935
-/// seed-format PKCS#8 when the key was created from a seed. BoringSSL's
-/// private key serialization also emits RFC 9935 seed-format PKCS#8.
+/// For BoringSSL and OpenSSL 3.5+, calls the library's seed extraction API
+/// directly (`EVP_PKEY_get_private_seed` / `PKey::seed_into`).
 ///
-/// For vanilla OpenSSL 3.5+, calls `PKey::seed_into` to read the seed
-/// directly, avoiding the PKCS#8 round-trip.
+/// For AWS-LC, round-trips through PKCS#8 encoding because
+/// `raw_private_key()` returns the 2400-byte expanded key. Since AWS-LC
+/// 1.72.0, `private_key_to_pkcs8()` produces RFC 9935 seed-format PKCS#8
+/// when the key was created from a seed.
 #[cfg(any(
     CRYPTOGRAPHY_IS_BORINGSSL,
     CRYPTOGRAPHY_IS_AWSLC,
@@ -65,11 +64,11 @@ pub fn mlkem_seed_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
 ) -> Result<MlKemPrivateKey, openssl::error::ErrorStack> {
     cfg_if::cfg_if! {
-        if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
+        if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
             let pkcs8_der = pkey.private_key_to_pkcs8()?;
             let pki = asn1::parse_single::<PrivateKeyInfo<'_>>(&pkcs8_der).unwrap();
             Ok(asn1::parse_single::<MlKemPrivateKey>(pki.private_key).unwrap())
-        } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
+        } else if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))] {
             let seed = cryptography_openssl::mlkem::mlkem_seed_raw(pkey)?;
             Ok(MlKemPrivateKey::Seed(seed))
         }
@@ -78,13 +77,12 @@ pub fn mlkem_seed_from_pkey(
 
 /// Extract the 32-byte ML-DSA seed from a private key.
 ///
-/// For BoringSSL/AWS-LC, round-trips through PKCS#8 encoding to extract the
-/// seed (AWS-LC's `raw_private_key()` returns the expanded key, not the seed:
-/// https://github.com/aws/aws-lc/issues/3072).
+/// For BoringSSL and OpenSSL 3.5+, calls the library's seed extraction API
+/// directly (`EVP_PKEY_get_private_seed` / `PKey::seed_into`).
 ///
-/// For vanilla OpenSSL 3.5+, calls `PKey::seed_into` to read the seed
-/// directly, since OpenSSL 3.5's PKCS#8 inner encoding differs from
-/// BoringSSL/AWS-LC.
+/// For AWS-LC, round-trips through PKCS#8 encoding because
+/// `raw_private_key()` returns the expanded key, not the seed
+/// (https://github.com/aws/aws-lc/issues/3072).
 #[cfg(any(
     CRYPTOGRAPHY_IS_BORINGSSL,
     CRYPTOGRAPHY_IS_AWSLC,
@@ -94,11 +92,11 @@ pub fn mldsa_seed_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
 ) -> Result<MlDsaPrivateKey, openssl::error::ErrorStack> {
     cfg_if::cfg_if! {
-        if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
+        if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
             let pkcs8_der = pkey.private_key_to_pkcs8()?;
             let pki = asn1::parse_single::<PrivateKeyInfo<'_>>(&pkcs8_der).unwrap();
             Ok(asn1::parse_single::<MlDsaPrivateKey>(pki.private_key).unwrap())
-        } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
+        } else if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))] {
             let seed = cryptography_openssl::mldsa::mldsa_seed_raw(pkey)?;
             Ok(MlDsaPrivateKey::Seed(seed))
         }

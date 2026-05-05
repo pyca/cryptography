@@ -206,12 +206,27 @@ extern "C" {
 ///
 /// Avoids the PKCS#8 round-trip that vanilla OpenSSL 3.5 encodes
 /// differently from BoringSSL/AWS-LC.
-#[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))]
 pub fn mldsa_seed_raw(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
 ) -> OpenSSLResult<[u8; 32]> {
     let mut seed = [0u8; 32];
-    pkey.seed_into(&mut seed)?;
+    cfg_if::cfg_if! {
+        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+            let mut seed_len = seed.len();
+            // SAFETY: pkey is a valid EVP_PKEY and seed is a 32-byte buffer.
+            unsafe {
+                cvt(ffi::EVP_PKEY_get_private_seed(
+                    pkey.as_ptr(),
+                    seed.as_mut_ptr(),
+                    &mut seed_len,
+                ))?;
+            }
+            assert_eq!(seed_len, 32);
+        } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
+            pkey.seed_into(&mut seed)?;
+        }
+    }
     Ok(seed)
 }
 
