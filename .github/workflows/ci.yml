@@ -337,6 +337,9 @@ jobs:
 
   windows:
     runs-on: ${{ matrix.WINDOWS.RUNNER }}
+    # Windows on ARM is in a stability validation period; allow this matrix
+    # slice to fail without breaking the workflow while we evaluate it.
+    continue-on-error: ${{ matrix.WINDOWS.ARCH == 'arm64' }}
     strategy:
       fail-fast: false
       matrix:
