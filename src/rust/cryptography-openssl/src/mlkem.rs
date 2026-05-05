@@ -3,6 +3,8 @@
 // for complete details.
 
 use foreign_types_shared::ForeignType;
+#[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+use foreign_types_shared::ForeignTypeRef;
 use openssl_sys as ffi;
 #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
 use std::os::raw::c_int;
