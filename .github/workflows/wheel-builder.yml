@@ -329,14 +329,14 @@ jobs:
           wheel-artifact-name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
 
   windows-arm64:
-    # Windows on ARM is in a stability validation period. This job is kept
-    # separate from `windows` and marked continue-on-error so transient
-    # failures do not block the release pipeline (pypi-publish.yml triggers
-    # on the workflow conclusion). Wheels are uploaded only when the build
-    # succeeds.
+    # Windows on ARM is in a stability validation period. Each work step
+    # uses `continue-on-error: true` so the job's overall conclusion is
+    # `success` (PR check stays green) and the release pipeline
+    # (pypi-publish.yml) keeps running. Subsequent steps are gated on the
+    # previous step's `outcome` so execution stops on the first failure
+    # and no broken wheel is uploaded.
     needs: [sdist]
     runs-on: windows-11-arm
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -358,11 +358,16 @@ jobs:
             .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
 
-      # TEMP: artificial failure to validate continue-on-error for arm64.
+      # TEMP: artificial failure to validate the soft-failure flow for arm64.
       - name: Force failure (arm64 stability validation)
+        id: force_failure
+        continue-on-error: true
         shell: bash
         run: exit 1
-      - uses: ./.github/actions/build-windows-wheel
+      - id: build
+        if: steps.force_failure.outcome == 'success'
+        continue-on-error: true
+        uses: ./.github/actions/build-windows-wheel
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           abi-version: ${{ matrix.PYTHON.ABI_VERSION }}
@@ -372,3 +377,8 @@ jobs:
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
           uv-requirements-path: ${{ env.UV_REQUIREMENTS_PATH }}
           wheel-artifact-name: "cryptography-${{ github.event.inputs.version }}-arm64-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
+      - name: Report soft failure
+        if: always() && (steps.force_failure.outcome != 'success' || steps.build.outcome != 'success')
+        shell: bash
+        run: |
+          echo "::warning title=windows-arm64 soft failure::A step failed but the job is reported as success while Windows on ARM is in stability validation."
