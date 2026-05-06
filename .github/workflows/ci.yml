@@ -375,14 +375,7 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      # TEMP: artificial failure to validate the soft-failure flow for arm64.
-      - name: Force failure (arm64 stability validation)
-        id: force_failure
-        continue-on-error: true
-        shell: bash
-        run: exit 1
       - id: tests
-        if: steps.force_failure.outcome == 'success'
         continue-on-error: true
         uses: ./.github/actions/windows-tests
         with:
@@ -391,7 +384,7 @@ jobs:
           arch: arm64
           openssl-name: arm64
       - name: Report soft failure
-        if: always() && (steps.force_failure.outcome != 'success' || steps.tests.outcome != 'success')
+        if: always() && steps.tests.outcome != 'success'
         shell: bash
         run: |
           echo "::warning title=windows-arm64 soft failure::A step failed but the job is reported as success while Windows on ARM is in stability validation."

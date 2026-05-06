@@ -1,4 +1,4 @@
-name: Build Windows wheel
+name: Windows wheel
 description: |
   Builds (and smoke-tests) a cryptography wheel on Windows. Used by
   wheel-builder.yml for both x64 and arm64 jobs to avoid duplication.
