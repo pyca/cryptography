@@ -29,12 +29,10 @@ runs:
         architecture: ${{ inputs.arch }}
         cache: pip
         cache-dependency-path: ci-constraints-requirements.txt
-      timeout-minutes: 3
     - run: rustup component add llvm-tools-preview
       shell: bash
     - name: Cache rust and pip
       uses: ./.github/actions/cache
-      timeout-minutes: 2
       with:
         key: ${{ inputs.noxsession }}-${{ inputs.arch }}-${{ steps.setup-python.outputs.python-version }}
     - run: python -m pip install -c ci-constraints-requirements.txt "nox[uv]" "tomli; python_version < '3.11'"
@@ -57,7 +55,6 @@ runs:
       shell: bash
 
     - name: Clone test vectors
-      timeout-minutes: 2
       uses: ./.github/actions/fetch-vectors
 
     - name: Build nox environment
