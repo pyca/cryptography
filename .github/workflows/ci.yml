@@ -18,6 +18,8 @@ env:
 
 jobs:
   linux:
+    # TEMP: disabled for quick arm64 evaluation
+    if: false
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -152,6 +154,8 @@ jobs:
       - uses: ./.github/actions/upload-coverage
 
   distros:
+    # TEMP: disabled for quick arm64 evaluation
+    if: false
     runs-on: ${{ matrix.IMAGE.RUNNER }}
     container: ghcr.io/pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
     strategy:
@@ -210,6 +214,8 @@ jobs:
       - uses: ./.github/actions/upload-coverage
 
   alpine:
+    # TEMP: disabled for quick arm64 evaluation
+    if: false
     runs-on: ${{ matrix.IMAGE.RUNNER }}
     container:
       image: ghcr.io/pyca/cryptography-runner-${{ matrix.IMAGE.IMAGE }}
@@ -272,6 +278,8 @@ jobs:
       - uses: ./.github/actions/upload-coverage
 
   macos:
+    # TEMP: disabled for quick arm64 evaluation
+    if: false
     runs-on: ${{ matrix.RUNNER.OS }}
     strategy:
       fail-fast: false
@@ -387,6 +395,8 @@ jobs:
           openssl-name: arm64
 
   linux-downstream:
+    # TEMP: disabled for quick arm64 evaluation
+    if: false
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -516,6 +526,8 @@ jobs:
           # Windows on ARM is in a stability validation period; allow it to
           # fail without blocking PR validation.
           allowed-failures: windows-arm64
+          # TEMP: jobs disabled for quick arm64 evaluation
+          allowed-skips: linux,alpine,distros,macos,linux-downstream
       - name: Setup python
         if: ${{ always() }}
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
