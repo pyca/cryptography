@@ -88,7 +88,7 @@ iniconfig==2.3.0 ; python_full_version >= '3.10'
     # via pytest
 jinja2==3.1.6
     # via sphinx
-librt==0.9.0 ; platform_python_implementation != 'PyPy'
+librt==0.10.0 ; platform_python_implementation != 'PyPy'
     # via mypy
 markupsafe==3.0.3
     # via jinja2
