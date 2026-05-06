@@ -333,6 +333,7 @@ jobs:
 
       # TEMP: artificial failure to validate continue-on-error for arm64.
       - name: Force failure (arm64 stability validation)
+        continue-on-error: ${{ matrix.WINDOWS.ARCH == 'arm64' }}
         if: matrix.WINDOWS.ARCH == 'arm64'
         shell: bash
         run: exit 1
