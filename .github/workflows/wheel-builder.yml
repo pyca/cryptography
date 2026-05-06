@@ -292,27 +292,16 @@ jobs:
   windows:
     needs: [sdist]
     runs-on: ${{ matrix.WINDOWS.RUNNER }}
-    # Windows on ARM is in a stability validation period; allow this matrix
-    # slice to fail without breaking the release pipeline while we evaluate it.
-    continue-on-error: ${{ matrix.WINDOWS.ARCH == 'arm64' }}
     strategy:
       fail-fast: false
       matrix:
         WINDOWS:
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc', RUNNER: 'windows-latest'}
-          - {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
         PYTHON:
           - {VERSION: "3.14", "ABI_VERSION": "py39"}
           - {VERSION: "3.14", "ABI_VERSION": "py311"}
           - {VERSION: "3.14t"}
           - {VERSION: "pypy-3.11"}
-        exclude:
-          # We need to exclude the below configuration because there is no ARM64 pypy3
-          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "pypy-3.11"}
-          # We need to exclude the below configuration because there is no ARM64 py39
-          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.14", "ABI_VERSION": "py39"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - name: Get build-requirements.txt from repository
@@ -324,62 +313,62 @@ jobs:
           sparse-checkout: |
             ${{ env.BUILD_REQUIREMENTS_PATH }}
             ${{ env.UV_REQUIREMENTS_PATH }}
+            .github/actions/build-windows-wheel/
             .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: ./.github/actions/build-windows-wheel
         with:
-          name: cryptography-sdist
+          python-version: ${{ matrix.PYTHON.VERSION }}
+          abi-version: ${{ matrix.PYTHON.ABI_VERSION }}
+          arch: ${{ matrix.WINDOWS.ARCH }}
+          rust-triple: ${{ matrix.WINDOWS.RUST_TRIPLE }}
+          openssl-name: ${{ matrix.WINDOWS.WINDOWS }}
+          build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
+          uv-requirements-path: ${{ env.UV_REQUIREMENTS_PATH }}
+          wheel-artifact-name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
+
+  windows-arm64:
+    # Windows on ARM is in a stability validation period. This job is kept
+    # separate from `windows` and marked continue-on-error so transient
+    # failures do not block the release pipeline (pypi-publish.yml triggers
+    # on the workflow conclusion). Wheels are uploaded only when the build
+    # succeeds.
+    needs: [sdist]
+    runs-on: windows-11-arm
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        PYTHON:
+          - {VERSION: "3.14", "ABI_VERSION": "py311"}
+          - {VERSION: "3.14t"}
+    name: "${{ matrix.PYTHON.VERSION }} arm64 ${{ matrix.PYTHON.ABI_VERSION }}"
+    steps:
+      - name: Get build-requirements.txt from repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # The tag to build or the tag received by the tag event
+          ref: ${{ github.event.inputs.version || github.ref }}
+          persist-credentials: false
+          sparse-checkout: |
+            ${{ env.BUILD_REQUIREMENTS_PATH }}
+            ${{ env.UV_REQUIREMENTS_PATH }}
+            .github/actions/build-windows-wheel/
+            .github/actions/wheel-smoketest/
+          sparse-checkout-cone-mode: false
 
       # TEMP: artificial failure to validate continue-on-error for arm64.
       - name: Force failure (arm64 stability validation)
-        continue-on-error: ${{ matrix.WINDOWS.ARCH == 'arm64' }}
-        if: matrix.WINDOWS.ARCH == 'arm64'
         shell: bash
         run: exit 1
-      - name: Setup python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - uses: ./.github/actions/build-windows-wheel
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-          architecture: ${{ matrix.WINDOWS.ARCH }}
-        timeout-minutes: 3
-      - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
-        with:
-          toolchain: stable
-          target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
-
-      - uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
-        with:
-          repo: pyca/infra
-          workflow: build-windows-openssl.yml
-          branch: main
-          workflow_conclusion: success
-          name: "openssl-${{ matrix.WINDOWS.WINDOWS }}"
-          path: "C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Configure OpenSSL
-        run: |
-            echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
-            echo "OPENSSL_STATIC=1" >> $GITHUB_ENV
-        shell: bash
-
-      - run: pip install -r "${UV_REQUIREMENTS_PATH}"
-        shell: bash
-      - run: mkdir wheelhouse
-      - run: |
-          if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
-              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
-          fi
-
-          uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API --config-settings=build-args=--sbom-include=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/sbom.json -o wheelhouse/
-        shell: bash
-
-      - name: Smoketest
-        uses: ./.github/actions/wheel-smoketest
-        with:
+          abi-version: ${{ matrix.PYTHON.ABI_VERSION }}
+          arch: arm64
+          rust-triple: aarch64-pc-windows-msvc
+          openssl-name: arm64
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
-          path: wheelhouse\
+          uv-requirements-path: ${{ env.UV_REQUIREMENTS_PATH }}
+          wheel-artifact-name: "cryptography-${{ github.event.inputs.version }}-arm64-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"

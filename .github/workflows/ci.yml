@@ -337,9 +337,6 @@ jobs:
 
   windows:
     runs-on: ${{ matrix.WINDOWS.RUNNER }}
-    # Windows on ARM is in a stability validation period; allow this matrix
-    # slice to fail without breaking the workflow while we evaluate it.
-    continue-on-error: ${{ matrix.WINDOWS.ARCH == 'arm64' }}
     strategy:
       fail-fast: false
       matrix:
@@ -349,11 +346,29 @@ jobs:
           - {VERSION: "3.9", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
-        include:
-          # Not in the main matrix because we want tests-nocoverage on Python
-          # 3.14
-          - PYTHON: {VERSION: "3.14", NOXSESSION: "tests-nocoverage"}
-            WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        timeout-minutes: 3
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/windows-tests
+        with:
+          python-version: ${{ matrix.PYTHON.VERSION }}
+          noxsession: ${{ matrix.PYTHON.NOXSESSION }}
+          arch: ${{ matrix.WINDOWS.ARCH }}
+          openssl-name: ${{ matrix.WINDOWS.WINDOWS }}
+
+      - uses: ./.github/actions/upload-coverage
+
+  windows-arm64:
+    # Windows on ARM is in a stability validation period. This job is
+    # intentionally separate from `windows` and listed under
+    # `allowed-failures` of the `all-green` aggregator so transient build or
+    # test failures do not block PR validation while we evaluate the
+    # platform.
+    runs-on: windows-11-arm
+    continue-on-error: true
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -362,55 +377,14 @@ jobs:
           persist-credentials: false
       # TEMP: artificial failure to validate continue-on-error for arm64.
       - name: Force failure (arm64 stability validation)
-        if: matrix.WINDOWS.ARCH == 'arm64'
         shell: bash
         run: exit 1
-      - name: Setup python
-        id: setup-python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - uses: ./.github/actions/windows-tests
         with:
-          python-version: ${{ matrix.PYTHON.VERSION }}
-          architecture: ${{ matrix.WINDOWS.ARCH }}
-          cache: pip
-          cache-dependency-path: ci-constraints-requirements.txt
-        timeout-minutes: 3
-      - run: rustup component add llvm-tools-preview
-      - name: Cache rust and pip
-        uses: ./.github/actions/cache
-        timeout-minutes: 2
-        with:
-          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
-      - run: python -m pip install -c ci-constraints-requirements.txt "nox[uv]" "tomli; python_version < '3.11'"
-
-      - uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
-        with:
-          repo: pyca/infra
-          workflow: build-windows-openssl.yml
-          branch: main
-          workflow_conclusion: success
-          name: "openssl-${{ matrix.WINDOWS.WINDOWS }}"
-          path: "C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Configure
-        run: |
-            echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Clone test vectors
-        timeout-minutes: 2
-        uses: ./.github/actions/fetch-vectors
-
-      - name: Build nox environment
-        run: nox -v --install-only
-        env:
-          NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
-      - name: Tests
-        run: nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo
-        env:
-          NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
-          COLUMNS: 80
-
-      - uses: ./.github/actions/upload-coverage
+          python-version: "3.14"
+          noxsession: tests-nocoverage
+          arch: arm64
+          openssl-name: arm64
 
   linux-downstream:
     runs-on: ubuntu-latest
@@ -527,7 +501,7 @@ jobs:
   all-green:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
     runs-on: ubuntu-latest
-    needs: [linux, alpine, distros, macos, windows, linux-downstream]
+    needs: [linux, alpine, distros, macos, windows, windows-arm64, linux-downstream]
     if: ${{ always() }}
     timeout-minutes: 3
     steps:
@@ -539,6 +513,9 @@ jobs:
         uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # v1.2.2
         with:
           jobs: ${{ toJSON(needs) }}
+          # Windows on ARM is in a stability validation period; allow it to
+          # fail without blocking PR validation.
+          allowed-failures: windows-arm64
       - name: Setup python
         if: ${{ always() }}
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
