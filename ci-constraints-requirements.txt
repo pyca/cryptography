@@ -10,7 +10,11 @@ attrs==26.1.0
     # via nox
 babel==2.18.0
     # via sphinx
-build==1.4.4
+build==1.4.4 ; python_full_version < '3.10'
+    # via
+    #   cryptography (pyproject.toml:dev)
+    #   check-sdist
+build==1.5.0 ; python_full_version >= '3.10'
     # via
     #   cryptography (pyproject.toml:dev)
     #   check-sdist
@@ -24,7 +28,7 @@ check-sdist==1.4.0
     # via cryptography (pyproject.toml:dev)
 click==8.1.8 ; python_full_version < '3.10'
     # via cryptography (pyproject.toml:dev)
-click==8.3.2 ; python_full_version >= '3.10'
+click==8.3.3 ; python_full_version >= '3.10'
     # via cryptography (pyproject.toml:dev)
 colorama==0.4.6 ; os_name == 'nt' or sys_platform == 'win32'
     # via
@@ -61,7 +65,7 @@ filelock==3.19.1 ; python_full_version < '3.10'
     # via
     #   python-discovery
     #   virtualenv
-filelock==3.25.2 ; python_full_version >= '3.10'
+filelock==3.29.0 ; python_full_version >= '3.10'
     # via
     #   python-discovery
     #   virtualenv
@@ -94,7 +98,7 @@ markupsafe==3.0.3
     # via jinja2
 mypy==1.19.1 ; python_full_version < '3.10'
     # via cryptography (pyproject.toml:dev)
-mypy==1.20.0 ; python_full_version >= '3.10'
+mypy==1.20.2 ; python_full_version >= '3.10'
     # via cryptography (pyproject.toml:dev)
 mypy-extensions==1.1.0
     # via mypy
@@ -158,7 +162,9 @@ pytest-benchmark==5.2.3
     # via cryptography (pyproject.toml:dev)
 pytest-cov==7.1.0
     # via cryptography (pyproject.toml:dev)
-pytest-randomly==4.0.1
+pytest-randomly==4.0.1 ; python_full_version < '3.10'
+    # via cryptography (pyproject.toml:dev)
+pytest-randomly==4.1.0 ; python_full_version >= '3.10'
     # via cryptography (pyproject.toml:dev)
 pytest-xdist==3.8.0
     # via cryptography (pyproject.toml:dev)
@@ -250,7 +256,7 @@ uv==0.11.10
     # via nox
 virtualenv==21.3.1
     # via nox
-zipp==3.23.0 ; python_full_version < '3.10.2'
+zipp==3.23.1 ; python_full_version < '3.10.2'
     # via importlib-metadata
 
 # The following packages were excluded from the output:
