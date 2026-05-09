@@ -46,32 +46,6 @@ pub enum MlDsaPrivateKey {
     Seed([u8; 32]),
 }
 
-/// Extract the ML-KEM seed from a private key.
-#[cfg(any(
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC,
-    CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
-))]
-pub fn mlkem_seed_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
-) -> Result<MlKemPrivateKey, openssl::error::ErrorStack> {
-    let seed = cryptography_openssl::mlkem::mlkem_seed_raw(pkey)?;
-    Ok(MlKemPrivateKey::Seed(seed))
-}
-
-/// Extract the 32-byte ML-DSA seed from a private key.
-#[cfg(any(
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC,
-    CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
-))]
-pub fn mldsa_seed_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
-) -> Result<MlDsaPrivateKey, openssl::error::ErrorStack> {
-    let seed = cryptography_openssl::mldsa::mldsa_seed_raw(pkey)?;
-    Ok(MlDsaPrivateKey::Seed(seed))
-}
-
 pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
     let k = asn1::parse_single::<PrivateKeyInfo<'_>>(data)?;
     if k.version != 0 {
@@ -572,7 +546,8 @@ pub fn serialize_private_key(key: &ParsedPrivateKey) -> crate::KeySerializationR
                 CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
             ))]
             _ if cryptography_openssl::mlkem::is_mlkem_pkey(pkey) => {
-                let private_key_der = asn1::write_single(&mlkem_seed_from_pkey(pkey)?)?;
+                let seed = cryptography_openssl::mlkem::mlkem_seed_raw(pkey)?;
+                let private_key_der = asn1::write_single(&MlKemPrivateKey::Seed(seed))?;
                 let params = match cryptography_openssl::mlkem::MlKemVariant::from_pkey(pkey) {
                     cryptography_openssl::mlkem::MlKemVariant::MlKem768 => {
                         AlgorithmParameters::MlKem768
@@ -589,7 +564,8 @@ pub fn serialize_private_key(key: &ParsedPrivateKey) -> crate::KeySerializationR
                 CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
             ))]
             _ if cryptography_openssl::mldsa::is_mldsa_pkey(pkey) => {
-                let private_key_der = asn1::write_single(&mldsa_seed_from_pkey(pkey)?)?;
+                let seed = cryptography_openssl::mldsa::mldsa_seed_raw(pkey)?;
+                let private_key_der = asn1::write_single(&MlDsaPrivateKey::Seed(seed))?;
                 let params = match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
                     cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => {
                         AlgorithmParameters::MlDsa44
