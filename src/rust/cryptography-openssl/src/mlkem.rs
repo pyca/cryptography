@@ -116,16 +116,17 @@ extern "C" {
 }
 
 /// Extract the raw 64-byte seed from an ML-KEM private key.
-///
-/// Avoids the PKCS#8 round-trip that vanilla OpenSSL 3.5 encodes
-/// differently from BoringSSL/AWS-LC.
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_OPENSSL_350_OR_GREATER))]
+#[cfg(any(
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC,
+    CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+))]
 pub fn mlkem_seed_raw(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
 ) -> OpenSSLResult<[u8; 64]> {
     let mut seed = [0u8; 64];
     cfg_if::cfg_if! {
-        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+        if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
             let mut seed_len = seed.len();
             // SAFETY: pkey is a valid EVP_PKEY and seed is a 64-byte buffer.
             unsafe {
