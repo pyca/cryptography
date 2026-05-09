@@ -3,7 +3,7 @@
 // for complete details.
 
 use foreign_types_shared::ForeignType;
-#[cfg(CRYPTOGRAPHY_IS_BORINGSSL)]
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 use foreign_types_shared::ForeignTypeRef;
 use openssl_sys as ffi;
 #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
@@ -67,16 +67,12 @@ impl MlKemVariant {
                     _ => panic!("Unsupported ML-KEM variant"),
                 }
             } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
-                // AWS-LC is missing the equivalent `EVP_PKEY_pqdsa_get_type`,
-                // so we are using the key size as a discriminator to find the
-                // variant.
-                let len = pkey
-                    .raw_public_key()
-                    .expect("valid ML-KEM public key")
-                    .len();
-                match len {
-                    1184 => MlKemVariant::MlKem768,
-                    1568 => MlKemVariant::MlKem1024,
+                // SAFETY: EVP_PKEY_kem_get_type returns the NID of the KEM
+                // algorithm for a valid KEM pkey.
+                let nid = unsafe { ffi::EVP_PKEY_kem_get_type(pkey.as_ptr()) };
+                match nid {
+                    ffi::NID_MLKEM768 => MlKemVariant::MlKem768,
+                    ffi::NID_MLKEM1024 => MlKemVariant::MlKem1024,
                     _ => panic!("Unsupported ML-KEM variant"),
                 }
             } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
