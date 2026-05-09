@@ -116,11 +116,6 @@ extern "C" {
 }
 
 /// Extract the raw 64-byte seed from an ML-KEM private key.
-#[cfg(any(
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC,
-    CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
-))]
 pub fn mlkem_seed_raw(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
 ) -> OpenSSLResult<[u8; 64]> {
