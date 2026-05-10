@@ -7,7 +7,8 @@ case "${1}" in
         cp -r sigstore-python /tmp/sigstore-python
         cd /tmp/sigstore-python
         uv pip install pip
-        pip install -e ".[test]"
+        pip install --group dev
+        pip install -e .
         ;;
     run)
         cd /tmp/sigstore-python
