@@ -69,7 +69,7 @@ def _key_identifier_from_public_key(
         )
         data = asn1.parse_spki_for_data(serialized)
 
-    return hashlib.sha1(data).digest()
+    return hashlib.sha3_256(data).digest()  # PQC-CAVEAT: SHA3-256/SHA3-512 output size may differ from SHA-1(20B)/MD5(16B). Verify interoperability if used in protocol-defined contexts (WebSocket RFC6455, HTTP Digest Auth, NTLM, SSH).
 
 
 def _make_sequence_methods(field_name: str):

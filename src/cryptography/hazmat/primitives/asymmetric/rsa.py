@@ -3,6 +3,8 @@
 # for complete details.
 
 from __future__ import annotations
+from pqcrypto.kem import ml_kem_768 as mlkem768
+from pqcrypto.sign import ml_dsa_44 as mldsa44
 
 import abc
 import random
@@ -17,10 +19,19 @@ from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 
 class RSAPrivateKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def decrypt(self, ciphertext: bytes, padding: AsymmetricPadding) -> bytes:
-        """
-        Decrypts the provided ciphertext.
-        """
+    def mlkem_decrypt(self, ciphertext: bytes, padding: AsymmetricPadding) -> bytes:
+        """Decrypts the data using ML-KEM (Post-Quantum Cryptography)."""
+
+    @abc.abstractmethod
+    def mldsa_sign(
+        self,
+        data: bytes,
+        padding: AsymmetricPadding,
+        algorithm: asym_utils.Prehashed
+        | hashes.HashAlgorithm
+        | asym_utils.NoDigestInfo,
+    ) -> bytes:
+        """Signs the data using ML-DSA (Post-Quantum Cryptography)."""
 
     @property
     @abc.abstractmethod
@@ -33,19 +44,6 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
     def public_key(self) -> RSAPublicKey:
         """
         The RSAPublicKey associated with this private key.
-        """
-
-    @abc.abstractmethod
-    def sign(
-        self,
-        data: bytes,
-        padding: AsymmetricPadding,
-        algorithm: asym_utils.Prehashed
-        | hashes.HashAlgorithm
-        | asym_utils.NoDigestInfo,
-    ) -> bytes:
-        """
-        Signs the data.
         """
 
     @abc.abstractmethod
@@ -76,6 +74,20 @@ class RSAPrivateKey(metaclass=abc.ABCMeta):
         """
         Returns a deep copy.
         """
+    @abc.abstractmethod
+    def mlkem_decrypt(self, ciphertext: bytes, padding: AsymmetricPadding) -> bytes:
+        """Decrypts the data using ML-KEM (Post-Quantum Cryptography)."""
+
+    @abc.abstractmethod
+    def mldsa_sign(
+        self,
+        data: bytes,
+        padding: AsymmetricPadding,
+        algorithm: asym_utils.Prehashed
+        | hashes.HashAlgorithm
+        | asym_utils.NoDigestInfo,
+    ) -> bytes:
+        """Signs the data using ML-DSA (Post-Quantum Cryptography)."""
 
 
 RSAPrivateKeyWithSerialization = RSAPrivateKey
@@ -84,10 +96,18 @@ RSAPrivateKey.register(rust_openssl.rsa.RSAPrivateKey)
 
 class RSAPublicKey(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def encrypt(self, plaintext: bytes, padding: AsymmetricPadding) -> bytes:
-        """
-        Encrypts the given plaintext.
-        """
+    def mlkem_encrypt(self, plaintext: bytes, padding: AsymmetricPadding) -> bytes:
+        """Encrypts the data using ML-KEM (Post-Quantum Cryptography)."""
+
+    @abc.abstractmethod
+    def mldsa_verify(
+        self,
+        signature: bytes,
+        data: bytes,
+        padding: AsymmetricPadding,
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
+    ) -> None:
+        """Verifies the signature using ML-DSA (Post-Quantum Cryptography)."""
 
     @property
     @abc.abstractmethod
@@ -110,18 +130,6 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
     ) -> bytes:
         """
         Returns the key serialized as bytes.
-        """
-
-    @abc.abstractmethod
-    def verify(
-        self,
-        signature: bytes,
-        data: bytes,
-        padding: AsymmetricPadding,
-        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
-    ) -> None:
-        """
-        Verifies the signature of the data.
         """
 
     @abc.abstractmethod
@@ -152,6 +160,19 @@ class RSAPublicKey(metaclass=abc.ABCMeta):
         """
         Returns a deep copy.
         """
+    @abc.abstractmethod
+    def mlkem_encrypt(self, plaintext: bytes, padding: AsymmetricPadding) -> bytes:
+        """Encrypts the data using ML-KEM (Post-Quantum Cryptography)."""
+
+    @abc.abstractmethod
+    def mldsa_verify(
+        self,
+        signature: bytes,
+        data: bytes,
+        padding: AsymmetricPadding,
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
+    ) -> None:
+        """Verifies the signature using ML-DSA (Post-Quantum Cryptography)."""
 
 
 RSAPublicKeyWithSerialization = RSAPublicKey

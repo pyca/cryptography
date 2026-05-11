@@ -3,6 +3,7 @@
 # for complete details.
 
 from __future__ import annotations
+from pqcrypto.sign import ml_dsa_44 as mldsa44
 
 import abc
 import typing
@@ -15,16 +16,17 @@ from cryptography.utils import Buffer
 
 class DSAParameters(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def generate_private_key(self) -> DSAPrivateKey:
-        """
-        Generates and returns a DSAPrivateKey.
-        """
+    def generate_mldsa_keypair(self) -> DSAPrivateKey:
+        """Generates an ML-DSA keypair (Post-Quantum Cryptography)."""
 
     @abc.abstractmethod
     def parameter_numbers(self) -> DSAParameterNumbers:
         """
         Returns a DSAParameterNumbers.
         """
+    @abc.abstractmethod
+    def generate_mldsa_keypair(self) -> DSAPrivateKey:
+        """Generates an ML-DSA keypair (Post-Quantum Cryptography)."""
 
 
 DSAParametersWithNumbers = DSAParameters
@@ -49,16 +51,6 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
     def parameters(self) -> DSAParameters:
         """
         The DSAParameters object associated with this private key.
-        """
-
-    @abc.abstractmethod
-    def sign(
-        self,
-        data: Buffer,
-        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
-    ) -> bytes:
-        """
-        Signs the data
         """
 
     @abc.abstractmethod
@@ -89,6 +81,14 @@ class DSAPrivateKey(metaclass=abc.ABCMeta):
         """
         Returns a deep copy.
         """
+
+    @abc.abstractmethod
+    def mldsa_sign(
+        self,
+        data: Buffer,
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
+    ) -> bytes:
+        """Signs the data using ML-DSA (Post-Quantum Cryptography)."""
 
 
 DSAPrivateKeyWithSerialization = DSAPrivateKey
@@ -126,17 +126,6 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def verify(
-        self,
-        signature: Buffer,
-        data: Buffer,
-        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
-    ) -> None:
-        """
-        Verifies the signature of the data.
-        """
-
-    @abc.abstractmethod
     def __eq__(self, other: object) -> bool:
         """
         Checks equality.
@@ -153,6 +142,15 @@ class DSAPublicKey(metaclass=abc.ABCMeta):
         """
         Returns a deep copy.
         """
+
+    @abc.abstractmethod
+    def mldsa_verify(
+        self,
+        signature: Buffer,
+        data: Buffer,
+        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
+    ) -> None:
+        """Verifies the signature using ML-DSA (Post-Quantum Cryptography)."""
 
 
 DSAPublicKeyWithSerialization = DSAPublicKey

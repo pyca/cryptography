@@ -3,6 +3,7 @@
 # for complete details.
 
 from __future__ import annotations
+from pqcrypto.sign import ml_dsa_44 as mldsa44
 
 import abc
 import typing
@@ -92,16 +93,6 @@ class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
         """
 
     @abc.abstractmethod
-    def sign(
-        self,
-        data: utils.Buffer,
-        signature_algorithm: EllipticCurveSignatureAlgorithm,
-    ) -> bytes:
-        """
-        Signs the data
-        """
-
-    @abc.abstractmethod
     def private_numbers(self) -> EllipticCurvePrivateNumbers:
         """
         Returns an EllipticCurvePrivateNumbers.
@@ -129,6 +120,14 @@ class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
         """
         Returns a deep copy.
         """
+
+    @abc.abstractmethod
+    def mldsa_sign(
+        self,
+        data: utils.Buffer,
+        signature_algorithm: EllipticCurveSignatureAlgorithm,
+    ) -> bytes:
+        """Signs the data using ML-DSA (Post-Quantum Cryptography)."""
 
 
 EllipticCurvePrivateKeyWithSerialization = EllipticCurvePrivateKey
@@ -166,17 +165,6 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
         Returns the key serialized as bytes.
         """
 
-    @abc.abstractmethod
-    def verify(
-        self,
-        signature: utils.Buffer,
-        data: utils.Buffer,
-        signature_algorithm: EllipticCurveSignatureAlgorithm,
-    ) -> None:
-        """
-        Verifies the signature of the data.
-        """
-
     @classmethod
     def from_encoded_point(
         cls, curve: EllipticCurve, data: bytes
@@ -208,6 +196,15 @@ class EllipticCurvePublicKey(metaclass=abc.ABCMeta):
         """
         Returns a deep copy.
         """
+
+    @abc.abstractmethod
+    def mldsa_verify(
+        self,
+        signature: utils.Buffer,
+        data: utils.Buffer,
+        signature_algorithm: EllipticCurveSignatureAlgorithm,
+    ) -> None:
+        """Verifies the signature using ML-DSA (Post-Quantum Cryptography)."""
 
 
 EllipticCurvePublicKeyWithSerialization = EllipticCurvePublicKey

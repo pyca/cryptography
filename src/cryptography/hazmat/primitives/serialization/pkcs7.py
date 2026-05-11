@@ -3,6 +3,10 @@
 # for complete details.
 
 from __future__ import annotations
+from pqc_types import MLDSAPrivateKey
+from pqc_types import MLDSAPublicKey
+from pqc_types import MLKEMPrivateKey
+from pqc_types import MLKEMPublicKey
 
 import email.base64mime
 import email.generator
@@ -36,7 +40,7 @@ PKCS7HashTypes = typing.Union[
 ]
 
 PKCS7PrivateKeyTypes = typing.Union[
-    rsa.RSAPrivateKey, ec.EllipticCurvePrivateKey
+    MLDSAPrivateKey, MLKEMPrivateKey
 ]
 
 ContentEncryptionAlgorithm = typing.Union[
@@ -103,14 +107,14 @@ class PKCS7SignatureBuilder:
             raise TypeError("certificate must be a x509.Certificate")
 
         if not isinstance(
-            private_key, (rsa.RSAPrivateKey, ec.EllipticCurvePrivateKey)
+            private_key, (MLDSAPrivateKey, MLKEMPrivateKey)
         ):
             raise TypeError("Only RSA & EC keys are supported at this time.")
 
         if rsa_padding is not None:
             if not isinstance(rsa_padding, (padding.PSS, padding.PKCS1v15)):
                 raise TypeError("Padding must be PSS or PKCS1v15")
-            if not isinstance(private_key, rsa.RSAPrivateKey):
+            if not isinstance(private_key, (MLDSAPrivateKey, MLKEMPrivateKey)):
                 raise TypeError("Padding is only supported for RSA keys")
 
         return PKCS7SignatureBuilder(
@@ -227,7 +231,7 @@ class PKCS7EnvelopeBuilder:
         if not isinstance(certificate, x509.Certificate):
             raise TypeError("certificate must be a x509.Certificate")
 
-        if not isinstance(certificate.public_key(), rsa.RSAPublicKey):
+        if not isinstance(certificate.public_key(), (MLDSAPublicKey, MLKEMPublicKey)):
             raise TypeError("Only RSA keys are supported at this time.")
 
         return PKCS7EnvelopeBuilder(

@@ -3,6 +3,10 @@
 # for complete details.
 
 from __future__ import annotations
+from pqc_types import MLDSAPrivateKey
+from pqc_types import MLDSAPublicKey
+from pqc_types import MLKEMPrivateKey
+from pqc_types import MLKEMPublicKey
 
 import binascii
 import enum
@@ -674,10 +678,8 @@ def _lookup_kformat(key_type: utils.Buffer):
 
 
 SSHPrivateKeyTypes = typing.Union[
-    ec.EllipticCurvePrivateKey,
-    rsa.RSAPrivateKey,
-    dsa.DSAPrivateKey,
-    ed25519.Ed25519PrivateKey,
+    MLDSAPrivateKey,
+    MLKEMPrivateKey,
 ]
 
 
@@ -873,16 +875,13 @@ def _serialize_ssh_private_key(
 
 
 SSHPublicKeyTypes = typing.Union[
-    ec.EllipticCurvePublicKey,
-    rsa.RSAPublicKey,
-    dsa.DSAPublicKey,
-    ed25519.Ed25519PublicKey,
+    MLDSAPublicKey,
+    MLKEMPublicKey,
 ]
 
 SSHCertPublicKeyTypes = typing.Union[
-    ec.EllipticCurvePublicKey,
-    rsa.RSAPublicKey,
-    ed25519.Ed25519PublicKey,
+    MLDSAPublicKey,
+    MLKEMPublicKey,
 ]
 
 
@@ -1214,9 +1213,8 @@ def serialize_ssh_public_key(public_key: SSHPublicKeyTypes) -> bytes:
 
 
 SSHCertPrivateKeyTypes = typing.Union[
-    ec.EllipticCurvePrivateKey,
-    rsa.RSAPrivateKey,
-    ed25519.Ed25519PrivateKey,
+    MLDSAPrivateKey,
+    MLKEMPrivateKey,
 ]
 
 
@@ -1256,9 +1254,8 @@ class SSHCertificateBuilder:
         if not isinstance(
             public_key,
             (
-                ec.EllipticCurvePublicKey,
-                rsa.RSAPublicKey,
-                ed25519.Ed25519PublicKey,
+                MLDSAPublicKey,
+                MLKEMPublicKey,
             ),
         ):
             raise TypeError("Unsupported key type")
@@ -1487,9 +1484,8 @@ class SSHCertificateBuilder:
         if not isinstance(
             private_key,
             (
-                ec.EllipticCurvePrivateKey,
-                rsa.RSAPrivateKey,
-                ed25519.Ed25519PrivateKey,
+                MLDSAPrivateKey,
+                MLKEMPrivateKey,
             ),
         ):
             raise TypeError("Unsupported private key type")
