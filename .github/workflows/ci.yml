@@ -421,8 +421,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Apr 30, 2026.
-            REF: 2d196123264efb0027eecfe1b430be4a9babdbd8
+            # Latest commit on the twisted trunk branch, as of May 12, 2026.
+            REF: 75facb285e48ead8ab9b6a21310454783d3f14df
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -436,18 +436,18 @@ jobs:
             PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of May 09, 2026.
-            REF: 9339d23aa11d63baf3ce632945082555635d0df3
+            # Latest commit on the certbot main branch, as of May 12, 2026.
+            REF: 43f78f9c3cb8d6ac3aabc27210e96f7e5b0cbe78
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
-            # Latest commit on the certbot-josepy main branch, as of May 09, 2026.
-            REF: 353677c412248289ecc335231ef1f96916c05c13
+            # Latest commit on the certbot-josepy main branch, as of May 12, 2026.
+            REF: 83425fe014d372377b0e39549d8c03deeefcbb51
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of May 10, 2026.
-            REF: 3dd268a9beb6349fdc11be7bf613fb0cf9a25859
+            # Latest commit on the mitmproxy main branch, as of May 12, 2026.
+            REF: 0fb62c456ccc0839ed4ea9ac6e4d503a80d4e529
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
