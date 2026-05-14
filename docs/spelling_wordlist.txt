@@ -56,6 +56,7 @@ Diffie
 disambiguating
 Django
 Docstrings
+DSA
 duplicative
 El
 embeddability
@@ -142,6 +143,7 @@ serializer
 Serializers
 setuptools
 SHA
+SLH
 Solaris
 Sonoma
 SPKI
