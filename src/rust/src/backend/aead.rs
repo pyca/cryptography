@@ -31,9 +31,14 @@ pub(crate) struct EvpCipherAead {
     base_decryption_ctx: openssl::cipher_ctx::CipherCtx,
     tag_len: usize,
     tag_first: bool,
+    // Cipher and key stored to reinitialise a fresh context when
+    // EVP_CIPHER_CTX_copy fails (e.g. an older FIPS provider loaded alongside
+    // a newer main library).  None for algorithms where copy always succeeds.
+    copy_fallback: Option<(&'static openssl::cipher::CipherRef, Vec<u8>)>,
 }
 
 impl EvpCipherAead {
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     pub(crate) fn new(
         cipher: &openssl::cipher::CipherRef,
         key: &[u8],
@@ -50,6 +55,33 @@ impl EvpCipherAead {
             base_decryption_ctx,
             tag_len,
             tag_first,
+            copy_fallback: None,
+        })
+    }
+
+    #[cfg(any(
+        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    ))]
+    pub(crate) fn new_with_copy_fallback(
+        cipher: &'static openssl::cipher::CipherRef,
+        key: &[u8],
+        tag_len: usize,
+        tag_first: bool,
+    ) -> CryptographyResult<EvpCipherAead> {
+        let mut base_encryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        base_encryption_ctx.encrypt_init(Some(cipher), Some(key), None)?;
+        let mut base_decryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        base_decryption_ctx.decrypt_init(Some(cipher), Some(key), None)?;
+
+        Ok(EvpCipherAead {
+            base_encryption_ctx,
+            base_decryption_ctx,
+            tag_len,
+            tag_first,
+            copy_fallback: Some((cipher, key.to_vec())),
         })
     }
 
@@ -138,7 +170,13 @@ impl EvpCipherAead {
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        ctx.copy(&self.base_encryption_ctx)?;
+        let copy_result = ctx.copy(&self.base_encryption_ctx);
+        if copy_result.is_err() {
+            match &self.copy_fallback {
+                Some((cipher, key)) => ctx.encrypt_init(Some(*cipher), Some(key), None)?,
+                None => copy_result?,
+            }
+        }
 
         Self::encrypt_with_context(
             ctx,
@@ -203,7 +241,13 @@ impl EvpCipherAead {
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        ctx.copy(&self.base_decryption_ctx)?;
+        let copy_result = ctx.copy(&self.base_decryption_ctx);
+        if copy_result.is_err() {
+            match &self.copy_fallback {
+                Some((cipher, key)) => ctx.decrypt_init(Some(*cipher), Some(key), None)?,
+                None => copy_result?,
+            }
+        }
 
         Self::decrypt_with_context(
             ctx,
@@ -257,6 +301,73 @@ impl EvpCipherAead {
             .map_err(|_| exceptions::InvalidTag::new_err(()))?;
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+impl EvpCipherAead {
+    // Build an instance whose base contexts are uninitialised so that
+    // EVP_CIPHER_CTX_copy fails with EVP_R_INPUT_NOT_INITIALIZED, forcing
+    // the encrypt_into / decrypt_into fallback branches (lines 175-177,
+    // 246-248) to be exercised.
+    fn with_copy_failure(
+        copy_fallback: Option<(&'static openssl::cipher::CipherRef, Vec<u8>)>,
+    ) -> CryptographyResult<Self> {
+        Ok(EvpCipherAead {
+            base_encryption_ctx: openssl::cipher_ctx::CipherCtx::new()?,
+            base_decryption_ctx: openssl::cipher_ctx::CipherCtx::new()?,
+            tag_len: 16,
+            tag_first: false,
+            copy_fallback,
+        })
+    }
+}
+
+#[cfg(test)]
+mod evp_cipher_aead_tests {
+    use super::*;
+
+    // Exercise the Some branch of the copy-fallback match (lines 176, 247):
+    // copy() fails → fallback reinitialises the context → round-trip succeeds.
+    #[test]
+    fn test_copy_fallback_some_roundtrip() {
+        let key = vec![0u8; 16];
+        let aead =
+            EvpCipherAead::with_copy_failure(Some((openssl::cipher::Cipher::aes_128_gcm(), key)))
+                .unwrap_or_else(|_| panic!("with_copy_failure"));
+
+        let nonce = [0u8; 12];
+        let plaintext = b"hello fallback";
+        // _py is unused inside encrypt_into / decrypt_into; the GIL token is
+        // only there for API symmetry with LazyEvpCipherAead.
+        let py = unsafe { pyo3::Python::assume_attached() };
+
+        let mut enc_buf = vec![0u8; plaintext.len() + 16];
+        aead.encrypt_into(py, plaintext, None, Some(&nonce), &mut enc_buf)
+            .unwrap_or_else(|_| panic!("encrypt_into"));
+
+        let mut dec_buf = vec![0u8; plaintext.len()];
+        aead.decrypt_into(py, &enc_buf, None, Some(&nonce), &mut dec_buf)
+            .unwrap_or_else(|_| panic!("decrypt_into"));
+        assert_eq!(&dec_buf, plaintext);
+    }
+
+    // Exercise the None branch of the copy-fallback match (lines 177, 248):
+    // copy() fails and there is no fallback → the error must propagate.
+    #[test]
+    fn test_copy_fallback_none_propagates_error() {
+        let aead =
+            EvpCipherAead::with_copy_failure(None).unwrap_or_else(|_| panic!("with_copy_failure"));
+        let nonce = [0u8; 12];
+        let py = unsafe { pyo3::Python::assume_attached() };
+
+        let mut buf = vec![0u8; 20];
+        assert!(aead
+            .encrypt_into(py, b"data", None, Some(&nonce), &mut buf)
+            .is_err());
+        assert!(aead
+            .decrypt_into(py, b"ciphertext+tag__", None, Some(&nonce), &mut buf)
+            .is_err());
     }
 }
 
@@ -676,7 +787,12 @@ impl AesGcm {
                 CRYPTOGRAPHY_IS_AWSLC
             ))] {
                 Ok(AesGcm {
-                    ctx: EvpCipherAead::new(cipher, key_buf.as_bytes(), 16, false)?,
+                    ctx: EvpCipherAead::new_with_copy_fallback(
+                        cipher,
+                        key_buf.as_bytes(),
+                        16,
+                        false,
+                    )?,
                 })
             } else {
                 Ok(AesGcm {

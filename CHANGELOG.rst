@@ -8,6 +8,10 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Fixed :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM` failing
+  when a FIPS provider at an older version (e.g. OpenSSL 3.0.7) than the main
+  OpenSSL library (≥ 3.2) is loaded. The implementation now falls back to
+  per-operation context initialization when ``EVP_CIPHER_CTX_copy`` fails.
 * **BACKWARDS INCOMPATIBLE:** Support for ``x86_64`` macOS has been removed.
   We now only publish ``arm64`` wheels for macOS.
 * **BACKWARDS INCOMPATIBLE:** Support for 32-bit Windows has been removed.
