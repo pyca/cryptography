@@ -58,6 +58,8 @@ jobs:
         with:
           app-id: ${{ secrets.BORINGBOT_APP_ID }}
           private-key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
         if: steps.bump-boringssl.outputs.HAS_UPDATES == 'true' || steps.bump-openssl.outputs.HAS_UPDATES == 'true' || steps.bump-awslc.outputs.HAS_UPDATES == 'true'
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
