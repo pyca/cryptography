@@ -22,12 +22,9 @@ typedef ... Cryptography_STACK_OF_X509;
 
 typedef ... X509_ALGOR;
 typedef ... X509_EXTENSION;
-typedef ... X509_EXTENSIONS;
 typedef ... X509_REQ;
 typedef ... X509_CRL;
 typedef ... X509;
-
-typedef void (*sk_X509_EXTENSION_freefunc)(X509_EXTENSION *);
 """
 
 FUNCTIONS = """
@@ -55,12 +52,6 @@ int X509_set_subject_name(X509 *, X509_NAME *);
 
 int X509_set_issuer_name(X509 *, X509_NAME *);
 
-int X509_add_ext(X509 *, X509_EXTENSION *, int);
-X509_EXTENSION *X509_EXTENSION_dup(X509_EXTENSION *);
-
-ASN1_OBJECT *X509_EXTENSION_get_object(X509_EXTENSION *);
-void X509_EXTENSION_free(X509_EXTENSION *);
-
 int X509_REQ_set_version(X509_REQ *, long);
 X509_REQ *X509_REQ_new(void);
 void X509_REQ_free(X509_REQ *);
@@ -69,11 +60,6 @@ int X509_REQ_sign(X509_REQ *, EVP_PKEY *, const EVP_MD *);
 int X509_REQ_verify(X509_REQ *, EVP_PKEY *);
 EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
 int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
-int X509_REQ_add_extensions(X509_REQ *, X509_EXTENSIONS *);
-X509_EXTENSIONS *X509_REQ_get_extensions(X509_REQ *);
-
-int X509V3_EXT_print(BIO *, X509_EXTENSION *, unsigned long, int);
-ASN1_OCTET_STRING *X509_EXTENSION_get_data(X509_EXTENSION *);
 
 X509_CRL *d2i_X509_CRL_bio(BIO *, X509_CRL **);
 void X509_CRL_free(X509_CRL *);
@@ -99,11 +85,8 @@ const char *X509_get_default_cert_dir(void);
 const char *X509_get_default_cert_file(void);
 
 int X509_get_ext_count(const X509 *);
-X509_EXTENSION *X509_get_ext(const X509 *, int);
 X509_NAME *X509_get_subject_name(const X509 *);
 X509_NAME *X509_get_issuer_name(const X509 *);
-
-int X509_EXTENSION_get_critical(const X509_EXTENSION *);
 
 const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *);
 
@@ -120,13 +103,6 @@ void sk_X509_free(Cryptography_STACK_OF_X509 *);
 int sk_X509_num(Cryptography_STACK_OF_X509 *);
 int sk_X509_push(Cryptography_STACK_OF_X509 *, X509 *);
 X509 *sk_X509_value(Cryptography_STACK_OF_X509 *, int);
-
-X509_EXTENSIONS *sk_X509_EXTENSION_new_null(void);
-int sk_X509_EXTENSION_num(X509_EXTENSIONS *);
-X509_EXTENSION *sk_X509_EXTENSION_value(X509_EXTENSIONS *, int);
-int sk_X509_EXTENSION_push(X509_EXTENSIONS *, X509_EXTENSION *);
-void sk_X509_EXTENSION_free(X509_EXTENSIONS *);
-void sk_X509_EXTENSION_pop_free(X509_EXTENSIONS *, sk_X509_EXTENSION_freefunc);
 
 void X509_ALGOR_get0(const ASN1_OBJECT **, int *, const void **,
                      const X509_ALGOR *);

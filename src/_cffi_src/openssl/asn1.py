@@ -43,7 +43,6 @@ void ASN1_GENERALIZEDTIME_free(ASN1_GENERALIZEDTIME *);
 
 int ASN1_STRING_type(const ASN1_STRING *);
 int ASN1_STRING_to_UTF8(unsigned char **, const ASN1_STRING *);
-int i2a_ASN1_INTEGER(BIO *, const ASN1_INTEGER *);
 
 ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(const ASN1_TIME *,
                                                    ASN1_GENERALIZEDTIME **);
