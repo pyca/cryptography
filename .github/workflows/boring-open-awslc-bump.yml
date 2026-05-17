@@ -53,11 +53,11 @@ jobs:
             --tag-pattern 'v[0-9\.]*'
       - name: Check for updates
         run: git status
-      - uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: generate-token
         with:
-          app_id: ${{ secrets.BORINGBOT_APP_ID }}
-          private_key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
+          app-id: ${{ secrets.BORINGBOT_APP_ID }}
+          private-key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
         if: steps.bump-boringssl.outputs.HAS_UPDATES == 'true' || steps.bump-openssl.outputs.HAS_UPDATES == 'true' || steps.bump-awslc.outputs.HAS_UPDATES == 'true'
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
