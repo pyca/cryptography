@@ -22,6 +22,9 @@ def find_all_modules() -> list[str]:
     )
 
 
+@pytest.mark.skip_emscripten(
+    reason="subprocess is unavailable under Emscripten/Pyodide"
+)
 @pytest.mark.parametrize("module", find_all_modules())
 def test_no_circular_imports(module):
     env = os.environ.copy()

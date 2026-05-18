@@ -398,6 +398,144 @@ jobs:
 
       - uses: ./.github/actions/upload-coverage
 
+  pyemscripten:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        PYODIDE:
+          - VERSION: "314.0.0a2"
+            EMSDK: "5.0.3"
+            PYTHON: "3.14"
+    name: "pyemscripten (Pyodide ${{ matrix.PYODIDE.VERSION }})"
+    env:
+      # Pyodide pins emscripten in xbuildenv/Makefile.envs.
+      PYODIDE_VERSION: ${{ matrix.PYODIDE.VERSION }}
+      EMSDK_VERSION: ${{ matrix.PYODIDE.EMSDK }}
+      # Must stay in lockstep with wheel-builder.yml::pyemscripten.
+      OPENSSL_VERSION: "3.6.2"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        timeout-minutes: 3
+        with:
+          persist-credentials: false
+
+      - name: Setup python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ matrix.PYODIDE.PYTHON }}
+        timeout-minutes: 3
+
+      - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
+        with:
+          # Pyodide's emscripten build passes nightly-only `-Z` flags
+          # (link-native-libraries, emscripten-wasm-eh).
+          # TODO: This should be switched to stable by the time pyodide 314.0 is released.
+          toolchain: nightly
+          target: wasm32-unknown-emscripten
+
+      - name: Cache Rust artifacts (wasm32-emscripten)
+        uses: ./.github/actions/cache
+        timeout-minutes: 2
+        with:
+          key: pyemscripten-${{ env.PYODIDE_VERSION }}-${{ env.EMSDK_VERSION }}-${{ env.OPENSSL_VERSION }}
+
+      - name: Clone test vectors
+        timeout-minutes: 2
+        uses: ./.github/actions/fetch-vectors
+
+      - name: Install pyodide-build
+        # `[resolve]` extra pulls in resolvelib + unearth, required by
+        # `pyodide build`.
+        run: python -m pip install "pyodide-build[resolve]"
+
+      - name: Install Pyodide xbuildenv (cross-build artifacts + patches)
+        run: pyodide xbuildenv install
+
+      - name: Install Pyodide-pinned Emscripten SDK
+        # Pyodide patches emscripten; vanilla emsdk produces broken wheels.
+        run: pyodide xbuildenv install-emscripten
+
+      - name: Cache cross-compiled OpenSSL
+        id: openssl-pyodide-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        timeout-minutes: 2
+        with:
+          path: /tmp/openssl-pyodide
+          key: openssl-pyodide-${{ env.PYODIDE_VERSION }}-${{ env.OPENSSL_VERSION }}-emscripten-${{ env.EMSDK_VERSION }}-${{ hashFiles('.github/bin/build_openssl.sh') }}-${{ runner.os }}-${{ runner.arch }}-0
+
+      - name: Cross-compile OpenSSL for wasm32-emscripten
+        # Pyodide does not expose a downstream-linkable OpenSSL (its `_ssl`
+        # module is baked into pyodide.asm.wasm), so we cross-compile our own.
+        if: steps.openssl-pyodide-cache.outputs.cache-hit != 'true'
+        env:
+          TYPE: pyemscripten
+          VERSION: ${{ env.OPENSSL_VERSION }}
+          OSSL_PATH: /tmp/openssl-pyodide
+        run: |
+          set -e
+          # shellcheck disable=SC1091
+          source "$(pyodide config get emsdk_dir)/emsdk_env.sh"
+          bash .github/bin/build_openssl.sh
+
+      - name: Build cryptography_vectors wheel
+        run: |
+          python -m pip install -r "${UV_REQUIREMENTS_PATH:-.github/requirements/uv-requirements.txt}"
+          uv build --wheel --no-build-isolation vectors/
+
+      - name: Build cryptography pyemscripten wheel
+        run: |
+          set -e
+          # shellcheck disable=SC1091
+          source "$(pyodide config get emsdk_dir)/emsdk_env.sh"
+          export OPENSSL_DIR=/tmp/openssl-pyodide
+          export OPENSSL_STATIC=1
+          export OPENSSL_NO_VENDOR=1
+          mkdir -p wheelhouse
+          # pyodide-build 0.34.x ignores --output-dir and writes to ./dist/.
+          pyodide build .
+          cp dist/cryptography-*pyemscripten*.whl wheelhouse/
+
+      - name: Create Pyodide venv and install wheel + test deps
+        run: |
+          set -e
+          pyodide venv .venv-pyodide
+          # shellcheck disable=SC1091
+          source .venv-pyodide/bin/activate
+          # pytest-xdist omitted: no multiprocessing under Emscripten.
+          # pytest-benchmark satisfies the --benchmark-disable addopt;
+          # certifi is needed by tests/bench/test_x509.py;
+          # bcrypt unblocks bcrypt-gated cases in test_ssh.py.
+          pip install pytest pytest-cov pytest-benchmark pretend certifi bcrypt
+          pip install vectors/dist/cryptography_vectors-*.whl
+          pip install wheelhouse/cryptography-*.whl
+          python -c "
+          from cryptography.hazmat.backends.openssl.backend import backend
+          print(f'Loaded: {backend.openssl_version_text()}')
+          print(f'Linked Against: {backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode(\"ascii\")}')
+          "
+
+      - name: Tests
+        # Mirrors noxfile.py::tests, minus xdist (no multiprocessing under
+        # Emscripten). Other platforms reach pytest via `nox --no-install`;
+        # pyodide can't (uv has no wasm build), so we call pytest directly.
+        run: |
+          set -e
+          # shellcheck disable=SC1091
+          source .venv-pyodide/bin/activate
+          pytest -p no:cacheprovider \
+            --cov=cryptography --cov=tests \
+            --durations=10 \
+            --color=yes \
+            --wycheproof-root=wycheproof \
+            --x509-limbo-root=x509-limbo \
+            tests/
+        env:
+          COLUMNS: 80
+
+      - uses: ./.github/actions/upload-coverage
+
   linux-downstream:
     runs-on: ubuntu-latest
     strategy:
@@ -513,7 +651,7 @@ jobs:
   all-green:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
     runs-on: ubuntu-latest
-    needs: [linux, alpine, distros, macos, windows, linux-downstream]
+    needs: [linux, alpine, distros, macos, windows, linux-downstream, pyemscripten]
     if: ${{ always() }}
     timeout-minutes: 3
     steps:

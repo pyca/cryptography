@@ -143,6 +143,7 @@ addopts = "-r s --capture=no --strict-markers --benchmark-disable"
 console_output_style = "progress-even-when-capture-no"
 markers = [
     "skip_fips: this test is not executed in FIPS mode",
+    "skip_emscripten: this test is not executed under Emscripten/Pyodide",
     "supported: parametrized test requiring only_if and skip_message",
 ]
 
@@ -171,6 +172,8 @@ source = [
     "*.nox/*/lib*/python*/site-packages/cryptography",
     "*.nox\\*\\Lib\\site-packages\\cryptography",
     "*.nox/pypy/site-packages/cryptography",
+    # Pyodide-built wheel installed into the pyemscripten job's venv.
+    "*.venv-pyodide/lib*/python*/site-packages/cryptography",
 ]
 tests = ["tests/", "*tests\\"]
 

@@ -366,3 +366,97 @@ jobs:
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
           path: wheelhouse\
+
+  pyemscripten:
+    needs: [sdist]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        PYODIDE:
+          - VERSION: "314.0.0a2"
+            EMSDK: "5.0.3"
+            PYTHON: "3.14"
+            CIBW_BUILD: "cp314-pyodide_wasm32"
+            CIBW_ENABLE: "pyodide-prerelease"
+            WHEEL_TAG: "cp314-pyemscripten_2026_0_wasm32"
+    name: "${{ matrix.PYODIDE.WHEEL_TAG }}"
+    env:
+      # Pyodide pins emscripten in xbuildenv/Makefile.envs.
+      PYODIDE_VERSION: ${{ matrix.PYODIDE.VERSION }}
+      EMSDK_VERSION: ${{ matrix.PYODIDE.EMSDK }}
+      # Must stay in lockstep with ci.yml::pyemscripten.
+      OPENSSL_VERSION: "3.6.2"
+    steps:
+      - name: Get OpenSSL build script from repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.inputs.version || github.ref }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/bin/build_openssl.sh
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ matrix.PYODIDE.PYTHON }}
+        timeout-minutes: 3
+
+      - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
+        with:
+          # Pyodide's emscripten build passes nightly-only `-Z` flags
+          # (link-native-libraries, emscripten-wasm-eh).
+          # TODO: This should be switched to stable by the time pyodide 314.0 is released.
+          toolchain: nightly
+          target: wasm32-unknown-emscripten
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: cryptography-sdist
+
+      # 4.0.0rc1 is the first tagged release with pyemscripten support
+      # (pypa/cibuildwheel#2812). Bump to 4.0.0 stable once it ships.
+      - run: pip install "cibuildwheel==4.0.0rc1"
+      - run: mkdir wheelhouse
+
+      - name: Cache cross-compiled OpenSSL
+        # Same key shape as ci.yml::pyemscripten so the cache is shared.
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        timeout-minutes: 2
+        with:
+          path: /tmp/openssl-pyodide
+          key: openssl-pyodide-${{ env.PYODIDE_VERSION }}-${{ env.OPENSSL_VERSION }}-emscripten-${{ env.EMSDK_VERSION }}-${{ hashFiles('.github/bin/build_openssl.sh') }}-${{ runner.os }}-${{ runner.arch }}-0
+
+      - name: Build the wheel
+        # Pyodide does not expose a downstream-linkable OpenSSL (its `_ssl`
+        # module is baked into pyodide.asm.wasm), so we cross-compile our
+        # own static libssl/libcrypto via .github/bin/build_openssl.sh
+        # (TYPE=pyemscripten branch).
+        run: cibuildwheel --platform pyodide --output-dir wheelhouse/ cryptography*.tar.gz
+        env:
+          CIBW_BUILD: ${{ matrix.PYODIDE.CIBW_BUILD }}
+          CIBW_ENABLE: ${{ matrix.PYODIDE.CIBW_ENABLE }}
+          CIBW_BEFORE_BUILD_PYODIDE: |
+            TYPE=pyemscripten \
+            VERSION="$OPENSSL_VERSION" \
+            OSSL_PATH=/tmp/openssl-pyodide \
+              bash ${{ github.workspace }}/.github/bin/build_openssl.sh
+          CIBW_ENVIRONMENT_PYODIDE: >-
+            OPENSSL_VERSION=$OPENSSL_VERSION
+            OPENSSL_DIR=/tmp/openssl-pyodide
+            OPENSSL_STATIC=1
+            OPENSSL_NO_VENDOR=1
+          # Smoketest only; the full pytest suite runs in ci.yml::pyemscripten.
+          CIBW_TEST_COMMAND_PYODIDE: |
+            python -c "
+            from cryptography.hazmat.backends.openssl.backend import backend
+            print(f'Loaded: {backend.openssl_version_text()}')
+            print(f'Linked Against: {backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode(\"ascii\")}')
+            "
+
+      - run: |
+          echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls wheelhouse/cryptography*.whl))" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "${{ env.CRYPTOGRAPHY_WHEEL_NAME }}"
+          path: wheelhouse/

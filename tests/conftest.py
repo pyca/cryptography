@@ -3,6 +3,7 @@
 # for complete details.
 
 import contextlib
+import sys
 
 import pytest
 
@@ -35,6 +36,11 @@ def pytest_runtest_setup(item):
     if openssl_backend._fips_enabled:
         for marker in item.iter_markers(name="skip_fips"):
             pytest.skip(marker.kwargs["reason"])
+    if sys.platform == "emscripten":  # pragma: no cover
+        for marker in item.iter_markers(name="skip_emscripten"):
+            pytest.skip(
+                marker.kwargs.get("reason", "Skipped under Emscripten/Pyodide")
+            )
 
 
 @pytest.fixture(autouse=True)

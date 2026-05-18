@@ -1,4 +1,9 @@
 #!/bin/bash
+# Env: TYPE={openssl,libressl,boringssl,aws-lc,pyemscripten}, VERSION, OSSL_PATH.
+# openssl honours CONFIG_FLAGS. pyemscripten needs emsdk on PATH and links a
+# private OpenSSL into the wheel because Pyodide's _ssl is baked into
+# pyodide.asm.wasm with no exported symbols.
+
 set -e
 set -x
 
@@ -71,4 +76,28 @@ elif [[ "${TYPE}" == "aws-lc" ]]; then
   rm -rf "${OSSL_PATH:?}/bin"
   popd # aws-lc
   rm -rf aws-lc/
+elif [[ "${TYPE}" == "pyemscripten" ]]; then
+  # Idempotency check: skip if libssl.a is already present (e.g. when
+  # actions/cache restored the install prefix in a prior step, or when
+  # cibuildwheel re-invokes CIBW_BEFORE_BUILD_PYODIDE on the same runner).
+  if [ -f "${OSSL_PATH}/lib/libssl.a" ] || [ -f "${OSSL_PATH}/lib64/libssl.a" ]; then
+      echo "OpenSSL already built at ${OSSL_PATH}; skipping rebuild."
+      exit 0
+  fi
+  curl -LO "https://github.com/openssl/openssl/releases/download/openssl-${VERSION}/openssl-${VERSION}.tar.gz"
+  tar zxf "openssl-${VERSION}.tar.gz"
+  pushd "openssl-${VERSION}"
+  # emconfigure sets CROSS_COMPILE=<emsdk>/em expecting Configure to append
+  # "cc"/"ar"/etc. -- but it also sets CC to the full emcc path, so OpenSSL
+  # ends up concatenating them. Override both with an empty cross-compile
+  # prefix and bare CC/AR/RANLIB names.
+  emconfigure ./Configure linux-generic32 \
+    no-shared no-asm no-engine no-dso no-tests no-srtp no-cms \
+    no-ui-console no-threads \
+    --cross-compile-prefix= \
+    CC=emcc AR=emar RANLIB=emranlib \
+    --prefix="${OSSL_PATH}"
+  emmake make -j"$(nproc)" build_libs
+  emmake make install_dev
+  popd
 fi
