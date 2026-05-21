@@ -12,12 +12,6 @@ Changelog
   We now only publish ``arm64`` wheels for macOS.
 * **BACKWARDS INCOMPATIBLE:** Support for 32-bit Windows has been removed.
   Users should move to a 64-bit Python installation.
-* Added :attr:`~cryptography.x509.oid.SignatureAlgorithmOID.ML_DSA_44`,
-  :attr:`~cryptography.x509.oid.SignatureAlgorithmOID.ML_DSA_65`,
-  :attr:`~cryptography.x509.oid.SignatureAlgorithmOID.ML_DSA_87`,
-  :attr:`~cryptography.x509.oid.PublicKeyAlgorithmOID.ML_DSA_44`,
-  :attr:`~cryptography.x509.oid.PublicKeyAlgorithmOID.ML_DSA_65`, and
-  :attr:`~cryptography.x509.oid.PublicKeyAlgorithmOID.ML_DSA_87`.
 
 .. _v48-0-0:
 
