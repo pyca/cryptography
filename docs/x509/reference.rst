@@ -3774,6 +3774,27 @@ instances. The following common OIDs are available as constants.
         Corresponds to the dotted string ``"1.3.101.113"``. This is a signature
         using an ed448 key.
 
+    .. attribute:: ML_DSA_44
+
+        .. versionadded:: 49.0.0
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.17"``. This is
+        a signature using an ML-DSA-44 key.
+
+    .. attribute:: ML_DSA_65
+
+        .. versionadded:: 49.0.0
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.18"``. This is
+        a signature using an ML-DSA-65 key.
+
+    .. attribute:: ML_DSA_87
+
+        .. versionadded:: 49.0.0
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.19"``. This is
+        a signature using an ML-DSA-87 key.
+
 
 .. class:: ExtendedKeyUsageOID
     :canonical: cryptography.hazmat._oid.ExtendedKeyUsageOID
@@ -4246,6 +4267,30 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"1.3.101.113"``. This is a
         :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PublicKey`
+        public key.
+
+    .. attribute:: ML_DSA_44
+
+        .. versionadded:: 49.0.0
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.17"``. This is
+        a :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44PublicKey`
+        public key.
+
+    .. attribute:: ML_DSA_65
+
+        .. versionadded:: 49.0.0
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.18"``. This is
+        a :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA65PublicKey`
+        public key.
+
+    .. attribute:: ML_DSA_87
+
+        .. versionadded:: 49.0.0
+
+        Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.19"``. This is
+        a :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA87PublicKey`
         public key.
 
 
