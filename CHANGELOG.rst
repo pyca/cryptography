@@ -18,6 +18,10 @@ Changelog
   previously caused the build to fail during cross-compilations for embedded
   systems, on hosts which have same-version Python development headers
   installed as the target Python.
+* Added support for signing and verifying X.509 certificates, certificate
+  signing requests, and certificate revocation lists with
+  :doc:`/hazmat/primitives/asymmetric/mldsa` keys, as well as loading
+  certificates that contain ML-DSA public keys.
 
 .. _v48-0-0:
 

@@ -17,6 +17,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     ec,
     ed448,
     ed25519,
+    mldsa,
     padding,
     rsa,
     x448,
@@ -362,6 +363,9 @@ class CertificateBuilder:
                 ec.EllipticCurvePublicKey,
                 ed25519.Ed25519PublicKey,
                 ed448.Ed448PublicKey,
+                mldsa.MLDSA44PublicKey,
+                mldsa.MLDSA65PublicKey,
+                mldsa.MLDSA87PublicKey,
                 x25519.X25519PublicKey,
                 x448.X448PublicKey,
             ),
@@ -369,7 +373,8 @@ class CertificateBuilder:
             raise TypeError(
                 "Expecting one of DSAPublicKey, RSAPublicKey,"
                 " EllipticCurvePublicKey, Ed25519PublicKey,"
-                " Ed448PublicKey, X25519PublicKey, or "
+                " Ed448PublicKey, MLDSA44PublicKey, MLDSA65PublicKey,"
+                " MLDSA87PublicKey, X25519PublicKey, or "
                 "X448PublicKey."
             )
         if self._public_key is not None:
