@@ -106,6 +106,12 @@ def _extract_annotation(
 def _normalize_field_type(
     field_type: typing.Any, field_name: str
 ) -> declarative_asn1.AnnotatedType:
+    # Resolve PEP 695 `type X = ...` aliases (Python 3.12+) to their
+    # underlying type before any further processing.
+    if sys.version_info >= (3, 12):
+        while isinstance(field_type, typing.TypeAliasType):
+            field_type = field_type.__value__
+
     # Strip the `Annotated[...]` off, and populate the annotation
     # from it if it exists.
     if typing.get_origin(field_type) is typing.Annotated:
@@ -113,6 +119,13 @@ def _normalize_field_type(
         field_type, *_ = typing.get_args(field_type)
     else:
         annotation = declarative_asn1.Annotation()
+
+    # Resolve again: The Annotated wrapper may have hidden a
+    # TypeAliasType, or the first resolution may have exposed an
+    # Annotated wrapper whose inner type is itself a TypeAliasType.
+    if sys.version_info >= (3, 12):
+        while isinstance(field_type, typing.TypeAliasType):
+            field_type = field_type.__value__
 
     if annotation.size is not None and (
         typing.get_origin(field_type) not in (builtins.list, SetOf)
