@@ -3412,6 +3412,37 @@ class TestCertificateBuilder:
             builder.sign(private_key, hashes.SHA256(), backend)
 
     @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    @pytest.mark.parametrize(
+        "priv_key_cls",
+        [
+            mldsa.MLDSA44PrivateKey,
+            mldsa.MLDSA65PrivateKey,
+            mldsa.MLDSA87PrivateKey,
+        ],
+    )
+    def test_sign_with_unsupported_hash_mldsa(self, priv_key_cls, backend):
+        private_key = priv_key_cls.generate()
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .serial_number(1)
+            .public_key(private_key.public_key())
+            .not_valid_before(datetime.datetime(2002, 1, 1, 12, 1))
+            .not_valid_after(datetime.datetime(2032, 1, 1, 12, 1))
+        )
+
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.supported(
         only_if=lambda backend: backend.hash_supported(hashes.MD5()),
         skip_message="Requires OpenSSL with MD5 support",
     )
