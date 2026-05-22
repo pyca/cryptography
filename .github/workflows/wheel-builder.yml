@@ -338,6 +338,7 @@ jobs:
     # and no broken wheel is uploaded.
     needs: [sdist]
     runs-on: windows-11-arm
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
