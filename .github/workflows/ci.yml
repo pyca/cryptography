@@ -351,50 +351,12 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - name: Setup python
-        id: setup-python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - uses: ./.github/actions/windows-tests
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-          architecture: ${{ matrix.WINDOWS.ARCH }}
-          cache: pip
-          cache-dependency-path: ci-constraints-requirements.txt
-        timeout-minutes: 3
-      - run: rustup component add llvm-tools-preview
-      - name: Cache rust and pip
-        uses: ./.github/actions/cache
-        timeout-minutes: 2
-        with:
-          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.WINDOWS.ARCH }}-${{ steps.setup-python.outputs.python-version }}
-      - run: python -m pip install -c ci-constraints-requirements.txt "nox[uv]" "tomli; python_version < '3.11'"
-
-      - uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
-        with:
-          repo: pyca/infra
-          workflow: build-windows-openssl.yml
-          branch: main
-          workflow_conclusion: success
-          name: "openssl-${{ matrix.WINDOWS.WINDOWS }}"
-          path: "C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Configure
-        run: |
-            echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
-        shell: bash
-
-      - name: Clone test vectors
-        timeout-minutes: 2
-        uses: ./.github/actions/fetch-vectors
-
-      - name: Build nox environment
-        run: nox -v --install-only
-        env:
-          NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
-      - name: Tests
-        run: nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo
-        env:
-          NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
-          COLUMNS: 80
+          noxsession: ${{ matrix.PYTHON.NOXSESSION }}
+          arch: ${{ matrix.WINDOWS.ARCH }}
+          openssl-name: ${{ matrix.WINDOWS.WINDOWS }}
 
       - uses: ./.github/actions/upload-coverage
 
