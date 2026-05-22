@@ -345,29 +345,12 @@ jobs:
           - {VERSION: "3.9", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        timeout-minutes: 3
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/windows-tests
-        with:
-          python-version: ${{ matrix.PYTHON.VERSION }}
-          noxsession: ${{ matrix.PYTHON.NOXSESSION }}
-          arch: ${{ matrix.WINDOWS.ARCH }}
-          openssl-name: ${{ matrix.WINDOWS.WINDOWS }}
-
-      - uses: ./.github/actions/upload-coverage
-
-  windows-arm64:
-    # Windows on ARM is in a stability validation period. Each work step
-    # uses `continue-on-error: true` so the job's overall conclusion is
-    # `success` (PR check stays green), and subsequent steps are gated on
-    # the previous step's `outcome` so execution stops on the first
-    # failure. The job is also listed under `allowed-failures` of the
-    # `all-green` aggregator as a defense in depth.
-    runs-on: windows-11-arm
+        include:
+          # Windows on ARM is in a stability validation period; the work
+          # step uses `continue-on-error` only for this entry so transient
+          # failures don't block PR validation.
+          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
+            PYTHON: {VERSION: "3.14", NOXSESSION: "tests-nocoverage"}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -375,18 +358,20 @@ jobs:
         with:
           persist-credentials: false
       - id: tests
-        continue-on-error: true
+        continue-on-error: ${{ matrix.WINDOWS.ARCH == 'arm64' }}
         uses: ./.github/actions/windows-tests
         with:
-          python-version: "3.14"
-          noxsession: tests-nocoverage
-          arch: arm64
-          openssl-name: arm64
+          python-version: ${{ matrix.PYTHON.VERSION }}
+          noxsession: ${{ matrix.PYTHON.NOXSESSION }}
+          arch: ${{ matrix.WINDOWS.ARCH }}
+          openssl-name: ${{ matrix.WINDOWS.WINDOWS }}
       - name: Report soft failure
-        if: always() && steps.tests.outcome != 'success'
+        if: always() && matrix.WINDOWS.ARCH == 'arm64' && steps.tests.outcome != 'success'
         shell: bash
         run: |
           echo "::warning title=windows-arm64 soft failure::A step failed but the job is reported as success while Windows on ARM is in stability validation."
+
+      - uses: ./.github/actions/upload-coverage
 
   linux-downstream:
     runs-on: ubuntu-latest
@@ -503,7 +488,7 @@ jobs:
   all-green:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
     runs-on: ubuntu-latest
-    needs: [linux, alpine, distros, macos, windows, windows-arm64, linux-downstream]
+    needs: [linux, alpine, distros, macos, windows, linux-downstream]
     if: ${{ always() }}
     timeout-minutes: 3
     steps:
@@ -515,9 +500,6 @@ jobs:
         uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # v1.2.2
         with:
           jobs: ${{ toJSON(needs) }}
-          # Windows on ARM is in a stability validation period; allow it to
-          # fail without blocking PR validation.
-          allowed-failures: windows-arm64
       - name: Setup python
         if: ${{ always() }}
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0

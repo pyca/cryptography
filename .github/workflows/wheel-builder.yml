@@ -303,6 +303,15 @@ jobs:
           - {VERSION: "3.14", "ABI_VERSION": "py311"}
           - {VERSION: "3.14t"}
           - {VERSION: "pypy-3.11"}
+        include:
+          # Windows on ARM is in a stability validation period; the work
+          # step uses `continue-on-error` only for these entries so transient
+          # failures don't block the release pipeline and no broken wheel
+          # is uploaded.
+          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
+            PYTHON: {VERSION: "3.14", "ABI_VERSION": "py311"}
+          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
+            PYTHON: {VERSION: "3.14t"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - name: Get build-requirements.txt from repository
@@ -318,7 +327,9 @@ jobs:
             .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
 
-      - uses: ./.github/actions/windows-wheel
+      - id: build
+        continue-on-error: ${{ matrix.WINDOWS.ARCH == 'arm64' }}
+        uses: ./.github/actions/windows-wheel
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           abi-version: ${{ matrix.PYTHON.ABI_VERSION }}
@@ -328,52 +339,8 @@ jobs:
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
           uv-requirements-path: ${{ env.UV_REQUIREMENTS_PATH }}
           wheel-artifact-name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
-
-  windows-arm64:
-    # Windows on ARM is in a stability validation period. Each work step
-    # uses `continue-on-error: true` so the job's overall conclusion is
-    # `success` (PR check stays green) and the release pipeline
-    # (pypi-publish.yml) keeps running. Subsequent steps are gated on the
-    # previous step's `outcome` so execution stops on the first failure
-    # and no broken wheel is uploaded.
-    needs: [sdist]
-    runs-on: windows-11-arm
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        PYTHON:
-          - {VERSION: "3.14", "ABI_VERSION": "py311"}
-          - {VERSION: "3.14t"}
-    name: "${{ matrix.PYTHON.VERSION }} arm64 ${{ matrix.PYTHON.ABI_VERSION }}"
-    steps:
-      - name: Get build-requirements.txt from repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          # The tag to build or the tag received by the tag event
-          ref: ${{ github.event.inputs.version || github.ref }}
-          persist-credentials: false
-          sparse-checkout: |
-            ${{ env.BUILD_REQUIREMENTS_PATH }}
-            ${{ env.UV_REQUIREMENTS_PATH }}
-            .github/actions/windows-wheel/
-            .github/actions/wheel-smoketest/
-          sparse-checkout-cone-mode: false
-
-      - id: build
-        continue-on-error: true
-        uses: ./.github/actions/windows-wheel
-        with:
-          python-version: ${{ matrix.PYTHON.VERSION }}
-          abi-version: ${{ matrix.PYTHON.ABI_VERSION }}
-          arch: arm64
-          rust-triple: aarch64-pc-windows-msvc
-          openssl-name: arm64
-          build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
-          uv-requirements-path: ${{ env.UV_REQUIREMENTS_PATH }}
-          wheel-artifact-name: "cryptography-${{ github.event.inputs.version }}-arm64-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
       - name: Report soft failure
-        if: always() && steps.build.outcome != 'success'
+        if: always() && matrix.WINDOWS.ARCH == 'arm64' && steps.build.outcome != 'success'
         shell: bash
         run: |
           echo "::warning title=windows-arm64 soft failure::A step failed but the job is reported as success while Windows on ARM is in stability validation."
