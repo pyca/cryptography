@@ -303,6 +303,8 @@ class Backend:
         )
 
     def poly1305_supported(self) -> bool:
+        if rust_openssl.CRYPTOGRAPHY_IS_AWSLC:
+            return True
         return not self._fips_enabled
 
     def pkcs7_supported(self) -> bool:

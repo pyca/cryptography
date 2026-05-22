@@ -98,12 +98,12 @@ pub(crate) fn py_uint_to_be_bytes_with_length<'p>(
     )
 }
 
-pub(crate) fn encode_der_data<'p>(
-    py: pyo3::Python<'p>,
+pub(crate) fn encode_der_data(
+    py: pyo3::Python<'_>,
     pem_tag: String,
     data: Vec<u8>,
     encoding: Encoding,
-) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
     match encoding {
         Encoding::DER => Ok(pyo3::types::PyBytes::new(py, &data)),
         Encoding::PEM => Ok(pyo3::types::PyBytes::new(

@@ -147,6 +147,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
 
     fn evaluate_single_constraint<B: CryptoOps>(
         &self,
+        kind: SubtreeKind,
         constraint: &GeneralName<'chain>,
         san: &GeneralName<'chain>,
         budget: &mut Budget,
@@ -155,14 +156,18 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
 
         match (constraint, san) {
             (GeneralName::DNSName(constraint), GeneralName::DNSName(name)) => {
-                // NOTE: A DNS SAN can be a wildcard pattern instead of a normal DNS name.
-                // These are handled by matching unconditionally on the inner name,
-                // since a NC of `foo.com` will match both `foo.com` and any arbitrarily deep
-                // subdomain of `foo.com`, where a wildcard SAN like `*.foo.com` will only
-                // match exactly one subdomain of `foo.com`. Therefore, the NC's matching
-                // set is a strict superset of any possible wildcard SAN pattern.
+                // NOTE: A DNS SAN can be a wildcard pattern (e.g. `*.foo.com`)
+                // rather than an ordinary DNS name. A wildcard represents a
+                // *set* of names, so the check depends on which subtree we're
+                // evaluating: a `permittedSubtrees` constraint must contain
+                // *every* name the wildcard can expand to, whereas an
+                // `excludedSubtrees` constraint matches if it overlaps the
+                // wildcard at all. We dispatch on `kind` accordingly.
                 match (DNSConstraint::new(constraint.0), DNSPattern::new(name.0)) {
-                    (Some(constraint), Some(name)) => Ok(Applied(constraint.matches(&name))),
+                    (Some(constraint), Some(name)) => Ok(Applied(match kind {
+                        SubtreeKind::Permitted => constraint.permits(&name),
+                        SubtreeKind::Excluded => constraint.excludes(&name),
+                    })),
                     (_, None) => Err(ValidationError::new(ValidationErrorKind::Other(format!(
                         "unsatisfiable DNS name constraint: malformed SAN {}",
                         name.0
@@ -232,7 +237,12 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
             let mut permit = true;
             if let Some(permitted_subtrees) = &constraints.permitted_subtrees {
                 for p in permitted_subtrees.clone() {
-                    let status = self.evaluate_single_constraint(&p.base, &san, budget)?;
+                    let status = self.evaluate_single_constraint(
+                        SubtreeKind::Permitted,
+                        &p.base,
+                        &san,
+                        budget,
+                    )?;
                     if status.is_applied() {
                         permit = status.is_match();
                         if permit {
@@ -250,7 +260,12 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
 
             if let Some(excluded_subtrees) = &constraints.excluded_subtrees {
                 for e in excluded_subtrees.clone() {
-                    let status = self.evaluate_single_constraint(&e.base, &san, budget)?;
+                    let status = self.evaluate_single_constraint(
+                        SubtreeKind::Excluded,
+                        &e.base,
+                        &san,
+                        budget,
+                    )?;
                     if status.is_match() {
                         return Err(ValidationError::new(ValidationErrorKind::Other(
                             "excluded name constraint matched SAN".into(),
@@ -282,6 +297,16 @@ struct ChainBuilder<'a, 'chain, B: CryptoOps> {
     intermediates: &'a [VerificationCertificate<'chain, B>],
     policy: &'a Policy<'a, B>,
     store: &'a Store<'chain, B>,
+}
+
+/// Identifies which kind of name constraint subtree a SAN is being evaluated
+/// against. The two subtree kinds use different matching semantics for
+/// wildcard DNS SANs (containment vs. overlap); see [`DNSConstraint::permits`]
+/// and [`DNSConstraint::excludes`].
+#[derive(Clone, Copy)]
+enum SubtreeKind {
+    Permitted,
+    Excluded,
 }
 
 // When applying a name constraint, we need to distinguish between a few different scenarios:

@@ -292,6 +292,7 @@ jobs:
   windows:
     needs: [sdist]
     runs-on: ${{ matrix.WINDOWS.RUNNER }}
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
