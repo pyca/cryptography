@@ -345,18 +345,31 @@ jobs:
           - {VERSION: "3.9", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
+        include:
+          # Windows on ARM is in a stability validation period; the work
+          # step uses `continue-on-error` only for this entry so transient
+          # failures don't block PR validation.
+          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
+            PYTHON: {VERSION: "3.14", NOXSESSION: "tests-nocoverage"}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - uses: ./.github/actions/windows-tests
+      - id: tests
+        continue-on-error: ${{ matrix.WINDOWS.ARCH == 'arm64' }}
+        uses: ./.github/actions/windows-tests
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           noxsession: ${{ matrix.PYTHON.NOXSESSION }}
           arch: ${{ matrix.WINDOWS.ARCH }}
           openssl-name: ${{ matrix.WINDOWS.WINDOWS }}
+      - name: Report soft failure
+        if: always() && matrix.WINDOWS.ARCH == 'arm64' && steps.tests.outcome != 'success'
+        shell: bash
+        run: |
+          echo "::warning title=windows-arm64 soft failure::A step failed but the job is reported as success while Windows on ARM is in stability validation."
 
       - uses: ./.github/actions/upload-coverage
 
