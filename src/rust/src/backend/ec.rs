@@ -50,6 +50,8 @@ fn curve_from_py_curve(
         #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
         "brainpoolP256r1" => openssl::nid::Nid::BRAINPOOL_P256R1,
         #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+        "brainpoolP320r1" => openssl::nid::Nid::BRAINPOOL_P320R1,
+        #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
         "brainpoolP384r1" => openssl::nid::Nid::BRAINPOOL_P384R1,
         #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
         "brainpoolP512r1" => openssl::nid::Nid::BRAINPOOL_P512R1,
