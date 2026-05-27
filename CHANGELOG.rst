@@ -12,6 +12,12 @@ Changelog
   We now only publish ``arm64`` wheels for macOS.
 * **BACKWARDS INCOMPATIBLE:** Support for 32-bit Windows has been removed.
   Users should move to a 64-bit Python installation.
+* Fixed cross-compilation of the CFFI bindings when ``PYO3_CROSS_LIB_DIR``
+  is set. The build now derives the Python include directory from
+  ``PYO3_CROSS_LIB_DIR`` instead of querying the host interpreter, which
+  previously caused the build to fail during cross-compilations for embedded
+  systems, on hosts which have same-version Python development headers
+  installed as the target Python.
 
 .. _v48-0-0:
 

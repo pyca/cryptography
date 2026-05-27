@@ -56,16 +56,40 @@ fn main() {
     )
     .unwrap();
     println!("cargo:rustc-cfg=python_implementation=\"{python_impl}\"");
-    let python_includes = run_python_script(
-        &python,
-        "import os; \
-         import setuptools.dist; \
-         import setuptools.command.build_ext; \
-         b = setuptools.command.build_ext.build_ext(setuptools.dist.Distribution()); \
-         b.finalize_options(); \
-         print(os.pathsep.join(b.include_dirs), end='')",
-    )
-    .unwrap();
+    println!("cargo:rerun-if-env-changed=PYO3_CROSS_LIB_DIR");
+    // When cross-compiling, PyO3 expects the build system to point
+    // PYO3_CROSS_LIB_DIR at the target's libpython directory. Derive the
+    // matching include dir from it instead of querying the host
+    // interpreter's setuptools, which returns host headers (e.g.
+    // /usr/include/python3.x) and breaks the cross build whenever the host
+    // happens to have same-version Python development headers installed.
+    let python_includes = if let Ok(lib_dir) = env::var("PYO3_CROSS_LIB_DIR") {
+        let lib = Path::new(&lib_dir);
+        let py_ver = lib
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or("python3");
+        let prefix = lib
+            .parent()
+            .and_then(|p| p.parent())
+            .expect("PYO3_CROSS_LIB_DIR has unexpected layout");
+        prefix
+            .join("include")
+            .join(py_ver)
+            .to_string_lossy()
+            .into_owned()
+    } else {
+        run_python_script(
+            &python,
+            "import os; \
+             import setuptools.dist; \
+             import setuptools.command.build_ext; \
+             b = setuptools.command.build_ext.build_ext(setuptools.dist.Distribution()); \
+             b.finalize_options(); \
+             print(os.pathsep.join(b.include_dirs), end='')",
+        )
+        .unwrap()
+    };
     let openssl_c = Path::new(&out_dir).join("_openssl.c");
 
     let mut build = cc::Build::new();
