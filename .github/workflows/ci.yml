@@ -426,8 +426,8 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of May 29, 2026.
-            REF: e69f5a2ec5837295b8fa2525e5f9922a687b9cf7
+            # Latest commit on the scapy master branch, as of May 30, 2026.
+            REF: ca08e6f8ec7946c12ae4133b512ebf4fbaca834d
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
