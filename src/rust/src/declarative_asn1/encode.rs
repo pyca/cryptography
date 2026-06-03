@@ -74,7 +74,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     })
                     .collect();
 
-                check_size_constraint(&annotation.size, values.len(), "SEQUENCE OF")?;
+                check_size_constraint(&annotation.size, || values.len(), "SEQUENCE OF")?;
 
                 write_value(writer, &asn1::SequenceOfWriter::new(values), encoding)
             }
@@ -107,7 +107,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     })
                     .collect();
 
-                check_size_constraint(&annotation.size, values.len(), "SET OF")?;
+                check_size_constraint(&annotation.size, || values.len(), "SET OF")?;
 
                 write_value(writer, &asn1::SetOfWriter::new(values), encoding)
             }
@@ -191,20 +191,20 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
             }
             Type::PyBytes() => {
                 let val: &[u8] = value.extract()?;
-                check_size_constraint(&annotation.size, val.len(), "OCTET STRING")?;
+                check_size_constraint(&annotation.size, || val.len(), "OCTET STRING")?;
                 Ok(write_value(writer, &val, encoding)?)
             }
             Type::PyStr() => {
                 let val: pyo3::pybacked::PyBackedStr = value.extract()?;
                 let asn1_string: asn1::Utf8String<'_> = asn1::Utf8String::new(&val);
-                check_size_constraint(&annotation.size, val.chars().count(), "UTF8String")?;
+                check_size_constraint(&annotation.size, || val.chars().count(), "UTF8String")?;
                 Ok(write_value(writer, &asn1_string, encoding)?)
             }
             Type::PrintableString() => {
                 let val: &pyo3::Bound<'_, PrintableString> = value.cast()?;
                 // TODO: Switch this to `to_str()` once our minimum version is py310+
                 let inner_str = val.get().inner.to_cow(py)?;
-                check_size_constraint(&annotation.size, inner_str.len(), "PrintableString")?;
+                check_size_constraint(&annotation.size, || inner_str.len(), "PrintableString")?;
                 let printable_string: asn1::PrintableString<'_> =
                     asn1::PrintableString::new(&inner_str).ok_or(CryptographyError::Py(
                         pyo3::exceptions::PyValueError::new_err(
@@ -218,7 +218,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let val: &pyo3::Bound<'_, IA5String> = value.cast()?;
                 // TODO: Switch this to `to_str()` once our minimum version is py310+
                 let inner_str = val.get().inner.to_cow(py)?;
-                check_size_constraint(&annotation.size, inner_str.len(), "IA5String")?;
+                check_size_constraint(&annotation.size, || inner_str.len(), "IA5String")?;
                 let ia5_string: asn1::IA5String<'_> = asn1::IA5String::new(&inner_str).ok_or(
                     CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
                         "invalid value for IA5String".to_string(),
@@ -256,7 +256,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                             ),
                         ))?;
                 let n_bits = bitstring.as_bytes().len() * 8 - usize::from(bitstring.padding_bits());
-                check_size_constraint(&annotation.size, n_bits, "BIT STRING")?;
+                check_size_constraint(&annotation.size, || n_bits, "BIT STRING")?;
                 Ok(write_value(writer, &bitstring, encoding)?)
             }
             Type::Tlv() => Err(CryptographyError::Py(
