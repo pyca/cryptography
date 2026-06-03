@@ -1468,6 +1468,40 @@ class TestSize:
             ]
         )
 
+    def test_ok_string_size_counts_characters(self) -> None:
+        # "é€" is two characters but five UTF-8 bytes, so a SIZE constraint
+        # measured in characters must accept it under max=2.
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[str, asn1.Size(min=1, max=2)]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(a="é€"),
+                    b"\x30\x07\x0c\x05\xc3\xa9\xe2\x82\xac",
+                )
+            ]
+        )
+
+    def test_fail_string_size_counts_characters(self) -> None:
+        # "é€" is two characters; SIZE(min=3) must reject it even though it
+        # is five UTF-8 bytes.
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            a: Annotated[str, asn1.Size(min=3, max=10)]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("UTF8String has size 2, expected size in [3, 10]"),
+        ):
+            asn1.decode_der(
+                Example,
+                b"\x30\x07\x0c\x05\xc3\xa9\xe2\x82\xac",
+            )
+
     def test_ok_string_size_restriction_no_max(self) -> None:
         @asn1.sequence
         @_comparable_dataclass

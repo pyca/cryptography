@@ -65,7 +65,11 @@ fn decode_pystr<'a>(
     annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, pyo3::types::PyString>> {
     let value = read_value::<asn1::Utf8String<'a>>(parser, &annotation.encoding)?;
-    check_size_constraint(&annotation.size, value.as_str().len(), "UTF8String")?;
+    check_size_constraint(
+        &annotation.size,
+        value.as_str().chars().count(),
+        "UTF8String",
+    )?;
     Ok(pyo3::types::PyString::new(py, value.as_str()))
 }
 
