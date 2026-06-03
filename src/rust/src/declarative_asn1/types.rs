@@ -678,10 +678,11 @@ pub(crate) fn is_tag_valid_for_type(
 
 pub(crate) fn check_size_constraint(
     size_annotation: &Option<pyo3::Py<Size>>,
-    data_length: usize,
+    data_length: impl FnOnce() -> usize,
     field_type: &str,
 ) -> Result<(), CryptographyError> {
     if let Some(size) = size_annotation {
+        let data_length = data_length();
         let min = size.get().min;
         let max = size.get().max.unwrap_or(usize::MAX);
         if !(min..=max).contains(&data_length) {

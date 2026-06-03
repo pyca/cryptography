@@ -55,7 +55,7 @@ fn decode_pybytes<'a>(
     annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, pyo3::types::PyBytes>> {
     let value = read_value::<&[u8]>(parser, &annotation.encoding)?;
-    check_size_constraint(&annotation.size, value.len(), "OCTET STRING")?;
+    check_size_constraint(&annotation.size, || value.len(), "OCTET STRING")?;
     Ok(pyo3::types::PyBytes::new(py, value))
 }
 
@@ -67,7 +67,7 @@ fn decode_pystr<'a>(
     let value = read_value::<asn1::Utf8String<'a>>(parser, &annotation.encoding)?;
     check_size_constraint(
         &annotation.size,
-        value.as_str().chars().count(),
+        || value.as_str().chars().count(),
         "UTF8String",
     )?;
     Ok(pyo3::types::PyString::new(py, value.as_str()))
@@ -79,7 +79,7 @@ fn decode_printable_string<'a>(
     annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, PrintableString>> {
     let value = read_value::<asn1::PrintableString<'a>>(parser, &annotation.encoding)?.as_str();
-    check_size_constraint(&annotation.size, value.len(), "PrintableString")?;
+    check_size_constraint(&annotation.size, || value.len(), "PrintableString")?;
     let inner = pyo3::types::PyString::new(py, value).unbind();
     Ok(pyo3::Bound::new(py, PrintableString { inner })?)
 }
@@ -90,7 +90,7 @@ fn decode_ia5_string<'a>(
     annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, IA5String>> {
     let value = read_value::<asn1::IA5String<'a>>(parser, &annotation.encoding)?.as_str();
-    check_size_constraint(&annotation.size, value.len(), "IA5String")?;
+    check_size_constraint(&annotation.size, || value.len(), "IA5String")?;
     let inner = pyo3::types::PyString::new(py, value).unbind();
     Ok(pyo3::Bound::new(py, IA5String { inner })?)
 }
@@ -153,7 +153,7 @@ fn decode_bitstring<'a>(
 ) -> ParseResult<pyo3::Bound<'a, BitString>> {
     let value = read_value::<asn1::BitString<'a>>(parser, &annotation.encoding)?;
     let n_bits = value.as_bytes().len() * 8 - usize::from(value.padding_bits());
-    check_size_constraint(&annotation.size, n_bits, "BIT STRING")?;
+    check_size_constraint(&annotation.size, || n_bits, "BIT STRING")?;
 
     let data = pyo3::types::PyBytes::new(py, value.as_bytes()).unbind();
     Ok(pyo3::Bound::new(
@@ -286,7 +286,7 @@ pub(crate) fn decode_annotated_type<'a>(
                     let val = decode_annotated_type(py, d, inner_ann_type)?;
                     list.append(val)?;
                 }
-                check_size_constraint(&annotation.size, list.len(), "SEQUENCE OF")?;
+                check_size_constraint(&annotation.size, || list.len(), "SEQUENCE OF")?;
                 Ok(list.into_any())
             })?
         }
@@ -315,7 +315,7 @@ pub(crate) fn decode_annotated_type<'a>(
                     let val = decode_annotated_type(py, d, inner_ann_type)?;
                     list.append(val)?;
                 }
-                check_size_constraint(&annotation.size, list.len(), "SET OF")?;
+                check_size_constraint(&annotation.size, || list.len(), "SET OF")?;
                 Ok(pyo3::Bound::new(
                     py,
                     SetOf {
