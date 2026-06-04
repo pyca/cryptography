@@ -9,7 +9,7 @@ use crate::backend::ec;
 use crate::backend::hashes::Hash;
 use crate::backend::kdf::{hkdf_extract, HkdfExpand};
 use crate::backend::x25519;
-use crate::buf::CffiBuf;
+use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 
@@ -829,26 +829,29 @@ impl Suite {
         hash.finalize(py)
     }
 
-    fn aead_encrypt<'p>(
+    fn aead_encrypt_into(
         &self,
-        py: pyo3::Python<'p>,
+        py: pyo3::Python<'_>,
         key: &pyo3::Bound<'_, pyo3::types::PyBytes>,
         nonce: &pyo3::Bound<'_, pyo3::types::PyBytes>,
         plaintext: CffiBuf<'_>,
         aad: Option<CffiBuf<'_>>,
-    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        buf: &mut [u8],
+    ) -> CryptographyResult<()> {
         let key_obj = key.clone().unbind().into_any();
         let nonce_buf = CffiBuf::from_bytes(py, nonce.as_bytes());
+        let out_buf = CffiMutBuf::from_bytes(py, buf);
         match &self.aead {
             AEAD::AES_128_GCM | AEAD::AES_256_GCM => {
                 let cipher = AesGcm::new(py, key_obj)?;
-                cipher.encrypt(py, nonce_buf, plaintext, aad)
+                cipher.encrypt_into(py, nonce_buf, plaintext, aad, out_buf)?;
             }
             AEAD::CHACHA20_POLY1305 => {
                 let cipher = ChaCha20Poly1305::new(py, key_obj)?;
-                cipher.encrypt(py, nonce_buf, plaintext, aad)
+                cipher.encrypt_into(py, nonce_buf, plaintext, aad, out_buf)?;
             }
         }
+        Ok(())
     }
 
     fn aead_decrypt<'p>(
@@ -887,16 +890,21 @@ impl Suite {
         let (shared_secret, enc) = self.kem.encap(py, public_key, &self.kem_suite_id)?;
         let (key, base_nonce) = self.key_schedule(py, shared_secret.as_bytes(), info_bytes)?;
 
-        let ct = self.aead_encrypt(py, &key, &base_nonce, plaintext, aad)?;
-
         let enc_bytes = enc.as_bytes();
-        let ct_bytes = ct.as_bytes();
+        let ct_len = plaintext.as_bytes().len() + self.aead.tag_length();
         Ok(pyo3::types::PyBytes::new_with(
             py,
-            enc_bytes.len() + ct_bytes.len(),
+            enc_bytes.len() + ct_len,
             |buf| {
                 buf[..enc_bytes.len()].copy_from_slice(enc_bytes);
-                buf[enc_bytes.len()..].copy_from_slice(ct_bytes);
+                self.aead_encrypt_into(
+                    py,
+                    &key,
+                    &base_nonce,
+                    plaintext,
+                    aad,
+                    &mut buf[enc_bytes.len()..],
+                )?;
                 Ok(())
             },
         )?)

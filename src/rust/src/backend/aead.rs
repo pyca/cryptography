@@ -519,7 +519,7 @@ impl ChaCha20Poly1305 {
     }
 
     #[pyo3(signature = (nonce, data, associated_data, buf))]
-    fn encrypt_into(
+    pub(crate) fn encrypt_into(
         &self,
         py: pyo3::Python<'_>,
         nonce: CffiBuf<'_>,
@@ -723,7 +723,7 @@ impl AesGcm {
     }
 
     #[pyo3(signature = (nonce, data, associated_data, buf))]
-    fn encrypt_into(
+    pub(crate) fn encrypt_into(
         &self,
         py: pyo3::Python<'_>,
         nonce: CffiBuf<'_>,
