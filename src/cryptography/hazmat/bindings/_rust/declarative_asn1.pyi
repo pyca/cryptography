@@ -20,6 +20,7 @@ class Type:
     SetOf: typing.ClassVar[type]
     Option: typing.ClassVar[type]
     Choice: typing.ClassVar[type]
+    ValueSet: typing.ClassVar[type]
     PyBool: typing.ClassVar[type]
     PyInt: typing.ClassVar[type]
     PyBytes: typing.ClassVar[type]

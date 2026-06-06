@@ -3,6 +3,7 @@
 # for complete details.
 
 import datetime
+import enum
 import re
 import sys
 import typing
@@ -527,3 +528,50 @@ class TestSetAPI:
             @asn1.set
             class Example:
                 foo: Invalid
+
+
+class TestValueSetAPI:
+    def test_fail_non_enum(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "value sets can only be defined from enum.Enum subclasses"
+            ),
+        ):
+
+            @asn1.value_set
+            class Example:
+                pass
+
+    def test_fail_empty_enum(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match="value set 'Example' must have at least one member",
+        ):
+
+            @asn1.value_set
+            class Example(enum.Enum):
+                pass
+
+    def test_fail_mixed_value_types(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match="all members of value set 'Example' must have values "
+            "of the same type",
+        ):
+
+            @asn1.value_set
+            class Example(enum.Enum):
+                A = 1
+                B = "b"
+
+    def test_fail_unsupported_value_type(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match="unsupported value type for value set 'Example'",
+        ):
+
+            @asn1.value_set
+            class Example(enum.Enum):
+                A = 1.5
+                B = 2.5

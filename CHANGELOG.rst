@@ -30,6 +30,10 @@ Changelog
   :class:`~cryptography.x509.CertificateSigningRequest`, and
   :class:`~cryptography.x509.CertificateRevocationList` as field types in
   :doc:`/hazmat/asn1/index` structures.
+* Added :func:`~cryptography.hazmat.asn1.value_set`, a class decorator that
+  registers an :class:`enum.Enum` subclass as an ASN.1 value set: members
+  are encoded as their underlying value, and decoding fails if the decoded
+  value does not match one of the declared members.
 
 .. _v48-0-0:
 

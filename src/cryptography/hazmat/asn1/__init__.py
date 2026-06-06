@@ -20,6 +20,7 @@ from cryptography.hazmat.asn1.asn1 import (
     encode_der,
     sequence,
     set,
+    value_set,
 )
 
 __all__ = [
@@ -40,4 +41,5 @@ __all__ = [
     "encode_der",
     "sequence",
     "set",
+    "value_set",
 ]

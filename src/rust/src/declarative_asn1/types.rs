@@ -34,6 +34,12 @@ pub enum Type {
     /// CHOICE (`T | U | ...`)
     /// The list contains elements of type Variant
     Choice(pyo3::Py<pyo3::types::PyList>),
+    /// Value set (an `enum.Enum` whose member values all share
+    /// a single underlying ASN.1 type).
+    /// The first element is the Python enum class, the second
+    /// element is the (already converted) underlying type of the
+    /// member values.
+    ValueSet(pyo3::Py<pyo3::types::PyType>, pyo3::Py<AnnotatedType>),
 
     // Python types that we map to canonical ASN.1 types
     //
@@ -658,6 +664,7 @@ pub(crate) fn is_tag_valid_for_type(
         Type::Choice(variants) => variants.bind(py).into_iter().any(|v| {
             is_tag_valid_for_variant(py, tag, v.cast::<Variant>().unwrap().get(), encoding)
         }),
+        Type::ValueSet(_, t) => is_tag_valid_for_type(py, tag, t.get().inner.get(), encoding),
         Type::PyBool() => check_tag_with_encoding(bool::TAG, encoding, tag),
         Type::PyInt() => check_tag_with_encoding(asn1::BigInt::TAG, encoding, tag),
         Type::PyBytes() => {
@@ -696,6 +703,29 @@ pub(crate) fn is_tag_valid_for_type(
             check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag)
         }
     }
+}
+
+// Builds the AnnotatedType used to encode/decode the underlying value of
+// a value set member: the underlying type, annotated with the encoding of
+// the value set field. The DEFAULT annotation (if any) applies to the enum
+// member (not the underlying value), so it is handled at the value set
+// level and not propagated here.
+pub(crate) fn value_set_inner_type(
+    py: pyo3::Python<'_>,
+    inner: &AnnotatedType,
+    annotation: &Annotation,
+) -> pyo3::PyResult<AnnotatedType> {
+    Ok(AnnotatedType {
+        inner: inner.inner.clone_ref(py),
+        annotation: pyo3::Py::new(
+            py,
+            Annotation {
+                default: None,
+                encoding: annotation.encoding.as_ref().map(|e| e.clone_ref(py)),
+                size: annotation.size.as_ref().map(|s| s.clone_ref(py)),
+            },
+        )?,
+    })
 }
 
 pub(crate) fn check_size_constraint(

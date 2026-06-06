@@ -46,7 +46,8 @@ Serialization
     Serialize an ASN.1 object into DER-encoded bytes.
 
     :param value: The ASN.1 object to encode. Must be an instance of a
-        class decorated with :func:`sequence` or :func:`set`, or a primitive ASN.1 type
+        class decorated with :func:`sequence`, :func:`set`, or
+        :func:`value_set`, or a primitive ASN.1 type
         (``int``, ``bool``, ``bytes``, ``str``,
         :class:`~cryptography.x509.ObjectIdentifier`,
         :class:`PrintableString`, :class:`IA5String`, :class:`UTCTime`,
@@ -153,6 +154,36 @@ that have no direct Python equivalent:
         Traceback (most recent call last):
             ...
         ValueError: error parsing asn1 value: ...
+
+.. decorator:: value_set
+
+    A class decorator that registers an :class:`enum.Enum` subclass as an
+    ASN.1 value set: a set of named values of a single underlying type. All
+    the member values must be instances of the same ASN.1 type.
+
+    Members are encoded exactly as their underlying value. When decoding,
+    the value is decoded and mapped back to the corresponding enum member;
+    decoding fails with :class:`ValueError` if the decoded value does not
+    match any member.
+
+    Fields of a value set type can be annotated with :class:`Explicit`,
+    :class:`Implicit`, and :class:`Default` using :class:`typing.Annotated`.
+
+    .. doctest::
+
+        >>> import enum
+        >>> from cryptography import x509
+        >>> from cryptography.hazmat import asn1
+        >>> @asn1.value_set
+        ... class HashAlgorithm(enum.Enum):
+        ...     SHA_256 = x509.ObjectIdentifier("2.16.840.1.101.3.4.2.1")
+        ...     SHA_384 = x509.ObjectIdentifier("2.16.840.1.101.3.4.2.2")
+        >>> @asn1.sequence
+        ... class Example:
+        ...     algorithm: HashAlgorithm
+        >>> encoded = asn1.encode_der(Example(algorithm=HashAlgorithm.SHA_256))
+        >>> asn1.decode_der(Example, encoded).algorithm
+        <HashAlgorithm.SHA_256: <ObjectIdentifier(oid=2.16.840.1.101.3.4.2.1, name=sha256)>>
 
 .. class:: PrintableString(value)
 

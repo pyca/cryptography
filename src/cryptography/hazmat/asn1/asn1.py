@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import builtins
 import dataclasses
+import enum
 import sys
 import types
 import typing
@@ -170,7 +171,11 @@ def _normalize_field_type(
         root_type = field_type.__asn1_root__
         if not isinstance(
             root_type,
-            (declarative_asn1.Type.Sequence, declarative_asn1.Type.Set),
+            (
+                declarative_asn1.Type.Sequence,
+                declarative_asn1.Type.Set,
+                declarative_asn1.Type.ValueSet,
+            ),
         ):
             raise TypeError(f"unsupported root type: {root_type}")
         return declarative_asn1.AnnotatedType(
@@ -423,6 +428,45 @@ else:
         )(cls)
         _register_asn1_set(dataclass_cls)
         return dataclass_cls
+
+
+def value_set(cls: type[U]) -> type[U]:
+    """
+    A class decorator that registers an `enum.Enum` subclass as an
+    ASN.1 value set. All the member values must be instances of a
+    single ASN.1 type. Members are encoded as their value; decoding
+    fails if the decoded value does not match any member.
+    """
+    if not issubclass(cls, enum.Enum):
+        raise TypeError(
+            "value sets can only be defined from enum.Enum subclasses"
+        )
+    members = list(cls)
+    if not members:
+        raise TypeError(
+            f"value set '{cls.__name__}' must have at least one member"
+        )
+    value_type = type(members[0].value)
+    for member in members:
+        if type(member.value) is not value_type:
+            raise TypeError(
+                f"all members of value set '{cls.__name__}' must have "
+                "values of the same type"
+            )
+    try:
+        rust_type = declarative_asn1.non_root_python_to_rust(value_type)
+    except TypeError:
+        raise TypeError(
+            f"unsupported value type for value set '{cls.__name__}': "
+            f"{value_type!r}"
+        )
+    inner = declarative_asn1.AnnotatedType(
+        rust_type, declarative_asn1.Annotation()
+    )
+    root = declarative_asn1.Type.ValueSet(cls, inner)
+
+    setattr(cls, "__asn1_root__", root)
+    return cls
 
 
 # TODO: replace with `Default[U]` once the min Python version is >= 3.12

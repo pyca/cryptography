@@ -3,11 +3,11 @@
 // for complete details.
 
 use asn1::{SimpleAsn1Writable, Writer};
-use pyo3::types::{PyAnyMethods, PyListMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods, PyTypeMethods};
 
 use crate::declarative_asn1::types::{
-    check_size_constraint, AnnotatedType, AnnotatedTypeObject, BitString, Encoding,
-    GeneralizedTime, IA5String, PrintableString, Type, UtcTime, Variant,
+    check_size_constraint, value_set_inner_type, AnnotatedType, AnnotatedTypeObject, BitString,
+    Encoding, GeneralizedTime, IA5String, PrintableString, Type, UtcTime, Variant,
 };
 use crate::error::CryptographyError;
 
@@ -180,6 +180,22 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                             .to_string(),
                     ),
                 ))
+            }
+            Type::ValueSet(cls, inner_type) => {
+                if !value.is_instance(cls.bind(py))? {
+                    return Err(CryptographyError::Py(
+                        pyo3::exceptions::PyTypeError::new_err(format!(
+                            "value set field must be an instance of {}, got: {}",
+                            cls.bind(py).name()?,
+                            value.get_type().name()?,
+                        )),
+                    ));
+                }
+                let object = AnnotatedTypeObject {
+                    annotated_type: &value_set_inner_type(py, inner_type.get(), annotation)?,
+                    value: value.getattr(pyo3::intern!(py, "value"))?,
+                };
+                object.write(writer)
             }
             Type::PyBool() => {
                 let val: bool = value.extract()?;
