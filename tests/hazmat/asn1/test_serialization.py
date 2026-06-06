@@ -1997,18 +1997,31 @@ class TestX509Types:
         expected = b"\x30" + _der_length(len(inner)) + inner
         assert_roundtrips([(Example(cert=cert), expected)])
 
-    def test_certificate_implicit(self, cert: x509.Certificate) -> None:
-        @asn1.sequence
-        @_comparable_dataclass
-        class Example:
-            cert: Annotated[x509.Certificate, asn1.Implicit(0)]
+    def test_fail_certificate_implicit(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "IMPLICIT annotations are not supported for X.509 types"
+            ),
+        ):
 
-        cert_der = cert.public_bytes(Encoding.DER)
-        # IMPLICIT tagging replaces the SEQUENCE tag with the
-        # context-specific tag.
-        inner = b"\xa0" + cert_der[1:]
-        expected = b"\x30" + _der_length(len(inner)) + inner
-        assert_roundtrips([(Example(cert=cert), expected)])
+            @asn1.sequence
+            class Example:
+                cert: Annotated[x509.Certificate, asn1.Implicit(0)]
+
+    def test_fail_optional_certificate_implicit(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "IMPLICIT annotations are not supported for X.509 types"
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                cert: Annotated[
+                    typing.Union[x509.Certificate, None], asn1.Implicit(0)
+                ]
 
     def test_optional_certificate(self, cert: x509.Certificate) -> None:
         @asn1.sequence
