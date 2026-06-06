@@ -29,7 +29,9 @@ pub use crate::policy::extension::{
     PresentExtensionValidatorCallback,
 };
 use crate::types::{DNSName, DNSPattern, IPAddress};
-use crate::{ValidationError, ValidationErrorKind, ValidationResult, VerificationCertificate};
+use crate::{
+    Budget, ValidationError, ValidationErrorKind, ValidationResult, VerificationCertificate,
+};
 
 // RSA key constraints, as defined in CA/B 6.1.5.
 const WEBPKI_MINIMUM_RSA_MODULUS: usize = 2048;
@@ -505,6 +507,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         child: &VerificationCertificate<'chain, B>,
         current_depth: u8,
         issuer_extensions: &Extensions<'_>,
+        budget: &mut Budget,
     ) -> ValidationResult<'chain, (), B> {
         // The issuer needs to be a valid CA at the current depth.
         self.permits_ca(issuer, current_depth, issuer_extensions)
@@ -565,6 +568,10 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             }
         }
 
+        // Charge the (potentially expensive) signature verification against the
+        // budget before performing it, bounding the total work an attacker can
+        // force during chain building.
+        budget.signature_check()?;
         if self.ops.verify_signed_by(child.certificate(), pk).is_err() {
             return Err(ValidationError::new(ValidationErrorKind::Other(
                 "signature does not match".to_string(),

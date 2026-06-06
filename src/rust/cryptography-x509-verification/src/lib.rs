@@ -18,10 +18,14 @@ use std::vec;
 use asn1::ObjectIdentifier;
 use cryptography_x509::common::Asn1Read;
 use cryptography_x509::extensions::{
-    DuplicateExtensionsError, Extensions, NameConstraints, SubjectAlternativeName,
+    AuthorityKeyIdentifier, DuplicateExtensionsError, Extensions, NameConstraints,
+    SubjectAlternativeName,
 };
 use cryptography_x509::name::GeneralName;
-use cryptography_x509::oid::{NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID};
+use cryptography_x509::oid::{
+    AUTHORITY_KEY_IDENTIFIER_OID, NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID,
+    SUBJECT_KEY_IDENTIFIER_OID,
+};
 
 use crate::certificate::cert_is_self_issued;
 use crate::ops::{CryptoOps, VerificationCertificate};
@@ -98,15 +102,23 @@ impl<B: CryptoOps> Display for ValidationError<'_, B> {
 
 struct Budget {
     name_constraint_checks: usize,
+    signature_checks: usize,
 }
 
 impl Budget {
-    // Same limit as other validators
+    // The maximum number of name constraint checks performed when attempting
+    // path construction. This is the same limit as other validators.
     const DEFAULT_NAME_CONSTRAINT_CHECK_LIMIT: usize = 1 << 20;
+
+    // The maximum number of signature verifications performed when attempting
+    // path construction. The is similar to other validators:
+    // both Go and rustls-webpki pick 100.
+    const DEFAULT_SIGNATURE_CHECK_LIMIT: usize = 1 << 7;
 
     fn new() -> Budget {
         Budget {
             name_constraint_checks: Self::DEFAULT_NAME_CONSTRAINT_CHECK_LIMIT,
+            signature_checks: Self::DEFAULT_SIGNATURE_CHECK_LIMIT,
         }
     }
 
@@ -117,6 +129,15 @@ impl Budget {
                     "Exceeded maximum name constraint check limit",
                 ))
             })?;
+        Ok(())
+    }
+
+    fn signature_check<'chain, B: CryptoOps>(&mut self) -> ValidationResult<'chain, (), B> {
+        self.signature_checks = self.signature_checks.checked_sub(1).ok_or_else(|| {
+            ValidationError::new(ValidationErrorKind::FatalError(
+                "Exceeded maximum signature check limit",
+            ))
+        })?;
         Ok(())
     }
 }
@@ -341,18 +362,57 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         }
     }
 
+    /// Identify and return potential issuers for `cert`, considering
+    /// candidates from both the trusted store and untrusted intermediate set.
+    /// Trusted candidates are returned before untrusted intermediate
+    /// candidates, and both groups are opportunisitically ordered by
+    /// "likeliness" in terms of AKI/SKI match.
     fn potential_issuers(
         &self,
         cert: &'a VerificationCertificate<'chain, B>,
-    ) -> impl Iterator<Item = &'a VerificationCertificate<'chain, B>> + '_ {
-        // TODO: Optimizations:
-        // * Search by AKI and other identifiers?
-        self.store
+        cert_extensions: &Extensions<'chain>,
+    ) -> Vec<&'a VerificationCertificate<'chain, B>> {
+        let mut candidates: Vec<&'a VerificationCertificate<'chain, B>> = self
+            .store
             .get_by_subject(&cert.certificate().tbs_cert.issuer)
             .iter()
             .chain(self.intermediates.iter().filter(|&candidate| {
                 candidate.certificate().subject() == cert.certificate().issuer()
             }))
+            .collect();
+
+        let want_kid: Option<&[u8]> = cert_extensions
+            .get_extension(&AUTHORITY_KEY_IDENTIFIER_OID)
+            .and_then(|ext| ext.value::<AuthorityKeyIdentifier<'_, Asn1Read>>().ok())
+            .and_then(|aki| aki.key_identifier);
+
+        // This mirrors Go's `findPotentialParents`: we have a global
+        // signature budget, so we want to bucket candidates by likeliness
+        // to avoid wasting budget on (potentially adversarial) name collisions.
+        //
+        // Observe that we use a stable sort to preserve trusted candidates
+        // before untrusted candidates in each likeliness bucket. In other
+        // words, we always try a likely trusted candidate over an equally
+        // likely untrusted one.
+        //
+        // See: <https://github.com/golang/go/blob/d00c67f297e/src/crypto/x509/cert_pool.go#L136>
+        candidates.sort_by_key(|candidate| {
+            let have_kid: Option<&[u8]> =
+                candidate.certificate().extensions().ok().and_then(|exts| {
+                    exts.get_extension(&SUBJECT_KEY_IDENTIFIER_OID)
+                        .and_then(|ext| ext.value::<&[u8]>().ok())
+                });
+
+            match (want_kid, have_kid) {
+                // cert AKID matches candidate SKID, highest likelihood.
+                (Some(want), Some(have)) if want == have => 0,
+                // cert AKID and candidate SKID don't match, lowest likelihood.
+                (Some(_), Some(_)) => 2,
+                // cert AKID and/or candidate SKID is not present, medium likelihood.
+                _ => 1u8,
+            }
+        });
+        candidates
     }
 
     fn build_chain_inner(
@@ -385,7 +445,8 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         // Otherwise, we collect a list of potential issuers for this cert,
         // and continue with the first that verifies.
         let mut last_err: Option<ValidationError<'_, B>> = None;
-        for issuing_cert_candidate in self.potential_issuers(working_cert) {
+        for issuing_cert_candidate in self.potential_issuers(working_cert, working_cert_extensions)
+        {
             // A candidate issuer is said to verify if it both
             // signs for the working certificate and conforms to the
             // policy.
@@ -395,6 +456,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                 working_cert,
                 current_depth,
                 &issuer_extensions,
+                budget,
             ) {
                 Ok(_) => {
                     match self.build_chain_inner(
