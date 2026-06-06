@@ -22,6 +22,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     ec,
     ed448,
     ed25519,
+    mldsa,
     padding,
     rsa,
     types,
@@ -94,7 +95,13 @@ def _generate_ca_and_leaf(
 ):
     if isinstance(
         issuer_private_key,
-        (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey),
+        (
+            ed25519.Ed25519PrivateKey,
+            ed448.Ed448PrivateKey,
+            mldsa.MLDSA44PrivateKey,
+            mldsa.MLDSA65PrivateKey,
+            mldsa.MLDSA87PrivateKey,
+        ),
     ):
         hash_alg = None
     else:
@@ -3405,6 +3412,37 @@ class TestCertificateBuilder:
             builder.sign(private_key, hashes.SHA256(), backend)
 
     @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    @pytest.mark.parametrize(
+        "priv_key_cls",
+        [
+            mldsa.MLDSA44PrivateKey,
+            mldsa.MLDSA65PrivateKey,
+            mldsa.MLDSA87PrivateKey,
+        ],
+    )
+    def test_sign_with_unsupported_hash_mldsa(self, priv_key_cls, backend):
+        private_key = priv_key_cls.generate()
+        builder = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .serial_number(1)
+            .public_key(private_key.public_key())
+            .not_valid_before(datetime.datetime(2002, 1, 1, 12, 1))
+            .not_valid_after(datetime.datetime(2032, 1, 1, 12, 1))
+        )
+
+        with pytest.raises(ValueError):
+            builder.sign(private_key, hashes.SHA256(), backend)
+
+    @pytest.mark.supported(
         only_if=lambda backend: backend.hash_supported(hashes.MD5()),
         skip_message="Requires OpenSSL with MD5 support",
     )
@@ -3922,6 +3960,112 @@ class TestCertificateBuilder:
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
         assert isinstance(cert.public_key(), ed448.Ed448PublicKey)
         assert cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.ED448
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    @pytest.mark.parametrize(
+        ("priv_key_cls", "pub_key_cls", "sig_oid", "pub_oid"),
+        [
+            (
+                mldsa.MLDSA44PrivateKey,
+                mldsa.MLDSA44PublicKey,
+                SignatureAlgorithmOID.ML_DSA_44,
+                PublicKeyAlgorithmOID.ML_DSA_44,
+            ),
+            (
+                mldsa.MLDSA65PrivateKey,
+                mldsa.MLDSA65PublicKey,
+                SignatureAlgorithmOID.ML_DSA_65,
+                PublicKeyAlgorithmOID.ML_DSA_65,
+            ),
+            (
+                mldsa.MLDSA87PrivateKey,
+                mldsa.MLDSA87PublicKey,
+                SignatureAlgorithmOID.ML_DSA_87,
+                PublicKeyAlgorithmOID.ML_DSA_87,
+            ),
+        ],
+    )
+    def test_build_cert_with_mldsa(
+        self, priv_key_cls, pub_key_cls, sig_oid, pub_oid, backend
+    ):
+        issuer_private_key = priv_key_cls.generate()
+        subject_private_key = priv_key_cls.generate()
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = (
+            x509.CertificateBuilder()
+            .serial_number(777)
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(subject_private_key.public_key())
+            .add_extension(
+                x509.BasicConstraints(ca=False, path_length=None),
+                True,
+            )
+            .not_valid_before(not_valid_before)
+            .not_valid_after(not_valid_after)
+        )
+
+        cert = builder.sign(issuer_private_key, None, backend)
+        issuer_private_key.public_key().verify(
+            cert.signature, cert.tbs_certificate_bytes
+        )
+        assert cert.signature_algorithm_oid == sig_oid
+        assert cert.signature_hash_algorithm is None
+        assert cert.signature_algorithm_parameters is None
+        assert isinstance(cert.public_key(), pub_key_cls)
+        assert cert.public_key_algorithm_oid == pub_oid
+        assert cert.version is x509.Version.v3
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    def test_build_cert_with_public_mldsa_rsa_sig(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        issuer_private_key = rsa_key_2048
+        subject_private_key = mldsa.MLDSA65PrivateKey.generate()
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = (
+            x509.CertificateBuilder()
+            .serial_number(777)
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(subject_private_key.public_key())
+            .not_valid_before(not_valid_before)
+            .not_valid_after(not_valid_after)
+        )
+
+        cert = builder.sign(issuer_private_key, hashes.SHA256(), backend)
+        assert cert.signature_hash_algorithm is not None
+        issuer_private_key.public_key().verify(
+            cert.signature,
+            cert.tbs_certificate_bytes,
+            padding.PKCS1v15(),
+            cert.signature_hash_algorithm,
+        )
+        assert cert.signature_algorithm_oid == (
+            SignatureAlgorithmOID.RSA_WITH_SHA256
+        )
+        assert isinstance(cert.public_key(), mldsa.MLDSA65PublicKey)
+        assert cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.ML_DSA_65
 
     @pytest.mark.supported(
         only_if=lambda backend: (
@@ -4974,6 +5118,68 @@ class TestCertificateSigningRequestBuilder:
         assert request.signature_hash_algorithm is None
         public_key = request.public_key()
         assert isinstance(public_key, ed448.Ed448PublicKey)
+        subject = request.subject
+        assert isinstance(subject, x509.Name)
+        assert list(subject) == [
+            x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "Texas"),
+        ]
+        basic_constraints = request.extensions.get_extension_for_class(
+            x509.BasicConstraints
+        )
+        assert basic_constraints.value.ca is True
+        assert basic_constraints.value.path_length == 2
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    @pytest.mark.parametrize(
+        ("priv_key_cls", "pub_key_cls", "sig_oid"),
+        [
+            (
+                mldsa.MLDSA44PrivateKey,
+                mldsa.MLDSA44PublicKey,
+                SignatureAlgorithmOID.ML_DSA_44,
+            ),
+            (
+                mldsa.MLDSA65PrivateKey,
+                mldsa.MLDSA65PublicKey,
+                SignatureAlgorithmOID.ML_DSA_65,
+            ),
+            (
+                mldsa.MLDSA87PrivateKey,
+                mldsa.MLDSA87PublicKey,
+                SignatureAlgorithmOID.ML_DSA_87,
+            ),
+        ],
+    )
+    def test_build_ca_request_with_mldsa(
+        self, priv_key_cls, pub_key_cls, sig_oid, backend
+    ):
+        private_key = priv_key_cls.generate()
+
+        request = (
+            x509.CertificateSigningRequestBuilder()
+            .subject_name(
+                x509.Name(
+                    [
+                        x509.NameAttribute(
+                            NameOID.STATE_OR_PROVINCE_NAME, "Texas"
+                        ),
+                    ]
+                )
+            )
+            .add_extension(
+                x509.BasicConstraints(ca=True, path_length=2), critical=True
+            )
+            .sign(private_key, None, backend)
+        )
+
+        assert request.is_signature_valid
+        assert request.signature_algorithm_oid == sig_oid
+        assert request.signature_hash_algorithm is None
+        public_key = request.public_key()
+        assert isinstance(public_key, pub_key_cls)
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
@@ -6611,6 +6817,57 @@ class TestEd448Certificate:
     def test_verify_directly_issued_by_ed448_bad_sig(self, backend):
         issuer_private_key = ed448.Ed448PrivateKey.generate()
         subject_private_key = ed448.Ed448PrivateKey.generate()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        cert_bad_sig = _break_cert_sig(cert)
+        with pytest.raises(InvalidSignature):
+            cert_bad_sig.verify_directly_issued_by(ca)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mldsa_supported(),
+    skip_message="Requires a backend with ML-DSA support",
+)
+@pytest.mark.parametrize(
+    ("priv_key_cls", "pub_key_cls", "sig_oid"),
+    [
+        (
+            mldsa.MLDSA44PrivateKey,
+            mldsa.MLDSA44PublicKey,
+            SignatureAlgorithmOID.ML_DSA_44,
+        ),
+        (
+            mldsa.MLDSA65PrivateKey,
+            mldsa.MLDSA65PublicKey,
+            SignatureAlgorithmOID.ML_DSA_65,
+        ),
+        (
+            mldsa.MLDSA87PrivateKey,
+            mldsa.MLDSA87PublicKey,
+            SignatureAlgorithmOID.ML_DSA_87,
+        ),
+    ],
+)
+class TestMLDSACertificate:
+    def test_sign_and_verify_directly_issued_by_mldsa(
+        self, priv_key_cls, pub_key_cls, sig_oid, backend
+    ):
+        issuer_private_key = priv_key_cls.generate()
+        subject_private_key = priv_key_cls.generate()
+        ca, cert = _generate_ca_and_leaf(
+            issuer_private_key, subject_private_key
+        )
+        assert cert.signature_algorithm_oid == sig_oid
+        assert cert.signature_hash_algorithm is None
+        assert isinstance(cert.public_key(), pub_key_cls)
+        cert.verify_directly_issued_by(ca)
+
+    def test_verify_directly_issued_by_mldsa_bad_sig(
+        self, priv_key_cls, pub_key_cls, sig_oid, backend
+    ):
+        issuer_private_key = priv_key_cls.generate()
+        subject_private_key = priv_key_cls.generate()
         ca, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
         )

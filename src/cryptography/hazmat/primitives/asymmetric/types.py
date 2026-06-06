@@ -76,6 +76,9 @@ CertificateIssuerPrivateKeyTypes = typing.Union[
     rsa.RSAPrivateKey,
     dsa.DSAPrivateKey,
     ec.EllipticCurvePrivateKey,
+    mldsa.MLDSA44PrivateKey,
+    mldsa.MLDSA65PrivateKey,
+    mldsa.MLDSA87PrivateKey,
 ]
 CERTIFICATE_PRIVATE_KEY_TYPES = CertificateIssuerPrivateKeyTypes
 utils.deprecated(
@@ -93,6 +96,9 @@ CertificateIssuerPublicKeyTypes = typing.Union[
     ec.EllipticCurvePublicKey,
     ed25519.Ed25519PublicKey,
     ed448.Ed448PublicKey,
+    mldsa.MLDSA44PublicKey,
+    mldsa.MLDSA65PublicKey,
+    mldsa.MLDSA87PublicKey,
 ]
 CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES = CertificateIssuerPublicKeyTypes
 utils.deprecated(
@@ -110,6 +116,9 @@ CertificatePublicKeyTypes = typing.Union[
     ec.EllipticCurvePublicKey,
     ed25519.Ed25519PublicKey,
     ed448.Ed448PublicKey,
+    mldsa.MLDSA44PublicKey,
+    mldsa.MLDSA65PublicKey,
+    mldsa.MLDSA87PublicKey,
     x25519.X25519PublicKey,
     x448.X448PublicKey,
 ]

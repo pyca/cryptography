@@ -1022,9 +1022,14 @@ X.509 Certificate Builder
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
             will be used to generate the signature. This must be ``None`` if
             the ``private_key`` is an
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
-            or an
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`,
+            an
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`,
+            or an ML-DSA key (one of
+            :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44PrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA65PrivateKey`,
+            or
+            :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA87PrivateKey`),
             and an instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             otherwise.
@@ -1311,9 +1316,14 @@ X.509 Certificate Revocation List Builder
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm` that
             will be used to generate the signature.
             This must be ``None`` if the ``private_key`` is an
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
-            or an
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`,
+            an
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`,
+            or an ML-DSA key (one of
+            :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44PrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA65PrivateKey`,
+            or
+            :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA87PrivateKey`),
             and an instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             otherwise.
@@ -1538,9 +1548,14 @@ X.509 CSR (Certificate Signing Request) Builder Object
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             that will be used to generate the request signature.
             This must be ``None`` if the ``private_key`` is an
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
-            or an
-            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`,
+            an
+            :class:`~cryptography.hazmat.primitives.asymmetric.ed448.Ed448PrivateKey`,
+            or an ML-DSA key (one of
+            :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44PrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA65PrivateKey`,
+            or
+            :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA87PrivateKey`),
             and an instance of a
             :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
             otherwise.
