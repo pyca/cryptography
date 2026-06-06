@@ -61,6 +61,16 @@ pub enum Type {
     Tlv(),
     /// NULL
     Null(),
+
+    // X.509 types that we special-case to allow embedding them
+    // in ASN.1 structures.
+    //
+    /// `x509.Certificate`
+    Certificate(),
+    /// `x509.CertificateSigningRequest`
+    CertificateSigningRequest(),
+    /// `x509.CertificateRevocationList`
+    CertificateRevocationList(),
 }
 
 /// A type that we know how to encode/decode, along with any
@@ -530,6 +540,12 @@ pub fn non_root_python_to_rust<'p>(
         Type::Tlv().into_pyobject(py)
     } else if class.is(Null::type_object(py)) {
         Type::Null().into_pyobject(py)
+    } else if class.is(crate::x509::certificate::Certificate::type_object(py)) {
+        Type::Certificate().into_pyobject(py)
+    } else if class.is(crate::x509::csr::CertificateSigningRequest::type_object(py)) {
+        Type::CertificateSigningRequest().into_pyobject(py)
+    } else if class.is(crate::x509::crl::CertificateRevocationList::type_object(py)) {
+        Type::CertificateRevocationList().into_pyobject(py)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(format!(
             "cannot handle type: {class:?}"
@@ -673,6 +689,12 @@ pub(crate) fn is_tag_valid_for_type(
             }
         }
         Type::Null() => check_tag_with_encoding(asn1::Null::TAG, encoding, tag),
+        // Certificates, CSRs, and CRLs are all SEQUENCEs
+        Type::Certificate()
+        | Type::CertificateSigningRequest()
+        | Type::CertificateRevocationList() => {
+            check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag)
+        }
     }
 }
 

@@ -22,6 +22,10 @@ Changelog
   signing requests, and certificate revocation lists with
   :doc:`/hazmat/primitives/asymmetric/mldsa` keys, as well as loading
   certificates that contain ML-DSA public keys.
+* Added support for using :class:`~cryptography.x509.Certificate`,
+  :class:`~cryptography.x509.CertificateSigningRequest`, and
+  :class:`~cryptography.x509.CertificateRevocationList` as field types in
+  :doc:`/hazmat/asn1/index` structures.
 
 .. _v48-0-0:
 

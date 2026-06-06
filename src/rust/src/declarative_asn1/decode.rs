@@ -192,6 +192,58 @@ fn decode_tlv<'a>(
     )?)
 }
 
+fn decode_certificate<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, crate::x509::certificate::Certificate>> {
+    let raw = read_value::<cryptography_x509::certificate::Certificate<'a>>(parser, encoding)?;
+    // Since DER is canonical, re-serializing the parsed value gives
+    // back the original bytes.
+    let der = asn1::write_single(&raw)?;
+    let cert = crate::x509::certificate::load_der_x509_certificate(
+        py,
+        pyo3::types::PyBytes::new(py, &der).unbind(),
+        None,
+    )?;
+    Ok(pyo3::Bound::new(py, cert)?)
+}
+
+fn decode_csr<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, crate::x509::csr::CertificateSigningRequest>> {
+    let raw = read_value::<cryptography_x509::csr::Csr<'a>>(parser, encoding)?;
+    // Since DER is canonical, re-serializing the parsed value gives
+    // back the original bytes.
+    let der = asn1::write_single(&raw)?;
+    let csr = crate::x509::csr::load_der_x509_csr(
+        py,
+        pyo3::types::PyBytes::new(py, &der).unbind(),
+        None,
+    )?;
+    Ok(pyo3::Bound::new(py, csr)?)
+}
+
+fn decode_crl<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, crate::x509::crl::CertificateRevocationList>> {
+    let raw =
+        read_value::<cryptography_x509::crl::CertificateRevocationList<'a>>(parser, encoding)?;
+    // Since DER is canonical, re-serializing the parsed value gives
+    // back the original bytes.
+    let der = asn1::write_single(&raw)?;
+    let crl = crate::x509::crl::load_der_x509_crl(
+        py,
+        pyo3::types::PyBytes::new(py, &der).unbind(),
+        None,
+    )?;
+    Ok(pyo3::Bound::new(py, crl)?)
+}
+
 fn decode_null<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -379,6 +431,9 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::BitString() => decode_bitstring(py, parser, annotation)?.into_any(),
         Type::Tlv() => decode_tlv(py, parser, encoding)?.into_any(),
         Type::Null() => decode_null(py, parser, encoding)?.into_any(),
+        Type::Certificate() => decode_certificate(py, parser, encoding)?.into_any(),
+        Type::CertificateSigningRequest() => decode_csr(py, parser, encoding)?.into_any(),
+        Type::CertificateRevocationList() => decode_crl(py, parser, encoding)?.into_any(),
     };
 
     match &ann_type.annotation.get().default {

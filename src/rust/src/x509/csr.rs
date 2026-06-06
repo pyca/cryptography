@@ -17,7 +17,7 @@ use crate::x509::{certificate, sign};
 use crate::{exceptions, types, x509};
 
 self_cell::self_cell!(
-    struct OwnedCsr {
+    pub(crate) struct OwnedCsr {
         owner: pyo3::Py<pyo3::types::PyBytes>,
 
         #[covariant]
@@ -27,7 +27,7 @@ self_cell::self_cell!(
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
 pub(crate) struct CertificateSigningRequest {
-    raw: OwnedCsr,
+    pub(crate) raw: OwnedCsr,
     cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
     cached_attributes: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }

@@ -14,6 +14,32 @@ and serializing/deserializing them to/from DER-encoded data.
 
 .. versionadded:: 47.0.0
 
+.. testsetup::
+
+    pem_cert_data = b"""
+    -----BEGIN CERTIFICATE-----
+    MIIDfDCCAmSgAwIBAgIBAjANBgkqhkiG9w0BAQsFADBFMQswCQYDVQQGEwJVUzEf
+    MB0GA1UEChMWVGVzdCBDZXJ0aWZpY2F0ZXMgMjAxMTEVMBMGA1UEAxMMVHJ1c3Qg
+    QW5jaG9yMB4XDTEwMDEwMTA4MzAwMFoXDTMwMTIzMTA4MzAwMFowQDELMAkGA1UE
+    BhMCVVMxHzAdBgNVBAoTFlRlc3QgQ2VydGlmaWNhdGVzIDIwMTExEDAOBgNVBAMT
+    B0dvb2QgQ0EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCQWJpHYo37
+    Xfb7oJSPe+WvfTlzIG21WQ7MyMbGtK/m8mejCzR6c+f/pJhEH/OcDSMsXq8h5kXa
+    BGqWK+vSwD/Pzp5OYGptXmGPcthDtAwlrafkGOS4GqIJ8+k9XGKs+vQUXJKsOk47
+    RuzD6PZupq4s16xaLVqYbUC26UcY08GpnoLNHJZS/EmXw1ZZ3d4YZjNlpIpWFNHn
+    UGmdiGKXUPX/9H0fVjIAaQwjnGAbpgyCumWgzIwPpX+ElFOUr3z7BoVnFKhIXze+
+    VmQGSWxZxvWDUN90Ul0tLEpLgk3OVxUB4VUGuf15OJOpgo1xibINPmWt14Vda2N9
+    yrNKloJGZNqLAgMBAAGjfDB6MB8GA1UdIwQYMBaAFOR9X9FclYYILAWuvnW2ZafZ
+    XahmMB0GA1UdDgQWBBRYAYQkG7wrUpRKPaUQchRR9a86yTAOBgNVHQ8BAf8EBAMC
+    AQYwFwYDVR0gBBAwDjAMBgpghkgBZQMCATABMA8GA1UdEwEB/wQFMAMBAf8wDQYJ
+    KoZIhvcNAQELBQADggEBADWHlxbmdTXNwBL/llwhQqwnazK7CC2WsXBBqgNPWj7m
+    tvQ+aLG8/50Qc2Sun7o2VnwF9D18UUe8Gj3uPUYH+oSI1vDdyKcjmMbKRU4rk0eo
+    3UHNDXwqIVc9CQS9smyV+x1HCwL4TTrq+LXLKx/qVij0Yqk+UJfAtrg2jnYKXsCu
+    FMBQQnWCGrwa1g1TphRp/RmYHnMynYFmZrXtzFz+U9XEA7C+gPq4kqDI/iVfIT1s
+    6lBtdB50lrDVwl2oYfAvW/6sC2se2QleZidUmrziVNP4oEeXINokU6T6p//HM1FG
+    QYw2jOvpKcKtWCSAnegEbgsGYzATKjmPJPJ0npHFqzM=
+    -----END CERTIFICATE-----
+    """.strip()
+
 Serialization
 -------------
 
@@ -76,6 +102,26 @@ The following built-in Python types are supported as ASN.1 field types:
 
 Additionally, :class:`~cryptography.x509.ObjectIdentifier` maps to
 ``OBJECT IDENTIFIER``.
+
+.. versionadded:: 49.0.0
+
+:class:`~cryptography.x509.Certificate`,
+:class:`~cryptography.x509.CertificateSigningRequest`, and
+:class:`~cryptography.x509.CertificateRevocationList` can also be used as
+field types. They are encoded by embedding their DER serialization, and
+decoded by parsing the field as the corresponding X.509 object.
+
+.. doctest::
+
+    >>> from cryptography import x509
+    >>> from cryptography.hazmat import asn1
+    >>> @asn1.sequence
+    ... class Example:
+    ...     cert: x509.Certificate
+    >>> cert = x509.load_pem_x509_certificate(pem_cert_data)
+    >>> encoded = asn1.encode_der(Example(cert=cert))
+    >>> asn1.decode_der(Example, encoded).cert == cert
+    True
 
 The following decorators and types are provided for the rest of the ASN.1 types
 that have no direct Python equivalent:

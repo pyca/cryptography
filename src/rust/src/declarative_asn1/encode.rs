@@ -265,6 +265,30 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 ),
             )),
             Type::Null() => Ok(write_value(writer, &(), encoding)?),
+            Type::Certificate() => {
+                let val = value.cast::<crate::x509::certificate::Certificate>()?;
+                Ok(write_value(
+                    writer,
+                    val.get().raw.borrow_dependent(),
+                    encoding,
+                )?)
+            }
+            Type::CertificateSigningRequest() => {
+                let val = value.cast::<crate::x509::csr::CertificateSigningRequest>()?;
+                Ok(write_value(
+                    writer,
+                    val.get().raw.borrow_dependent(),
+                    encoding,
+                )?)
+            }
+            Type::CertificateRevocationList() => {
+                let val = value.cast::<crate::x509::crl::CertificateRevocationList>()?;
+                Ok(write_value(
+                    writer,
+                    val.get().owned.borrow_dependent(),
+                    encoding,
+                )?)
+            }
         }
     }
 }
