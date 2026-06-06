@@ -2053,11 +2053,18 @@ class TestX509Types:
                     Example(field=cert),
                     b"\x30" + _der_length(len(cert_der)) + cert_der,
                 ),
-                (Example(field=9), b"\x30\x03\x02\x01\x09"),
+                (
+                    Example(field=9),
+                    b"\x30" + _der_length(3) + b"\x02\x01\x09",
+                ),
             ]
         )
 
     def test_decode_invalid(self) -> None:
+        # Not even a valid TLV
+        with pytest.raises(ValueError):
+            asn1.decode_der(x509.Certificate, b"")
+
         # Wrong tag (INTEGER instead of SEQUENCE)
         with pytest.raises(ValueError):
             asn1.decode_der(x509.Certificate, b"\x02\x01\x00")
