@@ -20,7 +20,6 @@ typedef ... Cryptography_STACK_OF_X509_NAME;
 """
 
 FUNCTIONS = """
-X509_NAME *X509_NAME_new(void);
 void X509_NAME_free(X509_NAME *);
 
 unsigned long X509_NAME_hash(X509_NAME *);
