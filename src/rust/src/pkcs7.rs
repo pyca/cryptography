@@ -845,7 +845,7 @@ fn load_der_pkcs7_certificates(
             if let Err(e) =  load_pkcs7_certificates_rust(py, data) {
                 let err = pyo3::PyErr::from(e);
                 let warning_cls = pyo3::exceptions::PyUserWarning::type_object(py);
-                let message = CString::new(format!("PKCS#7 certificates could not be parsed as DER, falling back to parsing as BER. Please file an issue at https://github.com/pyca/cryptography/issues explaining how your PKCS#7 certificates were created. In the future, this may become an exception. Error details: {err}")).unwrap();
+                let message = CString::new(format!("PKCS#7 certificates could not be parsed as DER, falling back to parsing as BER. In the future, this may become an exception. Error details: {err}")).unwrap();
                 pyo3::PyErr::warn(py, &warning_cls, &message, 1)?;
             }
 
