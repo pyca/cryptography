@@ -156,6 +156,13 @@ int X509_VERIFY_PARAM_set_flags(X509_VERIFY_PARAM *, unsigned long);
 void X509_VERIFY_PARAM_set_time(X509_VERIFY_PARAM *, time_t);
 void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *);
 
+/* Included due to external consumer (mitmproxy) */
+int X509_VERIFY_PARAM_set1_host(X509_VERIFY_PARAM *, const char *,
+                                size_t);
+void X509_VERIFY_PARAM_set_hostflags(X509_VERIFY_PARAM *, unsigned int);
+int X509_VERIFY_PARAM_set1_ip(X509_VERIFY_PARAM *, const unsigned char *,
+                              size_t);
+
 int sk_X509_OBJECT_num(Cryptography_STACK_OF_X509_OBJECT *);
 Cryptography_STACK_OF_X509_OBJECT *X509_STORE_get0_objects(X509_STORE *);
 
