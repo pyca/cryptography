@@ -155,11 +155,11 @@ that have no direct Python equivalent:
             ...
         ValueError: error parsing asn1 value: ...
 
-.. decorator:: value_set
+.. decorator:: value_set(value_type)
 
     A class decorator that registers an :class:`enum.Enum` subclass as an
-    ASN.1 value set: a set of named values of a single underlying type. All
-    the member values must be instances of the same ASN.1 type.
+    ASN.1 value set: a set of named values of a single underlying type.
+    All the member values must be instances of ``value_type``.
 
     Members are encoded exactly as their underlying value. When decoding,
     the value is decoded and mapped back to the corresponding enum member;
@@ -169,12 +169,15 @@ that have no direct Python equivalent:
     Fields of a value set type can be annotated with :class:`Explicit`,
     :class:`Implicit`, and :class:`Default` using :class:`typing.Annotated`.
 
+    :param value_type: The underlying ASN.1 type of the member values.
+    :type value_type: :class:`type`
+
     .. doctest::
 
         >>> import enum
         >>> from cryptography import x509
         >>> from cryptography.hazmat import asn1
-        >>> @asn1.value_set
+        >>> @asn1.value_set(x509.ObjectIdentifier)
         ... class HashAlgorithm(enum.Enum):
         ...     SHA_256 = x509.ObjectIdentifier("2.16.840.1.101.3.4.2.1")
         ...     SHA_384 = x509.ObjectIdentifier("2.16.840.1.101.3.4.2.2")

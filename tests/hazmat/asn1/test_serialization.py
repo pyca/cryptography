@@ -2091,7 +2091,7 @@ class TestX509Types:
             asn1.encode_der(Example(cert=9))  # type: ignore[arg-type]
 
 
-@asn1.value_set
+@asn1.value_set(x509.ObjectIdentifier)
 class Algorithm(enum.Enum):
     A = x509.ObjectIdentifier("1.2.3.4")
     B = x509.ObjectIdentifier("1.2.3.5")
@@ -2122,7 +2122,7 @@ class TestValueSet:
         assert decoded.algorithm is Algorithm.A
 
     def test_ok_int_value_set(self) -> None:
-        @asn1.value_set
+        @asn1.value_set(int)
         class Version(enum.Enum):
             V1 = 1
             V2 = 2

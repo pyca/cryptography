@@ -539,7 +539,7 @@ class TestValueSetAPI:
             ),
         ):
 
-            @asn1.value_set
+            @asn1.value_set(int)
             class Example:
                 pass
 
@@ -549,18 +549,18 @@ class TestValueSetAPI:
             match="value set 'Example' must have at least one member",
         ):
 
-            @asn1.value_set
+            @asn1.value_set(int)
             class Example(enum.Enum):
                 pass
 
-    def test_fail_mixed_value_types(self) -> None:
+    def test_fail_member_value_of_wrong_type(self) -> None:
         with pytest.raises(
             TypeError,
-            match="all members of value set 'Example' must have values "
-            "of the same type",
+            match="member 'B' of value set 'Example' must have a value "
+            "of type 'int', got: 'str'",
         ):
 
-            @asn1.value_set
+            @asn1.value_set(int)
             class Example(enum.Enum):
                 A = 1
                 B = "b"
@@ -568,10 +568,6 @@ class TestValueSetAPI:
     def test_fail_unsupported_value_type(self) -> None:
         with pytest.raises(
             TypeError,
-            match="unsupported value type for value set 'Example'",
+            match="unsupported value type for value set",
         ):
-
-            @asn1.value_set
-            class Example(enum.Enum):
-                A = 1.5
-                B = 2.5
+            asn1.value_set(float)
