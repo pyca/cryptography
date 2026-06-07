@@ -4,6 +4,7 @@
 
 import dataclasses
 import datetime
+import enum
 import os
 import re
 import sys
@@ -2088,3 +2089,178 @@ class TestX509Types:
 
         with pytest.raises(TypeError):
             asn1.encode_der(Example(cert=9))  # type: ignore[arg-type]
+
+
+@asn1.value_set(x509.ObjectIdentifier)
+class Algorithm(enum.Enum):
+    A = x509.ObjectIdentifier("1.2.3.4")
+    B = x509.ObjectIdentifier("1.2.3.5")
+
+
+class TestValueSet:
+    def test_ok_oid_value_set(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            algorithm: Algorithm
+
+        assert_roundtrips(
+            [
+                (
+                    Example(algorithm=Algorithm.A),
+                    b"\x30\x05\x06\x03\x2a\x03\x04",
+                ),
+                (
+                    Example(algorithm=Algorithm.B),
+                    b"\x30\x05\x06\x03\x2a\x03\x05",
+                ),
+            ]
+        )
+
+        # Decoding returns the enum member itself
+        decoded = asn1.decode_der(Example, b"\x30\x05\x06\x03\x2a\x03\x04")
+        assert decoded.algorithm is Algorithm.A
+
+    def test_ok_int_value_set(self) -> None:
+        @asn1.value_set(int)
+        class Version(enum.Enum):
+            V1 = 1
+            V2 = 2
+
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            version: Version
+
+        assert_roundtrips(
+            [
+                (Example(version=Version.V1), b"\x30\x03\x02\x01\x01"),
+                (Example(version=Version.V2), b"\x30\x03\x02\x01\x02"),
+            ]
+        )
+
+    def test_ok_top_level_value_set(self) -> None:
+        assert_roundtrips(
+            [
+                (Algorithm.A, b"\x06\x03\x2a\x03\x04"),
+                (Algorithm.B, b"\x06\x03\x2a\x03\x05"),
+            ]
+        )
+
+    def test_ok_value_set_implicit(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            algorithm: Annotated[Algorithm, asn1.Implicit(0)]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(algorithm=Algorithm.A),
+                    b"\x30\x05\x80\x03\x2a\x03\x04",
+                ),
+            ]
+        )
+
+    def test_ok_value_set_explicit(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            algorithm: Annotated[Algorithm, asn1.Explicit(0)]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(algorithm=Algorithm.A),
+                    b"\x30\x07\xa0\x05\x06\x03\x2a\x03\x04",
+                ),
+            ]
+        )
+
+    def test_ok_optional_value_set(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            algorithm: typing.Union[Algorithm, None]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(algorithm=Algorithm.A),
+                    b"\x30\x05\x06\x03\x2a\x03\x04",
+                ),
+                (Example(algorithm=None), b"\x30\x00"),
+            ]
+        )
+
+    def test_ok_value_set_default(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            algorithm: Annotated[Algorithm, asn1.Default(Algorithm.A)]
+
+        assert_roundtrips(
+            [
+                (Example(algorithm=Algorithm.A), b"\x30\x00"),
+                (
+                    Example(algorithm=Algorithm.B),
+                    b"\x30\x05\x06\x03\x2a\x03\x05",
+                ),
+            ]
+        )
+
+        with pytest.raises(
+            ValueError, match="DEFAULT value was explicitly encoded"
+        ):
+            asn1.decode_der(Example, b"\x30\x05\x06\x03\x2a\x03\x04")
+
+    def test_ok_value_set_in_choice(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            field: typing.Union[Algorithm, int]
+
+        assert_roundtrips(
+            [
+                (
+                    Example(field=Algorithm.A),
+                    b"\x30\x05\x06\x03\x2a\x03\x04",
+                ),
+                (Example(field=9), b"\x30\x03\x02\x01\x09"),
+            ]
+        )
+
+    def test_fail_decode_non_member_value(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            algorithm: Algorithm
+
+        with pytest.raises(
+            ValueError, match="is not a valid value for Algorithm"
+        ):
+            asn1.decode_der(Example, b"\x30\x05\x06\x03\x2a\x03\x06")
+
+    def test_fail_decode_wrong_type(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            algorithm: Algorithm
+
+        with pytest.raises(ValueError):
+            asn1.decode_der(Example, b"\x30\x03\x02\x01\x01")
+
+    def test_fail_encode_non_member(self) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            algorithm: Algorithm
+
+        with pytest.raises(
+            TypeError,
+            match="value set field must be an instance of Algorithm, "
+            "got: ObjectIdentifier",
+        ):
+            asn1.encode_der(
+                Example(algorithm=x509.ObjectIdentifier("1.2.3.4"))  # type: ignore[arg-type]
+            )

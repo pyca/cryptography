@@ -3,13 +3,13 @@
 // for complete details.
 
 use asn1::Parser;
-use pyo3::types::{PyAnyMethods, PyListMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods, PyTypeMethods};
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
-    check_size_constraint, is_tag_valid_for_type, is_tag_valid_for_variant, AnnotatedType,
-    Annotation, BitString, Encoding, GeneralizedTime, IA5String, Null, PrintableString, SetOf, Tlv,
-    Type, UtcTime, Variant,
+    check_size_constraint, is_tag_valid_for_type, is_tag_valid_for_variant, value_set_inner_type,
+    AnnotatedType, Annotation, BitString, Encoding, GeneralizedTime, IA5String, Null,
+    PrintableString, SetOf, Tlv, Type, UtcTime, Variant,
 };
 use crate::error::CryptographyError;
 
@@ -254,6 +254,38 @@ fn decode_null<'a>(
     Ok(pyo3::Bound::new(py, Null {})?)
 }
 
+// Decodes a value set field: decodes the underlying value, then maps
+// it back to the enum member with that value. Fails if the decoded
+// value does not correspond to any member.
+fn decode_value_set<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    cls: &pyo3::Py<pyo3::types::PyType>,
+    inner_type: &AnnotatedType,
+    annotation: &Annotation,
+) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
+    let inner_ann_type = value_set_inner_type(py, inner_type, annotation)?;
+    let decoded = decode_annotated_type(py, parser, &inner_ann_type)?;
+    // NOTE: This is a linear scan over the members of the enum. If this
+    // ever becomes a performance problem, it could be replaced with a
+    // value -> member map stored in `Type::ValueSet` (keeping in mind
+    // that hash-based lookups won't work for the asn1 wrapper types,
+    // which implement `__eq__` but not `__hash__`).
+    for member in cls.bind(py).try_iter()? {
+        let member = member?;
+        if member.getattr(pyo3::intern!(py, "value"))?.eq(&decoded)? {
+            return Ok(member);
+        }
+    }
+    Err(CryptographyError::Py(
+        pyo3::exceptions::PyValueError::new_err(format!(
+            "{} is not a valid value for {}",
+            decoded.repr()?,
+            cls.bind(py).name()?,
+        )),
+    ))
+}
+
 // Utility function to handle explicit encoding when parsing
 // CHOICE fields.
 fn decode_choice_with_encoding<'a>(
@@ -420,6 +452,9 @@ pub(crate) fn decode_annotated_type<'a>(
                 ))?
             }
         },
+        Type::ValueSet(cls, inner_type) => {
+            decode_value_set(py, parser, cls, inner_type.get(), annotation)?
+        }
         Type::PyBool() => decode_pybool(py, parser, encoding)?.into_any(),
         Type::PyInt() => decode_pyint(py, parser, encoding)?.into_any(),
         Type::PyBytes() => decode_pybytes(py, parser, annotation)?.into_any(),
