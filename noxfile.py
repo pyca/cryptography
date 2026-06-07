@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import glob
+import hashlib
 import itertools
 import json
 import os
@@ -44,6 +45,56 @@ def load_pyproject_toml() -> dict:
         return tomllib.load(f)
 
 
+def pin_pyo3_config(session: nox.Session) -> None:
+    # PEP 517 builds run in a randomly-named temporary environment, and
+    # PyO3's build script fingerprints the interpreter path it is given.
+    # That makes cargo recompile pyo3 (and everything downstream of it) on
+    # every CI run, despite an otherwise warm cache. Resolve the PyO3
+    # build config once, against this session's interpreter (whose path is
+    # stable from run to run), and pin it via PYO3_CONFIG_FILE so the
+    # build is independent of the ephemeral build environment.
+    venv = pathlib.Path(session.virtualenv.location)
+    python = venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    output = session.run_install(
+        "cargo",
+        "check",
+        "-p",
+        "pyo3-ffi",
+        external=True,
+        silent=True,
+        success_codes=[0, 101],
+        env={"PYO3_PRINT_CONFIG": "1", "PYO3_PYTHON": str(python)},
+    )
+    # None on --no-install invocations, where the config file (and the
+    # build it is for) already exists.
+    if output is None:
+        return
+    assert isinstance(output, str)
+    config_lines = []
+    in_config = False
+    for line in output.splitlines():
+        line = line.strip()
+        if "PYO3_PRINT_CONFIG=1 is set" in line:
+            in_config = True
+            continue
+        if in_config:
+            if line.startswith("note:") or "=" not in line:
+                break
+            config_lines.append(line)
+    assert config_lines, f"failed to extract PyO3 config from:\n{output}"
+    content = "\n".join(config_lines) + "\n"
+    # The file name is content-addressed and the mtime is pinned: cargo
+    # treats both a changed PYO3_CONFIG_FILE value and a fresh mtime on
+    # the file it points to as reasons to recompile pyo3. This way a
+    # regenerated-but-identical config (e.g. a fresh CI run) never looks
+    # changed, while a genuinely different config gets a new path.
+    digest = hashlib.sha256(content.encode()).hexdigest()[:16]
+    config_path = venv / f"pyo3-config-{digest}.txt"
+    config_path.write_text(content)
+    os.utime(config_path, (0, 0))
+    session.env["PYO3_CONFIG_FILE"] = str(config_path)
+
+
 @nox.session
 @nox.session(name="tests-ssh")
 @nox.session(name="tests-randomorder")
@@ -71,6 +122,7 @@ def tests(session: nox.Session) -> None:
         )
 
     install_spec = f".[{','.join(extras)}]"
+    pin_pyo3_config(session)
     install(session, "-e", "./vectors")
     if session.name == "tests-rust-debug":
         install(
