@@ -22,6 +22,10 @@ Changelog
   signing requests, and certificate revocation lists with
   :doc:`/hazmat/primitives/asymmetric/mldsa` keys, as well as loading
   certificates that contain ML-DSA public keys.
+* Added :meth:`~cryptography.hazmat.primitives.hpke.KEM.enc_length` to
+  :class:`~cryptography.hazmat.primitives.hpke.KEM` so callers can split the
+  encapsulated key from the ciphertext returned by
+  :meth:`~cryptography.hazmat.primitives.hpke.Suite.encrypt`.
 * Added support for using :class:`~cryptography.x509.Certificate`,
   :class:`~cryptography.x509.CertificateSigningRequest`, and
   :class:`~cryptography.x509.CertificateRevocationList` as field types in

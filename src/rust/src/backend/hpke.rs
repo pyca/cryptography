@@ -188,19 +188,6 @@ impl KEM {
         }
     }
 
-    fn enc_length(&self) -> usize {
-        match self {
-            KEM::X25519 => kem_params::X25519_NENC,
-            KEM::P256 => kem_params::P256_NENC,
-            KEM::P384 => kem_params::P384_NENC,
-            KEM::P521 => kem_params::P521_NENC,
-            KEM::MLKEM768 => kem_params::MLKEM768_NENC,
-            KEM::MLKEM1024 => kem_params::MLKEM1024_NENC,
-            KEM::MLKEM768_X25519 => kem_params::MLKEM768_X25519_NENC,
-            KEM::MLKEM1024_P384 => kem_params::MLKEM1024_P384_NENC,
-        }
-    }
-
     fn check_public_key(
         &self,
         py: pyo3::Python<'_>,
@@ -627,6 +614,22 @@ impl KEM {
             KEM::MLKEM768 | KEM::MLKEM1024 | KEM::MLKEM768_X25519 | KEM::MLKEM1024_P384 => {
                 unreachable!("ML-KEM does not use a KEM hash algorithm")
             }
+        }
+    }
+}
+
+#[pyo3::pymethods]
+impl KEM {
+    fn enc_length(&self) -> usize {
+        match self {
+            KEM::X25519 => kem_params::X25519_NENC,
+            KEM::P256 => kem_params::P256_NENC,
+            KEM::P384 => kem_params::P384_NENC,
+            KEM::P521 => kem_params::P521_NENC,
+            KEM::MLKEM768 => kem_params::MLKEM768_NENC,
+            KEM::MLKEM1024 => kem_params::MLKEM1024_NENC,
+            KEM::MLKEM768_X25519 => kem_params::MLKEM768_X25519_NENC,
+            KEM::MLKEM1024_P384 => kem_params::MLKEM1024_P384_NENC,
         }
     }
 }

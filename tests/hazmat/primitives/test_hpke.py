@@ -101,6 +101,22 @@ class TestHPKE:
         with pytest.raises(TypeError):
             Suite(KEM.X25519, KDF.HKDF_SHA256, "not an aead")  # type: ignore[arg-type]
 
+    @pytest.mark.parametrize(
+        "kem,expected",
+        [
+            (KEM.X25519, X25519_ENC_LENGTH),
+            (KEM.P256, P256_ENC_LENGTH),
+            (KEM.P384, P384_ENC_LENGTH),
+            (KEM.P521, P521_ENC_LENGTH),
+            (KEM.MLKEM768, MLKEM768_ENC_LENGTH),
+            (KEM.MLKEM1024, MLKEM1024_ENC_LENGTH),
+            (KEM.MLKEM768_X25519, MLKEM768_X25519_ENC_LENGTH),
+            (KEM.MLKEM1024_P384, MLKEM1024_P384_ENC_LENGTH),
+        ],
+    )
+    def test_enc_length(self, kem, expected):
+        assert kem.enc_length() == expected
+
     @pytest.mark.parametrize("kem,kdf,aead", SUPPORTED_SUITES)
     def test_roundtrip(self, backend, kem, kdf, aead):
         if kdf == KDF.SHAKE128 and not backend.hash_supported(
