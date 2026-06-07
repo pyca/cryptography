@@ -408,11 +408,6 @@ jobs:
             # Latest commit on the aws-encryption-sdk-python master branch, as of May 29, 2026.
             REF: 61040db041104dfd950d1541039ad996dbe895be
             PATH: aws-encryption-sdk-python
-          - DOWNSTREAM: aws-dynamodb-encryption-python
-            REPO: awslabs/aws-dynamodb-encryption-python
-            # Latest commit on the aws-dynamodb-encryption-python master branch, as of Apr 29, 2026.
-            REF: fbdf52978e99f06b1b513b4be33d826c5ac5ada1
-            PATH: aws-dynamodb-encryption-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
             # Latest commit on the certbot main branch, as of Jun 02, 2026.
@@ -459,7 +454,7 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: '3.12'
+          python-version: '3.13'
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
         timeout-minutes: 3
