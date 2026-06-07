@@ -48,6 +48,7 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "d099e33e5733bb9d3975fc4f3ac4a85b6ed1a4cb"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
+          # - 1.85: 2024 edition
           # - 1.95: cfg_select
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0"}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.0.0"}}
