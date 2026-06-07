@@ -463,7 +463,10 @@ def value_set(
         inner = declarative_asn1.AnnotatedType(
             rust_type, declarative_asn1.Annotation()
         )
-        root = declarative_asn1.Type.ValueSet(cls, inner)
+        # Map from member value to member, used for O(1) lookups when
+        # decoding. This requires the member values to be hashable.
+        value_map = {member.value: member for member in members}
+        root = declarative_asn1.Type.ValueSet(cls, inner, value_map)
 
         setattr(cls, "__asn1_root__", root)
         return cls
