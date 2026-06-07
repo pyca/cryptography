@@ -30,6 +30,11 @@ Changelog
   :class:`~cryptography.x509.CertificateSigningRequest`, and
   :class:`~cryptography.x509.CertificateRevocationList` as field types in
   :doc:`/hazmat/asn1/index` structures.
+* :class:`~cryptography.hazmat.asn1.PrintableString`,
+  :class:`~cryptography.hazmat.asn1.IA5String`,
+  :class:`~cryptography.hazmat.asn1.UTCTime`,
+  :class:`~cryptography.hazmat.asn1.GeneralizedTime`, and
+  :class:`~cryptography.hazmat.asn1.BitString` are now hashable.
 
 .. _v48-0-0:
 

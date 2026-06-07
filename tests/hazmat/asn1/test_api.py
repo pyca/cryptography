@@ -29,6 +29,14 @@ class TestTypesAPI:
         with pytest.raises(ValueError, match="invalid PrintableString: café"):
             asn1.PrintableString("café")
 
+    def test_hash_printable_string(self) -> None:
+        assert hash(asn1.PrintableString("MyString")) == hash(
+            asn1.PrintableString("MyString")
+        )
+        assert hash(asn1.PrintableString("MyString")) != hash(
+            asn1.PrintableString("OtherString")
+        )
+
     def test_repr_ia5_string(self) -> None:
         my_string = "MyString"
         assert repr(asn1.IA5String(my_string)) == f"IA5String({my_string!r})"
@@ -41,6 +49,14 @@ class TestTypesAPI:
         with pytest.raises(ValueError, match="invalid IA5String: café"):
             asn1.IA5String("café")
 
+    def test_hash_ia5_string(self) -> None:
+        assert hash(asn1.IA5String("MyString")) == hash(
+            asn1.IA5String("MyString")
+        )
+        assert hash(asn1.IA5String("MyString")) != hash(
+            asn1.IA5String("OtherString")
+        )
+
     def test_utc_time_as_datetime(self) -> None:
         dt = datetime.datetime(
             2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
@@ -52,6 +68,16 @@ class TestTypesAPI:
             2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
         )
         assert repr(asn1.UTCTime(dt)) == f"UTCTime({dt!r})"
+
+    def test_hash_utc_time(self) -> None:
+        dt = datetime.datetime(
+            2000, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
+        )
+        other_dt = datetime.datetime(
+            2001, 1, 1, 10, 10, 10, tzinfo=datetime.timezone.utc
+        )
+        assert hash(asn1.UTCTime(dt)) == hash(asn1.UTCTime(dt))
+        assert hash(asn1.UTCTime(dt)) != hash(asn1.UTCTime(other_dt))
 
     def test_invalid_utc_time(self) -> None:
         with pytest.raises(
@@ -107,6 +133,18 @@ class TestTypesAPI:
         )
         assert repr(asn1.GeneralizedTime(dt)) == f"GeneralizedTime({dt!r})"
 
+    def test_hash_generalized_time(self) -> None:
+        dt = datetime.datetime(
+            2000, 1, 1, 10, 10, 10, 300000, tzinfo=datetime.timezone.utc
+        )
+        other_dt = datetime.datetime(
+            2001, 1, 1, 10, 10, 10, 300000, tzinfo=datetime.timezone.utc
+        )
+        assert hash(asn1.GeneralizedTime(dt)) == hash(asn1.GeneralizedTime(dt))
+        assert hash(asn1.GeneralizedTime(dt)) != hash(
+            asn1.GeneralizedTime(other_dt)
+        )
+
     def test_invalid_generalized_time(self) -> None:
         with pytest.raises(
             ValueError,
@@ -127,6 +165,17 @@ class TestTypesAPI:
         assert (
             repr(asn1.BitString(data, 2))
             == f"BitString(data={data!r}, padding_bits=2)"
+        )
+
+    def test_hash_bitstring(self) -> None:
+        assert hash(asn1.BitString(b"\x01\x02\x30", 2)) == hash(
+            asn1.BitString(b"\x01\x02\x30", 2)
+        )
+        assert hash(asn1.BitString(b"\x01\x02\x30", 2)) != hash(
+            asn1.BitString(b"\x01\x02\x40", 2)
+        )
+        assert hash(asn1.BitString(b"\x01\x02\x30", 2)) != hash(
+            asn1.BitString(b"\x01\x02\x30", 3)
         )
 
     def test_invalid_bitstring(self) -> None:
