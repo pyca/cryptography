@@ -41,25 +41,12 @@ runs:
     - run: python -m pip install -c ci-constraints-requirements.txt "nox[uv]" "tomli; python_version < '3.11'"
       shell: bash
 
-    - uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
-      id: ossl-download
+    - name: Download OpenSSL
+      uses: ./.github/actions/fetch-openssl
       with:
-        repo: pyca/infra
         workflow: build-windows-openssl.yml
-        branch: main
-        workflow_conclusion: success
         name: "openssl-${{ inputs.openssl-name }}"
         path: "C:/openssl-${{ inputs.openssl-name }}/"
-        github_token: ${{ github.token }}
-    # The fresh extraction gives the headers new mtimes on every run, which
-    # invalidates openssl-sys's cargo fingerprint (it registers
-    # rerun-if-changed on the include dir) despite identical content.
-    - name: Pin OpenSSL artifact mtimes
-      run: python .github/bin/pin_artifact_mtimes.py "C:/openssl-${OPENSSL_NAME}" "${ARTIFACT_CREATED_AT}"
-      env:
-        OPENSSL_NAME: ${{ inputs.openssl-name }}
-        ARTIFACT_CREATED_AT: ${{ fromJSON(steps.ossl-download.outputs.artifacts)[0].created_at }}
-      shell: bash
     - name: Configure
       run: |
           echo "OPENSSL_DIR=C:/openssl-${OPENSSL_NAME}" >> $GITHUB_ENV

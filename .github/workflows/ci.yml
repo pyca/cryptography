@@ -314,23 +314,12 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/fetch-vectors
 
-      - uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
-        id: ossl-download
+      - name: Download OpenSSL
+        uses: ./.github/actions/fetch-openssl
         with:
-          repo: pyca/infra
           workflow: build-macos-openssl.yml
-          branch: main
-          workflow_conclusion: success
           name: openssl-macos-universal2
           path: "../openssl-macos-universal2/"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      # The fresh extraction gives the headers new mtimes on every run, which
-      # invalidates openssl-sys's cargo fingerprint (it registers
-      # rerun-if-changed on the include dir) despite identical content.
-      - name: Pin OpenSSL artifact mtimes
-        run: python .github/bin/pin_artifact_mtimes.py ../openssl-macos-universal2/ "$ARTIFACT_CREATED_AT"
-        env:
-          ARTIFACT_CREATED_AT: ${{ fromJSON(steps.ossl-download.outputs.artifacts)[0].created_at }}
       - name: Build nox environment
         run: |
           OPENSSL_DIR=$(readlink -f ../openssl-macos-universal2/) \

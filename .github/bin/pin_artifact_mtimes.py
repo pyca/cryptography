@@ -20,9 +20,12 @@ def main(root: str, created_at: str) -> None:
         created_at.replace("Z", "+00:00")
     ).timestamp()
     count = 0
+    # Directories need pinning too: cargo stats their mtimes as well when
+    # evaluating rerun-if-changed on a directory (that's how it notices
+    # file deletions), and extraction recreates them fresh on every run.
     for dirpath, _, filenames in os.walk(root):
-        for filename in filenames:
-            path = os.path.join(dirpath, filename)
+        for name in (os.curdir, *filenames):
+            path = os.path.join(dirpath, name)
             os.utime(path, (mtime, mtime))
             count += 1
     print(f"pinned {count} files in {root} to {created_at}")

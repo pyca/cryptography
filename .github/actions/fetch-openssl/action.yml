@@ -1,0 +1,40 @@
+name: Download OpenSSL artifact
+description: |
+  Downloads a prebuilt OpenSSL artifact from pyca/infra and pins its
+  mtimes to the artifact's creation time. openssl-sys's build script
+  registers cargo:rerun-if-changed on the OpenSSL include directory,
+  which cargo evaluates by mtime, so a freshly extracted artifact with
+  unchanged content would otherwise invalidate the cargo cache on every
+  run.
+
+inputs:
+  workflow:
+    description: "The pyca/infra workflow that built the artifact"
+    required: true
+  name:
+    description: "The artifact name"
+    required: true
+  path:
+    description: "The directory to extract the artifact to"
+    required: true
+
+runs:
+  using: "composite"
+
+  steps:
+    - uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
+      id: download
+      with:
+        repo: pyca/infra
+        workflow: ${{ inputs.workflow }}
+        branch: main
+        workflow_conclusion: success
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+        github_token: ${{ github.token }}
+    - name: Pin artifact mtimes
+      run: python .github/bin/pin_artifact_mtimes.py "$ARTIFACT_PATH" "$ARTIFACT_CREATED_AT"
+      env:
+        ARTIFACT_PATH: ${{ inputs.path }}
+        ARTIFACT_CREATED_AT: ${{ fromJSON(steps.download.outputs.artifacts)[0].created_at }}
+      shell: bash
