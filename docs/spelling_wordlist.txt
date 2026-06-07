@@ -69,6 +69,7 @@ Fernet
 fernet
 FIPS
 Gaynor
+GiB
 Google
 Graviola
 hazmat
