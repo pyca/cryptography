@@ -77,6 +77,24 @@ The following built-in Python types are supported as ASN.1 field types:
 Additionally, :class:`~cryptography.x509.ObjectIdentifier` maps to
 ``OBJECT IDENTIFIER``.
 
+.. versionadded:: 49.0.0
+
+:class:`~cryptography.x509.Certificate`,
+:class:`~cryptography.x509.CertificateSigningRequest`, and
+:class:`~cryptography.x509.CertificateRevocationList` can also be used as
+field types. They are encoded by embedding their DER serialization, and
+decoded by parsing the field as the corresponding X.509 object. These
+fields cannot have :class:`Implicit` annotations.
+
+.. code-block:: python
+
+    from cryptography import x509
+    from cryptography.hazmat import asn1
+
+    @asn1.sequence
+    class Example:
+        cert: x509.Certificate
+
 The following decorators and types are provided for the rest of the ASN.1 types
 that have no direct Python equivalent:
 

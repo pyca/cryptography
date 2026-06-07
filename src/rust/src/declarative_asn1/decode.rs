@@ -192,6 +192,59 @@ fn decode_tlv<'a>(
     )?)
 }
 
+// Reads a TLV from `parser` and returns its full data as `PyBytes`,
+// suitable for passing to the X.509 loaders.
+fn decode_x509_der_bytes<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Py<pyo3::types::PyBytes>> {
+    let tlv = match encoding {
+        Some(e) => match e.get() {
+            Encoding::Implicit(_) => Err(CryptographyError::Py(
+                // We don't support IMPLICIT X.509 fields
+                // (they are caught first at the Python level)
+                pyo3::exceptions::PyValueError::new_err(
+                    "invalid type definition: X.509 fields cannot be implicitly encoded",
+                ),
+            ))?,
+            Encoding::Explicit(n) => parser.read_explicit_element::<asn1::Tlv<'_>>(*n),
+        },
+        None => parser.read_element::<asn1::Tlv<'_>>(),
+    }?;
+    Ok(pyo3::types::PyBytes::new(py, tlv.full_data()).unbind())
+}
+
+fn decode_certificate<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, crate::x509::certificate::Certificate>> {
+    let data = decode_x509_der_bytes(py, parser, encoding)?;
+    let cert = crate::x509::certificate::load_der_x509_certificate(py, data, None)?;
+    Ok(pyo3::Bound::new(py, cert)?)
+}
+
+fn decode_csr<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, crate::x509::csr::CertificateSigningRequest>> {
+    let data = decode_x509_der_bytes(py, parser, encoding)?;
+    let csr = crate::x509::csr::load_der_x509_csr(py, data, None)?;
+    Ok(pyo3::Bound::new(py, csr)?)
+}
+
+fn decode_crl<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, crate::x509::crl::CertificateRevocationList>> {
+    let data = decode_x509_der_bytes(py, parser, encoding)?;
+    let crl = crate::x509::crl::load_der_x509_crl(py, data, None)?;
+    Ok(pyo3::Bound::new(py, crl)?)
+}
+
 fn decode_null<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -379,6 +432,9 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::BitString() => decode_bitstring(py, parser, annotation)?.into_any(),
         Type::Tlv() => decode_tlv(py, parser, encoding)?.into_any(),
         Type::Null() => decode_null(py, parser, encoding)?.into_any(),
+        Type::Certificate() => decode_certificate(py, parser, encoding)?.into_any(),
+        Type::CertificateSigningRequest() => decode_csr(py, parser, encoding)?.into_any(),
+        Type::CertificateRevocationList() => decode_crl(py, parser, encoding)?.into_any(),
     };
 
     match &ann_type.annotation.get().default {
@@ -432,6 +488,21 @@ mod tests {
             let error = result.unwrap_err();
             assert!(format!("{error}")
                 .contains("invalid type definition: TLV/ANY fields cannot be implicitly encoded"));
+        });
+    }
+
+    #[test]
+    fn test_decode_implicit_x509() {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| {
+            let result = asn1::parse(&[], |parser| {
+                let encoding = pyo3::Py::new(py, Encoding::Implicit(0)).ok();
+                super::decode_x509_der_bytes(py, parser, &encoding)
+            });
+            assert!(result.is_err());
+            let error = result.unwrap_err();
+            assert!(format!("{error}")
+                .contains("invalid type definition: X.509 fields cannot be implicitly encoded"));
         });
     }
 }

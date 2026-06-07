@@ -18,6 +18,7 @@ else:
     LiteralString = typing.LiteralString
 
 from cryptography.hazmat.bindings._rust import declarative_asn1
+from cryptography.hazmat.bindings._rust import x509 as rust_x509
 
 if sys.version_info < (3, 10):
     NoneType = type(None)
@@ -54,6 +55,25 @@ class Variant(typing.Generic[U, Tag]):
 
 decode_der = declarative_asn1.decode_der
 encode_der = declarative_asn1.encode_der
+
+
+_X509_TYPES = (
+    rust_x509.Certificate,
+    rust_x509.CertificateSigningRequest,
+    rust_x509.CertificateRevocationList,
+)
+
+
+def _check_x509_field_annotations(
+    field_type: typing.Any,
+    annotation: declarative_asn1.Annotation,
+    field_name: str,
+) -> None:
+    if field_type in _X509_TYPES and isinstance(annotation.encoding, Implicit):
+        raise TypeError(
+            f"field '{field_name}' has an IMPLICIT annotation, but "
+            "IMPLICIT annotations are not supported for X.509 types."
+        )
 
 
 def _is_union(field_type: type) -> bool:
@@ -144,6 +164,8 @@ def _normalize_field_type(
                 "DEFAULT annotations are not supported for TLV types."
             )
 
+    _check_x509_field_annotations(field_type, annotation, field_name)
+
     if hasattr(field_type, "__asn1_root__"):
         root_type = field_type.__asn1_root__
         if not isinstance(
@@ -166,6 +188,11 @@ def _normalize_field_type(
                     "optional TLV types (`TLV | None`) are not "
                     "currently supported"
                 )
+            # For optional types, the annotation is associated with the
+            # union, so we check it against the inner type here.
+            _check_x509_field_annotations(
+                optional_type, annotation, field_name
+            )
             annotated_type = _normalize_field_type(optional_type, field_name)
 
             if not annotated_type.annotation.is_empty():

@@ -26,6 +26,10 @@ Changelog
   :class:`~cryptography.hazmat.primitives.hpke.KEM` so callers can split the
   encapsulated key from the ciphertext returned by
   :meth:`~cryptography.hazmat.primitives.hpke.Suite.encrypt`.
+* Added support for using :class:`~cryptography.x509.Certificate`,
+  :class:`~cryptography.x509.CertificateSigningRequest`, and
+  :class:`~cryptography.x509.CertificateRevocationList` as field types in
+  :doc:`/hazmat/asn1/index` structures.
 
 .. _v48-0-0:
 

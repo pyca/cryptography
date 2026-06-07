@@ -4,6 +4,7 @@
 
 import dataclasses
 import datetime
+import os
 import re
 import sys
 import typing
@@ -13,6 +14,9 @@ import pytest
 
 from cryptography import x509
 from cryptography.hazmat import asn1
+from cryptography.hazmat.primitives.serialization import Encoding
+
+from ...utils import load_vectors_from_file
 
 U = typing.TypeVar("U")
 
@@ -1918,3 +1922,169 @@ class TestSize:
             asn1.encode_der(
                 Example(a=asn1.BitString(data=b"\xf0", padding_bits=4))
             )
+
+
+def _der_length(n: int) -> bytes:
+    if n < 0x80:
+        return bytes([n])
+    length_bytes = n.to_bytes((n.bit_length() + 7) // 8, "big")
+    return bytes([0x80 | len(length_bytes)]) + length_bytes
+
+
+class TestX509Types:
+    @pytest.fixture
+    def cert(self) -> x509.Certificate:
+        return load_vectors_from_file(
+            filename=os.path.join("x509", "custom", "post2000utctime.pem"),
+            loader=lambda f: x509.load_pem_x509_certificate(f.read()),
+            mode="rb",
+        )
+
+    @pytest.fixture
+    def csr(self) -> x509.CertificateSigningRequest:
+        return load_vectors_from_file(
+            filename=os.path.join("x509", "requests", "rsa_sha1.pem"),
+            loader=lambda f: x509.load_pem_x509_csr(f.read()),
+            mode="rb",
+        )
+
+    @pytest.fixture
+    def crl(self) -> x509.CertificateRevocationList:
+        return load_vectors_from_file(
+            filename=os.path.join("x509", "custom", "crl_all_reasons.pem"),
+            loader=lambda f: x509.load_pem_x509_crl(f.read()),
+            mode="rb",
+        )
+
+    def test_certificate(self, cert: x509.Certificate) -> None:
+        assert_roundtrips([(cert, cert.public_bytes(Encoding.DER))])
+
+    def test_csr(self, csr: x509.CertificateSigningRequest) -> None:
+        assert_roundtrips([(csr, csr.public_bytes(Encoding.DER))])
+
+    def test_crl(self, crl: x509.CertificateRevocationList) -> None:
+        assert_roundtrips([(crl, crl.public_bytes(Encoding.DER))])
+
+    def test_fields(
+        self,
+        cert: x509.Certificate,
+        csr: x509.CertificateSigningRequest,
+        crl: x509.CertificateRevocationList,
+    ) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            cert: x509.Certificate
+            csr: x509.CertificateSigningRequest
+            crl: x509.CertificateRevocationList
+
+        inner = (
+            cert.public_bytes(Encoding.DER)
+            + csr.public_bytes(Encoding.DER)
+            + crl.public_bytes(Encoding.DER)
+        )
+        expected = b"\x30" + _der_length(len(inner)) + inner
+        assert_roundtrips([(Example(cert=cert, csr=csr, crl=crl), expected)])
+
+    def test_certificate_explicit(self, cert: x509.Certificate) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            cert: Annotated[x509.Certificate, asn1.Explicit(0)]
+
+        cert_der = cert.public_bytes(Encoding.DER)
+        inner = b"\xa0" + _der_length(len(cert_der)) + cert_der
+        expected = b"\x30" + _der_length(len(inner)) + inner
+        assert_roundtrips([(Example(cert=cert), expected)])
+
+    def test_fail_certificate_implicit(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "IMPLICIT annotations are not supported for X.509 types"
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                cert: Annotated[x509.Certificate, asn1.Implicit(0)]
+
+    def test_fail_optional_certificate_implicit(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "IMPLICIT annotations are not supported for X.509 types"
+            ),
+        ):
+
+            @asn1.sequence
+            class Example:
+                cert: Annotated[
+                    typing.Union[x509.Certificate, None], asn1.Implicit(0)
+                ]
+
+    def test_optional_certificate(self, cert: x509.Certificate) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            cert: typing.Union[x509.Certificate, None]
+
+        cert_der = cert.public_bytes(Encoding.DER)
+        assert_roundtrips(
+            [
+                (
+                    Example(cert=cert),
+                    b"\x30" + _der_length(len(cert_der)) + cert_der,
+                ),
+                (Example(cert=None), b"\x30\x00"),
+            ]
+        )
+
+    def test_certificate_choice(self, cert: x509.Certificate) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            field: typing.Union[x509.Certificate, int]
+
+        cert_der = cert.public_bytes(Encoding.DER)
+        assert_roundtrips(
+            [
+                (
+                    Example(field=cert),
+                    b"\x30" + _der_length(len(cert_der)) + cert_der,
+                ),
+                (
+                    Example(field=9),
+                    b"\x30" + _der_length(3) + b"\x02\x01\x09",
+                ),
+            ]
+        )
+
+    def test_decode_invalid(self) -> None:
+        # Not even a valid TLV
+        with pytest.raises(ValueError):
+            asn1.decode_der(x509.Certificate, b"")
+
+        # Wrong tag (INTEGER instead of SEQUENCE)
+        with pytest.raises(ValueError):
+            asn1.decode_der(x509.Certificate, b"\x02\x01\x00")
+
+        # Valid SEQUENCEs, but not valid certificates/CSRs/CRLs
+        with pytest.raises(ValueError):
+            asn1.decode_der(x509.Certificate, b"\x30\x03\x02\x01\x00")
+        with pytest.raises(ValueError):
+            asn1.decode_der(
+                x509.CertificateSigningRequest, b"\x30\x03\x02\x01\x00"
+            )
+        with pytest.raises(ValueError):
+            asn1.decode_der(
+                x509.CertificateRevocationList, b"\x30\x03\x02\x01\x00"
+            )
+
+    def test_encode_wrong_type(self) -> None:
+        @asn1.sequence
+        class Example:
+            cert: x509.Certificate
+
+        with pytest.raises(TypeError):
+            asn1.encode_der(Example(cert=9))  # type: ignore[arg-type]
