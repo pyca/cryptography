@@ -95,6 +95,21 @@ impl MlDsa44PrivateKey {
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
+    fn sign_mu<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        mu: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"),
+            ));
+        }
+        let sig =
+            cryptography_openssl::mldsa::sign_mu(&self.pkey, MlDsaVariant::MlDsa44, mu.as_bytes())?;
+        Ok(pyo3::types::PyBytes::new(py, &sig))
+    }
+
     fn public_key(&self) -> CryptographyResult<MlDsa44PublicKey> {
         let raw_bytes = self.pkey.raw_public_key()?;
         Ok(MlDsa44PublicKey {
@@ -152,6 +167,30 @@ impl MlDsa44PrivateKey {
 
 #[pyo3::pymethods]
 impl MlDsa44PublicKey {
+    #[pyo3(signature = (signature, mu))]
+    fn verify_mu(&self, signature: CffiBuf<'_>, mu: CffiBuf<'_>) -> CryptographyResult<()> {
+        if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"),
+            ));
+        }
+        let valid = cryptography_openssl::mldsa::verify_mu(
+            &self.pkey,
+            MlDsaVariant::MlDsa44,
+            signature.as_bytes(),
+            mu.as_bytes(),
+        )
+        .unwrap_or(false);
+
+        if !valid {
+            return Err(CryptographyError::from(
+                exceptions::InvalidSignature::new_err(()),
+            ));
+        }
+
+        Ok(())
+    }
+
     #[pyo3(signature = (signature, data, context=None))]
     fn verify(
         &self,
@@ -298,6 +337,21 @@ impl MlDsa65PrivateKey {
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
+    fn sign_mu<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        mu: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"),
+            ));
+        }
+        let sig =
+            cryptography_openssl::mldsa::sign_mu(&self.pkey, MlDsaVariant::MlDsa65, mu.as_bytes())?;
+        Ok(pyo3::types::PyBytes::new(py, &sig))
+    }
+
     fn public_key(&self) -> CryptographyResult<MlDsa65PublicKey> {
         let raw_bytes = self.pkey.raw_public_key()?;
         Ok(MlDsa65PublicKey {
@@ -358,6 +412,30 @@ impl MlDsa65PrivateKey {
 
 #[pyo3::pymethods]
 impl MlDsa65PublicKey {
+    #[pyo3(signature = (signature, mu))]
+    fn verify_mu(&self, signature: CffiBuf<'_>, mu: CffiBuf<'_>) -> CryptographyResult<()> {
+        if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"),
+            ));
+        }
+        let valid = cryptography_openssl::mldsa::verify_mu(
+            &self.pkey,
+            MlDsaVariant::MlDsa65,
+            signature.as_bytes(),
+            mu.as_bytes(),
+        )
+        .unwrap_or(false);
+
+        if !valid {
+            return Err(CryptographyError::from(
+                exceptions::InvalidSignature::new_err(()),
+            ));
+        }
+
+        Ok(())
+    }
+
     #[pyo3(signature = (signature, data, context=None))]
     fn verify(
         &self,
@@ -504,6 +582,21 @@ impl MlDsa87PrivateKey {
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
+    fn sign_mu<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        mu: CffiBuf<'_>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"),
+            ));
+        }
+        let sig =
+            cryptography_openssl::mldsa::sign_mu(&self.pkey, MlDsaVariant::MlDsa87, mu.as_bytes())?;
+        Ok(pyo3::types::PyBytes::new(py, &sig))
+    }
+
     fn public_key(&self) -> CryptographyResult<MlDsa87PublicKey> {
         let raw_bytes = self.pkey.raw_public_key()?;
         Ok(MlDsa87PublicKey {
@@ -561,6 +654,30 @@ impl MlDsa87PrivateKey {
 
 #[pyo3::pymethods]
 impl MlDsa87PublicKey {
+    #[pyo3(signature = (signature, mu))]
+    fn verify_mu(&self, signature: CffiBuf<'_>, mu: CffiBuf<'_>) -> CryptographyResult<()> {
+        if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"),
+            ));
+        }
+        let valid = cryptography_openssl::mldsa::verify_mu(
+            &self.pkey,
+            MlDsaVariant::MlDsa87,
+            signature.as_bytes(),
+            mu.as_bytes(),
+        )
+        .unwrap_or(false);
+
+        if !valid {
+            return Err(CryptographyError::from(
+                exceptions::InvalidSignature::new_err(()),
+            ));
+        }
+
+        Ok(())
+    }
+
     #[pyo3(signature = (signature, data, context=None))]
     fn verify(
         &self,
