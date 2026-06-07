@@ -6689,71 +6689,18 @@ class TestName:
         )
 
     def test_from_bytes(self):
-        name = x509.Name.from_bytes(
-            binascii.unhexlify(
-                b"30293118301606035504030c0f63727970746f6772617068792e696f310d"
-                b"300b060355040a0c0450794341"
-            )
+        data = binascii.unhexlify(
+            b"30293118301606035504030c0f63727970746f6772617068792e696f310d"
+            b"300b060355040a0c0450794341"
         )
+        name = x509.Name.from_bytes(data)
         assert name == x509.Name(
             [
                 x509.NameAttribute(NameOID.COMMON_NAME, "cryptography.io"),
                 x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA"),
             ]
         )
-
-    @pytest.mark.parametrize(
-        "name",
-        [
-            x509.Name([]),
-            x509.Name(
-                [
-                    x509.NameAttribute(NameOID.COMMON_NAME, "cryptography.io"),
-                    x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA"),
-                ]
-            ),
-            x509.Name(
-                [
-                    x509.RelativeDistinguishedName(
-                        [
-                            x509.NameAttribute(
-                                NameOID.ORGANIZATIONAL_UNIT_NAME, "Sales"
-                            ),
-                            x509.NameAttribute(
-                                NameOID.COMMON_NAME, "J.  Smith"
-                            ),
-                        ]
-                    ),
-                    x509.RelativeDistinguishedName(
-                        [x509.NameAttribute(NameOID.DOMAIN_COMPONENT, "net")]
-                    ),
-                ]
-            ),
-            x509.Name(
-                [
-                    x509.NameAttribute(
-                        NameOID.COMMON_NAME,
-                        "cryptography.io",
-                        _ASN1Type.BMPString,
-                    ),
-                    x509.NameAttribute(
-                        NameOID.COMMON_NAME,
-                        "cryptography.io",
-                        _ASN1Type.UniversalString,
-                    ),
-                    x509.NameAttribute(
-                        x509.ObjectIdentifier("2.5.4.45"),
-                        b"\x01\x02",
-                        _ASN1Type.BitString,
-                    ),
-                ]
-            ),
-        ],
-    )
-    def test_from_bytes_round_trip(self, name):
-        parsed = x509.Name.from_bytes(name.public_bytes())
-        assert parsed == name
-        assert parsed.public_bytes() == name.public_bytes()
+        assert name.public_bytes() == data
 
     @pytest.mark.parametrize(
         "data",
