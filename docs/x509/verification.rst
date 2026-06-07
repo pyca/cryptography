@@ -315,15 +315,12 @@ the root of trust:
     .. note:: Calling any of the builder methods (:meth:`require_not_present`, :meth:`may_be_present`, or :meth:`require_present`)
         multiple times with the same extension type will raise an exception.
 
-    .. note:: Currently only the following extension types are supported in the ExtensionPolicy API:
-        :class:`~cryptography.x509.AuthorityInformationAccess`,
-        :class:`~cryptography.x509.AuthorityKeyIdentifier`,
-        :class:`~cryptography.x509.SubjectKeyIdentifier`,
-        :class:`~cryptography.x509.KeyUsage`,
-        :class:`~cryptography.x509.SubjectAlternativeName`,
-        :class:`~cryptography.x509.BasicConstraints`,
-        :class:`~cryptography.x509.NameConstraints`,
-        :class:`~cryptography.x509.ExtendedKeyUsage`.
+    .. versionchanged:: 49.0.0
+        Any extension type may now be used with the builder methods.
+
+    .. note:: If a present extension's value cannot be parsed into a known
+        Python object, it is passed to the validator callback as an
+        :class:`~cryptography.x509.UnrecognizedExtension`.
 
     .. staticmethod:: permit_all()
 

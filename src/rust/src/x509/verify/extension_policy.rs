@@ -1,12 +1,6 @@
-use std::collections::HashSet;
 use std::sync::Arc;
 
 use cryptography_x509::extensions::Extension;
-use cryptography_x509::oid::{
-    AUTHORITY_INFORMATION_ACCESS_OID, AUTHORITY_KEY_IDENTIFIER_OID, BASIC_CONSTRAINTS_OID,
-    EXTENDED_KEY_USAGE_OID, KEY_USAGE_OID, NAME_CONSTRAINTS_OID, SUBJECT_ALTERNATIVE_NAME_OID,
-    SUBJECT_KEY_IDENTIFIER_OID,
-};
 use cryptography_x509_verification::ops::VerificationCertificate;
 use cryptography_x509_verification::policy::{
     Criticality, ExtensionPolicy, ExtensionValidator, MaybeExtensionValidatorCallback, Policy,
@@ -17,7 +11,8 @@ use pyo3::types::{PyAnyMethods, PyTypeMethods};
 use pyo3::{intern, PyResult};
 
 use super::PyCryptoOps;
-use crate::asn1::py_oid_to_oid;
+use crate::asn1::{oid_to_py_oid, py_oid_to_oid};
+use crate::error::CryptographyError;
 use crate::types;
 use crate::x509::certificate::parse_cert_ext;
 
@@ -55,7 +50,6 @@ impl From<PyCriticality> for Criticality {
 )]
 pub(crate) struct PyExtensionPolicy {
     inner_policy: ExtensionPolicy<'static, PyCryptoOps>,
-    already_set_oids: HashSet<asn1::ObjectIdentifier>,
 }
 
 impl PyExtensionPolicy {
@@ -64,51 +58,19 @@ impl PyExtensionPolicy {
     }
 
     fn new(inner_policy: ExtensionPolicy<'static, PyCryptoOps>) -> Self {
-        PyExtensionPolicy {
-            inner_policy,
-            already_set_oids: HashSet::new(),
-        }
+        PyExtensionPolicy { inner_policy }
     }
 
     fn with_assigned_validator(
         &self,
         validator: ExtensionValidator<'static, PyCryptoOps>,
     ) -> PyResult<PyExtensionPolicy> {
-        let oid = match &validator {
-            ExtensionValidator::NotPresent { oid } => oid,
-            ExtensionValidator::MaybePresent { oid, .. } => oid,
-            ExtensionValidator::Present { oid, .. } => oid,
-        }
-        .clone();
-        if self.already_set_oids.contains(&oid) {
-            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+        let inner_policy = self.inner_policy.with_validator(validator).map_err(|oid| {
+            pyo3::exceptions::PyValueError::new_err(format!(
                 "ExtensionPolicy already configured for extension with OID {oid}"
-            )));
-        }
-
-        let mut policy = self.inner_policy.clone();
-        match oid {
-            AUTHORITY_INFORMATION_ACCESS_OID => policy.authority_information_access = validator,
-            AUTHORITY_KEY_IDENTIFIER_OID => policy.authority_key_identifier = validator,
-            SUBJECT_KEY_IDENTIFIER_OID => policy.subject_key_identifier = validator,
-            KEY_USAGE_OID => policy.key_usage = validator,
-            SUBJECT_ALTERNATIVE_NAME_OID => policy.subject_alternative_name = validator,
-            BASIC_CONSTRAINTS_OID => policy.basic_constraints = validator,
-            NAME_CONSTRAINTS_OID => policy.name_constraints = validator,
-            EXTENDED_KEY_USAGE_OID => policy.extended_key_usage = validator,
-            _ => {
-                return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                    "Unsupported extension OID: {oid}",
-                )))
-            }
-        }
-
-        let mut already_set_oids = self.already_set_oids.clone();
-        already_set_oids.insert(oid);
-        Ok(PyExtensionPolicy {
-            inner_policy: policy,
-            already_set_oids,
-        })
+            ))
+        })?;
+        Ok(PyExtensionPolicy { inner_policy })
     }
 }
 
@@ -232,13 +194,29 @@ fn make_py_extension<'chain, 'p>(
     py: pyo3::Python<'p>,
     ext: Option<&Extension<'p>>,
 ) -> ValidationResult<'chain, Option<pyo3::Bound<'p, pyo3::types::PyAny>>, PyCryptoOps> {
+    let conversion_error = |e: CryptographyError| {
+        ValidationError::new(ValidationErrorKind::Other(format!(
+            "{e} (while converting Extension to Python object)"
+        )))
+    };
+
     Ok(match ext {
         None => None,
-        Some(ext) => parse_cert_ext(py, ext).map_err(|e| {
-            ValidationError::new(ValidationErrorKind::Other(format!(
-                "{e} (while converting Extension to Python object)"
-            )))
-        })?,
+        Some(ext) => match parse_cert_ext(py, ext).map_err(conversion_error)? {
+            Some(parsed) => Some(parsed),
+            // The extension is present but its value can't be parsed into a
+            // known Python object. Mirror `Certificate.extensions` and surface
+            // it as an `UnrecognizedExtension` rather than dropping it to None.
+            None => {
+                let oid =
+                    oid_to_py_oid(py, &ext.extn_id).map_err(|e| conversion_error(e.into()))?;
+                let unrecognized = types::UNRECOGNIZED_EXTENSION
+                    .get(py)
+                    .and_then(|ty| ty.call1((oid, ext.extn_value)))
+                    .map_err(|e| conversion_error(e.into()))?;
+                Some(unrecognized)
+            }
+        },
     })
 }
 

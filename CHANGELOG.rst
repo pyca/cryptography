@@ -26,6 +26,12 @@ Changelog
   :class:`~cryptography.hazmat.primitives.hpke.KEM` so callers can split the
   encapsulated key from the ciphertext returned by
   :meth:`~cryptography.hazmat.primitives.hpke.Suite.encrypt`.
+* :meth:`~cryptography.x509.verification.ExtensionPolicy.require_present`,
+  :meth:`~cryptography.x509.verification.ExtensionPolicy.may_be_present`, and
+  :meth:`~cryptography.x509.verification.ExtensionPolicy.require_not_present`
+  now accept any extension type. Previously only a fixed set of extension
+  types was supported, which made it impossible to account for otherwise
+  unrecognized critical extensions during path validation.
 * Added support for using :class:`~cryptography.x509.Certificate`,
   :class:`~cryptography.x509.CertificateSigningRequest`, and
   :class:`~cryptography.x509.CertificateRevocationList` as field types in
