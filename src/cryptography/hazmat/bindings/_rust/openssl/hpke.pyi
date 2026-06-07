@@ -14,6 +14,7 @@ class KEM:
     MLKEM1024: KEM
     MLKEM768_X25519: KEM
     MLKEM1024_P384: KEM
+    def enc_length(self) -> int: ...
 
 class KDF:
     HKDF_SHA256: KDF

@@ -99,6 +99,21 @@ specifying auxiliary authenticated information.
 
     An enumeration of key encapsulation mechanisms.
 
+    .. method:: enc_length()
+
+        .. versionadded:: 49.0.0
+
+        :returns: The length in bytes of the encapsulated key (``enc``)
+            produced by this KEM. The ``enc`` is the prefix of the value
+            returned by :meth:`Suite.encrypt`, so this can be used to split
+            the result into ``enc`` and the AEAD ciphertext::
+
+                ciphertext = suite.encrypt(plaintext, public_key)
+                enc_len = KEM.X25519.enc_length()
+                enc, ct = ciphertext[:enc_len], ciphertext[enc_len:]
+
+        :rtype: int
+
     .. attribute:: X25519
 
         DHKEM(X25519, HKDF-SHA256)
