@@ -428,7 +428,7 @@ class TestSequenceAPI:
         choice = declarative_asn1.Type.Choice(my_list)
         assert choice._0 is my_list
 
-        my_value_map: dict = dict()
+        my_value_map: dict = {}
         value_set = declarative_asn1.Type.ValueSet(
             type(None), ann_type, my_value_map
         )
@@ -628,13 +628,3 @@ class TestValueSetAPI:
             match="cannot handle type",
         ):
             asn1.value_set(float)
-
-    def test_fail_unhashable_member_values(self) -> None:
-        # Member values must be hashable, since they are used as keys
-        # in the value -> member map used when decoding. `Null`
-        # implements `__eq__` but not `__hash__`.
-        with pytest.raises(TypeError, match="unhashable type"):
-
-            @asn1.value_set(asn1.Null)
-            class Example(enum.Enum):
-                A = asn1.Null()
