@@ -29,8 +29,11 @@ runs:
         architecture: ${{ inputs.arch }}
         cache: pip
         cache-dependency-path: ci-constraints-requirements.txt
+    # llvm-tools is only used to process Rust coverage data, which the
+    # tests-nocoverage session doesn't collect.
     - run: rustup component add llvm-tools-preview
       shell: bash
+      if: ${{ inputs.noxsession != 'tests-nocoverage' }}
     - name: Cache rust and pip
       uses: ./.github/actions/cache
       with:

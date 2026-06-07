@@ -79,8 +79,10 @@ jobs:
           components: rustfmt,clippy
         if: matrix.PYTHON.RUST
 
+      # llvm-tools is only used to process Rust coverage data, which the
+      # tests-nocoverage session doesn't collect.
       - run: rustup component add llvm-tools-preview
-        if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs'
+        if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs' && matrix.PYTHON.NOXSESSION != 'tests-nocoverage'
       - name: Clone test vectors
         timeout-minutes: 2
         uses: ./.github/actions/fetch-vectors
