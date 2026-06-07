@@ -1,7 +1,7 @@
 # The vectors are from RFC 7539 Appendix A.2. They are reformatted into NIST
-# form for our vector loaders, and adapted to use a 64/64 bit counter/nonce
-# split (matching our implementation), rather than the 32/96 split defined
-# in the RFC.
+# form for our vector loaders. The INITIAL_BLOCK_COUNTER and NONCE columns are
+# loaded as the 32-bit little-endian block counter and 96-bit nonce defined in
+# the RFC, concatenated to form the 128-bit value passed to ChaCha20.
 
 COUNT = 0
 KEY = 0000000000000000000000000000000000000000000000000000000000000000
