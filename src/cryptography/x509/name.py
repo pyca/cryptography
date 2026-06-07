@@ -320,6 +320,13 @@ class Name:
     ) -> Name:
         return _RFC4514NameParser(data, attr_name_overrides or {}).parse()
 
+    @classmethod
+    def from_bytes(cls, data: bytes) -> Name:
+        """
+        Parse a DER encoded X.509 name (the inverse of ``public_bytes``).
+        """
+        return rust_x509.parse_name_bytes(data)
+
     def rfc4514_string(
         self, attr_name_overrides: _OidNameMap | None = None
     ) -> str:

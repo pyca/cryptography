@@ -120,6 +120,15 @@ pub(crate) fn encode_name_bytes<'p>(
     Ok(pyo3::types::PyBytes::new(py, &result))
 }
 
+#[pyo3::pyfunction]
+pub(crate) fn parse_name_bytes<'p>(
+    py: pyo3::Python<'p>,
+    data: &[u8],
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    let name = asn1::parse_single::<NameReadable<'_>>(data)?;
+    parse_name(py, &name)
+}
+
 pub(crate) fn encode_general_names<'a>(
     py: pyo3::Python<'_>,
     ka_bytes: &'a cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,

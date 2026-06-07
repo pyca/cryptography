@@ -1633,6 +1633,23 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
         :type: list of :class:`RelativeDistinguishedName`
 
+    .. classmethod:: from_bytes(data)
+
+        .. versionadded:: 49.0.0
+
+        Parse a DER encoded name (the inverse of :meth:`public_bytes`).
+
+        :param bytes data: The DER encoded name.
+
+        :returns: A :class:`Name` parsed from ``data``.
+
+        .. doctest::
+
+            >>> x509.Name.from_bytes(
+            ...     b"0\x1a1\x180\x16\x06\x03U\x04\x03\x0c\x0fcryptography.io"
+            ... )
+            <Name(CN=cryptography.io)>
+
     .. classmethod:: from_rfc4514_string(data, attr_name_overrides=None)
 
         .. versionadded: 37.0.0

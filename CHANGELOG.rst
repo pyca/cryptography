@@ -40,6 +40,9 @@ Changelog
   registers an :class:`enum.Enum` subclass as an ASN.1 value set: members
   are encoded as their underlying value, and decoding fails if the decoded
   value does not match one of the declared members.
+* Added :meth:`~cryptography.x509.Name.from_bytes` for parsing a
+  :class:`~cryptography.x509.Name` from DER bytes, the inverse of
+  :meth:`~cryptography.x509.Name.public_bytes`.
 
 .. _v48-0-0:
 

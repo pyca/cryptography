@@ -6688,6 +6688,92 @@ class TestName:
             b"b060355040a0c0450794341"
         )
 
+    def test_from_bytes(self):
+        name = x509.Name.from_bytes(
+            binascii.unhexlify(
+                b"30293118301606035504030c0f63727970746f6772617068792e696f310d"
+                b"300b060355040a0c0450794341"
+            )
+        )
+        assert name == x509.Name(
+            [
+                x509.NameAttribute(NameOID.COMMON_NAME, "cryptography.io"),
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA"),
+            ]
+        )
+
+    @pytest.mark.parametrize(
+        "name",
+        [
+            x509.Name([]),
+            x509.Name(
+                [
+                    x509.NameAttribute(NameOID.COMMON_NAME, "cryptography.io"),
+                    x509.NameAttribute(NameOID.ORGANIZATION_NAME, "PyCA"),
+                ]
+            ),
+            x509.Name(
+                [
+                    x509.RelativeDistinguishedName(
+                        [
+                            x509.NameAttribute(
+                                NameOID.ORGANIZATIONAL_UNIT_NAME, "Sales"
+                            ),
+                            x509.NameAttribute(
+                                NameOID.COMMON_NAME, "J.  Smith"
+                            ),
+                        ]
+                    ),
+                    x509.RelativeDistinguishedName(
+                        [x509.NameAttribute(NameOID.DOMAIN_COMPONENT, "net")]
+                    ),
+                ]
+            ),
+            x509.Name(
+                [
+                    x509.NameAttribute(
+                        NameOID.COMMON_NAME,
+                        "cryptography.io",
+                        _ASN1Type.BMPString,
+                    ),
+                    x509.NameAttribute(
+                        NameOID.COMMON_NAME,
+                        "cryptography.io",
+                        _ASN1Type.UniversalString,
+                    ),
+                    x509.NameAttribute(
+                        x509.ObjectIdentifier("2.5.4.45"),
+                        b"\x01\x02",
+                        _ASN1Type.BitString,
+                    ),
+                ]
+            ),
+        ],
+    )
+    def test_from_bytes_round_trip(self, name):
+        parsed = x509.Name.from_bytes(name.public_bytes())
+        assert parsed == name
+        assert parsed.public_bytes() == name.public_bytes()
+
+    @pytest.mark.parametrize(
+        "data",
+        [
+            # Empty.
+            b"",
+            # Not valid DER.
+            b"\x00\x01\x02",
+            # Wrong tag (SET instead of SEQUENCE).
+            b"\x31\x00",
+            # Trailing data after the name.
+            binascii.unhexlify(b"300000"),
+            # RDN with a UTF8String value that is not valid UTF-8.
+            binascii.unhexlify(b"300c310a300806035504030c01ff"),
+        ],
+    )
+    def test_from_bytes_invalid(self, data):
+        with pytest.raises(ValueError):
+            x509.Name.from_bytes(data)
+
     def test_bitstring_encoding(self):
         name = x509.Name(
             [

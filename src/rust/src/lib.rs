@@ -169,7 +169,7 @@ mod _rust {
             load_pem_x509_certificates, Certificate,
         };
         #[pymodule_export]
-        use crate::x509::common::{encode_extension_value, encode_name_bytes};
+        use crate::x509::common::{encode_extension_value, encode_name_bytes, parse_name_bytes};
         #[pymodule_export]
         use crate::x509::crl::{
             create_revoked_certificate, create_x509_crl, load_der_x509_crl, load_pem_x509_crl,
