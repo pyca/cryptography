@@ -260,6 +260,10 @@ impl PrintableString {
         (**self.inner.bind(py)).eq(other.inner.bind(py))
     }
 
+    fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
+        (**self.inner.bind(py)).hash()
+    }
+
     pub fn __repr__<'py>(
         &self,
         py: pyo3::Python<'py>,
@@ -305,6 +309,10 @@ impl IA5String {
 
     fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
         (**self.inner.bind(py)).eq(other.inner.bind(py))
+    }
+
+    fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
+        (**self.inner.bind(py)).hash()
     }
 
     pub fn __repr__<'py>(
@@ -365,6 +373,10 @@ impl UtcTime {
         (**self.inner.bind(py)).eq(other.inner.bind(py))
     }
 
+    fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
+        (**self.inner.bind(py)).hash()
+    }
+
     pub fn __repr__<'py>(
         &self,
         py: pyo3::Python<'py>,
@@ -408,6 +420,10 @@ impl GeneralizedTime {
 
     fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
         (**self.inner.bind(py)).eq(other.inner.bind(py))
+    }
+
+    fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
+        (**self.inner.bind(py)).hash()
     }
 
     pub fn __repr__<'py>(
@@ -457,6 +473,12 @@ impl BitString {
     fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
         Ok((**self.data.bind(py)).eq(other.data.bind(py))?
             && self.padding_bits == other.padding_bits)
+    }
+
+    fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
+        (self.data.bind(py), self.padding_bits)
+            .into_pyobject(py)?
+            .hash()
     }
 
     pub fn __repr__<'py>(
