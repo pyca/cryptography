@@ -2,6 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::collections::HashSet;
 use std::sync::Arc;
 
 use cryptography_x509::extensions::{Extension, Extensions};
@@ -15,7 +16,6 @@ use crate::ops::{CryptoOps, VerificationCertificate};
 use crate::policy::Policy;
 use crate::{ValidationError, ValidationErrorKind, ValidationResult};
 
-#[derive(Clone)]
 pub struct ExtensionPolicy<'cb, B: CryptoOps> {
     pub authority_information_access: ExtensionValidator<'cb, B>,
     pub authority_key_identifier: ExtensionValidator<'cb, B>,
@@ -25,6 +25,33 @@ pub struct ExtensionPolicy<'cb, B: CryptoOps> {
     pub basic_constraints: ExtensionValidator<'cb, B>,
     pub name_constraints: ExtensionValidator<'cb, B>,
     pub extended_key_usage: ExtensionValidator<'cb, B>,
+    // Validators for any other extensions, i.e. those that don't have a
+    // dedicated field above. There is at most one validator per OID.
+    additional_extensions: Vec<ExtensionValidator<'cb, B>>,
+    // OIDs that have been explicitly configured via `with_validator`. Used to
+    // reject reconfiguring the same extension more than once. This is empty for
+    // the policies returned by the constructors, so their built-in validators
+    // can still be overridden once.
+    configured_oids: HashSet<asn1::ObjectIdentifier>,
+}
+
+// NOTE: Derived `Clone` would impose an unnecessary `B: Clone` bound, so we
+// implement it manually (the contents are `Clone` regardless of `B`).
+impl<B: CryptoOps> Clone for ExtensionPolicy<'_, B> {
+    fn clone(&self) -> Self {
+        ExtensionPolicy {
+            authority_information_access: self.authority_information_access.clone(),
+            authority_key_identifier: self.authority_key_identifier.clone(),
+            subject_key_identifier: self.subject_key_identifier.clone(),
+            key_usage: self.key_usage.clone(),
+            subject_alternative_name: self.subject_alternative_name.clone(),
+            basic_constraints: self.basic_constraints.clone(),
+            name_constraints: self.name_constraints.clone(),
+            extended_key_usage: self.extended_key_usage.clone(),
+            additional_extensions: self.additional_extensions.clone(),
+            configured_oids: self.configured_oids.clone(),
+        }
+    }
 }
 
 impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
@@ -50,6 +77,8 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
             basic_constraints: make_permissive_validator(BASIC_CONSTRAINTS_OID),
             name_constraints: make_permissive_validator(NAME_CONSTRAINTS_OID),
             extended_key_usage: make_permissive_validator(EXTENDED_KEY_USAGE_OID),
+            additional_extensions: Vec::new(),
+            configured_oids: HashSet::new(),
         }
     }
 
@@ -112,6 +141,8 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
                 Criticality::NonCritical,
                 Some(Arc::new(ca::extended_key_usage)),
             ),
+            additional_extensions: Vec::new(),
+            configured_oids: HashSet::new(),
         }
     }
 
@@ -168,7 +199,44 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
                 Criticality::NonCritical,
                 Some(Arc::new(ee::extended_key_usage)),
             ),
+            additional_extensions: Vec::new(),
+            configured_oids: HashSet::new(),
         }
+    }
+
+    /// Returns a new `ExtensionPolicy` with the given validator assigned to
+    /// the extension identified by the validator's OID.
+    ///
+    /// Extensions with a dedicated field are assigned to that field,
+    /// overwriting the built-in validator (e.g. the one from a default
+    /// policy); all others are stored in `additional_extensions`.
+    ///
+    /// Returns `Err` with the offending OID if this policy has already been
+    /// explicitly configured for that OID via a previous call, so the same
+    /// extension cannot be configured more than once.
+    pub fn with_validator(
+        &self,
+        validator: ExtensionValidator<'cb, B>,
+    ) -> Result<Self, asn1::ObjectIdentifier> {
+        let oid = validator.oid().clone();
+        if self.configured_oids.contains(&oid) {
+            return Err(oid);
+        }
+
+        let mut policy = self.clone();
+        match oid {
+            AUTHORITY_INFORMATION_ACCESS_OID => policy.authority_information_access = validator,
+            AUTHORITY_KEY_IDENTIFIER_OID => policy.authority_key_identifier = validator,
+            SUBJECT_KEY_IDENTIFIER_OID => policy.subject_key_identifier = validator,
+            KEY_USAGE_OID => policy.key_usage = validator,
+            SUBJECT_ALTERNATIVE_NAME_OID => policy.subject_alternative_name = validator,
+            BASIC_CONSTRAINTS_OID => policy.basic_constraints = validator,
+            NAME_CONSTRAINTS_OID => policy.name_constraints = validator,
+            EXTENDED_KEY_USAGE_OID => policy.extended_key_usage = validator,
+            _ => policy.additional_extensions.push(validator),
+        }
+        policy.configured_oids.insert(oid);
+        Ok(policy)
     }
 
     pub(crate) fn permits<'chain>(
@@ -185,6 +253,7 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
         let mut basic_constraints_seen = false;
         let mut name_constraints_seen = false;
         let mut extended_key_usage_seen = false;
+        let mut additional_extensions_seen = HashSet::new();
 
         // Iterate over each extension and run its policy.
         for ext in extensions.iter() {
@@ -225,13 +294,21 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
                     extended_key_usage_seen = true;
                     self.extended_key_usage.permits(policy, cert, Some(&ext))?;
                 }
-                _ if ext.critical => {
-                    return Err(ValidationError::new(ValidationErrorKind::ExtensionError {
-                        oid: ext.extn_id,
-                        reason: "certificate contains unaccounted-for critical extensions",
-                    }));
+                _ => {
+                    if let Some(validator) = self
+                        .additional_extensions
+                        .iter()
+                        .find(|validator| validator.oid() == &ext.extn_id)
+                    {
+                        additional_extensions_seen.insert(ext.extn_id.clone());
+                        validator.permits(policy, cert, Some(&ext))?;
+                    } else if ext.critical {
+                        return Err(ValidationError::new(ValidationErrorKind::ExtensionError {
+                            oid: ext.extn_id,
+                            reason: "certificate contains unaccounted-for critical extensions",
+                        }));
+                    }
                 }
-                _ => {}
             }
         }
 
@@ -261,6 +338,11 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
         }
         if !extended_key_usage_seen {
             self.extended_key_usage.permits(policy, cert, None)?;
+        }
+        for validator in &self.additional_extensions {
+            if !additional_extensions_seen.contains(validator.oid()) {
+                validator.permits(policy, cert, None)?;
+            }
         }
 
         Ok(())
@@ -313,7 +395,6 @@ pub type MaybeExtensionValidatorCallback<'cb, B> = Arc<
 >;
 
 /// Represents different validation states for an extension.
-#[derive(Clone)]
 pub enum ExtensionValidator<'cb, B: CryptoOps> {
     /// The extension MUST NOT be present.
     NotPresent { oid: asn1::ObjectIdentifier },
@@ -335,7 +416,45 @@ pub enum ExtensionValidator<'cb, B: CryptoOps> {
     },
 }
 
+// NOTE: Derived `Clone` would impose an unnecessary `B: Clone` bound, so we
+// implement it manually (the contents are `Clone` regardless of `B`).
+impl<B: CryptoOps> Clone for ExtensionValidator<'_, B> {
+    fn clone(&self) -> Self {
+        match self {
+            ExtensionValidator::NotPresent { oid } => {
+                ExtensionValidator::NotPresent { oid: oid.clone() }
+            }
+            ExtensionValidator::Present {
+                oid,
+                criticality,
+                validator,
+            } => ExtensionValidator::Present {
+                oid: oid.clone(),
+                criticality: criticality.clone(),
+                validator: validator.clone(),
+            },
+            ExtensionValidator::MaybePresent {
+                oid,
+                criticality,
+                validator,
+            } => ExtensionValidator::MaybePresent {
+                oid: oid.clone(),
+                criticality: criticality.clone(),
+                validator: validator.clone(),
+            },
+        }
+    }
+}
+
 impl<'cb, B: CryptoOps> ExtensionValidator<'cb, B> {
+    pub fn oid(&self) -> &asn1::ObjectIdentifier {
+        match self {
+            ExtensionValidator::NotPresent { oid } => oid,
+            ExtensionValidator::Present { oid, .. } => oid,
+            ExtensionValidator::MaybePresent { oid, .. } => oid,
+        }
+    }
+
     pub(crate) fn not_present(oid: asn1::ObjectIdentifier) -> Self {
         Self::NotPresent { oid }
     }

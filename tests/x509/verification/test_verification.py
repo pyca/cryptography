@@ -12,8 +12,11 @@ import pytest
 
 from cryptography import x509
 from cryptography.hazmat._oid import ExtendedKeyUsageOID
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509 import ExtensionType
 from cryptography.x509.general_name import DNSName, IPAddress
+from cryptography.x509.oid import NameOID
 from cryptography.x509.verification import (
     Criticality,
     ExtensionPolicy,
@@ -314,20 +317,236 @@ class TestCustomExtensionPolicies:
                 None,
             )
 
-    def test_unsupported_extension(self):
-        ext_policy = ExtensionPolicy.permit_all()
-        pattern = (
-            f"Unsupported extension OID: {x509.Admissions.oid.dotted_string}"
+    def test_arbitrary_extension_supported(self):
+        # Extension types that aren't among the handful with built-in
+        # validators can still be added to a policy. See GH #14850.
+        for extension_type in (x509.Admissions, x509.CertificatePolicies):
+            ext_policy = ExtensionPolicy.permit_all()
+            ext_policy.may_be_present(
+                extension_type, Criticality.AGNOSTIC, None
+            )
+            ext_policy.require_present(
+                extension_type, Criticality.AGNOSTIC, None
+            )
+            ext_policy.require_not_present(extension_type)
+
+    @staticmethod
+    def _chain_with_leaf_extension(leaf_extension, critical=True):
+        # Builds a (ca, leaf) chain where the leaf additionally carries the
+        # given extension. Used to exercise extensions that aren't among those
+        # with a built-in validator. See GH #14850.
+        ca_key = ec.generate_private_key(ec.SECP256R1())
+        leaf_key = ec.generate_private_key(ec.SECP256R1())
+
+        not_before = datetime.datetime(2024, 1, 1)
+        not_after = datetime.datetime(2034, 1, 1)
+        validation_time = datetime.datetime(2025, 1, 1)
+
+        ca_name = x509.Name(
+            [x509.NameAttribute(NameOID.COMMON_NAME, "Test CA")]
+        )
+        ca = (
+            x509.CertificateBuilder()
+            .subject_name(ca_name)
+            .issuer_name(ca_name)
+            .public_key(ca_key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(not_before)
+            .not_valid_after(not_after)
+            .add_extension(
+                x509.BasicConstraints(ca=True, path_length=None),
+                critical=True,
+            )
+            .add_extension(
+                x509.KeyUsage(
+                    digital_signature=False,
+                    content_commitment=False,
+                    key_encipherment=False,
+                    data_encipherment=False,
+                    key_agreement=False,
+                    key_cert_sign=True,
+                    crl_sign=True,
+                    encipher_only=False,
+                    decipher_only=False,
+                ),
+                critical=True,
+            )
+            .sign(ca_key, hashes.SHA256())
+        )
+
+        leaf_name = x509.Name(
+            [x509.NameAttribute(NameOID.COMMON_NAME, "example.com")]
+        )
+        leaf = (
+            x509.CertificateBuilder()
+            .subject_name(leaf_name)
+            .issuer_name(ca_name)
+            .public_key(leaf_key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(not_before)
+            .not_valid_after(not_after)
+            .add_extension(
+                x509.SubjectAlternativeName([x509.DNSName("example.com")]),
+                critical=False,
+            )
+            .add_extension(
+                x509.AuthorityKeyIdentifier.from_issuer_public_key(
+                    ca_key.public_key()
+                ),
+                critical=False,
+            )
+            .add_extension(
+                x509.KeyUsage(
+                    digital_signature=True,
+                    content_commitment=False,
+                    key_encipherment=False,
+                    data_encipherment=False,
+                    key_agreement=False,
+                    key_cert_sign=False,
+                    crl_sign=False,
+                    encipher_only=False,
+                    decipher_only=False,
+                ),
+                critical=False,
+            )
+            .add_extension(leaf_extension, critical=critical)
+            .sign(ca_key, hashes.SHA256())
+        )
+
+        return ca, leaf, validation_time
+
+    def test_critical_unaccounted_extension_fails(self):
+        ca, leaf, validation_time = self._chain_with_leaf_extension(
+            x509.CertificatePolicies(
+                [
+                    x509.PolicyInformation(
+                        x509.ObjectIdentifier("1.2.3.4"), None
+                    )
+                ]
+            )
+        )
+        builder = PolicyBuilder().store(Store([ca])).time(validation_time)
+        with pytest.raises(
+            VerificationError,
+            match="unaccounted-for critical extensions",
+        ):
+            builder.build_client_verifier().verify(leaf, [])
+
+    def test_critical_extension_accounted_for(self):
+        ca, leaf, validation_time = self._chain_with_leaf_extension(
+            x509.CertificatePolicies(
+                [
+                    x509.PolicyInformation(
+                        x509.ObjectIdentifier("1.2.3.4"), None
+                    )
+                ]
+            )
+        )
+
+        seen = []
+
+        def validator(policy, cert, ext):
+            assert isinstance(policy, Policy)
+            assert isinstance(cert, x509.Certificate)
+            assert isinstance(ext, x509.CertificatePolicies)
+            seen.append(ext)
+
+        ee_policy = ExtensionPolicy.webpki_defaults_ee().require_present(
+            x509.CertificatePolicies, Criticality.CRITICAL, validator
+        )
+        builder = (
+            PolicyBuilder()
+            .store(Store([ca]))
+            .time(validation_time)
+            .extension_policies(
+                ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+                ee_policy=ee_policy,
+            )
+        )
+        builder.build_client_verifier().verify(leaf, [])
+        assert len(seen) == 1
+
+    def test_unparseable_extension_passed_as_unrecognized(self):
+        # An extension whose value can't be parsed into a known Python object
+        # is delivered to the validator callback as an UnrecognizedExtension,
+        # rather than as None.
+        custom_oid = x509.ObjectIdentifier("1.2.3.4.5.6.7.8")
+        ca, leaf, validation_time = self._chain_with_leaf_extension(
+            x509.UnrecognizedExtension(custom_oid, b"\x04\x03abc"),
+            critical=True,
+        )
+
+        seen = []
+
+        def validator(policy, cert, ext):
+            assert isinstance(ext, x509.UnrecognizedExtension)
+            assert ext.oid == custom_oid
+            assert ext.value == b"\x04\x03abc"
+            seen.append(ext)
+
+        # A custom extension type carrying the OID, so it can be registered.
+        class CustomExtension(x509.ExtensionType):
+            oid = custom_oid
+
+        ee_policy = ExtensionPolicy.webpki_defaults_ee().require_present(
+            CustomExtension, Criticality.CRITICAL, validator
+        )
+        builder = (
+            PolicyBuilder()
+            .store(Store([ca]))
+            .time(validation_time)
+            .extension_policies(
+                ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+                ee_policy=ee_policy,
+            )
+        )
+        builder.build_client_verifier().verify(leaf, [])
+        assert len(seen) == 1
+
+    def test_additional_extension_absent(self):
+        # Covers the required-but-absent handling for an additional (arbitrary)
+        # extension, i.e. one without a dedicated field. self.leaf does not
+        # carry this extension.
+        custom_oid = x509.ObjectIdentifier("1.2.3.4.5.6.7.8")
+
+        class CustomExtension(x509.ExtensionType):
+            oid = custom_oid
+
+        default_builder = (
+            PolicyBuilder().store(self.store).time(self.validation_time)
+        )
+
+        # require_present for an absent additional extension fails.
+        require_present_builder = default_builder.extension_policies(
+            ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+            ee_policy=ExtensionPolicy.webpki_defaults_ee().require_present(
+                CustomExtension, Criticality.AGNOSTIC, None
+            ),
         )
         with pytest.raises(
-            ValueError,
-            match=pattern,
+            VerificationError,
+            match="missing required extension",
         ):
-            ext_policy.may_be_present(
-                x509.Admissions,
-                Criticality.AGNOSTIC,
-                None,
+            require_present_builder.build_client_verifier().verify(
+                self.leaf, []
             )
+
+        # may_be_present for an absent additional extension still invokes the
+        # callback, with ext=None.
+        seen: list[Optional[ExtensionType]] = []
+
+        def validator(policy, cert, ext):
+            assert ext is None
+            seen.append(ext)
+
+        may_be_present_builder = default_builder.extension_policies(
+            ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+            ee_policy=ExtensionPolicy.webpki_defaults_ee().may_be_present(
+                CustomExtension, Criticality.AGNOSTIC, validator
+            ),
+        )
+        may_be_present_builder.build_client_verifier().verify(self.leaf, [])
+        assert seen == [None]
 
     @staticmethod
     def _make_validator_cb(extension_type: type[ExtensionType]):
