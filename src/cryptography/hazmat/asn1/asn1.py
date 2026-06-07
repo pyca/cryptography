@@ -440,12 +440,7 @@ def value_set(
     their value; decoding fails if the decoded value does not match
     any member.
     """
-    try:
-        rust_type = declarative_asn1.non_root_python_to_rust(value_type)
-    except TypeError:
-        raise TypeError(
-            f"unsupported value type for value set: {value_type!r}"
-        )
+    rust_type = declarative_asn1.non_root_python_to_rust(value_type)
 
     def decorator(cls: type[U]) -> type[U]:
         if not issubclass(cls, enum.Enum):
@@ -458,7 +453,7 @@ def value_set(
                 f"value set '{cls.__name__}' must have at least one member"
             )
         for member in members:
-            if type(member.value) is not value_type:
+            if not isinstance(member.value, value_type):
                 raise TypeError(
                     f"member '{member.name}' of value set '{cls.__name__}' "
                     f"must have a value of type "

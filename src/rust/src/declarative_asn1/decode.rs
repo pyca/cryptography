@@ -266,6 +266,11 @@ fn decode_value_set<'a>(
 ) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let inner_ann_type = value_set_inner_type(py, inner_type, annotation)?;
     let decoded = decode_annotated_type(py, parser, &inner_ann_type)?;
+    // NOTE: This is a linear scan over the members of the enum. If this
+    // ever becomes a performance problem, it could be replaced with a
+    // value -> member map stored in `Type::ValueSet` (keeping in mind
+    // that hash-based lookups won't work for the asn1 wrapper types,
+    // which implement `__eq__` but not `__hash__`).
     for member in cls.bind(py).try_iter()? {
         let member = member?;
         if member.getattr(pyo3::intern!(py, "value"))?.eq(&decoded)? {

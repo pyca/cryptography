@@ -572,6 +572,6 @@ class TestValueSetAPI:
     def test_fail_unsupported_value_type(self) -> None:
         with pytest.raises(
             TypeError,
-            match="unsupported value type for value set",
+            match="cannot handle type",
         ):
             asn1.value_set(float)
