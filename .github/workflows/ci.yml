@@ -377,8 +377,42 @@ jobs:
 
       - uses: ./.github/actions/upload-coverage
 
+  linux-downstream-wheel:
+    runs-on: ubuntu-latest
+    name: "Build wheel for downstream tests"
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        timeout-minutes: 3
+        with:
+          persist-credentials: false
+      - name: Cache rust and pip
+        uses: ./.github/actions/cache
+        timeout-minutes: 2
+      - name: Setup python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: ci-constraints-requirements.txt
+        timeout-minutes: 3
+      - run: python -m pip install -c ci-constraints-requirements.txt 'uv'
+      - run: uv build --wheel -o wheelhouse/
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: "downstream-wheel"
+          path: wheelhouse/cryptography*.whl
+          # On "re-run all jobs" the artifact from the previous attempt
+          # still exists. The commit is the same, so the wheel is too.
+          overwrite: true
+
   linux-downstream:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Required to list and download the artifact from
+      # linux-downstream-wheel.
+      actions: read
     strategy:
       fail-fast: false
       matrix:
@@ -462,7 +496,29 @@ jobs:
       - run: python -m pip install -c ci-constraints-requirements.txt 'uv'
       - run: uv venv
       - run: source .venv/bin/activate && ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
-      - run: uv pip install -v .
+      # The cryptography wheel is built once, in the linux-downstream-wheel
+      # job, instead of paying for a Rust build in every downstream job.
+      # There's deliberately no needs: on that job, so its build overlaps
+      # with the steps above; by the time we get here the artifact is
+      # usually ready, but we may have to wait briefly for it.
+      - name: Wait for cryptography wheel
+        run: |
+          for _ in $(seq 1 60); do
+            names=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts" --jq '.artifacts[].name' || true)
+            if echo "${names}" | grep -qx downstream-wheel; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Timed out waiting for the downstream-wheel artifact" >&2
+          exit 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: downstream-wheel
+          path: wheelhouse/
+      - run: uv pip install wheelhouse/cryptography*.whl
       # cryptography main has a version of "(X+1).0.0.dev1" where X is the
       # most recently released major version. A package used by a downstream
       # may depend on cryptography <=X. If you use entrypoints stuff, this can
@@ -487,7 +543,7 @@ jobs:
   all-green:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert
     runs-on: ubuntu-latest
-    needs: [linux, alpine, distros, macos, windows, linux-downstream]
+    needs: [linux, alpine, distros, macos, windows, linux-downstream-wheel, linux-downstream]
     if: ${{ always() }}
     timeout-minutes: 3
     steps:
