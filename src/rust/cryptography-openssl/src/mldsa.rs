@@ -25,11 +25,7 @@ use std::os::raw::c_int;
     CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
 ))]
 use crate::cvt;
-#[cfg(any(
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC,
-    CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
-))]
+#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 use crate::cvt_p;
 use crate::OpenSSLResult;
 
@@ -288,21 +284,23 @@ pub fn verify(
 /// setting the integer `mu` signature parameter (OSSL_SIGNATURE_PARAM_MU) to 1.
 #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
 fn set_mu<T>(pkey_ctx: &mut openssl::pkey_ctx::PkeyCtxRef<T>) -> OpenSSLResult<()> {
-    // SAFETY: We build a one-element OSSL_PARAM array holding the integer "mu"
-    // parameter set to 1 and apply it to the EVP_PKEY_CTX. Every pointer is
-    // valid for the duration of its use and freed before returning.
+    // A fixed OSSL_PARAM array holding the integer "mu" parameter set to 1
+    // enables external mu mode. The provider reads it back with
+    // OSSL_PARAM_get_int, which accepts an unsigned integer param, so we can
+    // build the array on the stack rather than via an allocating
+    // OSSL_PARAM_BLD.
+    let mut mu: std::os::raw::c_uint = 1;
+    // SAFETY: `params` and its backing `mu` value outlive the call into
+    // OpenSSL, and the array is terminated with OSSL_PARAM_construct_end().
     unsafe {
-        let bld = cvt_p(ffi::OSSL_PARAM_BLD_new())?;
-        if ffi::OSSL_PARAM_BLD_push_int(bld, c"mu".as_ptr(), 1) != 1 {
-            ffi::OSSL_PARAM_BLD_free(bld);
-            return Err(openssl::error::ErrorStack::get());
-        }
-        let params = ffi::OSSL_PARAM_BLD_to_param(bld);
-        ffi::OSSL_PARAM_BLD_free(bld);
-        let params = cvt_p(params)?;
-        let res = ffi::EVP_PKEY_CTX_set_params(pkey_ctx.as_ptr(), params);
-        ffi::OSSL_PARAM_free(params);
-        cvt(res)?;
+        let params = [
+            ffi::OSSL_PARAM_construct_uint(c"mu".as_ptr(), &mut mu),
+            ffi::OSSL_PARAM_construct_end(),
+        ];
+        cvt(ffi::EVP_PKEY_CTX_set_params(
+            pkey_ctx.as_ptr(),
+            params.as_ptr(),
+        ))?;
     }
     Ok(())
 }
