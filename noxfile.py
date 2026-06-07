@@ -82,6 +82,25 @@ def pin_pyo3_config(session: nox.Session) -> None:
                 break
             config_lines.append(line)
     assert config_lines, f"failed to extract PyO3 config from:\n{output}"
+    # maturin also reads PYO3_CONFIG_FILE, and additionally needs
+    # ext_suffix (mandatory on Windows) and abiflags (for the free-threaded
+    # wheel tag), neither of which PyO3 emits (it ignores unknown keys
+    # with a warning).
+    info = session.run_install(
+        str(python),
+        "-c",
+        "import sys, sysconfig;"
+        'print(sysconfig.get_config_var("EXT_SUFFIX"));'
+        'print(getattr(sys, "abiflags", "") or'
+        ' ("t" if sysconfig.get_config_var("Py_GIL_DISABLED") else ""))',
+        silent=True,
+        external=True,
+    )
+    assert isinstance(info, str)
+    ext_suffix, abiflags = info.splitlines()
+    config_lines.append(f"ext_suffix={ext_suffix}")
+    if abiflags:
+        config_lines.append(f"abiflags={abiflags}")
     content = "\n".join(config_lines) + "\n"
     # The file name is content-addressed and the mtime is pinned: cargo
     # treats both a changed PYO3_CONFIG_FILE value and a fresh mtime on
