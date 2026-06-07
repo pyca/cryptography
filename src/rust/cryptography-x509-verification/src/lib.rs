@@ -565,10 +565,15 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
 #[cfg(test)]
 mod tests {
     use asn1::ParseError;
+    use cryptography_x509::certificate::Certificate;
     use cryptography_x509::oid::SUBJECT_ALTERNATIVE_NAME_OID;
 
     use crate::certificate::tests::PublicKeyErrorOps;
-    use crate::{ValidationError, ValidationErrorKind};
+    use crate::ops::{CryptoOps, VerificationCertificate};
+    use crate::policy::{Policy, PolicyDefinition, Subject};
+    use crate::trust_store::Store;
+    use crate::types::DNSName;
+    use crate::{Budget, ChainBuilder, NameChain, ValidationError, ValidationErrorKind};
 
     #[test]
     fn test_validationerror_display() {
@@ -589,5 +594,99 @@ mod tests {
         let err =
             ValidationError::<PublicKeyErrorOps>::new(ValidationErrorKind::FatalError("oops"));
         assert_eq!(err.to_string(), "fatal error: oops");
+    }
+
+    /// A `CryptoOps` whose public key extraction and signature verification
+    /// always succeed, so that `valid_issuer` can be driven to completion
+    /// without real cryptographic material.
+    struct NullOps;
+
+    impl CryptoOps for NullOps {
+        type Key = ();
+        type Err = ();
+        type CertificateExtra = ();
+        type PolicyExtra = ();
+
+        fn public_key(&self, _cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
+            Ok(())
+        }
+
+        fn verify_signed_by(
+            &self,
+            _cert: &Certificate<'_>,
+            _key: &Self::Key,
+        ) -> Result<(), Self::Err> {
+            Ok(())
+        }
+
+        fn clone_public_key(_key: &Self::Key) -> Self::Key {}
+
+        fn clone_extra(_extra: &Self::CertificateExtra) -> Self::CertificateExtra {}
+    }
+
+    // A self-issued ("looping") CA certificate that is its own issuer.
+    fn looping_ca_pem() -> pem::Pem {
+        pem::parse(
+            "-----BEGIN CERTIFICATE-----
+MIIBcjCCARmgAwIBAgIBATAKBggqhkjOPQQDAjAhMR8wHQYDVQQDDBZsb29waW5n
+IHNlbGYtc2lnbmVkIENBMB4XDTIzMTIzMTAwMDAwMFoXDTI0MDEzMTAwMDAwMFow
+ITEfMB0GA1UEAwwWbG9vcGluZyBzZWxmLXNpZ25lZCBDQTBZMBMGByqGSM49AgEG
+CCqGSM49AwEHA0IABKAoXUGnHdfXJbSXjRjeW+PCVHmlo4KEki69N5pJUA0QyQMR
+v9ySOMnWf3Ea7TR4g3zdguwTP7LdpSku3uR1QkmjQjBAMA8GA1UdEwEB/wQFMAMB
+Af8wDgYDVR0PAQH/BAQDAgGGMB0GA1UdDgQWBBR23MGdG1Ma9iR+3CxKTafD/OE0
+dTAKBggqhkjOPQQDAgNHADBEAiA4RCr07KfZdM16VfGNZAQFjvC60SWIU3RRVY/L
+qolIOwIgCaIgj9ipK0Q0p+45UJiq+L/ncrxsweJkFq/UYubzhX0=
+-----END CERTIFICATE-----",
+        )
+        .unwrap()
+    }
+
+    /// Exercises our pathlen overflow error scenario.
+    ///
+    /// This condition is logically unreachable from Python, since
+    /// we unconditionally limit signature checks to a number smaller
+    /// than `u8::MAX`, meaning that we always exhaust the signature budget
+    /// before potentially exhausting the pathlen budget.
+    ///
+    /// To test that directly, we manually lift the signature budget
+    /// and start our pathlen state right at `u8::MAX`, guaranteeing
+    /// an overflow on the immediate chain building step.
+    #[test]
+    fn test_build_chain_inner_depth_overflow() {
+        let pem = looping_ca_pem();
+        let ca = asn1::parse_single::<Certificate<'_>>(pem.contents()).unwrap();
+        let Ok(ca_exts) = ca.extensions() else {
+            panic!("impossible");
+        };
+
+        // The same self-issued CA is both the working certificate and its own
+        // (only) candidate issuer, so the search recurses on itself.
+        let working = VerificationCertificate::<NullOps>::new(&ca, ());
+        let intermediates = [VerificationCertificate::<NullOps>::new(&ca, ())];
+        let store: Store<'_, NullOps> = Store::new([]);
+
+        let subject = Subject::DNS(DNSName::new("example.com").unwrap());
+        let time = asn1::DateTime::new(2024, 1, 1, 0, 0, 0).unwrap();
+        let policy_def =
+            PolicyDefinition::server(NullOps, subject, time, Some(u8::MAX), None, None).unwrap();
+        let policy = Policy::new(&policy_def, ());
+
+        let builder = ChainBuilder::new(&intermediates, &policy, &store);
+        let mut budget = Budget {
+            name_constraint_checks: usize::MAX,
+            signature_checks: usize::MAX,
+        };
+
+        let name_chain = NameChain::new::<NullOps>(None, &ca_exts, false)
+            .ok()
+            .unwrap();
+        let err = builder
+            .build_chain_inner(&working, u8::MAX, &ca_exts, name_chain, &mut budget)
+            .unwrap_err();
+
+        assert!(matches!(
+            err.kind,
+            ValidationErrorKind::Other(msg) if msg.contains("current depth calculation overflowed")
+        ));
     }
 }
