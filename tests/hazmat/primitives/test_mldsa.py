@@ -32,6 +32,7 @@ from ...utils import (
 
 @dataclasses.dataclass
 class MLDSAVariant:
+    name: str
     private_key_class: type
     public_key_class: type
     pub_key_size: int
@@ -42,6 +43,7 @@ class MLDSAVariant:
 ML_DSA_VARIANTS = [
     pytest.param(
         MLDSAVariant(
+            name="44",
             private_key_class=MLDSA44PrivateKey,
             public_key_class=MLDSA44PublicKey,
             pub_key_size=1312,
@@ -52,6 +54,7 @@ ML_DSA_VARIANTS = [
     ),
     pytest.param(
         MLDSAVariant(
+            name="65",
             private_key_class=MLDSA65PrivateKey,
             public_key_class=MLDSA65PublicKey,
             pub_key_size=1952,
@@ -62,6 +65,7 @@ ML_DSA_VARIANTS = [
     ),
     pytest.param(
         MLDSAVariant(
+            name="87",
             private_key_class=MLDSA87PrivateKey,
             public_key_class=MLDSA87PublicKey,
             pub_key_size=2592,
@@ -286,6 +290,37 @@ class TestMLDSA:
 
                 pub = MLDSA87PublicKey.from_public_bytes(pk)
                 pub.verify(expected_sig, msg, ctx)
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_kat_vectors_external_mu(self, variant, backend, subtests):
+        # The deterministic pure KAT signatures come from an independent
+        # reference implementation. mu is fully determined by the public key,
+        # context, and message (FIPS 204 Algorithm 2), so deriving it and
+        # checking verify_mu accepts the reference signature exercises the
+        # external-mu path against known-answer data.
+        vectors = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "MLDSA", f"kat_MLDSA_{variant.name}_det_pure.rsp"
+            ),
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                pk = binascii.unhexlify(vector["pk"])
+                msg = binascii.unhexlify(vector["msg"])
+                ctx = binascii.unhexlify(vector["ctx"])
+                sm = binascii.unhexlify(vector["sm"])
+                expected_sig = sm[: variant.sig_size]
+                mu = self._compute_mu(pk, msg, ctx)
+
+                pub = variant.public_key_class.from_public_bytes(pk)
+                pub.verify_mu(expected_sig, mu)
+
+                # A signature that is valid for this mu must be rejected for a
+                # different mu.
+                wrong_mu = bytes([mu[0] ^ 0x01]) + mu[1:]
+                with pytest.raises(InvalidSignature):
+                    pub.verify_mu(expected_sig, wrong_mu)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
     def test_private_bytes_raw_round_trip(self, variant, backend):
