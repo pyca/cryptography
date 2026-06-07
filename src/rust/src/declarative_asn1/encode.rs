@@ -181,7 +181,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     ),
                 ))
             }
-            Type::ValueSet(cls, inner_type) => {
+            Type::ValueSet(cls, inner_type, _) => {
                 if !value.is_instance(cls.bind(py))? {
                     return Err(CryptographyError::Py(
                         pyo3::exceptions::PyTypeError::new_err(format!(

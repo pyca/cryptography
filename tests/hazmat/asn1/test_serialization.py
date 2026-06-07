@@ -2230,6 +2230,20 @@ class TestValueSet:
             ]
         )
 
+    def test_ok_null_value_set(self) -> None:
+        # `Null` implements `__eq__` but not `__hash__`, so decoding
+        # exercises the linear scan fallback (instead of the value ->
+        # member map lookup).
+        @asn1.value_set(asn1.Null)
+        class Marker(enum.Enum):
+            PRESENT = asn1.Null()
+
+        assert_roundtrips(
+            [
+                (Marker.PRESENT, b"\x05\x00"),
+            ]
+        )
+
     def test_fail_decode_non_member_value(self) -> None:
         @asn1.sequence
         @_comparable_dataclass

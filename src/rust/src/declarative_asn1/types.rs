@@ -38,8 +38,15 @@ pub enum Type {
     /// a single underlying ASN.1 type).
     /// The first element is the Python enum class, the second
     /// element is the (already converted) underlying type of the
-    /// member values.
-    ValueSet(pyo3::Py<pyo3::types::PyType>, pyo3::Py<AnnotatedType>),
+    /// member values, and the third element is a map from member
+    /// value to enum member, used when decoding. The map is `None`
+    /// when the member values are not hashable, in which case
+    /// decoding falls back to a linear scan over the members.
+    ValueSet(
+        pyo3::Py<pyo3::types::PyType>,
+        pyo3::Py<AnnotatedType>,
+        Option<pyo3::Py<pyo3::types::PyDict>>,
+    ),
 
     // Python types that we map to canonical ASN.1 types
     //
@@ -686,7 +693,7 @@ pub(crate) fn is_tag_valid_for_type(
         Type::Choice(variants) => variants.bind(py).into_iter().any(|v| {
             is_tag_valid_for_variant(py, tag, v.cast::<Variant>().unwrap().get(), encoding)
         }),
-        Type::ValueSet(_, t) => is_tag_valid_for_type(py, tag, t.get().inner.get(), encoding),
+        Type::ValueSet(_, t, _) => is_tag_valid_for_type(py, tag, t.get().inner.get(), encoding),
         Type::PyBool() => check_tag_with_encoding(bool::TAG, encoding, tag),
         Type::PyInt() => check_tag_with_encoding(asn1::BigInt::TAG, encoding, tag),
         Type::PyBytes() => {
