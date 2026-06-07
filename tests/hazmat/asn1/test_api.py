@@ -379,6 +379,10 @@ class TestSequenceAPI:
         choice = declarative_asn1.Type.Choice(my_list)
         assert choice._0 is my_list
 
+        value_set = declarative_asn1.Type.ValueSet(type(None), ann_type)
+        assert value_set._0 is type(None)
+        assert value_set._1 is ann_type
+
     def test_fields_of_variant_encoding(self) -> None:
         from cryptography.hazmat.bindings._rust import declarative_asn1
 
