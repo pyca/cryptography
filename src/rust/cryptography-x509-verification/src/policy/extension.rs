@@ -233,8 +233,6 @@ impl<'cb, B: CryptoOps + 'cb> ExtensionPolicy<'cb, B> {
             BASIC_CONSTRAINTS_OID => policy.basic_constraints = validator,
             NAME_CONSTRAINTS_OID => policy.name_constraints = validator,
             EXTENDED_KEY_USAGE_OID => policy.extended_key_usage = validator,
-            // `configured_oids` guarantees we haven't already stored a
-            // validator for this OID, so we can push without deduplicating.
             _ => policy.additional_extensions.push(validator),
         }
         policy.configured_oids.insert(oid);
