@@ -624,6 +624,12 @@ mod tests {
         fn clone_extra(_extra: &Self::CertificateExtra) -> Self::CertificateExtra {}
     }
 
+    #[test]
+    fn test_clone() {
+        assert_eq!(NullOps::clone_public_key(&()), ());
+        assert_eq!(NullOps::clone_extra(&()), ());
+    }
+
     // A self-issued ("looping") CA certificate that is its own issuer.
     fn looping_ca_pem() -> pem::Pem {
         pem::parse(
@@ -655,9 +661,7 @@ qolIOwIgCaIgj9ipK0Q0p+45UJiq+L/ncrxsweJkFq/UYubzhX0=
     fn test_build_chain_inner_depth_overflow() {
         let pem = looping_ca_pem();
         let ca = asn1::parse_single::<Certificate<'_>>(pem.contents()).unwrap();
-        let Ok(ca_exts) = ca.extensions() else {
-            panic!("impossible");
-        };
+        let ca_exts = ca.extensions().ok().unwrap();
 
         // The same self-issued CA is both the working certificate and its own
         // (only) candidate issuer, so the search recurses on itself.
