@@ -79,7 +79,7 @@ LIMBO_SKIP_TESTCASES = {
     "webpki::aki::root-with-aki-all-fields",
     # We allow RSA keys that aren't divisible by 8, which is technically
     # forbidden under CABF. No other implementation checks this either.
-    "webpki::forbidden-rsa-not-divisable-by-8-in-root",
+    "webpki::forbidden-rsa-not-divisible-by-8-in-root",
     # We disallow CAs in the leaf position, which is explicitly forbidden
     # by CABF (but implicitly permitted under RFC 5280). This is consistent
     # with what webpki and rustls do, but inconsistent with Go and OpenSSL.
