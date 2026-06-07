@@ -464,15 +464,8 @@ def value_set(
             rust_type, declarative_asn1.Annotation()
         )
         # Map from member value to member, used for O(1) lookups when
-        # decoding.
-        value_map: dict | None
-        try:
-            value_map = {member.value: member for member in members}
-        except TypeError:
-            # Member values that implement `__eq__` but not `__hash__`
-            # (e.g. `Null`) can't be used as dict keys; decoding falls
-            # back to a linear scan over the members.
-            value_map = None
+        # decoding. This requires the member values to be hashable.
+        value_map = {member.value: member for member in members}
         root = declarative_asn1.Type.ValueSet(cls, inner, value_map)
 
         setattr(cls, "__asn1_root__", root)

@@ -262,30 +262,13 @@ fn decode_value_set<'a>(
     parser: &mut Parser<'a>,
     cls: &pyo3::Py<pyo3::types::PyType>,
     inner_type: &AnnotatedType,
-    value_map: &Option<pyo3::Py<pyo3::types::PyDict>>,
+    value_map: &pyo3::Py<pyo3::types::PyDict>,
     annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let inner_ann_type = value_set_inner_type(py, inner_type, annotation)?;
     let decoded = decode_annotated_type(py, parser, &inner_ann_type)?;
-    match value_map {
-        // Common case: look the decoded value up in the value -> member
-        // map.
-        Some(value_map) => {
-            if let Some(member) = value_map.bind(py).get_item(&decoded)? {
-                return Ok(member);
-            }
-        }
-        // The map is `None` when the member values implement `__eq__`
-        // but not `__hash__` (e.g. `Null`), so fall back to a linear
-        // scan over the members.
-        None => {
-            for member in cls.bind(py).try_iter()? {
-                let member = member?;
-                if member.getattr(pyo3::intern!(py, "value"))?.eq(&decoded)? {
-                    return Ok(member);
-                }
-            }
-        }
+    if let Some(member) = value_map.bind(py).get_item(&decoded)? {
+        return Ok(member);
     }
     Err(CryptographyError::Py(
         pyo3::exceptions::PyValueError::new_err(format!(
