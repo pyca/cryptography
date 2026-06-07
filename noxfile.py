@@ -112,6 +112,12 @@ def pin_pyo3_config(session: nox.Session) -> None:
     config_path.write_text(content)
     os.utime(config_path, (0, 0))
     session.env["PYO3_CONFIG_FILE"] = str(config_path)
+    # When PYO3_CONFIG_FILE is set, maturin doesn't export PYO3_PYTHON to
+    # cargo, but cryptography-cffi's build script needs an interpreter
+    # (with the build requirements available) to run
+    # _cffi_src/build_openssl.py. Point it at the session's interpreter;
+    # the path is stable, so this doesn't reintroduce cache churn.
+    session.env["PYO3_PYTHON"] = str(python)
 
 
 @nox.session
@@ -142,6 +148,12 @@ def tests(session: nox.Session) -> None:
 
     install_spec = f".[{','.join(extras)}]"
     pin_pyo3_config(session)
+    # The build requirements must be importable by the PYO3_PYTHON
+    # interpreter that pin_pyo3_config points at the session venv (see
+    # there); they are not otherwise used, since the build itself still
+    # runs in an isolated environment.
+    pyproject_data = load_pyproject_toml()
+    install(session, *pyproject_data["build-system"]["requires"])
     install(session, "-e", "./vectors")
     if session.name == "tests-rust-debug":
         install(
