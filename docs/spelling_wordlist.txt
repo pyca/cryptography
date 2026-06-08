@@ -89,6 +89,7 @@ iterable
 Kehrer
 Kerberos
 Keychain
+keystream
 KiB
 kibibyte
 kibibytes
