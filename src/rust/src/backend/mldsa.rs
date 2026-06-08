@@ -167,7 +167,6 @@ impl MlDsa44PrivateKey {
 
 #[pyo3::pymethods]
 impl MlDsa44PublicKey {
-    #[pyo3(signature = (signature, mu))]
     fn verify_mu(&self, signature: CffiBuf<'_>, mu: CffiBuf<'_>) -> CryptographyResult<()> {
         if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
             return Err(CryptographyError::from(
@@ -412,7 +411,6 @@ impl MlDsa65PrivateKey {
 
 #[pyo3::pymethods]
 impl MlDsa65PublicKey {
-    #[pyo3(signature = (signature, mu))]
     fn verify_mu(&self, signature: CffiBuf<'_>, mu: CffiBuf<'_>) -> CryptographyResult<()> {
         if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
             return Err(CryptographyError::from(
@@ -654,7 +652,6 @@ impl MlDsa87PrivateKey {
 
 #[pyo3::pymethods]
 impl MlDsa87PublicKey {
-    #[pyo3(signature = (signature, mu))]
     fn verify_mu(&self, signature: CffiBuf<'_>, mu: CffiBuf<'_>) -> CryptographyResult<()> {
         if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
             return Err(CryptographyError::from(

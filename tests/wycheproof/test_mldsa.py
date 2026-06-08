@@ -171,11 +171,13 @@ def _compute_mu(pub_raw: bytes, msg: bytes, ctx: bytes) -> bytes:
 
 
 def _external_mu_test(public_key_class, wycheproof):
-    # The sign vectors carry a precomputed mu ("External Mu") for every case
-    # that has a valid signature, including the "Internal" cases that NIST
-    # provides as bare mu values with no message or context. Those are
-    # skipped by the signing tests above (we don't expose Sign_internal) but
-    # exercise the precomputed-mu verification interface here.
+    # Only some sign vectors carry a precomputed mu ("External Mu"), so we
+    # filter out the ones that don't. The ones that do include the "Internal"
+    # cases that NIST provides as bare mu values with no message or context;
+    # those are skipped by the signing tests above (we don't expose
+    # Sign_internal) but exercise the precomputed-mu verification interface
+    # here. We only test cases with a valid signature -- rejection of bad
+    # signatures is covered by the verify tests.
     if "mu" not in wycheproof.testcase or not wycheproof.valid:
         return
 

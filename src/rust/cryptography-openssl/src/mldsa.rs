@@ -384,7 +384,10 @@ pub fn sign_mu(
             Ok(sig)
         } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
             // OpenSSL signs an external mu by setting the "mu" parameter and
-            // passing the 64-byte mu in place of the message.
+            // passing the 64-byte mu in place of the message. ML-DSA only
+            // supports the digest-sign flow (EVP_PKEY_sign_init is not
+            // implemented for it), so we cannot use the one-shot PkeyCtx path
+            // the AWS-LC branch uses.
             let _ = variant;
             let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
             let pkey_ctx = md_ctx.digest_sign_init(None, pkey)?;
