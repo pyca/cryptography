@@ -7,7 +7,7 @@ from __future__ import annotations
 import threading
 import types
 import typing
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 import cryptography
 from cryptography.exceptions import InternalError
@@ -33,7 +33,7 @@ def _openssl_assert(ok: bool) -> None:
 
 def build_conditional_library(
     lib: typing.Any,
-    conditional_names: dict[str, Callable[[], list[str]]],
+    conditional_names: Mapping[str, Callable[[], list[str]]],
 ) -> typing.Any:
     conditional_lib = types.ModuleType("lib")
     conditional_lib._original_lib = lib  # type: ignore[attr-defined]
