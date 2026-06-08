@@ -236,7 +236,8 @@ const CHACHA20_BLOCK_SIZE: u64 = 64;
 // counter, at which point the underlying implementation silently diverges from
 // RFC 7539 (the counter carries into the rest of the nonce), so we instead
 // refuse to encrypt past that point.
-fn chacha20_byte_limit(counter: u32) -> u64 {
+fn chacha20_byte_limit(nonce: &[u8; 16]) -> u64 {
+    let counter = u32::from_le_bytes(nonce[..4].try_into().unwrap());
     ((1u64 << 32) - u64::from(counter)) * CHACHA20_BLOCK_SIZE
 }
 
@@ -248,12 +249,11 @@ fn chacha20_initial_byte_limit(
     algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<Option<u64>> {
     if algorithm.is_instance(&types::CHACHA20.get(py)?)? {
+        // The nonce is guaranteed to be 16 bytes by the ChaCha20 constructor.
         let nonce = algorithm
             .getattr(pyo3::intern!(py, "nonce"))?
-            .extract::<CffiBuf<'_>>()?;
-        // The nonce is guaranteed to be 16 bytes by the ChaCha20 constructor.
-        let counter = u32::from_le_bytes(nonce.as_bytes()[..4].try_into().unwrap());
-        Ok(Some(chacha20_byte_limit(counter)))
+            .extract::<[u8; 16]>()?;
+        Ok(Some(chacha20_byte_limit(&nonce)))
     } else {
         Ok(None)
     }
@@ -331,17 +331,21 @@ impl PyCipherContext {
     }
 
     fn reset_nonce(&mut self, py: pyo3::Python<'_>, nonce: CffiBuf<'_>) -> CryptographyResult<()> {
-        // Capture the counter before the buffer is moved into the inner reset,
-        // but only apply the new limit once that reset (which validates the
-        // nonce length) succeeds.
-        let counter_bytes: Option<[u8; 4]> = if self.bytes_remaining.is_some() {
-            nonce.as_bytes().get(..4).map(|b| b.try_into().unwrap())
+        // Compute the new limit before the buffer is moved into the inner
+        // reset, but only apply it once that reset (which validates the nonce
+        // length) succeeds. `get` guards against buffers too short to contain a
+        // counter; the inner reset rejects any other invalid length.
+        let new_limit = if self.bytes_remaining.is_some() {
+            nonce
+                .as_bytes()
+                .get(..16)
+                .map(|b| chacha20_byte_limit(b.try_into().unwrap()))
         } else {
             None
         };
         get_mut_ctx(self.ctx.as_mut())?.reset_nonce(py, nonce)?;
-        if let Some(counter_bytes) = counter_bytes {
-            self.bytes_remaining = Some(chacha20_byte_limit(u32::from_le_bytes(counter_bytes)));
+        if let Some(limit) = new_limit {
+            self.bytes_remaining = Some(limit);
         }
         Ok(())
     }

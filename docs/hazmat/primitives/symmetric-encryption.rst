@@ -165,22 +165,24 @@ Algorithms
 
     .. note::
 
-        The block counter occupies the first 4 bytes of the 128-bit value and
-        is a 32-bit little-endian integer. Each ChaCha20 block encrypts 64
-        bytes, so an initial counter value of ``n`` allows up to
+        The first 4 bytes of the 128-bit value are a 32-bit little-endian block
+        counter and the remaining 12 bytes are the nonce. Each ChaCha20 block
+        encrypts 64 bytes, so an initial counter of ``n`` allows
         ``(2 ** 32 - n) * 64`` bytes to be encrypted before the counter would
-        overflow. We recommend setting the counter portion to zero, which
-        allows encrypting up to 256 GiB with a given nonce. Attempting to
-        encrypt or decrypt more data than the counter allows raises a
-        :class:`ValueError`.
+        overflow, at which point a :class:`ValueError` is raised. If you are
+        encrypting a single message and do not need to resume from a particular
+        point in the keystream, start the counter at zero; this gives you the
+        full 256 GiB of keystream for that nonce. If you are continuing a
+        stream from a known position you will need to concatenate the counter
+        and nonce yourself before passing them.
 
     .. doctest::
 
-        >>> import os
+        >>> import struct, os
         >>> from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
         >>> key = os.urandom(32)
-        >>> counter = b"\x00\x00\x00\x00"
-        >>> nonce = counter + os.urandom(12)
+        >>> counter = 0
+        >>> nonce = struct.pack("<I", counter) + os.urandom(12)
         >>> algorithm = algorithms.ChaCha20(key, nonce)
         >>> cipher = Cipher(algorithm, mode=None)
         >>> encryptor = cipher.encryptor()
