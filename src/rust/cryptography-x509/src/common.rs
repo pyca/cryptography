@@ -128,13 +128,13 @@ pub enum AlgorithmParameters<'a> {
     Dsa(DssParams<'a>),
 
     #[defined_by(oid::DSA_WITH_SHA224_OID)]
-    DsaWithSha224(Option<asn1::Null>),
+    DsaWithSha224,
     #[defined_by(oid::DSA_WITH_SHA256_OID)]
-    DsaWithSha256(Option<asn1::Null>),
+    DsaWithSha256,
     #[defined_by(oid::DSA_WITH_SHA384_OID)]
-    DsaWithSha384(Option<asn1::Null>),
+    DsaWithSha384,
     #[defined_by(oid::DSA_WITH_SHA512_OID)]
-    DsaWithSha512(Option<asn1::Null>),
+    DsaWithSha512,
 
     #[defined_by(oid::DH_OID)]
     Dh(DHXParams<'a>),

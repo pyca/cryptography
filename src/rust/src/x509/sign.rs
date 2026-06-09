@@ -286,19 +286,19 @@ pub(crate) fn compute_signature_algorithm<'p>(
 
         (KeyType::Dsa, HashType::Sha224) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::DsaWithSha224(None),
+            params: common::AlgorithmParameters::DsaWithSha224,
         }),
         (KeyType::Dsa, HashType::Sha256) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::DsaWithSha256(None),
+            params: common::AlgorithmParameters::DsaWithSha256,
         }),
         (KeyType::Dsa, HashType::Sha384) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::DsaWithSha384(None),
+            params: common::AlgorithmParameters::DsaWithSha384,
         }),
         (KeyType::Dsa, HashType::Sha512) => Ok(common::AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
-            params: common::AlgorithmParameters::DsaWithSha512(None),
+            params: common::AlgorithmParameters::DsaWithSha512,
         }),
         (
             KeyType::Dsa,
@@ -450,10 +450,10 @@ fn identify_key_type_for_algorithm_params(
         common::AlgorithmParameters::MlDsa44 => Ok(KeyType::MlDsa44),
         common::AlgorithmParameters::MlDsa65 => Ok(KeyType::MlDsa65),
         common::AlgorithmParameters::MlDsa87 => Ok(KeyType::MlDsa87),
-        common::AlgorithmParameters::DsaWithSha224(..)
-        | common::AlgorithmParameters::DsaWithSha256(..)
-        | common::AlgorithmParameters::DsaWithSha384(..)
-        | common::AlgorithmParameters::DsaWithSha512(..) => Ok(KeyType::Dsa),
+        common::AlgorithmParameters::DsaWithSha224
+        | common::AlgorithmParameters::DsaWithSha256
+        | common::AlgorithmParameters::DsaWithSha384
+        | common::AlgorithmParameters::DsaWithSha512 => Ok(KeyType::Dsa),
         _ => Err(pyo3::exceptions::PyValueError::new_err(
             "Unsupported signature algorithm",
         )),
@@ -629,22 +629,10 @@ mod tests {
             (&common::AlgorithmParameters::MlDsa44, KeyType::MlDsa44),
             (&common::AlgorithmParameters::MlDsa65, KeyType::MlDsa65),
             (&common::AlgorithmParameters::MlDsa87, KeyType::MlDsa87),
-            (
-                &common::AlgorithmParameters::DsaWithSha224(None),
-                KeyType::Dsa,
-            ),
-            (
-                &common::AlgorithmParameters::DsaWithSha256(None),
-                KeyType::Dsa,
-            ),
-            (
-                &common::AlgorithmParameters::DsaWithSha384(None),
-                KeyType::Dsa,
-            ),
-            (
-                &common::AlgorithmParameters::DsaWithSha512(None),
-                KeyType::Dsa,
-            ),
+            (&common::AlgorithmParameters::DsaWithSha224, KeyType::Dsa),
+            (&common::AlgorithmParameters::DsaWithSha256, KeyType::Dsa),
+            (&common::AlgorithmParameters::DsaWithSha384, KeyType::Dsa),
+            (&common::AlgorithmParameters::DsaWithSha512, KeyType::Dsa),
         ] {
             assert_eq!(
                 identify_key_type_for_algorithm_params(params).unwrap(),
