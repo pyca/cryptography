@@ -69,6 +69,7 @@ Fernet
 fernet
 FIPS
 Gaynor
+GiB
 Google
 Graviola
 hazmat
@@ -88,6 +89,7 @@ iterable
 Kehrer
 Kerberos
 Keychain
+keystream
 KiB
 kibibyte
 kibibytes

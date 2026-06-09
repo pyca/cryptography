@@ -12,6 +12,13 @@ Changelog
   We now only publish ``arm64`` wheels for macOS.
 * **BACKWARDS INCOMPATIBLE:** Support for 32-bit Windows has been removed.
   Users should move to a 64-bit Python installation.
+* **BACKWARDS INCOMPATIBLE:** :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ChaCha20`
+  now treats the first 4 bytes of the ``nonce`` as a 32-bit little-endian block
+  counter (as defined in :rfc:`7539`) and tracks the number of bytes processed.
+  Attempting to encrypt or decrypt more data than the counter allows before it
+  would overflow now raises a :class:`ValueError` rather than silently diverging
+  from RFC 7539. Setting the counter portion of the ``nonce`` to zero allows
+  encrypting up to 256 GiB with a given nonce.
 * Fixed cross-compilation of the CFFI bindings when ``PYO3_CROSS_LIB_DIR``
   is set. The build now derives the Python include directory from
   ``PYO3_CROSS_LIB_DIR`` instead of querying the host interpreter, which

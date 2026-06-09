@@ -27,20 +27,84 @@ class TestChaCha20:
         "vector",
         _load_all_params(
             os.path.join("ciphers", "ChaCha20"),
-            ["counter-overflow.txt", "rfc7539.txt"],
+            ["rfc7539.txt"],
             load_nist_vectors,
         ),
     )
     def test_vectors(self, vector, backend):
         key = binascii.unhexlify(vector["key"])
         nonce = binascii.unhexlify(vector["nonce"])
-        ibc = struct.pack("<Q", int(vector["initial_block_counter"]))
+        # The 128-bit value is a 32-bit little-endian block counter followed
+        # by the 96-bit nonce.
+        ibc = struct.pack("<I", int(vector["initial_block_counter"]))
         pt = binascii.unhexlify(vector["plaintext"])
         encryptor = Cipher(
             algorithms.ChaCha20(key, ibc + nonce), None, backend
         ).encryptor()
         computed_ct = encryptor.update(pt) + encryptor.finalize()
         assert binascii.hexlify(computed_ct) == vector["ciphertext"]
+
+    def _nonce_with_counter(self, counter: int) -> bytes:
+        # The 16-byte ChaCha20 nonce is a 4-byte little-endian block counter
+        # followed by a 12-byte nonce.
+        return struct.pack("<I", counter) + b"\x00" * 12
+
+    def test_counter_overflow_single_update(self, backend):
+        key = b"\x00" * 32
+        # A counter of 2**32 - 1 leaves room for exactly one 64-byte block
+        # before the 32-bit counter would overflow.
+        nonce = self._nonce_with_counter(2**32 - 1)
+        enc = Cipher(
+            algorithms.ChaCha20(key, nonce), None, backend
+        ).encryptor()
+        with pytest.raises(ValueError):
+            enc.update(b"\x00" * 65)
+
+    def test_counter_overflow_across_updates(self, backend):
+        key = b"\x00" * 32
+        nonce = self._nonce_with_counter(2**32 - 1)
+        enc = Cipher(
+            algorithms.ChaCha20(key, nonce), None, backend
+        ).encryptor()
+        # Exactly one block is allowed.
+        assert len(enc.update(b"\x00" * 64)) == 64
+        with pytest.raises(ValueError):
+            enc.update(b"\x00")
+
+    def test_counter_overflow_decrypt(self, backend):
+        key = b"\x00" * 32
+        nonce = self._nonce_with_counter(2**32 - 1)
+        dec = Cipher(
+            algorithms.ChaCha20(key, nonce), None, backend
+        ).decryptor()
+        with pytest.raises(ValueError):
+            dec.update(b"\x00" * 65)
+
+    def test_counter_overflow_update_into(self, backend):
+        key = b"\x00" * 32
+        nonce = self._nonce_with_counter(2**32 - 1)
+        enc = Cipher(
+            algorithms.ChaCha20(key, nonce), None, backend
+        ).encryptor()
+        buf = bytearray(65 + 64)
+        with pytest.raises(ValueError):
+            enc.update_into(b"\x00" * 65, buf)
+
+    def test_counter_overflow_after_reset_nonce(self, backend):
+        key = b"\x00" * 32
+        low = self._nonce_with_counter(0)
+        high = self._nonce_with_counter(2**32 - 1)
+        enc = Cipher(algorithms.ChaCha20(key, low), None, backend).encryptor()
+        # A zero counter allows plenty of data.
+        enc.update(b"\x00" * 128)
+        # Resetting to a near-overflow counter shrinks the available budget.
+        enc.reset_nonce(high)
+        enc.update(b"\x00" * 64)
+        with pytest.raises(ValueError):
+            enc.update(b"\x00")
+        # Resetting back to a zero counter restores the budget.
+        enc.reset_nonce(low)
+        enc.update(b"\x00" * 128)
 
     def test_buffer_protocol(self, backend):
         key = bytearray(os.urandom(32))
