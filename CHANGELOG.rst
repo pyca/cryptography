@@ -12,6 +12,13 @@ Changelog
   We now only publish ``arm64`` wheels for macOS.
 * **BACKWARDS INCOMPATIBLE:** Support for 32-bit Windows has been removed.
   Users should move to a 64-bit Python installation.
+* **BACKWARDS INCOMPATIBLE:** Removed the deprecated
+  ``PUBLIC_KEY_TYPES``, ``PRIVATE_KEY_TYPES``,
+  ``CERTIFICATE_PRIVATE_KEY_TYPES``, ``CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES``,
+  and ``CERTIFICATE_PUBLIC_KEY_TYPES`` type aliases. Use
+  ``PublicKeyTypes``, ``PrivateKeyTypes``, ``CertificateIssuerPrivateKeyTypes``,
+  ``CertificateIssuerPublicKeyTypes``, and ``CertificatePublicKeyTypes``
+  instead. These were deprecated in version 40.0.
 * **BACKWARDS INCOMPATIBLE:** :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ChaCha20`
   now treats the first 4 bytes of the ``nonce`` as a 32-bit little-endian block
   counter (as defined in :rfc:`7539`) and tracks the number of bytes processed.
