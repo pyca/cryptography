@@ -485,11 +485,7 @@ fn warn_if_invalid_params(
     params: AlgorithmParameters<'_>,
 ) -> pyo3::PyResult<()> {
     match params {
-        AlgorithmParameters::EcDsaWithSha224(Some(..))
-        | AlgorithmParameters::EcDsaWithSha256(Some(..))
-        | AlgorithmParameters::EcDsaWithSha384(Some(..))
-        | AlgorithmParameters::EcDsaWithSha512(Some(..))
-        | AlgorithmParameters::DsaWithSha224(Some(..))
+        AlgorithmParameters::DsaWithSha224(Some(..))
         | AlgorithmParameters::DsaWithSha256(Some(..))
         | AlgorithmParameters::DsaWithSha384(Some(..))
         | AlgorithmParameters::DsaWithSha512(Some(..)) => {

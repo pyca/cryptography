@@ -77,18 +77,14 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::RSA_OID)]
     Rsa(Option<asn1::Null>),
 
-    // These ECDSA algorithms should have no parameters,
-    // but Java 11 (up to at least 11.0.19) encodes them
-    // with NULL parameters. The JDK team is looking to
-    // backport the fix as of June 2023.
     #[defined_by(oid::ECDSA_WITH_SHA224_OID)]
-    EcDsaWithSha224(Option<asn1::Null>),
+    EcDsaWithSha224,
     #[defined_by(oid::ECDSA_WITH_SHA256_OID)]
-    EcDsaWithSha256(Option<asn1::Null>),
+    EcDsaWithSha256,
     #[defined_by(oid::ECDSA_WITH_SHA384_OID)]
-    EcDsaWithSha384(Option<asn1::Null>),
+    EcDsaWithSha384,
     #[defined_by(oid::ECDSA_WITH_SHA512_OID)]
-    EcDsaWithSha512(Option<asn1::Null>),
+    EcDsaWithSha512,
 
     #[defined_by(oid::ECDSA_WITH_SHA3_224_OID)]
     EcDsaWithSha3_224,
