@@ -1029,23 +1029,20 @@ pub(crate) fn create_x509_certificate(
 
     let py_public_key_rsa_padding =
         builder.getattr(pyo3::intern!(py, "_public_key_rsa_padding"))?;
-    let pss_spki_bytes;
-    let spki_der: &[u8] = if py_public_key_rsa_padding.is_none() {
-        &spki_bytes
+    let spki = if py_public_key_rsa_padding.is_none() {
+        asn1::parse_single(&spki_bytes)?
     } else {
         // The Python layer ensures this is only ever the PSS class.
         let spki = asn1::parse_single::<common::SubjectPublicKeyInfo<'_>>(&spki_bytes)?;
         // id-RSASSA-PSS with the parameters absent (the unrestricted form
-        // from RFC 4055), which is the encoding required for the TLS 1.3
-        // rsa_pss_pss_* signature schemes.
-        pss_spki_bytes = asn1::write_single(&common::SubjectPublicKeyInfo {
+        // from RFC 4055).
+        common::WithTlv::new(common::SubjectPublicKeyInfo {
             algorithm: common::AlgorithmIdentifier {
                 oid: asn1::DefinedByMarker::marker(),
-                params: AlgorithmParameters::RsaPss(None),
+                params: common::AlgorithmParameters::RsaPss(None),
             },
             subject_public_key: spki.subject_public_key,
-        })?;
-        &pss_spki_bytes
+        })
     };
 
     let py_serial = builder
@@ -1081,7 +1078,7 @@ pub(crate) fn create_x509_certificate(
             not_after: time_from_py(py, &py_not_after)?,
         },
         subject: x509::common::encode_name(py, &ka, &py_subject_name)?,
-        spki: asn1::parse_single(spki_der)?,
+        spki,
         issuer_unique_id: None,
         subject_unique_id: None,
         raw_extensions: x509::common::encode_extensions(

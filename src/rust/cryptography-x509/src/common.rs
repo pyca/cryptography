@@ -704,13 +704,21 @@ impl asn1::SimpleAsn1Writable for Utf8StoredBMPString<'_> {
 
 #[derive(Clone)]
 pub struct WithTlv<'a, T> {
-    tlv: asn1::Tlv<'a>,
+    tlv: Option<asn1::Tlv<'a>>,
     value: T,
 }
 
 impl<'a, T> WithTlv<'a, T> {
+    /// Constructs a value that was not parsed, and therefore has no TLV.
+    /// Calling `tlv()` on it will panic.
+    pub fn new(value: T) -> Self {
+        Self { tlv: None, value }
+    }
+
     pub fn tlv(&self) -> &asn1::Tlv<'a> {
-        &self.tlv
+        self.tlv
+            .as_ref()
+            .expect("tlv() may only be called on parsed values")
     }
 }
 
@@ -726,7 +734,7 @@ impl<'a, T: asn1::Asn1Readable<'a>> asn1::Asn1Readable<'a> for WithTlv<'a, T> {
     fn parse(p: &mut asn1::Parser<'a>) -> asn1::ParseResult<Self> {
         let tlv = p.read_element::<asn1::Tlv<'a>>()?;
         Ok(Self {
-            tlv,
+            tlv: Some(tlv),
             value: tlv.parse()?,
         })
     }
