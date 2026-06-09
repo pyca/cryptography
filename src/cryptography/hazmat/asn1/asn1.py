@@ -108,16 +108,14 @@ def _resolve_type_aliases(field_type: typing.Any) -> typing.Any:
         return field_type
 
     if _is_union(field_type):
-        # An alias appeared as a union member (e.g. `MyInt | str`).
-        # Union members are used verbatim as the `python_class` of
-        # CHOICE variants, so they must be resolved here, before the
-        # union is processed. Rebuilding through `typing.Union` also
+        # `X | Y` unions can't be rebuilt through their origin like
+        # other generics below: `typing.get_origin` returns
+        # `types.UnionType` for them, which is only subscriptable on
+        # Python 3.14+. Rebuilding through `typing.Union` also
         # flattens any nested union introduced by an alias of a union
         # (e.g. `Time | int` where `type Time = UTCTime |
         # GeneralizedTime`), just like `typing.Union` would have done
-        # if the alias had been written inline. Note that unions
-        # cannot be rebuilt through the origin like other generics,
-        # since `types.UnionType` is not subscriptable.
+        # if the alias had been written inline.
         return typing.Union[resolved_args]
 
     # An alias appeared inside a generic (e.g. `Annotated[Time, ...]`,
