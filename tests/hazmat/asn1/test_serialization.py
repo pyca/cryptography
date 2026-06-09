@@ -8,6 +8,7 @@ import enum
 import os
 import re
 import sys
+import textwrap
 import typing
 from typing import Annotated
 
@@ -2263,4 +2264,308 @@ class TestValueSet:
         ):
             asn1.encode_der(
                 Example(algorithm=x509.ObjectIdentifier("1.2.3.4"))  # type: ignore[arg-type]
+            )
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 12),
+    reason="PEP 695 type aliases require Python 3.12+",
+)
+class TestTypeAliases:
+    # The PEP 695 `type X = ...` syntax is not available in all
+    # supported Python versions, so the structures under test are
+    # defined in strings and compiled at test time with `exec()`.
+    def _exec(self, src: str) -> dict[str, typing.Any]:
+        namespace: dict[str, typing.Any] = {
+            "asn1": asn1,
+            "typing": typing,
+            "Annotated": Annotated,
+            "_comparable_dataclass": _comparable_dataclass,
+        }
+        exec(textwrap.dedent(src), namespace)
+        return namespace
+
+    def test_alias_of_simple_type(self) -> None:
+        namespace = self._exec(
+            """
+            type MyInt = int
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Example:
+                foo: MyInt
+            """
+        )
+        cls = namespace["Example"]
+
+        assert_roundtrips([(cls(foo=9), b"\x30\x03\x02\x01\x09")])
+
+    def test_alias_of_alias(self) -> None:
+        namespace = self._exec(
+            """
+            type MyInt = int
+            type MyOtherInt = MyInt
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Example:
+                foo: MyOtherInt
+            """
+        )
+        cls = namespace["Example"]
+
+        assert_roundtrips([(cls(foo=9), b"\x30\x03\x02\x01\x09")])
+
+    def test_alias_of_choice(self) -> None:
+        namespace = self._exec(
+            """
+            type Time = asn1.UTCTime | asn1.GeneralizedTime
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Validity:
+                not_before: Time
+                not_after: Time
+            """
+        )
+        cls = namespace["Validity"]
+
+        utc_time = asn1.UTCTime(
+            datetime.datetime(2025, 1, 1, tzinfo=datetime.timezone.utc)
+        )
+        generalized_time = asn1.GeneralizedTime(
+            datetime.datetime(2050, 6, 15, tzinfo=datetime.timezone.utc)
+        )
+        assert_roundtrips(
+            [
+                (
+                    cls(not_before=utc_time, not_after=utc_time),
+                    b"\x30\x1e\x17\x0d250101000000Z\x17\x0d250101000000Z",
+                ),
+                (
+                    cls(not_before=utc_time, not_after=generalized_time),
+                    b"\x30\x20\x17\x0d250101000000Z\x18\x0f20500615000000Z",
+                ),
+            ]
+        )
+
+    def test_alias_inside_annotated(self) -> None:
+        namespace = self._exec(
+            """
+            type MyInt = int
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Example:
+                foo: Annotated[MyInt, asn1.Implicit(0)]
+            """
+        )
+        cls = namespace["Example"]
+
+        assert_roundtrips([(cls(foo=9), b"\x30\x03\x80\x01\x09")])
+
+    def test_alias_of_annotated(self) -> None:
+        namespace = self._exec(
+            """
+            type ImplicitInt = Annotated[int, asn1.Implicit(0)]
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Example:
+                foo: ImplicitInt
+            """
+        )
+        cls = namespace["Example"]
+
+        assert_roundtrips([(cls(foo=9), b"\x30\x03\x80\x01\x09")])
+
+    def test_optional_alias(self) -> None:
+        namespace = self._exec(
+            """
+            type MyInt = int
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Example:
+                foo: MyInt | None
+            """
+        )
+        cls = namespace["Example"]
+
+        assert_roundtrips(
+            [
+                (cls(foo=9), b"\x30\x03\x02\x01\x09"),
+                (cls(foo=None), b"\x30\x00"),
+            ]
+        )
+
+    def test_optional_alias_of_choice(self) -> None:
+        namespace = self._exec(
+            """
+            type Time = asn1.UTCTime | asn1.GeneralizedTime
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Example:
+                foo: Time | None
+            """
+        )
+        cls = namespace["Example"]
+
+        utc_time = asn1.UTCTime(
+            datetime.datetime(2025, 1, 1, tzinfo=datetime.timezone.utc)
+        )
+        assert_roundtrips(
+            [
+                (
+                    cls(foo=utc_time),
+                    b"\x30\x0f\x17\x0d250101000000Z",
+                ),
+                (cls(foo=None), b"\x30\x00"),
+            ]
+        )
+
+    def test_alias_as_choice_member(self) -> None:
+        namespace = self._exec(
+            """
+            type MyInt = int
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Example:
+                foo: MyInt | str
+            """
+        )
+        cls = namespace["Example"]
+
+        assert_roundtrips(
+            [
+                (cls(foo=9), b"\x30\x03\x02\x01\x09"),
+                (cls(foo="a"), b"\x30\x03\x0c\x01a"),
+            ]
+        )
+
+    def test_alias_of_union_as_choice_member(self) -> None:
+        # A union alias inside a union is flattened into a single
+        # CHOICE, the same as if the alias had been written inline.
+        namespace = self._exec(
+            """
+            type Time = asn1.UTCTime | asn1.GeneralizedTime
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Example:
+                foo: Time | int
+            """
+        )
+        cls = namespace["Example"]
+
+        utc_time = asn1.UTCTime(
+            datetime.datetime(2025, 1, 1, tzinfo=datetime.timezone.utc)
+        )
+        assert_roundtrips(
+            [
+                (cls(foo=9), b"\x30\x03\x02\x01\x09"),
+                (
+                    cls(foo=utc_time),
+                    b"\x30\x0f\x17\x0d250101000000Z",
+                ),
+            ]
+        )
+
+    def test_alias_in_sequence_of(self) -> None:
+        namespace = self._exec(
+            """
+            type MyInt = int
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Example:
+                foo: list[MyInt]
+            """
+        )
+        cls = namespace["Example"]
+
+        assert_roundtrips(
+            [
+                (
+                    cls(foo=[1, 2]),
+                    b"\x30\x08\x30\x06\x02\x01\x01\x02\x01\x02",
+                ),
+            ]
+        )
+
+    def test_alias_in_set_of(self) -> None:
+        namespace = self._exec(
+            """
+            type MyInt = int
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Example:
+                foo: asn1.SetOf[MyInt]
+            """
+        )
+        cls = namespace["Example"]
+
+        assert_roundtrips(
+            [
+                (
+                    cls(foo=asn1.SetOf([1, 2])),
+                    b"\x30\x08\x31\x06\x02\x01\x01\x02\x01\x02",
+                ),
+            ]
+        )
+
+    def test_alias_in_variant(self) -> None:
+        namespace = self._exec(
+            """
+            type MyInt = int
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Example:
+                foo: (
+                    Annotated[
+                        asn1.Variant[MyInt, typing.Literal["IntA"]],
+                        asn1.Implicit(0),
+                    ]
+                    | Annotated[
+                        asn1.Variant[MyInt, typing.Literal["IntB"]],
+                        asn1.Implicit(1),
+                    ]
+                )
+            """
+        )
+        cls = namespace["Example"]
+
+        assert_roundtrips(
+            [
+                (
+                    cls(foo=asn1.Variant(9, "IntA")),
+                    b"\x30\x03\x80\x01\x09",
+                ),
+                (
+                    cls(foo=asn1.Variant(9, "IntB")),
+                    b"\x30\x03\x81\x01\x09",
+                ),
+            ]
+        )
+
+    def test_fail_optional_alias_of_tlv(self) -> None:
+        # Aliases are resolved before field type validation runs.
+        with pytest.raises(
+            TypeError,
+            match=re.escape(
+                "optional TLV types (`TLV | None`) are not currently supported"
+            ),
+        ):
+            self._exec(
+                """
+                type MyTLV = asn1.TLV
+
+                @asn1.sequence
+                class Example:
+                    foo: MyTLV | None
+                """
             )
