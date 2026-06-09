@@ -26,6 +26,10 @@ Changelog
   would overflow now raises a :class:`ValueError` rather than silently diverging
   from RFC 7539. Setting the counter portion of the ``nonce`` to zero allows
   encrypting up to 256 GiB with a given nonce.
+* **BACKWARDS INCOMPATIBLE:** Loading an X.509 certificate whose ECDSA or DSA
+  signature ``AlgorithmIdentifier`` contains encoded NULL parameters now raises
+  a :class:`ValueError`. Such certificates are invalid, but older versions of
+  Java emitted them; previously they loaded with a deprecation warning.
 * Fixed cross-compilation of the CFFI bindings when ``PYO3_CROSS_LIB_DIR``
   is set. The build now derives the Python include directory from
   ``PYO3_CROSS_LIB_DIR`` instead of querying the host interpreter, which

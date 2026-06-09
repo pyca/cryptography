@@ -6,7 +6,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use cryptography_x509::certificate::Certificate as RawCertificate;
-use cryptography_x509::common::{AlgorithmParameters, Asn1Read, Asn1ReadableOrWritable};
+use cryptography_x509::common::{Asn1Read, Asn1ReadableOrWritable};
 use cryptography_x509::extensions::{
     Admission, Admissions, AuthorityKeyIdentifier, BasicConstraints, DisplayText,
     DistributionPoint, DistributionPointName, DuplicateExtensionsError, ExtendedKeyUsage,
@@ -453,14 +453,6 @@ pub(crate) fn load_der_x509_certificate(
     // determine if the serial is not positive and raise a warning if it is. We
     // want to drop support for this sort of invalid encoding eventually.
     warn_if_not_positive(py, raw.borrow_dependent().tbs_cert.serial.as_bytes())?;
-    // determine if the signature algorithm has incorrect parameters and raise a warning if it
-    // does. this is a bug in the JDK and we want to drop support for it eventually.
-    // ECDSA was fixed in Java 16, DSA in Java 21.
-    warn_if_invalid_params(py, raw.borrow_dependent().signature_alg.params.clone())?;
-    warn_if_invalid_params(
-        py,
-        raw.borrow_dependent().tbs_cert.signature_alg.params.clone(),
-    )?;
 
     Ok(Certificate {
         raw,
@@ -476,30 +468,6 @@ fn warn_if_not_positive(py: pyo3::Python<'_>, bytes: &[u8]) -> pyo3::PyResult<()
         let warning_cls = types::DEPRECATED_IN_36.get(py)?;
         let message = c"Parsed a serial number which wasn't positive (i.e., it was negative or zero), which is disallowed by RFC 5280. Loading this certificate will cause an exception in a future release of cryptography.";
         pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
-    }
-    Ok(())
-}
-
-fn warn_if_invalid_params(
-    py: pyo3::Python<'_>,
-    params: AlgorithmParameters<'_>,
-) -> pyo3::PyResult<()> {
-    match params {
-        AlgorithmParameters::EcDsaWithSha224(Some(..))
-        | AlgorithmParameters::EcDsaWithSha256(Some(..))
-        | AlgorithmParameters::EcDsaWithSha384(Some(..))
-        | AlgorithmParameters::EcDsaWithSha512(Some(..))
-        | AlgorithmParameters::DsaWithSha224(Some(..))
-        | AlgorithmParameters::DsaWithSha256(Some(..))
-        | AlgorithmParameters::DsaWithSha384(Some(..))
-        | AlgorithmParameters::DsaWithSha512(Some(..)) => {
-            // This can also be triggered by an Intel On Die certificate
-            // https://github.com/pyca/cryptography/issues/11723
-            let warning_cls = types::DEPRECATED_IN_41.get(py)?;
-            let message = c"The parsed certificate contains a NULL parameter value in its signature algorithm parameters. This is invalid and will be rejected in a future version of cryptography. If this certificate was created via Java, please upgrade to JDK21+ or the latest JDK11/17 once a fix is issued. If this certificate was created in some other fashion please report the issue to the cryptography issue tracker. See https://github.com/pyca/cryptography/issues/8996 and https://github.com/pyca/cryptography/issues/9253 for more details.";
-            pyo3::PyErr::warn(py, &warning_cls, message, 2)?;
-        }
-        _ => {}
     }
     Ok(())
 }
