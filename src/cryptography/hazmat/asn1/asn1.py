@@ -104,14 +104,26 @@ def _resolve_type_aliases(field_type: typing.Any) -> typing.Any:
     args = typing.get_args(field_type)
     resolved_args = tuple(_resolve_type_aliases(arg) for arg in args)
     if resolved_args == args:
+        # No aliases anywhere inside: return the type unchanged.
         return field_type
 
     if _is_union(field_type):
-        # Rebuilding with `typing.Union` flattens nested unions
-        # introduced by aliases (e.g. `Time | int` where `type Time =
-        # UTCTime | GeneralizedTime`), matching the behavior of
-        # writing the alias inline.
+        # An alias appeared as a union member (e.g. `MyInt | str`).
+        # Union members are used verbatim as the `python_class` of
+        # CHOICE variants, so they must be resolved here, before the
+        # union is processed. Rebuilding through `typing.Union` also
+        # flattens any nested union introduced by an alias of a union
+        # (e.g. `Time | int` where `type Time = UTCTime |
+        # GeneralizedTime`), just like `typing.Union` would have done
+        # if the alias had been written inline. Note that unions
+        # cannot be rebuilt through the origin like other generics,
+        # since `types.UnionType` is not subscriptable.
         return typing.Union[resolved_args]
+
+    # An alias appeared inside a generic (e.g. `Annotated[Time, ...]`,
+    # `list[MyInt]`, or `SetOf[MyInt]`): re-parameterize the generic
+    # with the resolved arguments. Subscripting with a tuple is
+    # equivalent to subscripting with multiple arguments.
     return typing.get_origin(field_type)[resolved_args]
 
 
