@@ -310,7 +310,6 @@ fn set_mu<T>(pkey_ctx: &mut openssl::pkey_ctx::PkeyCtxRef<T>) -> OpenSSLResult<(
 /// context is accepted here.
 pub fn sign_mu(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
-    variant: MlDsaVariant,
     mu: &[u8],
 ) -> OpenSSLResult<Vec<u8>> {
     cfg_if::cfg_if! {
@@ -322,7 +321,7 @@ pub fn sign_mu(
             // SAFETY: `seed` is a valid 32-byte seed and `mu` is a valid
             // MLDSA_MU_BYTES buffer; both outlive the calls below.
             unsafe {
-                match variant {
+                match MlDsaVariant::from_pkey(pkey) {
                     MlDsaVariant::MlDsa44 => {
                         let mut key = std::mem::MaybeUninit::<ffi::MLDSA44_private_key>::uninit();
                         cvt(ffi::MLDSA44_private_key_from_seed(
@@ -376,7 +375,6 @@ pub fn sign_mu(
         } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
             // AWS-LC's EVP_PKEY_sign treats its input as an external mu (the
             // "ExternalMu" format) for ML-DSA keys.
-            let _ = variant;
             let mut ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
             ctx.sign_init()?;
             let mut sig = vec![];
@@ -388,7 +386,6 @@ pub fn sign_mu(
             // supports the digest-sign flow (EVP_PKEY_sign_init is not
             // implemented for it), so we cannot use the one-shot PkeyCtx path
             // the AWS-LC branch uses.
-            let _ = variant;
             let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
             let pkey_ctx = md_ctx.digest_sign_init(None, pkey)?;
             set_mu(pkey_ctx)?;
@@ -403,7 +400,6 @@ pub fn sign_mu(
 /// `mu` must be [`MLDSA_MU_BYTES`] long.
 pub fn verify_mu(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
-    variant: MlDsaVariant,
     signature: &[u8],
     mu: &[u8],
 ) -> OpenSSLResult<bool> {
@@ -413,7 +409,7 @@ pub fn verify_mu(
             // SAFETY: We parse the low-level public key from its encoded form
             // and verify the signature over the MLDSA_MU_BYTES `mu`.
             unsafe {
-                match variant {
+                match MlDsaVariant::from_pkey(pkey) {
                     MlDsaVariant::MlDsa44 => {
                         let mut key = std::mem::MaybeUninit::<ffi::MLDSA44_public_key>::uninit();
                         let mut cbs = ffi::CBS { data: raw.as_ptr(), len: raw.len() };
@@ -459,12 +455,10 @@ pub fn verify_mu(
                 }
             }
         } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
-            let _ = variant;
             let mut ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
             ctx.verify_init()?;
             Ok(ctx.verify(mu, signature).unwrap_or(false))
         } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
-            let _ = variant;
             let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
             let pkey_ctx = md_ctx.digest_verify_init(None, pkey)?;
             set_mu(pkey_ctx)?;

@@ -100,12 +100,8 @@ Key interfaces
         .. versionadded:: 49.0.0
 
         Sign a precomputed ``mu`` (message representative) using ML-DSA-44,
-        the "external mu" variant from FIPS 204. ``mu`` is computed as
-        ``SHAKE256(SHAKE256(public_key, 64) || M', 64)``, where ``M'`` encodes
-        the context and message; because it already binds the public key and
-        context, no context is accepted here. ``cryptography`` does not
-        currently provide an API to compute ``mu``, so you must compute it
-        yourself.
+        the "external mu" variant from FIPS 204. There is currently no API to
+        compute ``mu``, so you must compute it yourself.
 
         :param mu: The 64-byte message representative.
         :type mu: :term:`bytes-like`
@@ -251,10 +247,8 @@ Key interfaces
         .. versionadded:: 49.0.0
 
         Verify a signature over a precomputed ``mu`` (message representative),
-        the "external mu" variant from FIPS 204. ``mu`` is computed as
-        ``SHAKE256(SHAKE256(public_key, 64) || M', 64)``, where ``M'`` encodes
-        the context and message. ``cryptography`` does not currently provide an
-        API to compute ``mu``, so you must compute it yourself.
+        the "external mu" variant from FIPS 204. There is currently no API to
+        compute ``mu``, so you must compute it yourself.
 
         :param signature: The signature to verify.
         :type signature: :term:`bytes-like`
@@ -326,12 +320,8 @@ Key interfaces
         .. versionadded:: 49.0.0
 
         Sign a precomputed ``mu`` (message representative) using ML-DSA-65,
-        the "external mu" variant from FIPS 204. ``mu`` is computed as
-        ``SHAKE256(SHAKE256(public_key, 64) || M', 64)``, where ``M'`` encodes
-        the context and message; because it already binds the public key and
-        context, no context is accepted here. ``cryptography`` does not
-        currently provide an API to compute ``mu``, so you must compute it
-        yourself.
+        the "external mu" variant from FIPS 204. There is currently no API to
+        compute ``mu``, so you must compute it yourself.
 
         :param mu: The 64-byte message representative.
         :type mu: :term:`bytes-like`
@@ -477,10 +467,8 @@ Key interfaces
         .. versionadded:: 49.0.0
 
         Verify a signature over a precomputed ``mu`` (message representative),
-        the "external mu" variant from FIPS 204. ``mu`` is computed as
-        ``SHAKE256(SHAKE256(public_key, 64) || M', 64)``, where ``M'`` encodes
-        the context and message. ``cryptography`` does not currently provide an
-        API to compute ``mu``, so you must compute it yourself.
+        the "external mu" variant from FIPS 204. There is currently no API to
+        compute ``mu``, so you must compute it yourself.
 
         :param signature: The signature to verify.
         :type signature: :term:`bytes-like`
@@ -552,12 +540,8 @@ Key interfaces
         .. versionadded:: 49.0.0
 
         Sign a precomputed ``mu`` (message representative) using ML-DSA-87,
-        the "external mu" variant from FIPS 204. ``mu`` is computed as
-        ``SHAKE256(SHAKE256(public_key, 64) || M', 64)``, where ``M'`` encodes
-        the context and message; because it already binds the public key and
-        context, no context is accepted here. ``cryptography`` does not
-        currently provide an API to compute ``mu``, so you must compute it
-        yourself.
+        the "external mu" variant from FIPS 204. There is currently no API to
+        compute ``mu``, so you must compute it yourself.
 
         :param mu: The 64-byte message representative.
         :type mu: :term:`bytes-like`
@@ -703,10 +687,8 @@ Key interfaces
         .. versionadded:: 49.0.0
 
         Verify a signature over a precomputed ``mu`` (message representative),
-        the "external mu" variant from FIPS 204. ``mu`` is computed as
-        ``SHAKE256(SHAKE256(public_key, 64) || M', 64)``, where ``M'`` encodes
-        the context and message. ``cryptography`` does not currently provide an
-        API to compute ``mu``, so you must compute it yourself.
+        the "external mu" variant from FIPS 204. There is currently no API to
+        compute ``mu``, so you must compute it yourself.
 
         :param signature: The signature to verify.
         :type signature: :term:`bytes-like`
