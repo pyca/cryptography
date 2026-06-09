@@ -966,11 +966,9 @@ X.509 Certificate Builder
             When set, the certificate's ``subjectPublicKeyInfo`` encodes the
             key with the ``id-RSASSA-PSS`` OID and no parameters (the
             unrestricted form from :rfc:`4055`) instead of ``rsaEncryption``,
-            marking the key as usable only for RSASSA-PSS signatures. This is
-            the encoding required by the ``rsa_pss_pss_*`` signature schemes
-            in TLS 1.3. It does not change how this certificate itself is
-            signed; use the ``rsa_padding`` parameter of :meth:`sign` to
-            control that.
+            marking the key as usable only for RSASSA-PSS signatures. It does
+            not change how this certificate itself is signed; use the
+            ``rsa_padding`` parameter of :meth:`sign` to control that.
 
         :return: A new :class:`CertificateBuilder` with the updated public key.
 
