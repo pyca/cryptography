@@ -54,8 +54,9 @@ Changelog
   :meth:`~cryptography.x509.CertificateBuilder.public_key`. Passing the
   uninstantiated
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` class
-  encodes an RSA subject public key with the ``id-RSASSA-PSS`` OID
-  (and absent parameters) in the certificate's ``subjectPublicKeyInfo``.
+  encodes an RSA subject public key in the certificate's
+  ``subjectPublicKeyInfo`` with the ``id-RSASSA-PSS`` OID and no
+  parameters.
 
 .. _v48-0-0:
 

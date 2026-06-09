@@ -964,7 +964,7 @@ X.509 Certificate Builder
             class (not an instance), only valid with
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
             When set, the certificate's ``subjectPublicKeyInfo`` encodes the
-            key with the ``id-RSASSA-PSS`` OID and the parameters absent (the
+            key with the ``id-RSASSA-PSS`` OID and no parameters (the
             unrestricted form from :rfc:`4055`) instead of ``rsaEncryption``,
             marking the key as usable only for RSASSA-PSS signatures. This is
             the encoding required by the ``rsa_pss_pss_*`` signature schemes
