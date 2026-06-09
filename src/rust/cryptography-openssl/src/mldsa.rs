@@ -413,9 +413,7 @@ pub fn verify_mu(
                     MlDsaVariant::MlDsa44 => {
                         let mut key = std::mem::MaybeUninit::<ffi::MLDSA44_public_key>::uninit();
                         let mut cbs = ffi::CBS { data: raw.as_ptr(), len: raw.len() };
-                        if cvt(ffi::MLDSA44_parse_public_key(key.as_mut_ptr(), &mut cbs)).is_err() {
-                            return Ok(false);
-                        }
+                        cvt(ffi::MLDSA44_parse_public_key(key.as_mut_ptr(), &mut cbs))?;
                         let key = key.assume_init();
                         Ok(ffi::MLDSA44_verify_message_representative(
                             &key,
@@ -427,9 +425,7 @@ pub fn verify_mu(
                     MlDsaVariant::MlDsa65 => {
                         let mut key = std::mem::MaybeUninit::<ffi::MLDSA65_public_key>::uninit();
                         let mut cbs = ffi::CBS { data: raw.as_ptr(), len: raw.len() };
-                        if cvt(ffi::MLDSA65_parse_public_key(key.as_mut_ptr(), &mut cbs)).is_err() {
-                            return Ok(false);
-                        }
+                        cvt(ffi::MLDSA65_parse_public_key(key.as_mut_ptr(), &mut cbs))?;
                         let key = key.assume_init();
                         Ok(ffi::MLDSA65_verify_message_representative(
                             &key,
@@ -441,9 +437,7 @@ pub fn verify_mu(
                     MlDsaVariant::MlDsa87 => {
                         let mut key = std::mem::MaybeUninit::<ffi::MLDSA87_public_key>::uninit();
                         let mut cbs = ffi::CBS { data: raw.as_ptr(), len: raw.len() };
-                        if cvt(ffi::MLDSA87_parse_public_key(key.as_mut_ptr(), &mut cbs)).is_err() {
-                            return Ok(false);
-                        }
+                        cvt(ffi::MLDSA87_parse_public_key(key.as_mut_ptr(), &mut cbs))?;
                         let key = key.assume_init();
                         Ok(ffi::MLDSA87_verify_message_representative(
                             &key,
