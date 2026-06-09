@@ -1,6 +1,13 @@
 Changelog
 =========
 
+.. _v48-0-1:
+
+48.0.1 - 2026-06-09
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 4.0.1.
+
 .. _v48-0-0:
 
 48.0.0 - 2026-05-04
