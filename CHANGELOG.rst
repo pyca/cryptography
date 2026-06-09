@@ -43,8 +43,6 @@ Changelog
 * Added :meth:`~cryptography.x509.Name.from_bytes` for parsing a
   :class:`~cryptography.x509.Name` from DER bytes, the inverse of
   :meth:`~cryptography.x509.Name.public_bytes`.
-* Added support for :pep:`695` type aliases (``type X = ...``, Python 3.12
-  and later) as field types in :doc:`/hazmat/asn1/index` structures.
 
 .. _v48-0-0:
 

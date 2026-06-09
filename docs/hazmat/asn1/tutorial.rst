@@ -341,16 +341,3 @@ This translates to:
     2025
     >>> decoded.not_after.as_datetime().year
     2026
-
-On Python 3.12 and later, :pep:`695` type aliases (``type X = ...``) can be
-used to declare common combinations once and reuse them:
-
-.. code-block:: python
-
-    type Time = asn1.UTCTime | asn1.GeneralizedTime
-
-
-    @asn1.sequence
-    class Validity:
-        not_before: Time
-        not_after: Time

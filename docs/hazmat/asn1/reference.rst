@@ -406,20 +406,6 @@ ASN.1 ``CHOICE``. Each variant in the union must have a distinct ASN.1 tag.
     >>> asn1.decode_der(Example, asn1.encode_der(Example(value=42))).value
     42
 
-On Python 3.12 and later, :pep:`695` type aliases (``type X = ...``) can
-be used as field types. They are resolved to their underlying value, so
-common combinations can be declared once and reused:
-
-.. code-block:: python
-
-    type Time = asn1.UTCTime | asn1.GeneralizedTime
-
-
-    @asn1.sequence
-    class Validity:
-        not_before: Time
-        not_after: Time
-
 Annotations
 -----------
 

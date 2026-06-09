@@ -90,30 +90,29 @@ def _is_union(field_type: type) -> bool:
 
 
 def _resolve_type_aliases(field_type: typing.Any) -> typing.Any:
-    # Resolve PEP 695 (`type X = ...`) type aliases (Python 3.12+) to
-    # their underlying value. Aliases can refer to other aliases, so we
-    # resolve in a loop.
-    if sys.version_info >= (3, 12):
-        while isinstance(field_type, typing.TypeAliasType):
-            field_type = field_type.__value__
-    return field_type
+    # Recursively resolve PEP 695 (`type X = ...`) type aliases (Python
+    # 3.12+) to their underlying value, so that the rest of the
+    # normalization logic never encounters an alias. Aliases can refer
+    # to other aliases and can appear at any level of nesting (e.g.
+    # inside `Annotated[...]`, unions, or `list[...]`).
+    if sys.version_info < (3, 12):
+        return field_type
 
+    while isinstance(field_type, typing.TypeAliasType):
+        field_type = field_type.__value__
 
-def _union_args(field_type: typing.Any) -> list[typing.Any]:
-    # Collect the arguments of a union, resolving type aliases and
-    # flattening nested unions. `typing.Union` flattens nested unions
-    # automatically, but lazily evaluated type aliases can introduce
-    # them, e.g. `Time | int` where `type Time = UTCTime |
-    # GeneralizedTime` is equivalent to `UTCTime | GeneralizedTime |
-    # int`.
-    args = []
-    for arg in typing.get_args(field_type):
-        arg = _resolve_type_aliases(arg)
-        if _is_union(arg):
-            args.extend(_union_args(arg))
-        else:
-            args.append(arg)
-    return args
+    args = typing.get_args(field_type)
+    resolved_args = tuple(_resolve_type_aliases(arg) for arg in args)
+    if resolved_args == args:
+        return field_type
+
+    if _is_union(field_type):
+        # Rebuilding with `typing.Union` flattens nested unions
+        # introduced by aliases (e.g. `Time | int` where `type Time =
+        # UTCTime | GeneralizedTime`), matching the behavior of
+        # writing the alias inline.
+        return typing.Union[resolved_args]
+    return typing.get_origin(field_type)[resolved_args]
 
 
 def _extract_annotation(
@@ -161,9 +160,6 @@ def _normalize_field_type(
     if typing.get_origin(field_type) is typing.Annotated:
         annotation = _extract_annotation(field_type.__metadata__, field_name)
         field_type, *_ = typing.get_args(field_type)
-        # The inner type of an `Annotated[...]` can itself be a type
-        # alias, e.g. `Annotated[Time, ...]` where `type Time = ...`.
-        field_type = _resolve_type_aliases(field_type)
     else:
         annotation = declarative_asn1.Annotation()
 
@@ -214,7 +210,7 @@ def _normalize_field_type(
             typing.cast(declarative_asn1.Type, root_type), annotation
         )
     elif _is_union(field_type):
-        union_args = _union_args(field_type)
+        union_args = typing.get_args(field_type)
         if len(union_args) == 2 and NoneType in union_args:
             # A Union between a type and None is an OPTIONAL
             optional_type = (
@@ -315,14 +311,11 @@ def _type_to_variant(
     t: typing.Any, field_name: str
 ) -> declarative_asn1.Variant:
     is_annotated = typing.get_origin(t) is typing.Annotated
-    inner_type = _resolve_type_aliases(
-        typing.get_args(t)[0] if is_annotated else t
-    )
+    inner_type = typing.get_args(t)[0] if is_annotated else t
 
     # Check if this is a Variant[T, Tag] type
     if typing.get_origin(inner_type) is Variant:
         value_type, tag_literal = typing.get_args(inner_type)
-        value_type = _resolve_type_aliases(value_type)
         if typing.get_origin(tag_literal) is not typing.Literal:
             raise TypeError(
                 "When using `asn1.Variant` in a type annotation, the second "

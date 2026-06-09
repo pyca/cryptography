@@ -2495,6 +2495,28 @@ class TestTypeAliases:
             ]
         )
 
+    def test_alias_in_set_of(self) -> None:
+        namespace = self._exec(
+            """
+            type MyInt = int
+
+            @asn1.sequence
+            @_comparable_dataclass
+            class Example:
+                foo: asn1.SetOf[MyInt]
+            """
+        )
+        cls = namespace["Example"]
+
+        assert_roundtrips(
+            [
+                (
+                    cls(foo=asn1.SetOf([1, 2])),
+                    b"\x30\x08\x31\x06\x02\x01\x01\x02\x01\x02",
+                ),
+            ]
+        )
+
     def test_alias_in_variant(self) -> None:
         namespace = self._exec(
             """
