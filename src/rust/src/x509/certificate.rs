@@ -1059,6 +1059,33 @@ pub(crate) fn create_x509_certificate(
         )?
         .extract::<pyo3::pybacked::PyBackedBytes>()?;
 
+    let py_public_key_rsa_padding =
+        builder.getattr(pyo3::intern!(py, "_public_key_rsa_padding"))?;
+    let pss_spki_bytes;
+    let spki_der: &[u8] = if py_public_key_rsa_padding.is_none() {
+        &spki_bytes
+    } else {
+        if !py_public_key_rsa_padding.is(&types::PSS.get(py)?) {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyTypeError::new_err(
+                    "rsa_padding must be the PSS class, not an instance",
+                ),
+            ));
+        }
+        let spki = asn1::parse_single::<common::SubjectPublicKeyInfo<'_>>(&spki_bytes)?;
+        // id-RSASSA-PSS with the parameters absent (the unrestricted form
+        // from RFC 4055), which is the encoding required for the TLS 1.3
+        // rsa_pss_pss_* signature schemes.
+        pss_spki_bytes = asn1::write_single(&common::SubjectPublicKeyInfo {
+            algorithm: common::AlgorithmIdentifier {
+                oid: asn1::DefinedByMarker::marker(),
+                params: AlgorithmParameters::RsaPss(None),
+            },
+            subject_public_key: spki.subject_public_key,
+        })?;
+        &pss_spki_bytes
+    };
+
     let py_serial = builder
         .getattr(pyo3::intern!(py, "_serial_number"))?
         .extract()?;
@@ -1092,7 +1119,7 @@ pub(crate) fn create_x509_certificate(
             not_after: time_from_py(py, &py_not_after)?,
         },
         subject: x509::common::encode_name(py, &ka, &py_subject_name)?,
-        spki: asn1::parse_single(&spki_bytes)?,
+        spki: asn1::parse_single(spki_der)?,
         issuer_unique_id: None,
         subject_unique_id: None,
         raw_extensions: x509::common::encode_extensions(

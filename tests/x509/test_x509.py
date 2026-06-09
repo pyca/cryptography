@@ -3139,6 +3139,73 @@ class TestCertificateBuilder:
         with pytest.raises(ValueError):
             builder.public_key(public_key)
 
+    def test_public_key_rsa_pss_spki(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        private_key = rsa_key_2048
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(
+                private_key.public_key(),
+                rsa_padding=padding.PSS,
+            )
+            .serial_number(777)
+            .not_valid_before(datetime.datetime(2020, 1, 1))
+            .not_valid_after(datetime.datetime(2030, 1, 1))
+            .sign(
+                private_key,
+                hashes.SHA256(),
+                rsa_padding=padding.PSS(
+                    mgf=padding.MGF1(hashes.SHA256()),
+                    salt_length=padding.PSS.DIGEST_LENGTH,
+                ),
+            )
+        )
+        assert (
+            cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.RSASSA_PSS
+        )
+        public_key = cert.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+        assert public_key == private_key.public_key()
+        # The SPKI AlgorithmIdentifier must be id-RSASSA-PSS with the
+        # parameters absent.
+        assert bytes.fromhex(
+            "300b06092a864886f70d01010a"
+        ) in cert.public_bytes(serialization.Encoding.DER)
+        cert.verify_directly_issued_by(cert)
+
+    def test_public_key_rsa_padding_must_be_pss_class(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder().public_key(
+                rsa_key_2048.public_key(),
+                rsa_padding=padding.PSS(  # type: ignore[arg-type]
+                    mgf=padding.MGF1(hashes.SHA256()),
+                    salt_length=padding.PSS.DIGEST_LENGTH,
+                ),
+            )
+
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder().public_key(
+                rsa_key_2048.public_key(),
+                rsa_padding=padding.PKCS1v15,  # type: ignore[arg-type]
+            )
+
+    def test_public_key_rsa_padding_requires_rsa_key(self, backend):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        with pytest.raises(TypeError):
+            x509.CertificateBuilder().public_key(
+                private_key.public_key(),
+                rsa_padding=padding.PSS,
+            )
+
     def test_serial_number_must_be_an_integer_type(self):
         with pytest.raises(TypeError):
             x509.CertificateBuilder().serial_number(
