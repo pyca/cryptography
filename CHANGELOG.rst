@@ -12,6 +12,13 @@ Changelog
   We now only publish ``arm64`` wheels for macOS.
 * **BACKWARDS INCOMPATIBLE:** Support for 32-bit Windows has been removed.
   Users should move to a 64-bit Python installation.
+* **BACKWARDS INCOMPATIBLE:** Removed the deprecated
+  ``PUBLIC_KEY_TYPES``, ``PRIVATE_KEY_TYPES``,
+  ``CERTIFICATE_PRIVATE_KEY_TYPES``, ``CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES``,
+  and ``CERTIFICATE_PUBLIC_KEY_TYPES`` type aliases. Use
+  ``PublicKeyTypes``, ``PrivateKeyTypes``, ``CertificateIssuerPrivateKeyTypes``,
+  ``CertificateIssuerPublicKeyTypes``, and ``CertificatePublicKeyTypes``
+  instead. These were deprecated in version 40.0.
 * **BACKWARDS INCOMPATIBLE:** :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ChaCha20`
   now treats the first 4 bytes of the ``nonce`` as a 32-bit little-endian block
   counter (as defined in :rfc:`7539`) and tracks the number of bytes processed.
@@ -19,6 +26,10 @@ Changelog
   would overflow now raises a :class:`ValueError` rather than silently diverging
   from RFC 7539. Setting the counter portion of the ``nonce`` to zero allows
   encrypting up to 256 GiB with a given nonce.
+* **BACKWARDS INCOMPATIBLE:** Loading an X.509 certificate whose ECDSA or DSA
+  signature ``AlgorithmIdentifier`` contains encoded NULL parameters now raises
+  a :class:`ValueError`. Such certificates are invalid, but older versions of
+  Java emitted them; previously they loaded with a deprecation warning.
 * Fixed cross-compilation of the CFFI bindings when ``PYO3_CROSS_LIB_DIR``
   is set. The build now derives the Python include directory from
   ``PYO3_CROSS_LIB_DIR`` instead of querying the host interpreter, which
@@ -57,6 +68,13 @@ Changelog
   encodes an RSA subject public key in the certificate's
   ``subjectPublicKeyInfo`` with the ``id-RSASSA-PSS`` OID and no
   parameters.
+
+.. _v48-0-1:
+
+48.0.1 - 2026-06-09
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 4.0.1.
 
 .. _v48-0-0:
 

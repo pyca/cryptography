@@ -133,19 +133,19 @@ static RSASSA_PSS_SHA512: LazyLock<AlgorithmIdentifier<'_>> =
 // For P-256: the signature MUST use ECDSA with SHA‐256
 const ECDSA_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::EcDsaWithSha256(None),
+    params: AlgorithmParameters::EcDsaWithSha256,
 };
 
 // For P-384: the signature MUST use ECDSA with SHA‐384
 const ECDSA_SHA384: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::EcDsaWithSha384(None),
+    params: AlgorithmParameters::EcDsaWithSha384,
 };
 
 // For P-521: the signature MUST use ECDSA with SHA‐512
 const ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::EcDsaWithSha512(None),
+    params: AlgorithmParameters::EcDsaWithSha512,
 };
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.2 (pages 96-98)

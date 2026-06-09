@@ -5817,18 +5817,16 @@ class TestDSACertificate:
 
     def test_load_dsa_cert_null_alg_params(self, backend):
         """
-        This test verifies that we successfully load certificates with encoded
-        null parameters in the signature AlgorithmIdentifier. This is invalid,
-        but all versions of Java less than 21 generate certificates with this
-        encoding so we need to tolerate it at the moment.
+        This test verifies that we reject certificates with encoded null
+        parameters in the DSA signature AlgorithmIdentifier. This is invalid;
+        Java versions less than 21 generated certificates with this encoding,
+        but we no longer tolerate it.
         """
-        with pytest.warns(utils.DeprecatedIn41):
-            cert = _load_cert(
+        with pytest.raises(ValueError):
+            _load_cert(
                 os.path.join("x509", "custom", "dsa_null_alg_params.pem"),
                 x509.load_pem_x509_certificate,
             )
-            assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
-            assert isinstance(cert.public_key(), dsa.DSAPublicKey)
 
     def test_signature(self, backend):
         cert = _load_cert(
@@ -6049,18 +6047,16 @@ class TestECDSACertificate:
 
     def test_load_ecdsa_cert_null_alg_params(self, backend):
         """
-        This test verifies that we successfully load certificates with encoded
-        null parameters in the signature AlgorithmIdentifier. This is invalid,
-        but Java 11 (up to at least 11.0.19) generates certificates with this
-        encoding so we need to tolerate it at the moment.
+        This test verifies that we reject certificates with encoded null
+        parameters in the ECDSA signature AlgorithmIdentifier. This is invalid;
+        Java 11 (up to at least 11.0.19) generated certificates with this
+        encoding, but we no longer tolerate it.
         """
-        with pytest.warns(utils.DeprecatedIn41):
-            cert = _load_cert(
+        with pytest.raises(ValueError):
+            _load_cert(
                 os.path.join("x509", "custom", "ecdsa_null_alg.pem"),
                 x509.load_pem_x509_certificate,
             )
-            assert isinstance(cert.signature_hash_algorithm, hashes.SHA256)
-            assert isinstance(cert.public_key(), ec.EllipticCurvePublicKey)
 
     def test_load_bitstring_dn(self):
         cert = _load_cert(
