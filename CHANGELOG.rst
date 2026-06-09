@@ -55,8 +55,7 @@ Changelog
   uninstantiated
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` class
   encodes an RSA subject public key with the ``id-RSASSA-PSS`` OID
-  (and absent parameters) in the certificate's ``subjectPublicKeyInfo``,
-  as required by the ``rsa_pss_pss_*`` signature schemes in TLS 1.3.
+  (and absent parameters) in the certificate's ``subjectPublicKeyInfo``.
 
 .. _v48-0-0:
 
