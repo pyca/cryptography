@@ -233,27 +233,23 @@ const CHACHA20_BLOCK_SIZE: u64 = 64;
 
 // The 16-byte ChaCha20 nonce begins with a 32-bit little-endian block counter.
 // Encrypting more than `(2**32 - counter) * 64` bytes would overflow that
-// counter, at which point the underlying implementation silently diverges from
+// counter, at which point the OpenSSL implementation silently diverges from
 // RFC 7539 (the counter carries into the rest of the nonce), so we instead
 // refuse to encrypt past that point.
-fn chacha20_byte_limit(nonce: &[u8; 16]) -> u64 {
-    let counter = u32::from_le_bytes(nonce[..4].try_into().unwrap());
-    ((1u64 << 32) - u64::from(counter)) * CHACHA20_BLOCK_SIZE
+fn chacha20_byte_limit(nonce: &CffiBuf<'_>) -> Option<u64> {
+    let counter = u32::from_le_bytes(nonce.as_bytes().get(..4)?.try_into().unwrap());
+    Some(((1u64 << 32) - u64::from(counter)) * CHACHA20_BLOCK_SIZE)
 }
 
-// Returns the maximum number of bytes that may be processed before the
-// ChaCha20 block counter would overflow, or `None` if `algorithm` is not
-// ChaCha20.
 fn chacha20_initial_byte_limit(
     py: pyo3::Python<'_>,
     algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<Option<u64>> {
     if algorithm.is_instance(&types::CHACHA20.get(py)?)? {
-        // The nonce is guaranteed to be 16 bytes by the ChaCha20 constructor.
         let nonce = algorithm
             .getattr(pyo3::intern!(py, "nonce"))?
-            .extract::<[u8; 16]>()?;
-        Ok(Some(chacha20_byte_limit(&nonce)))
+            .extract::<CffiBuf<'_>>()?;
+        Ok(chacha20_byte_limit(&nonce))
     } else {
         Ok(None)
     }
@@ -333,13 +329,9 @@ impl PyCipherContext {
     fn reset_nonce(&mut self, py: pyo3::Python<'_>, nonce: CffiBuf<'_>) -> CryptographyResult<()> {
         // Compute the new limit before the buffer is moved into the inner
         // reset, but only apply it once that reset (which validates the nonce
-        // length) succeeds. `get` guards against buffers too short to contain a
-        // counter; the inner reset rejects any other invalid length.
+        // length) succeeds.
         let new_limit = if self.bytes_remaining.is_some() {
-            nonce
-                .as_bytes()
-                .get(..16)
-                .map(|b| chacha20_byte_limit(b.try_into().unwrap()))
+            chacha20_byte_limit(&nonce)
         } else {
             None
         };

@@ -34,7 +34,9 @@ class TestChaCha20:
     def test_vectors(self, vector, backend):
         key = binascii.unhexlify(vector["key"])
         nonce = binascii.unhexlify(vector["nonce"])
-        ibc = struct.pack("<Q", int(vector["initial_block_counter"]))
+        # The 128-bit value is a 32-bit little-endian block counter followed
+        # by the 96-bit nonce.
+        ibc = struct.pack("<I", int(vector["initial_block_counter"]))
         pt = binascii.unhexlify(vector["plaintext"])
         encryptor = Cipher(
             algorithms.ChaCha20(key, ibc + nonce), None, backend
