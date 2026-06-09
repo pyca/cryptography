@@ -63,9 +63,8 @@ Changelog
   :meth:`~cryptography.x509.Name.public_bytes`.
 * Added the ``rsa_padding`` keyword-only parameter to
   :meth:`~cryptography.x509.CertificateBuilder.public_key`. Passing the
-  uninstantiated
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` class
-  encodes an RSA subject public key in the certificate's
+  (not an instance) encodes an RSA subject public key in the certificate's
   ``subjectPublicKeyInfo`` with the ``id-RSASSA-PSS`` OID and no
   parameters.
 

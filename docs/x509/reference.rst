@@ -959,9 +959,9 @@ X.509 Certificate Builder
         :param public_key: The subject's public key. This can be one of
             :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`.
 
-        :param rsa_padding: The uninstantiated
+        :param rsa_padding: The
             :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
-            class (not an instance), only valid with
+            class itself (not an instance), only valid with
             :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
             When set, the certificate's ``subjectPublicKeyInfo`` encodes the
             key with the ``id-RSASSA-PSS`` OID and no parameters (the
