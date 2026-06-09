@@ -276,9 +276,7 @@ impl PyCipherContext {
                         pyo3::exceptions::PyValueError::new_err(
                             "Exceeded the maximum number of bytes that can be \
                              encrypted with ChaCha20 for this nonce. The 32-bit \
-                             counter portion of the nonce would overflow; set the \
-                             counter portion of the nonce to zero to allow \
-                             encrypting up to 256 GiB.",
+                             counter portion of the nonce would overflow.",
                         )
                     })?,
             );
