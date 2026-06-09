@@ -1065,13 +1065,7 @@ pub(crate) fn create_x509_certificate(
     let spki_der: &[u8] = if py_public_key_rsa_padding.is_none() {
         &spki_bytes
     } else {
-        if !py_public_key_rsa_padding.is(&types::PSS.get(py)?) {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyTypeError::new_err(
-                    "rsa_padding must be the PSS class, not an instance",
-                ),
-            ));
-        }
+        // The Python layer ensures this is only ever the PSS class.
         let spki = asn1::parse_single::<common::SubjectPublicKeyInfo<'_>>(&spki_bytes)?;
         // id-RSASSA-PSS with the parameters absent (the unrestricted form
         // from RFC 4055), which is the encoding required for the TLS 1.3
