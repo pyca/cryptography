@@ -120,7 +120,7 @@ impl CipherContext {
         })
     }
 
-    fn reset_nonce(&mut self, py: pyo3::Python<'_>, nonce: CffiBuf<'_>) -> CryptographyResult<()> {
+    fn reset_nonce(&mut self, py: pyo3::Python<'_>, nonce: &[u8]) -> CryptographyResult<()> {
         if !self
             .py_mode
             .bind(py)
@@ -137,7 +137,7 @@ impl CipherContext {
                 )),
             ));
         }
-        if nonce.as_bytes().len() != self.ctx.iv_length() {
+        if nonce.len() != self.ctx.iv_length() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
                     "Nonce must be {} bytes long",
@@ -149,7 +149,7 @@ impl CipherContext {
             openssl::symm::Mode::Encrypt => openssl::cipher_ctx::CipherCtxRef::encrypt_init,
             openssl::symm::Mode::Decrypt => openssl::cipher_ctx::CipherCtxRef::decrypt_init,
         };
-        init_op(&mut self.ctx, None, None, Some(nonce.as_bytes()))?;
+        init_op(&mut self.ctx, None, None, Some(nonce))?;
         Ok(())
     }
 
@@ -236,9 +236,9 @@ const CHACHA20_BLOCK_SIZE: u64 = 64;
 // counter, at which point the OpenSSL implementation silently diverges from
 // RFC 7539 (the counter carries into the rest of the nonce), so we instead
 // refuse to encrypt past that point.
-fn chacha20_byte_limit(nonce: &CffiBuf<'_>) -> Option<u64> {
-    let counter = u32::from_le_bytes(nonce.as_bytes().get(..4)?.try_into().unwrap());
-    Some(((1u64 << 32) - u64::from(counter)) * CHACHA20_BLOCK_SIZE)
+fn chacha20_byte_limit(nonce: &[u8]) -> u64 {
+    let counter = u32::from_le_bytes(nonce[..4].try_into().unwrap());
+    ((1u64 << 32) - u64::from(counter)) * CHACHA20_BLOCK_SIZE
 }
 
 fn chacha20_initial_byte_limit(
@@ -249,7 +249,7 @@ fn chacha20_initial_byte_limit(
         let nonce = algorithm
             .getattr(pyo3::intern!(py, "nonce"))?
             .extract::<CffiBuf<'_>>()?;
-        Ok(chacha20_byte_limit(&nonce))
+        Ok(Some(chacha20_byte_limit(nonce.as_bytes())))
     } else {
         Ok(None)
     }
@@ -325,17 +325,12 @@ impl PyCipherContext {
     }
 
     fn reset_nonce(&mut self, py: pyo3::Python<'_>, nonce: CffiBuf<'_>) -> CryptographyResult<()> {
-        // Compute the new limit before the buffer is moved into the inner
-        // reset, but only apply it once that reset (which validates the nonce
-        // length) succeeds.
-        let new_limit = if self.bytes_remaining.is_some() {
-            chacha20_byte_limit(&nonce)
-        } else {
-            None
-        };
+        let nonce = nonce.as_bytes();
         get_mut_ctx(self.ctx.as_mut())?.reset_nonce(py, nonce)?;
-        if let Some(limit) = new_limit {
-            self.bytes_remaining = Some(limit);
+        // The reset above validates the nonce length, so recompute the ChaCha20
+        // limit for the new counter only after it succeeds.
+        if self.bytes_remaining.is_some() {
+            self.bytes_remaining = Some(chacha20_byte_limit(nonce));
         }
         Ok(())
     }
@@ -448,7 +443,7 @@ impl PyAEADEncryptionContext {
     }
 
     fn reset_nonce(&mut self, py: pyo3::Python<'_>, nonce: CffiBuf<'_>) -> CryptographyResult<()> {
-        get_mut_ctx(self.ctx.as_mut())?.reset_nonce(py, nonce)
+        get_mut_ctx(self.ctx.as_mut())?.reset_nonce(py, nonce.as_bytes())
     }
 }
 
@@ -578,7 +573,7 @@ impl PyAEADDecryptionContext {
     }
 
     fn reset_nonce(&mut self, py: pyo3::Python<'_>, nonce: CffiBuf<'_>) -> CryptographyResult<()> {
-        get_mut_ctx(self.ctx.as_mut())?.reset_nonce(py, nonce)
+        get_mut_ctx(self.ctx.as_mut())?.reset_nonce(py, nonce.as_bytes())
     }
 }
 
