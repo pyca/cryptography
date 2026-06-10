@@ -68,6 +68,34 @@ def replace_version(
     )
 
 
+def rust_version(version: Version) -> str:
+    # The Rust crates use a version that maps to the cryptography version,
+    # but pre-1.0: cryptography X.0.Z is version 0.X.Z of the crates.
+    if version.minor != 0:
+        raise ValueError(
+            f"Can't map {version} to a crate version, minor must be 0"
+        )
+    return f"0.{version.major}.{version.micro}"
+
+
+def bump_rust_versions(base_dir: pathlib.Path, new_version: str) -> None:
+    crate_version = rust_version(Version(new_version))
+
+    with (base_dir / "Cargo.toml").open("rb") as f:
+        workspace = tomllib.load(f)["workspace"]
+
+    replace_version(base_dir / "Cargo.toml", "version", crate_version)
+
+    for member in workspace["members"]:
+        with (base_dir / member / "Cargo.toml").open("rb") as f:
+            crate_name = tomllib.load(f)["package"]["name"]
+        replace_pattern(
+            base_dir / "Cargo.lock",
+            rf'^name = "{crate_name}"\nversion = ".*?"$',
+            f'name = "{crate_name}"\nversion = "{crate_version}"',
+        )
+
+
 @cli.command()
 @click.argument("new_version")
 def bump_version(new_version: str) -> None:
@@ -100,6 +128,8 @@ def bump_version(new_version: str) -> None:
             r'"cryptography_vectors(==.*?)?"',
             f'"cryptography_vectors=={new_version}"',
         )
+
+    bump_rust_versions(base_dir, new_version)
 
 
 if __name__ == "__main__":
