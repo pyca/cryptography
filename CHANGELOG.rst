@@ -30,6 +30,12 @@ Changelog
   signature ``AlgorithmIdentifier`` contains encoded NULL parameters now raises
   a :class:`ValueError`. Such certificates are invalid, but older versions of
   Java emitted them; previously they loaded with a deprecation warning.
+* Fixed :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM` and
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`
+  raising an ``EVP_CIPHER_CTX_copy`` error when used with a provider that
+  doesn't support duplicating cipher contexts. Whether cipher contexts can
+  be copied is now detected at runtime instead of assumed from the OpenSSL
+  version at build time.
 * Fixed cross-compilation of the CFFI bindings when ``PYO3_CROSS_LIB_DIR``
   is set. The build now derives the Python include directory from
   ``PYO3_CROSS_LIB_DIR`` instead of querying the host interpreter, which

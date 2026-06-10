@@ -53,6 +53,15 @@ impl EvpCipherAead {
         })
     }
 
+    // Copying a context requires the cipher implementation to support
+    // dupctx. OpenSSL < 3.2 doesn't implement it for AEAD ciphers, and
+    // neither do some providers, so this can fail at runtime.
+    pub(crate) fn copy(&self) -> CryptographyResult<openssl::cipher_ctx::CipherCtx> {
+        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        ctx.copy(&self.base_encryption_ctx)?;
+        Ok(ctx)
+    }
+
     fn process_aad(
         ctx: &mut openssl::cipher_ctx::CipherCtx,
         aad: Option<Aad<'_>>,
@@ -137,8 +146,7 @@ impl EvpCipherAead {
         nonce: Option<&[u8]>,
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
-        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        ctx.copy(&self.base_encryption_ctx)?;
+        let ctx = self.copy()?;
 
         Self::encrypt_with_context(
             ctx,
@@ -352,6 +360,43 @@ impl LazyEvpCipherAead {
     }
 }
 
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+enum EvpCipherAeadOrLazy {
+    Evp(EvpCipherAead),
+    Lazy(LazyEvpCipherAead),
+}
+
+#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+impl EvpCipherAeadOrLazy {
+    fn encrypt_into(
+        &self,
+        py: pyo3::Python<'_>,
+        plaintext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+        buf: &mut [u8],
+    ) -> CryptographyResult<()> {
+        match self {
+            Self::Evp(ctx) => ctx.encrypt_into(py, plaintext, aad, nonce, buf),
+            Self::Lazy(ctx) => ctx.encrypt_into(py, plaintext, aad, nonce, buf),
+        }
+    }
+
+    fn decrypt_into(
+        &self,
+        py: pyo3::Python<'_>,
+        ciphertext: &[u8],
+        aad: Option<Aad<'_>>,
+        nonce: Option<&[u8]>,
+        buf: &mut [u8],
+    ) -> CryptographyResult<()> {
+        match self {
+            Self::Evp(ctx) => ctx.decrypt_into(py, ciphertext, aad, nonce, buf),
+            Self::Lazy(ctx) => ctx.decrypt_into(py, ciphertext, aad, nonce, buf),
+        }
+    }
+}
+
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 struct EvpAead {
     ctx: cryptography_openssl::aead::AeadCtx,
@@ -422,15 +467,8 @@ impl EvpAead {
 pub(crate) struct ChaCha20Poly1305 {
     #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
     ctx: EvpAead,
-    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, CRYPTOGRAPHY_IS_LIBRESSL))]
-    ctx: EvpCipherAead,
-    #[cfg(not(any(
-        CRYPTOGRAPHY_IS_LIBRESSL,
-        CRYPTOGRAPHY_IS_BORINGSSL,
-        CRYPTOGRAPHY_IS_AWSLC,
-        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
-    )))]
-    ctx: LazyEvpCipherAead,
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+    ctx: EvpCipherAeadOrLazy,
 }
 
 #[pyo3::pymethods]
@@ -464,28 +502,20 @@ impl ChaCha20Poly1305 {
                         16,
                     )?,
                 })
-            } else if #[cfg(any(
-                CRYPTOGRAPHY_IS_LIBRESSL,
-                CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
-            ))] {
-                Ok(ChaCha20Poly1305 {
-                    ctx: EvpCipherAead::new(
-                        openssl::cipher::Cipher::chacha20_poly1305(),
-                        key_buf.as_bytes(),
-                        16,
-                        false,
-                    )?,
-                })
             } else {
-                Ok(ChaCha20Poly1305{
-                    ctx: LazyEvpCipherAead::new(
-                        openssl::cipher::Cipher::chacha20_poly1305(),
-                        key,
-                        16,
-                        false,
-                        false,
-                    )
-                })
+                let cipher = openssl::cipher::Cipher::chacha20_poly1305();
+                let evp_ctx = EvpCipherAead::new(cipher, key_buf.as_bytes(), 16, false)?;
+                // If copying the pre-keyed context doesn't work, fall back
+                // to reinitializing the context with the key on every
+                // operation, which is slower, but always works.
+                let ctx = if evp_ctx.copy().is_ok() {
+                    EvpCipherAeadOrLazy::Evp(evp_ctx)
+                } else {
+                    EvpCipherAeadOrLazy::Lazy(LazyEvpCipherAead::new(
+                        cipher, key, 16, false, false,
+                    ))
+                };
+                Ok(ChaCha20Poly1305 { ctx })
             }
         }
     }
@@ -509,7 +539,7 @@ impl ChaCha20Poly1305 {
         check_length(data_bytes)?;
         Ok(pyo3::types::PyBytes::new_with(
             py,
-            data_bytes.len() + self.ctx.tag_len,
+            data_bytes.len() + 16,
             |b| {
                 let buf = CffiMutBuf::from_bytes(py, b);
                 self.encrypt_into(py, nonce, data, associated_data, buf)?;
@@ -568,12 +598,12 @@ impl ChaCha20Poly1305 {
                 pyo3::exceptions::PyValueError::new_err("Nonce must be 12 bytes"),
             ));
         }
-        if data.as_bytes().len() < self.ctx.tag_len {
+        if data.as_bytes().len() < 16 {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
         Ok(pyo3::types::PyBytes::new_with(
             py,
-            data.as_bytes().len() - self.ctx.tag_len,
+            data.as_bytes().len() - 16,
             |b| {
                 let buf = CffiMutBuf::from_bytes(py, b);
                 self.decrypt_into(py, nonce, data, associated_data, buf)?;
@@ -601,11 +631,11 @@ impl ChaCha20Poly1305 {
             ));
         }
 
-        if data.as_bytes().len() < self.ctx.tag_len {
+        if data.as_bytes().len() < 16 {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
 
-        let expected_len = data_bytes.len() - self.ctx.tag_len;
+        let expected_len = data_bytes.len() - 16;
         if buf.as_mut_bytes().len() != expected_len {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
@@ -630,21 +660,10 @@ impl ChaCha20Poly1305 {
 )]
 // NO-COVERAGE-END
 pub(crate) struct AesGcm {
-    #[cfg(any(
-        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
-        CRYPTOGRAPHY_IS_LIBRESSL,
-        CRYPTOGRAPHY_IS_BORINGSSL,
-        CRYPTOGRAPHY_IS_AWSLC
-    ))]
+    #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
     ctx: EvpCipherAead,
-
-    #[cfg(not(any(
-        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
-        CRYPTOGRAPHY_IS_LIBRESSL,
-        CRYPTOGRAPHY_IS_BORINGSSL,
-        CRYPTOGRAPHY_IS_AWSLC
-    )))]
-    ctx: LazyEvpCipherAead,
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+    ctx: EvpCipherAeadOrLazy,
 }
 
 #[pyo3::pymethods]
@@ -669,20 +688,23 @@ impl AesGcm {
         };
 
         cfg_if::cfg_if! {
-            if #[cfg(any(
-                CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
-                CRYPTOGRAPHY_IS_BORINGSSL,
-                CRYPTOGRAPHY_IS_LIBRESSL,
-                CRYPTOGRAPHY_IS_AWSLC
-            ))] {
+            if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
                 Ok(AesGcm {
                     ctx: EvpCipherAead::new(cipher, key_buf.as_bytes(), 16, false)?,
                 })
             } else {
-                Ok(AesGcm {
-                    ctx: LazyEvpCipherAead::new(cipher, key, 16, false, false),
-                })
-
+                let evp_ctx = EvpCipherAead::new(cipher, key_buf.as_bytes(), 16, false)?;
+                // If copying the pre-keyed context doesn't work, fall back
+                // to reinitializing the context with the key on every
+                // operation, which is slower, but always works.
+                let ctx = if evp_ctx.copy().is_ok() {
+                    EvpCipherAeadOrLazy::Evp(evp_ctx)
+                } else {
+                    EvpCipherAeadOrLazy::Lazy(LazyEvpCipherAead::new(
+                        cipher, key, 16, false, false,
+                    ))
+                };
+                Ok(AesGcm { ctx })
             }
         }
     }
@@ -713,7 +735,7 @@ impl AesGcm {
         check_length(data_bytes)?;
         Ok(pyo3::types::PyBytes::new_with(
             py,
-            data_bytes.len() + self.ctx.tag_len,
+            data_bytes.len() + 16,
             |b| {
                 let buf = CffiMutBuf::from_bytes(py, b);
                 self.encrypt_into(py, nonce, data, associated_data, buf)?;
@@ -776,13 +798,13 @@ impl AesGcm {
             ));
         }
 
-        if data_bytes.len() < self.ctx.tag_len {
+        if data_bytes.len() < 16 {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
 
         Ok(pyo3::types::PyBytes::new_with(
             py,
-            data_bytes.len() - self.ctx.tag_len,
+            data_bytes.len() - 16,
             |b| {
                 let buf = CffiMutBuf::from_bytes(py, b);
                 self.decrypt_into(py, nonce, data, associated_data, buf)?;
@@ -810,11 +832,11 @@ impl AesGcm {
             ));
         }
 
-        if data_bytes.len() < self.ctx.tag_len {
+        if data_bytes.len() < 16 {
             return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
         }
 
-        let expected_len = data_bytes.len() - self.ctx.tag_len;
+        let expected_len = data_bytes.len() - 16;
         if buf.as_mut_bytes().len() != expected_len {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
