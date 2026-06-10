@@ -135,7 +135,7 @@ def main(coverage_loc: str):
         data_paths=[str(path), coverage_data.data_filename()], keep=True
     )
     print("Coverage Report")
-    coverage_percent = cov.report(show_missing=True)
+    coverage_percent = cov.report(show_missing=True, output_format="markdown")
     if coverage_percent < 100:
         print("+++ Combined coverage under 100% +++")
         cov.html_report()
