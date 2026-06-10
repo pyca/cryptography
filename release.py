@@ -88,21 +88,12 @@ def rust_version(version: Version) -> str:
 
 
 def bump_rust_versions(base_dir: pathlib.Path, new_version: str) -> None:
-    crate_version = rust_version(Version(new_version))
-
-    with (base_dir / "Cargo.toml").open("rb") as f:
-        workspace = tomllib.load(f)["workspace"]
-
-    replace_version(base_dir / "Cargo.toml", "version", crate_version)
-
-    for member in workspace["members"]:
-        with (base_dir / member / "Cargo.toml").open("rb") as f:
-            crate_name = tomllib.load(f)["package"]["name"]
-        replace_pattern(
-            base_dir / "Cargo.lock",
-            rf'^name = "{crate_name}"\nversion = ".*?"$',
-            f'name = "{crate_name}"\nversion = "{crate_version}"',
-        )
+    # All crates in the workspace inherit the workspace version, so we only
+    # need to update it in one place, then sync Cargo.lock.
+    replace_version(
+        base_dir / "Cargo.toml", "version", rust_version(Version(new_version))
+    )
+    run("cargo", "update", "--workspace")
 
 
 @cli.command()
