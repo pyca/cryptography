@@ -53,7 +53,7 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
 name = "cryptography-cffi"
-version = "0.1.0"
+version = "0.49.0-dev1"
 dependencies = [
  "cc",
  "openssl-sys",
@@ -62,21 +62,21 @@ dependencies = [
 
 [[package]]
 name = "cryptography-crypto"
-version = "0.1.0"
+version = "0.49.0-dev1"
 dependencies = [
  "openssl",
 ]
 
 [[package]]
 name = "cryptography-keepalive"
-version = "0.1.0"
+version = "0.49.0-dev1"
 dependencies = [
  "pyo3",
 ]
 
 [[package]]
 name = "cryptography-key-parsing"
-version = "0.1.0"
+version = "0.49.0-dev1"
 dependencies = [
  "asn1",
  "cfg-if",
@@ -90,7 +90,7 @@ dependencies = [
 
 [[package]]
 name = "cryptography-openssl"
-version = "0.1.0"
+version = "0.49.0-dev1"
 dependencies = [
  "cfg-if",
  "foreign-types",
@@ -101,7 +101,7 @@ dependencies = [
 
 [[package]]
 name = "cryptography-rust"
-version = "0.1.0"
+version = "0.49.0-dev1"
 dependencies = [
  "asn1",
  "base64",
@@ -124,14 +124,14 @@ dependencies = [
 
 [[package]]
 name = "cryptography-x509"
-version = "0.1.0"
+version = "0.49.0-dev1"
 dependencies = [
  "asn1",
 ]
 
 [[package]]
 name = "cryptography-x509-verification"
-version = "0.1.0"
+version = "0.49.0-dev1"
 dependencies = [
  "asn1",
  "cryptography-x509",

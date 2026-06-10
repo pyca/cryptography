@@ -68,6 +68,34 @@ def replace_version(
     )
 
 
+def rust_version(version: Version) -> str:
+    # The Rust crates use a version that maps to the cryptography version,
+    # but pre-1.0: cryptography X.0.Z is version 0.X.Z of the crates, and
+    # pre-releases map to semver pre-releases (49.0.0.dev1 is 0.49.0-dev1).
+    if version.minor != 0:
+        raise ValueError(
+            f"Can't map {version} to a crate version, minor must be 0"
+        )
+    crate_version = f"0.{version.major}.{version.micro}"
+    pre_parts = []
+    if version.pre is not None:
+        pre_parts.append(f"{version.pre[0]}{version.pre[1]}")
+    if version.dev is not None:
+        pre_parts.append(f"dev{version.dev}")
+    if pre_parts:
+        crate_version += "-" + ".".join(pre_parts)
+    return crate_version
+
+
+def bump_rust_versions(base_dir: pathlib.Path, new_version: str) -> None:
+    # All crates in the workspace inherit the workspace version, so we only
+    # need to update it in one place, then sync Cargo.lock.
+    replace_version(
+        base_dir / "Cargo.toml", "version", rust_version(Version(new_version))
+    )
+    run("cargo", "update", "--workspace")
+
+
 @cli.command()
 @click.argument("new_version")
 def bump_version(new_version: str) -> None:
@@ -100,6 +128,8 @@ def bump_version(new_version: str) -> None:
             r'"cryptography_vectors(==.*?)?"',
             f'"cryptography_vectors=={new_version}"',
         )
+
+    bump_rust_versions(base_dir, new_version)
 
 
 if __name__ == "__main__":
