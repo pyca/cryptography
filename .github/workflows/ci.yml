@@ -527,9 +527,7 @@ jobs:
           if [ $COV_EXIT_CODE -ne 0 ]; then
             echo "🚨 Coverage failed. Under 100" | tee -a $GITHUB_STEP_SUMMARY
           fi
-          echo '```' >> $GITHUB_STEP_SUMMARY
           cat COV_REPORT >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
           exit $COV_EXIT_CODE
       - name: Upload HTML report.
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
