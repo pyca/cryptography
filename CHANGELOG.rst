@@ -61,6 +61,12 @@ Changelog
 * Added :meth:`~cryptography.x509.Name.from_bytes` for parsing a
   :class:`~cryptography.x509.Name` from DER bytes, the inverse of
   :meth:`~cryptography.x509.Name.public_bytes`.
+* Added the ``rsa_padding`` keyword-only parameter to
+  :meth:`~cryptography.x509.CertificateBuilder.public_key`. Passing the
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` class
+  (not an instance) encodes an RSA subject public key in the certificate's
+  ``subjectPublicKeyInfo`` with the ``id-RSASSA-PSS`` OID and no
+  parameters.
 
 .. _v48-0-1:
 

@@ -948,12 +948,26 @@ X.509 Certificate Builder
 
         :return: A new :class:`CertificateBuilder` with the updated subject name.
 
-    .. method:: public_key(public_key)
+    .. method:: public_key(public_key, *, rsa_padding=None)
 
         Sets the subject's public key.
 
+        .. versionchanged:: 49.0.0
+
+            Added the ``rsa_padding`` keyword-only parameter.
+
         :param public_key: The subject's public key. This can be one of
             :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`.
+
+        :param rsa_padding: This keyword argument is only valid with
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`.
+            The caller can pass an uninstantiated
+            :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS`
+            class or ``None``. If ``PSS`` is passed the ``id-RSASSA-PSS`` OID
+            (with no parameters) will be encoded into the public key, which
+            marks it as usable for only PSS signatures. This does not affect
+            the certificate's signature, only the public key encoding within
+            the certificate.
 
         :return: A new :class:`CertificateBuilder` with the updated public key.
 
