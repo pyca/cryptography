@@ -26,30 +26,71 @@ pub(crate) enum Aad<'a> {
     List(pyo3::Bound<'a, pyo3::types::PyList>),
 }
 
+pub(crate) enum AeadCipher {
+    Static(&'static openssl::cipher::CipherRef),
+    #[cfg(not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    )))]
+    Fetched(openssl::cipher::Cipher),
+}
+
+impl std::ops::Deref for AeadCipher {
+    type Target = openssl::cipher::CipherRef;
+
+    fn deref(&self) -> &openssl::cipher::CipherRef {
+        match self {
+            AeadCipher::Static(c) => c,
+            #[cfg(not(any(
+                CRYPTOGRAPHY_IS_LIBRESSL,
+                CRYPTOGRAPHY_IS_BORINGSSL,
+                CRYPTOGRAPHY_IS_AWSLC
+            )))]
+            AeadCipher::Fetched(c) => c,
+        }
+    }
+}
+
 pub(crate) struct EvpCipherAead {
+    cipher: AeadCipher,
+    key: pyo3::Py<pyo3::PyAny>,
     base_encryption_ctx: openssl::cipher_ctx::CipherCtx,
     base_decryption_ctx: openssl::cipher_ctx::CipherCtx,
     tag_len: usize,
     tag_first: bool,
+    is_ccm: bool,
 }
 
 impl EvpCipherAead {
     pub(crate) fn new(
-        cipher: &openssl::cipher::CipherRef,
-        key: &[u8],
+        py: pyo3::Python<'_>,
+        cipher: AeadCipher,
+        key: pyo3::Py<pyo3::PyAny>,
         tag_len: usize,
         tag_first: bool,
+        is_ccm: bool,
     ) -> CryptographyResult<EvpCipherAead> {
         let mut base_encryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        base_encryption_ctx.encrypt_init(Some(cipher), Some(key), None)?;
         let mut base_decryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        base_decryption_ctx.decrypt_init(Some(cipher), Some(key), None)?;
+        // CCM requires the IV and tag lengths to be set before the key, so
+        // contexts can't be pre-keyed. The base contexts are left
+        // uninitialized and every operation initializes a context from
+        // scratch.
+        if !is_ccm {
+            let key_buf = key.extract::<CffiBuf<'_>>(py)?;
+            base_encryption_ctx.encrypt_init(Some(&cipher), Some(key_buf.as_bytes()), None)?;
+            base_decryption_ctx.decrypt_init(Some(&cipher), Some(key_buf.as_bytes()), None)?;
+        }
 
         Ok(EvpCipherAead {
+            cipher,
+            key,
             base_encryption_ctx,
             base_decryption_ctx,
             tag_len,
             tag_first,
+            is_ccm,
         })
     }
 
@@ -129,63 +170,52 @@ impl EvpCipherAead {
 
     pub(crate) fn encrypt_into(
         &self,
-        // We have this arg so we have consistent arguments with encrypt_into in
-        // LazyEvpCipherAead. We can remove it when we remove LazyEvpCipherAead.
-        _py: pyo3::Python<'_>,
+        py: pyo3::Python<'_>,
         plaintext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
-        buf: &mut [u8],
-    ) -> CryptographyResult<()> {
-        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        ctx.copy(&self.base_encryption_ctx)?;
-
-        Self::encrypt_with_context(
-            ctx,
-            plaintext,
-            aad,
-            nonce,
-            self.tag_len,
-            self.tag_first,
-            false,
-            buf,
-        )
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn encrypt_with_context(
-        mut ctx: openssl::cipher_ctx::CipherCtx,
-        plaintext: &[u8],
-        aad: Option<Aad<'_>>,
-        nonce: Option<&[u8]>,
-        tag_len: usize,
-        tag_first: bool,
-        is_ccm: bool,
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
         check_length(plaintext)?;
 
-        if !is_ccm {
+        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        if self.is_ccm || ctx.copy(&self.base_encryption_ctx).is_err() {
+            // Copying the pre-keyed context isn't possible: either this is
+            // CCM (whose base contexts are uninitialized), or this OpenSSL
+            // doesn't support copying AEAD contexts (providers prior to
+            // OpenSSL 3.2). Initialize a new context from scratch.
+            ctx = openssl::cipher_ctx::CipherCtx::new()?;
+            let key_buf = self.key.extract::<CffiBuf<'_>>(py)?;
+            if self.is_ccm {
+                ctx.encrypt_init(Some(&self.cipher), None, None)?;
+                ctx.set_iv_length(nonce.as_ref().unwrap().len())?;
+                ctx.set_tag_length(self.tag_len)?;
+                ctx.encrypt_init(None, Some(key_buf.as_bytes()), nonce)?;
+            } else {
+                ctx.encrypt_init(Some(&self.cipher), Some(key_buf.as_bytes()), None)?;
+            }
+        }
+
+        if self.is_ccm {
+            ctx.set_data_len(plaintext.len())?;
+        } else {
             if let Some(nonce) = nonce {
                 ctx.set_iv_length(nonce.len())?;
             }
             ctx.encrypt_init(None, None, nonce)?;
-        }
-        if is_ccm {
-            ctx.set_data_len(plaintext.len())?;
         }
 
         Self::process_aad(&mut ctx, aad)?;
 
         let ciphertext;
         let tag;
-        if tag_first {
-            (tag, ciphertext) = buf.split_at_mut(tag_len);
+        if self.tag_first {
+            (tag, ciphertext) = buf.split_at_mut(self.tag_len);
         } else {
             (ciphertext, tag) = buf.split_at_mut(plaintext.len());
         }
 
-        Self::process_data(&mut ctx, plaintext, ciphertext, is_ccm)?;
+        Self::process_data(&mut ctx, plaintext, ciphertext, self.is_ccm)?;
 
         ctx.tag(tag).map_err(CryptographyError::from)?;
 
@@ -194,52 +224,44 @@ impl EvpCipherAead {
 
     pub(crate) fn decrypt_into(
         &self,
-        // We have this arg so we have consistent arguments with decrypt_into in
-        // LazyEvpCipherAead. We can remove it when we remove LazyEvpCipherAead.
-        _py: pyo3::Python<'_>,
+        py: pyo3::Python<'_>,
         ciphertext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
-        buf: &mut [u8],
-    ) -> CryptographyResult<()> {
-        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        ctx.copy(&self.base_decryption_ctx)?;
-
-        Self::decrypt_with_context(
-            ctx,
-            ciphertext,
-            aad,
-            nonce,
-            self.tag_len,
-            self.tag_first,
-            false,
-            buf,
-        )
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn decrypt_with_context(
-        mut ctx: openssl::cipher_ctx::CipherCtx,
-        ciphertext: &[u8],
-        aad: Option<Aad<'_>>,
-        nonce: Option<&[u8]>,
-        tag_len: usize,
-        tag_first: bool,
-        is_ccm: bool,
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
         let tag;
         let ciphertext_data;
-        if tag_first {
+        if self.tag_first {
             // RFC 5297 defines the output as IV || C, where the tag we generate
             // is the "IV" and C is the ciphertext. This is the opposite of our
             // other AEADs, which are Ciphertext || Tag.
-            (tag, ciphertext_data) = ciphertext.split_at(tag_len);
+            (tag, ciphertext_data) = ciphertext.split_at(self.tag_len);
         } else {
-            (ciphertext_data, tag) = ciphertext.split_at(ciphertext.len() - tag_len);
+            (ciphertext_data, tag) = ciphertext.split_at(ciphertext.len() - self.tag_len);
         }
 
-        if !is_ccm {
+        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        if self.is_ccm || ctx.copy(&self.base_decryption_ctx).is_err() {
+            // Copying the pre-keyed context isn't possible: either this is
+            // CCM (whose base contexts are uninitialized), or this OpenSSL
+            // doesn't support copying AEAD contexts (providers prior to
+            // OpenSSL 3.2). Initialize a new context from scratch.
+            ctx = openssl::cipher_ctx::CipherCtx::new()?;
+            let key_buf = self.key.extract::<CffiBuf<'_>>(py)?;
+            if self.is_ccm {
+                ctx.decrypt_init(Some(&self.cipher), None, None)?;
+                ctx.set_iv_length(nonce.as_ref().unwrap().len())?;
+                ctx.set_tag(tag)?;
+                ctx.decrypt_init(None, Some(key_buf.as_bytes()), nonce)?;
+            } else {
+                ctx.decrypt_init(Some(&self.cipher), Some(key_buf.as_bytes()), None)?;
+            }
+        }
+
+        if self.is_ccm {
+            ctx.set_data_len(ciphertext_data.len())?;
+        } else {
             if let Some(nonce) = nonce {
                 ctx.set_iv_length(nonce.len())?;
             }
@@ -247,108 +269,13 @@ impl EvpCipherAead {
             ctx.decrypt_init(None, None, nonce)?;
             ctx.set_tag(tag)?;
         }
-        if is_ccm {
-            ctx.set_data_len(ciphertext_data.len())?;
-        }
 
         Self::process_aad(&mut ctx, aad)?;
 
-        Self::process_data(&mut ctx, ciphertext_data, buf, is_ccm)
+        Self::process_data(&mut ctx, ciphertext_data, buf, self.is_ccm)
             .map_err(|_| exceptions::InvalidTag::new_err(()))?;
 
         Ok(())
-    }
-}
-
-struct LazyEvpCipherAead {
-    cipher: &'static openssl::cipher::CipherRef,
-    key: pyo3::Py<pyo3::PyAny>,
-
-    tag_len: usize,
-    tag_first: bool,
-    is_ccm: bool,
-}
-
-impl LazyEvpCipherAead {
-    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-    fn new(
-        cipher: &'static openssl::cipher::CipherRef,
-        key: pyo3::Py<pyo3::PyAny>,
-        tag_len: usize,
-        tag_first: bool,
-        is_ccm: bool,
-    ) -> LazyEvpCipherAead {
-        LazyEvpCipherAead {
-            cipher,
-            key,
-            tag_len,
-            tag_first,
-            is_ccm,
-        }
-    }
-
-    fn encrypt_into(
-        &self,
-        py: pyo3::Python<'_>,
-        plaintext: &[u8],
-        aad: Option<Aad<'_>>,
-        nonce: Option<&[u8]>,
-        buf: &mut [u8],
-    ) -> CryptographyResult<()> {
-        let key_buf = self.key.bind(py).extract::<CffiBuf<'_>>()?;
-        let mut encryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        if self.is_ccm {
-            encryption_ctx.encrypt_init(Some(self.cipher), None, None)?;
-            encryption_ctx.set_iv_length(nonce.as_ref().unwrap().len())?;
-            encryption_ctx.set_tag_length(self.tag_len)?;
-            encryption_ctx.encrypt_init(None, Some(key_buf.as_bytes()), nonce)?;
-        } else {
-            encryption_ctx.encrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
-        }
-
-        EvpCipherAead::encrypt_with_context(
-            encryption_ctx,
-            plaintext,
-            aad,
-            nonce,
-            self.tag_len,
-            self.tag_first,
-            self.is_ccm,
-            buf,
-        )
-    }
-
-    fn decrypt_into(
-        &self,
-        py: pyo3::Python<'_>,
-        ciphertext: &[u8],
-        aad: Option<Aad<'_>>,
-        nonce: Option<&[u8]>,
-        buf: &mut [u8],
-    ) -> CryptographyResult<()> {
-        let key_buf = self.key.bind(py).extract::<CffiBuf<'_>>()?;
-
-        let mut decryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        if self.is_ccm {
-            decryption_ctx.decrypt_init(Some(self.cipher), None, None)?;
-            decryption_ctx.set_iv_length(nonce.as_ref().unwrap().len())?;
-            let (_, tag) = ciphertext.split_at(ciphertext.len() - self.tag_len);
-            decryption_ctx.set_tag(tag)?;
-            decryption_ctx.decrypt_init(None, Some(key_buf.as_bytes()), nonce)?;
-        } else {
-            decryption_ctx.decrypt_init(Some(self.cipher), Some(key_buf.as_bytes()), None)?;
-        }
-
-        EvpCipherAead::decrypt_with_context(
-            decryption_ctx,
-            ciphertext,
-            aad,
-            nonce,
-            self.tag_len,
-            self.tag_first,
-            self.is_ccm,
-            buf,
-        )
     }
 }
 
@@ -422,15 +349,8 @@ impl EvpAead {
 pub(crate) struct ChaCha20Poly1305 {
     #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
     ctx: EvpAead,
-    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, CRYPTOGRAPHY_IS_LIBRESSL))]
+    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     ctx: EvpCipherAead,
-    #[cfg(not(any(
-        CRYPTOGRAPHY_IS_LIBRESSL,
-        CRYPTOGRAPHY_IS_BORINGSSL,
-        CRYPTOGRAPHY_IS_AWSLC,
-        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
-    )))]
-    ctx: LazyEvpCipherAead,
 }
 
 #[pyo3::pymethods]
@@ -464,27 +384,16 @@ impl ChaCha20Poly1305 {
                         16,
                     )?,
                 })
-            } else if #[cfg(any(
-                CRYPTOGRAPHY_IS_LIBRESSL,
-                CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
-            ))] {
+            } else {
                 Ok(ChaCha20Poly1305 {
                     ctx: EvpCipherAead::new(
-                        openssl::cipher::Cipher::chacha20_poly1305(),
-                        key_buf.as_bytes(),
-                        16,
-                        false,
-                    )?,
-                })
-            } else {
-                Ok(ChaCha20Poly1305{
-                    ctx: LazyEvpCipherAead::new(
-                        openssl::cipher::Cipher::chacha20_poly1305(),
+                        py,
+                        AeadCipher::Static(openssl::cipher::Cipher::chacha20_poly1305()),
                         key,
                         16,
                         false,
                         false,
-                    )
+                    )?,
                 })
             }
         }
@@ -630,21 +539,7 @@ impl ChaCha20Poly1305 {
 )]
 // NO-COVERAGE-END
 pub(crate) struct AesGcm {
-    #[cfg(any(
-        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
-        CRYPTOGRAPHY_IS_LIBRESSL,
-        CRYPTOGRAPHY_IS_BORINGSSL,
-        CRYPTOGRAPHY_IS_AWSLC
-    ))]
     ctx: EvpCipherAead,
-
-    #[cfg(not(any(
-        CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
-        CRYPTOGRAPHY_IS_LIBRESSL,
-        CRYPTOGRAPHY_IS_BORINGSSL,
-        CRYPTOGRAPHY_IS_AWSLC
-    )))]
-    ctx: LazyEvpCipherAead,
 }
 
 #[pyo3::pymethods]
@@ -668,23 +563,9 @@ impl AesGcm {
             }
         };
 
-        cfg_if::cfg_if! {
-            if #[cfg(any(
-                CRYPTOGRAPHY_OPENSSL_320_OR_GREATER,
-                CRYPTOGRAPHY_IS_BORINGSSL,
-                CRYPTOGRAPHY_IS_LIBRESSL,
-                CRYPTOGRAPHY_IS_AWSLC
-            ))] {
-                Ok(AesGcm {
-                    ctx: EvpCipherAead::new(cipher, key_buf.as_bytes(), 16, false)?,
-                })
-            } else {
-                Ok(AesGcm {
-                    ctx: LazyEvpCipherAead::new(cipher, key, 16, false, false),
-                })
-
-            }
-        }
+        Ok(AesGcm {
+            ctx: EvpCipherAead::new(py, AeadCipher::Static(cipher), key, 16, false, false)?,
+        })
     }
 
     #[staticmethod]
@@ -839,7 +720,7 @@ impl AesGcm {
 )]
 // NO-COVERAGE-END
 struct AesCcm {
-    ctx: LazyEvpCipherAead,
+    ctx: EvpCipherAead,
     tag_length: usize,
 }
 
@@ -885,7 +766,14 @@ impl AesCcm {
                 }
 
                 Ok(AesCcm {
-                    ctx: LazyEvpCipherAead::new(cipher, key, tag_length, false, true),
+                    ctx: EvpCipherAead::new(
+                        py,
+                        AeadCipher::Static(cipher),
+                        key,
+                        tag_length,
+                        false,
+                        true,
+                    )?,
                     tag_length
                 })
             }
@@ -1072,8 +960,9 @@ struct AesSiv {
 #[pyo3::pymethods]
 impl AesSiv {
     #[new]
-    fn new(key: CffiBuf<'_>) -> CryptographyResult<AesSiv> {
-        let cipher_name = match key.as_bytes().len() {
+    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesSiv> {
+        let key_buf = key.extract::<CffiBuf<'_>>(py)?;
+        let cipher_name = match key_buf.as_bytes().len() {
             32 => "aes-128-siv",
             48 => "aes-192-siv",
             64 => "aes-256-siv",
@@ -1099,7 +988,14 @@ impl AesSiv {
 
                 let cipher = openssl::cipher::Cipher::fetch(None, cipher_name, None)?;
                 Ok(AesSiv {
-                    ctx: EvpCipherAead::new(&cipher, key.as_bytes(), 16, true)?,
+                    ctx: EvpCipherAead::new(
+                        py,
+                        AeadCipher::Fetched(cipher),
+                        key,
+                        16,
+                        true,
+                        false,
+                    )?,
                 })
             } else {
                 _ = cipher_name;
@@ -1252,9 +1148,11 @@ struct AesOcb3 {
 #[pyo3::pymethods]
 impl AesOcb3 {
     #[new]
-    fn new(key: CffiBuf<'_>) -> CryptographyResult<AesOcb3> {
+    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesOcb3> {
+        let key_buf = key.extract::<CffiBuf<'_>>(py)?;
         cfg_if::cfg_if! {
             if #[cfg(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
+                _ = key_buf;
                 _ = key;
 
                 Err(CryptographyError::from(
@@ -1273,7 +1171,7 @@ impl AesOcb3 {
                     ));
                 }
 
-                let cipher = match key.as_bytes().len() {
+                let cipher = match key_buf.as_bytes().len() {
                     16 => openssl::cipher::Cipher::aes_128_ocb(),
                     24 => openssl::cipher::Cipher::aes_192_ocb(),
                     32 => openssl::cipher::Cipher::aes_256_ocb(),
@@ -1287,7 +1185,14 @@ impl AesOcb3 {
                 };
 
                 Ok(AesOcb3 {
-                    ctx: EvpCipherAead::new(cipher, key.as_bytes(), 16, false)?,
+                    ctx: EvpCipherAead::new(
+                        py,
+                        AeadCipher::Static(cipher),
+                        key,
+                        16,
+                        false,
+                        false,
+                    )?,
                 })
             }
         }
@@ -1454,8 +1359,9 @@ struct AesGcmSiv {
 #[pyo3::pymethods]
 impl AesGcmSiv {
     #[new]
-    fn new(key: CffiBuf<'_>) -> CryptographyResult<AesGcmSiv> {
-        let cipher_name = match key.as_bytes().len() {
+    fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesGcmSiv> {
+        let key_buf = key.extract::<CffiBuf<'_>>(py)?;
+        let cipher_name = match key_buf.as_bytes().len() {
             16 => "aes-128-gcm-siv",
             24 => "aes-192-gcm-siv",
             32 => "aes-256-gcm-siv",
@@ -1471,7 +1377,7 @@ impl AesGcmSiv {
         cfg_if::cfg_if! {
             if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
                 let _ = cipher_name;
-                let aead_type = match key.as_bytes().len() {
+                let aead_type = match key_buf.as_bytes().len() {
                     16 => cryptography_openssl::aead::AeadType::Aes128GcmSiv,
                     32 => cryptography_openssl::aead::AeadType::Aes256GcmSiv,
                     _ => return Err(CryptographyError::from(
@@ -1482,7 +1388,7 @@ impl AesGcmSiv {
                     ))
                 };
                 Ok(AesGcmSiv {
-                    ctx: EvpAead::new(aead_type, key.as_bytes(), 16)?,
+                    ctx: EvpAead::new(aead_type, key_buf.as_bytes(), 16)?,
                 })
             } else if #[cfg(not(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER))] {
                 let _ = cipher_name;
@@ -1503,7 +1409,14 @@ impl AesGcmSiv {
                 }
                 let cipher = openssl::cipher::Cipher::fetch(None, cipher_name, None)?;
                 Ok(AesGcmSiv {
-                    ctx: EvpCipherAead::new(&cipher, key.as_bytes(), 16, false)?,
+                    ctx: EvpCipherAead::new(
+                        py,
+                        AeadCipher::Fetched(cipher),
+                        key,
+                        16,
+                        false,
+                        false,
+                    )?,
                 })
             }
         }
