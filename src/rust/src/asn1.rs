@@ -67,6 +67,37 @@ fn decode_dss_signature<'p>(
         .into_any())
 }
 
+// Encodes a Python `int` of arbitrary size as the minimal big-endian
+// two's complement bytes expected by a DER INTEGER (i.e. suitable for
+// `asn1::BigInt::new`). Unlike `py_uint_to_big_endian_bytes` this accepts
+// negative values, which a general INTEGER field may hold.
+pub(crate) fn py_int_to_der_bytes<'p>(
+    py: pyo3::Python<'p>,
+    v: pyo3::Bound<'p, pyo3::types::PyInt>,
+) -> pyo3::PyResult<PyBackedBytes> {
+    // The number of significant magnitude bits. For negative values we use
+    // `~v` (== `-v - 1`), so that exact negative powers of two (e.g. -128)
+    // get the shorter length their two's complement encoding actually needs.
+    let magnitude = if v.lt(0)? {
+        v.call_method0(pyo3::intern!(py, "__invert__"))?
+    } else {
+        v.clone().into_any()
+    };
+    let bit_length = magnitude
+        .call_method0(pyo3::intern!(py, "bit_length"))?
+        .extract::<usize>()?;
+    // One extra octet leaves room for the sign bit and yields the minimal
+    // DER length once the high bit is accounted for.
+    let length = bit_length / 8 + 1;
+    let kwargs = [("signed", true)].into_py_dict(py)?;
+    Ok(v.call_method(
+        pyo3::intern!(py, "to_bytes"),
+        (length, "big"),
+        Some(&kwargs),
+    )?
+    .extract()?)
+}
+
 pub(crate) fn py_uint_to_big_endian_bytes<'p>(
     py: pyo3::Python<'p>,
     v: pyo3::Bound<'p, pyo3::types::PyInt>,
