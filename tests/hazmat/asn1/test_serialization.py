@@ -86,7 +86,10 @@ class TestInteger:
                 (-129, b"\x02\x02\xff\x7f"),
                 # Values outside the signed 64-bit range.
                 (2**63, b"\x02\x09\x00\x80\x00\x00\x00\x00\x00\x00\x00"),
-                (-(2**63) - 1, b"\x02\x09\xff\x7f\xff\xff\xff\xff\xff\xff\xff"),
+                (
+                    -(2**63) - 1,
+                    b"\x02\x09\xff\x7f\xff\xff\xff\xff\xff\xff\xff",
+                ),
             ],
         )
 

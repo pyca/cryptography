@@ -202,13 +202,9 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 Ok(write_value(writer, &val, encoding)?)
             }
             Type::PyInt() => {
-                let int_value = value.cast::<pyo3::types::PyInt>()?;
-                let bytes = crate::asn1::py_int_to_der_bytes(py, int_value.clone())?;
-                let val = asn1::BigInt::new(&bytes).ok_or_else(|| {
-                    CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
-                        "invalid value for INTEGER",
-                    ))
-                })?;
+                let int_value = value.cast_into::<pyo3::types::PyInt>()?;
+                let bytes = crate::asn1::py_int_to_der_bytes(py, int_value)?;
+                let val = asn1::BigInt::new(&bytes).unwrap();
                 Ok(write_value(writer, &val, encoding)?)
             }
             Type::PyBytes() => {
@@ -361,51 +357,6 @@ mod tests {
 
             let result = asn1::write(|writer| object.write(writer));
             assert!(result.is_err());
-        });
-    }
-
-    #[test]
-    fn test_encode_int_outside_i64() {
-        pyo3::Python::initialize();
-        pyo3::Python::attach(|py| {
-            use pyo3::IntoPyObject;
-
-            let ann_type = AnnotatedType {
-                inner: pyo3::Py::new(py, Type::PyInt()).unwrap(),
-                annotation: pyo3::Py::new(
-                    py,
-                    Annotation {
-                        default: None,
-                        encoding: None,
-                        size: None,
-                    },
-                )
-                .unwrap(),
-            };
-
-            // (value, expected DER). Each case is outside the i64 range that the
-            // encoder previously narrowed to, so the old path raised OverflowError.
-            for (value, expected) in [
-                // 2**63 (i64::MAX + 1)
-                (
-                    (1u64 << 63).into_pyobject(py).unwrap().into_any(),
-                    b"\x02\x09\x00\x80\x00\x00\x00\x00\x00\x00\x00".as_slice(),
-                ),
-                // -(2**63) - 1 (i64::MIN - 1)
-                (
-                    (-(1i128 << 63) - 1).into_pyobject(py).unwrap().into_any(),
-                    b"\x02\x09\xff\x7f\xff\xff\xff\xff\xff\xff\xff".as_slice(),
-                ),
-            ] {
-                let object = AnnotatedTypeObject {
-                    annotated_type: &ann_type,
-                    value,
-                };
-                let result = asn1::write(|writer| object.write(writer))
-                    .map_err(|_| ())
-                    .unwrap();
-                assert_eq!(result, expected);
-            }
         });
     }
 }
