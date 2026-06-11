@@ -122,6 +122,17 @@ fn main() {
         if is_free_threaded {
             build.define("Py_GIL_DISABLED", "1");
         }
+
+        // The C code we build auto-links the Python import library via
+        // `#pragma comment(lib, ...)` in pyconfig.h. pyo3 0.29+ links
+        // libpython with raw-dylib and no longer emits Python's libs
+        // directory as a link search path, so we have to do it ourselves.
+        let libs_dir = run_python_script(
+            &python,
+            "import os, sys; print(os.path.join(sys.base_prefix, 'libs'), end='')",
+        )
+        .unwrap();
+        println!("cargo:rustc-link-search=native={libs_dir}");
     }
 
     build.compile("_openssl.a");
