@@ -202,7 +202,9 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 Ok(write_value(writer, &val, encoding)?)
             }
             Type::PyInt() => {
-                let val: i64 = value.extract()?;
+                let int_value = value.cast_into::<pyo3::types::PyInt>()?;
+                let bytes = crate::asn1::py_int_to_der_bytes(py, int_value)?;
+                let val = asn1::BigInt::new(&bytes).unwrap();
                 Ok(write_value(writer, &val, encoding)?)
             }
             Type::PyBytes() => {
