@@ -30,8 +30,8 @@ foreign-types-shared = "0.1"
 openssl = "0.10.80"
 openssl-sys = "0.9.116"
 pem = { version = "3", default-features = false }
-pyo3 = { version = "0.28", features = ["abi3"] }
-pyo3-build-config = { version = "0.28" }
+pyo3 = { version = "0.29", features = ["abi3"] }
+pyo3-build-config = { version = "0.29" }
 self_cell = "1"
 
 [profile.release]
