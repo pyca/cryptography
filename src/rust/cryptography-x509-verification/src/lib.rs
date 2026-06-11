@@ -226,10 +226,23 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
                     )))),
                 }
             }
+            // We don't implement DirectoryName matching, so a DirectoryName
+            // constraint never matches a DirectoryName SAN. For an excluded
+            // subtree that means the SAN is never excluded; for a permitted
+            // subtree it means the SAN can never be permitted (no other
+            // DirectoryName constraint can match either), so we fail
+            // immediately with a dedicated error.
+            (GeneralName::DirectoryName(_), GeneralName::DirectoryName(_)) => match kind {
+                SubtreeKind::Permitted => Err(ValidationError::new(ValidationErrorKind::Other(
+                    "directoryName matching is not implemented, so a SAN cannot \
+                         satisfy a permitted directoryName name constraint"
+                        .to_string(),
+                ))),
+                SubtreeKind::Excluded => Ok(Applied(false)),
+            },
             // All other matching pairs of (constraint, name) are currently unsupported.
             (GeneralName::OtherName(_), GeneralName::OtherName(_))
             | (GeneralName::X400Address(_), GeneralName::X400Address(_))
-            | (GeneralName::DirectoryName(_), GeneralName::DirectoryName(_))
             | (GeneralName::EDIPartyName(_), GeneralName::EDIPartyName(_))
             | (
                 GeneralName::UniformResourceIdentifier(_),

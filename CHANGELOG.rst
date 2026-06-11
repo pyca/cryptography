@@ -61,6 +61,12 @@ Changelog
 * Added :meth:`~cryptography.x509.Name.from_bytes` for parsing a
   :class:`~cryptography.x509.Name` from DER bytes, the inverse of
   :meth:`~cryptography.x509.Name.public_bytes`.
+* The X.509 path validator no longer rejects chains containing a
+  ``directoryName`` name constraint outright. Matching ``directoryName``
+  constraints is still not implemented: such a constraint simply never
+  matches, so an excluded ``directoryName`` subtree never excludes anything
+  and a ``directoryName`` SAN can never satisfy a permitted ``directoryName``
+  subtree.
 * Added the ``rsa_padding`` keyword-only parameter to
   :meth:`~cryptography.x509.CertificateBuilder.public_key`. Passing the
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` class

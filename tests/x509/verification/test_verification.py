@@ -860,3 +860,120 @@ class TestCustomExtensionPolicies:
             builder.build_server_verifier(DNSName("wrong.io")).verify(
                 self.leaf, []
             )
+
+
+class TestNameConstraints:
+    validation_time = datetime.datetime(2025, 1, 1)
+    dirname = x509.DirectoryName(
+        x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA")])
+    )
+
+    @classmethod
+    def _build_chain(cls, name_constraints, leaf_sans):
+        # Builds a (ca, leaf) chain where the CA carries the given
+        # nameConstraints extension and the leaf the given SANs.
+        ca_key = ec.generate_private_key(ec.SECP256R1())
+        leaf_key = ec.generate_private_key(ec.SECP256R1())
+
+        not_before = datetime.datetime(2024, 1, 1)
+        not_after = datetime.datetime(2034, 1, 1)
+
+        ca_name = x509.Name(
+            [x509.NameAttribute(NameOID.COMMON_NAME, "Test CA")]
+        )
+        ca = (
+            x509.CertificateBuilder()
+            .subject_name(ca_name)
+            .issuer_name(ca_name)
+            .public_key(ca_key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(not_before)
+            .not_valid_after(not_after)
+            .add_extension(
+                x509.BasicConstraints(ca=True, path_length=None),
+                critical=True,
+            )
+            .add_extension(
+                x509.KeyUsage(
+                    digital_signature=False,
+                    content_commitment=False,
+                    key_encipherment=False,
+                    data_encipherment=False,
+                    key_agreement=False,
+                    key_cert_sign=True,
+                    crl_sign=True,
+                    encipher_only=False,
+                    decipher_only=False,
+                ),
+                critical=True,
+            )
+            .add_extension(name_constraints, critical=True)
+            .sign(ca_key, hashes.SHA256())
+        )
+
+        leaf = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name(
+                    [x509.NameAttribute(NameOID.COMMON_NAME, "example.com")]
+                )
+            )
+            .issuer_name(ca_name)
+            .public_key(leaf_key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(not_before)
+            .not_valid_after(not_after)
+            .add_extension(
+                x509.SubjectAlternativeName(leaf_sans), critical=False
+            )
+            .add_extension(
+                x509.AuthorityKeyIdentifier.from_issuer_public_key(
+                    ca_key.public_key()
+                ),
+                critical=False,
+            )
+            .sign(ca_key, hashes.SHA256())
+        )
+
+        return ca, leaf
+
+    def _verifier(self, ca):
+        builder = PolicyBuilder().store(Store([ca]))
+        builder = builder.time(self.validation_time)
+        return builder.build_client_verifier()
+
+    def test_dirname_excluded_subtree_never_matches(self):
+        # We don't implement directoryName constraint matching, so an
+        # excluded directoryName subtree never excludes anything.
+        ca, leaf = self._build_chain(
+            x509.NameConstraints(
+                permitted_subtrees=None, excluded_subtrees=[self.dirname]
+            ),
+            [x509.DNSName("example.com"), self.dirname],
+        )
+        self._verifier(ca).verify(leaf, [])
+
+    def test_dirname_permitted_subtree_unsatisfiable(self):
+        # A directoryName SAN can never fall within a permitted
+        # directoryName subtree.
+        ca, leaf = self._build_chain(
+            x509.NameConstraints(
+                permitted_subtrees=[self.dirname], excluded_subtrees=None
+            ),
+            [x509.DNSName("example.com"), self.dirname],
+        )
+        with pytest.raises(
+            VerificationError,
+            match="directoryName matching is not implemented",
+        ):
+            self._verifier(ca).verify(leaf, [])
+
+    def test_dirname_constraint_skipped_for_other_san_types(self):
+        # A directoryName constraint does not apply to SANs of other types.
+        ca, leaf = self._build_chain(
+            x509.NameConstraints(
+                permitted_subtrees=[self.dirname], excluded_subtrees=None
+            ),
+            [x509.DNSName("example.com")],
+        )
+        self._verifier(ca).verify(leaf, [])
