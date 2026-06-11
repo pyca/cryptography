@@ -278,12 +278,10 @@ jobs:
       - uses: ./.github/actions/upload-coverage
 
   macos:
-    runs-on: ${{ matrix.RUNNER.OS }}
+    runs-on: macos-26
     strategy:
       fail-fast: false
       matrix:
-        RUNNER:
-          - {OS: 'macos-15', ARCH: 'arm64'}
         PYTHON:
           - {VERSION: "3.9", NOXSESSION: "tests"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
