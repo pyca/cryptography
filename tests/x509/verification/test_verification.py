@@ -869,16 +869,11 @@ class TestNameConstraints:
     )
 
     @classmethod
-    def _build_chain(cls, name_constraints, leaf_sans, leaf_subject=None):
+    def _build_chain(cls, name_constraints, leaf_sans, *, nc_critical):
         # Builds a (ca, leaf) chain where the CA carries the given
         # nameConstraints extension and the leaf the given SANs.
         ca_key = ec.generate_private_key(ec.SECP256R1())
         leaf_key = ec.generate_private_key(ec.SECP256R1())
-
-        if leaf_subject is None:
-            leaf_subject = x509.Name(
-                [x509.NameAttribute(NameOID.COMMON_NAME, "example.com")]
-            )
 
         not_before = datetime.datetime(2024, 1, 1)
         not_after = datetime.datetime(2034, 1, 1)
@@ -912,22 +907,24 @@ class TestNameConstraints:
                 ),
                 critical=True,
             )
-            .add_extension(name_constraints, critical=True)
+            .add_extension(name_constraints, critical=nc_critical)
             .sign(ca_key, hashes.SHA256())
         )
 
         leaf = (
             x509.CertificateBuilder()
-            .subject_name(leaf_subject)
+            .subject_name(
+                x509.Name(
+                    [x509.NameAttribute(NameOID.COMMON_NAME, "example.com")]
+                )
+            )
             .issuer_name(ca_name)
             .public_key(leaf_key.public_key())
             .serial_number(x509.random_serial_number())
             .not_valid_before(not_before)
             .not_valid_after(not_after)
-            # The SAN must be critical iff the subject is empty.
             .add_extension(
-                x509.SubjectAlternativeName(leaf_sans),
-                critical=not leaf_subject.rdns,
+                x509.SubjectAlternativeName(leaf_sans), critical=False
             )
             .add_extension(
                 x509.AuthorityKeyIdentifier.from_issuer_public_key(
@@ -946,11 +943,13 @@ class TestNameConstraints:
         return builder.build_client_verifier()
 
     @pytest.mark.parametrize("subtree", ["permitted", "excluded"])
-    def test_dirname_constraint_with_nonempty_subject(self, subtree):
+    def test_critical_dirname_constraint_rejected(self, subtree):
         # Per RFC 5280 4.2.1.10, directoryName constraints apply to the
-        # subject field as well as directoryName SANs. We don't implement
-        # directoryName matching, so a directoryName constraint combined
-        # with a non-empty leaf subject is rejected.
+        # subject field as well as directoryName SANs, and an application
+        # that cannot process a constraint in a critical nameConstraints
+        # extension must reject the certificate. We don't implement
+        # directoryName matching, so a critical extension containing a
+        # directoryName constraint is rejected outright.
         ca, leaf = self._build_chain(
             x509.NameConstraints(
                 permitted_subtrees=(
@@ -961,39 +960,52 @@ class TestNameConstraints:
                 ),
             ),
             [x509.DNSName("example.com")],
+            nc_critical=True,
         )
         with pytest.raises(
             VerificationError,
-            match="directoryName constraints cannot be applied to a "
-            "non-empty subject",
+            match="critical nameConstraints extension contains an "
+            "unsupported directoryName constraint",
         ):
             self._verifier(ca).verify(leaf, [])
 
-    def test_dirname_constraint_with_dirname_san(self):
-        # An empty leaf subject sidesteps the subject check, but a
-        # directoryName constraint applied to a directoryName SAN is
-        # still unsupported.
+    def test_critical_supported_constraint_ok(self):
+        # A critical nameConstraints extension without directoryName
+        # constraints is processed normally.
+        ca, leaf = self._build_chain(
+            x509.NameConstraints(
+                permitted_subtrees=[x509.DNSName("example.com")],
+                excluded_subtrees=None,
+            ),
+            [x509.DNSName("example.com")],
+            nc_critical=True,
+        )
+        self._verifier(ca).verify(leaf, [])
+
+    def test_noncritical_dirname_constraint_with_dirname_san(self):
+        # A non-critical directoryName constraint isn't rejected outright,
+        # but evaluating it against a directoryName SAN is still
+        # unsupported.
         ca, leaf = self._build_chain(
             x509.NameConstraints(
                 permitted_subtrees=[self.dirname], excluded_subtrees=None
             ),
             [x509.DNSName("example.com"), self.dirname],
-            leaf_subject=x509.Name([]),
+            nc_critical=False,
         )
         with pytest.raises(
             VerificationError, match="unsupported name constraint"
         ):
             self._verifier(ca).verify(leaf, [])
 
-    def test_dirname_constraint_inapplicable(self):
-        # A directoryName constraint is allowed when it applies to
-        # nothing: the leaf subject is empty and no SAN is a
-        # directoryName.
+    def test_noncritical_dirname_constraint_ignored(self):
+        # A non-critical directoryName constraint is ignored when no SAN
+        # is a directoryName.
         ca, leaf = self._build_chain(
             x509.NameConstraints(
                 permitted_subtrees=[self.dirname], excluded_subtrees=None
             ),
             [x509.DNSName("example.com")],
-            leaf_subject=x509.Name([]),
+            nc_critical=False,
         )
         self._verifier(ca).verify(leaf, [])

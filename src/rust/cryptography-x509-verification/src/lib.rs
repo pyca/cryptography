@@ -16,7 +16,6 @@ use std::fmt::Display;
 use std::vec;
 
 use asn1::ObjectIdentifier;
-use cryptography_x509::certificate::Certificate;
 use cryptography_x509::common::Asn1Read;
 use cryptography_x509::extensions::{
     AuthorityKeyIdentifier, DuplicateExtensionsError, Extensions, NameConstraints,
@@ -146,13 +145,11 @@ impl Budget {
 struct NameChain<'a, 'chain> {
     child: Option<&'a NameChain<'a, 'chain>>,
     sans: SubjectAlternativeName<'chain>,
-    non_empty_subject: bool,
 }
 
 impl<'a, 'chain> NameChain<'a, 'chain> {
     fn new<B: CryptoOps>(
         child: Option<&'a NameChain<'a, 'chain>>,
-        certificate: &Certificate<'chain>,
         extensions: &Extensions<'chain>,
         self_issued_intermediate: bool,
     ) -> ValidationResult<'chain, Self, B> {
@@ -166,13 +163,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
             _ => asn1::parse_single(b"\x30\x00")?,
         };
 
-        let non_empty_subject = !self_issued_intermediate && !certificate.subject().is_empty();
-
-        Ok(Self {
-            child,
-            sans,
-            non_empty_subject,
-        })
+        Ok(Self { child, sans })
     }
 
     fn evaluate_single_constraint<B: CryptoOps>(
@@ -258,46 +249,8 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
         constraints: &NameConstraints<'chain, Asn1Read>,
         budget: &mut Budget,
     ) -> ValidationResult<'chain, (), B> {
-        // `self` is the certificate containing the name constraints, and
-        // constraints don't apply to the certificate they appear in (per
-        // RFC 5280 6.1.4 they apply to subsequent certificates in the path),
-        // so the subject check starts at our child.
-        self.evaluate_constraints_inner(constraints, budget, false)
-    }
-
-    fn evaluate_constraints_inner<B: CryptoOps>(
-        &self,
-        constraints: &NameConstraints<'chain, Asn1Read>,
-        budget: &mut Budget,
-        constrain_subject: bool,
-    ) -> ValidationResult<'chain, (), B> {
         if let Some(child) = self.child {
-            child.evaluate_constraints_inner(constraints, budget, true)?;
-        }
-
-        // RFC 5280 4.2.1.10: directoryName constraints apply to the subject
-        // field (when non-empty) as well as to directoryName SANs. We don't
-        // implement directoryName matching, so any directoryName constraint
-        // that applies to a non-empty subject is an error.
-        if constrain_subject && self.non_empty_subject {
-            for subtrees in [
-                &constraints.permitted_subtrees,
-                &constraints.excluded_subtrees,
-            ]
-            .into_iter()
-            .flatten()
-            {
-                for subtree in subtrees.clone() {
-                    budget.name_constraint_check()?;
-                    if matches!(subtree.base, GeneralName::DirectoryName(_)) {
-                        return Err(ValidationError::new(ValidationErrorKind::Other(
-                            "unsupported name constraint: directoryName constraints \
-                             cannot be applied to a non-empty subject"
-                                .to_string(),
-                        )));
-                    }
-                }
-            }
+            child.evaluate_constraints(constraints, budget)?;
         }
 
         for san in self.sans.clone() {
@@ -471,7 +424,37 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         budget: &mut Budget,
     ) -> ValidationResult<'chain, Chain<'chain, B>, B> {
         if let Some(nc) = working_cert_extensions.get_extension(&NAME_CONSTRAINTS_OID) {
-            name_chain.evaluate_constraints(&nc.value()?, budget)?;
+            let constraints: NameConstraints<'chain, Asn1Read> = nc.value()?;
+
+            // We don't implement directoryName constraint matching, even
+            // though RFC 5280 4.2.1.10 requires it (applied to both the
+            // subject and any directoryName SANs in subsequent certificates).
+            // Per the same section, an application that cannot process a
+            // constraint imposed by a critical name constraints extension
+            // MUST reject the certificate, so a critical extension containing
+            // any directoryName constraint is a hard error. A non-critical
+            // extension may be (partially) ignored, so its directoryName
+            // constraints fall through to the per-SAN evaluation below.
+            if nc.critical
+                && [
+                    &constraints.permitted_subtrees,
+                    &constraints.excluded_subtrees,
+                ]
+                .into_iter()
+                .flatten()
+                .any(|subtrees| {
+                    subtrees
+                        .clone()
+                        .any(|subtree| matches!(subtree.base, GeneralName::DirectoryName(_)))
+                })
+            {
+                return Err(ValidationError::new(ValidationErrorKind::FatalError(
+                    "critical nameConstraints extension contains an unsupported \
+                     directoryName constraint",
+                )));
+            }
+
+            name_chain.evaluate_constraints(&constraints, budget)?;
         }
 
         // Look in the store's root set to see if the working cert is listed.
@@ -531,7 +514,6 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
                         &issuer_extensions,
                         NameChain::new(
                             Some(&name_chain),
-                            issuing_cert_candidate.certificate(),
                             &issuer_extensions,
                             // Per RFC 5280 4.2.1.10: Name constraints are not applied
                             // to subjects in self-issued certificates, *unless* the
@@ -601,7 +583,7 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
             leaf,
             0,
             &leaf_extensions,
-            NameChain::new(None, leaf.certificate(), &leaf_extensions, false)?,
+            NameChain::new(None, &leaf_extensions, false)?,
             budget,
         )?;
         // We build the chain in reverse order, fix it now.
@@ -729,7 +711,7 @@ qolIOwIgCaIgj9ipK0Q0p+45UJiq+L/ncrxsweJkFq/UYubzhX0=
             signature_checks: usize::MAX,
         };
 
-        let name_chain = NameChain::new::<NullOps>(None, &ca, &ca_exts, false)
+        let name_chain = NameChain::new::<NullOps>(None, &ca_exts, false)
             .ok()
             .unwrap();
         let err = builder
