@@ -56,10 +56,12 @@ pub(crate) fn private_key_from_pkey(
 
 pub(crate) fn public_key_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
-) -> RsaPublicKey {
-    RsaPublicKey {
+) -> CryptographyResult<RsaPublicKey> {
+    let rsa = pkey.rsa()?;
+    check_public_key_components(rsa.e(), rsa.n())?;
+    Ok(RsaPublicKey {
         pkey: pkey.to_owned(),
-    }
+    })
 }
 
 #[pyo3::pyfunction]
@@ -795,23 +797,47 @@ impl RsaPrivateNumbers {
     }
 }
 
-fn check_public_key_components(
+fn check_public_key_components_from_py(
+    py: pyo3::Python<'_>,
     e: &pyo3::Bound<'_, pyo3::types::PyInt>,
     n: &pyo3::Bound<'_, pyo3::types::PyInt>,
 ) -> CryptographyResult<()> {
-    if n.lt(3)? {
+    if n.lt(0)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("n must be >= 3."),
         ));
     }
 
-    if e.lt(3)? || e.ge(n)? {
+    if e.lt(0)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("e must be >= 3 and < n."),
         ));
     }
 
-    if e.bitand(1)?.eq(0)? {
+    let e = utils::py_int_to_bn(py, e)?;
+    let n = utils::py_int_to_bn(py, n)?;
+    check_public_key_components(e.as_ref(), n.as_ref())
+}
+
+fn check_public_key_components(
+    e: &openssl::bn::BigNumRef,
+    n: &openssl::bn::BigNumRef,
+) -> CryptographyResult<()> {
+    let three = openssl::bn::BigNum::from_u32(3)?;
+
+    if n.cmp(three.as_ref()).is_lt() {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("n must be >= 3."),
+        ));
+    }
+
+    if e.cmp(three.as_ref()).is_lt() || e >= n {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("e must be >= 3 and < n."),
+        ));
+    }
+
+    if e.is_even() {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("e must be odd."),
         ));
@@ -835,7 +861,7 @@ impl RsaPublicNumbers {
     ) -> CryptographyResult<RsaPublicKey> {
         let _ = backend;
 
-        check_public_key_components(self.e.bind(py), self.n.bind(py))?;
+        check_public_key_components_from_py(py, self.e.bind(py), self.n.bind(py))?;
 
         let rsa = openssl::rsa::Rsa::from_public_components(
             utils::py_int_to_bn(py, self.n.bind(py))?,
