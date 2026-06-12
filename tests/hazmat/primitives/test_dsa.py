@@ -352,6 +352,24 @@ class TestDSA:
                 2**1200,
                 DSA_KEY_1024.public_numbers.y,
             ),
+            (
+                DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                1,
+            ),
+            (
+                DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                DSA_KEY_1024.public_numbers.parameter_numbers.p + 1,
+            ),
+            (
+                DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                DSA_KEY_1024.public_numbers.parameter_numbers.p - 1,
+            ),
         ],
     )
     def test_invalid_dsa_public_key_arguments(self, p, q, g, y, backend):
@@ -478,12 +496,17 @@ class TestDSAVerification:
                     backend, algorithm, vector["p"], vector["q"], vector["g"]
                 )
 
-                public_key = dsa.DSAPublicNumbers(
-                    parameter_numbers=dsa.DSAParameterNumbers(
-                        vector["p"], vector["q"], vector["g"]
-                    ),
-                    y=vector["y"],
-                ).public_key(backend)
+                try:
+                    public_key = dsa.DSAPublicNumbers(
+                        parameter_numbers=dsa.DSAParameterNumbers(
+                            vector["p"], vector["q"], vector["g"]
+                        ),
+                        y=vector["y"],
+                    ).public_key(backend)
+                except ValueError:
+                    assert vector["result"] == "F"
+                    continue
+
                 sig = encode_dss_signature(vector["r"], vector["s"])
 
                 if vector["result"] == "F":

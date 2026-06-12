@@ -165,7 +165,7 @@ fn private_key_from_pkey<'p>(
         openssl::pkey::Id::ED448 => Ok(crate::backend::ed448::private_key_from_pkey(pkey)
             .into_pyobject(py)?
             .into_any()),
-        openssl::pkey::Id::DSA => Ok(crate::backend::dsa::private_key_from_pkey(pkey)
+        openssl::pkey::Id::DSA => Ok(crate::backend::dsa::private_key_from_pkey(pkey)?
             .into_pyobject(py)?
             .into_any()),
         openssl::pkey::Id::DH => Ok(crate::backend::dh::private_key_from_pkey(pkey)
@@ -363,7 +363,7 @@ fn public_key_from_pkey<'p>(
             .into_pyobject(py)?
             .into_any()),
 
-        openssl::pkey::Id::DSA => Ok(crate::backend::dsa::public_key_from_pkey(pkey)
+        openssl::pkey::Id::DSA => Ok(crate::backend::dsa::public_key_from_pkey(py, pkey)?
             .into_pyobject(py)?
             .into_any()),
         openssl::pkey::Id::DH => Ok(crate::backend::dh::public_key_from_pkey(pkey)
