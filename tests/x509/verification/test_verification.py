@@ -285,18 +285,16 @@ def _key_usage(
 def _chain_with_leaf_key_usage(
     key_usage: Optional[x509.KeyUsage],
     *,
-    leaf_key_type="ec",
+    rsa_leaf=False,
 ):
     ca_key = ec.generate_private_key(ec.SECP256R1())
     leaf_public_key: CertificatePublicKeyTypes
-    if leaf_key_type == "rsa":
+    if rsa_leaf:
         leaf_public_key = rsa.generate_private_key(
             public_exponent=65537, key_size=2048
         ).public_key()
-    elif leaf_key_type == "ec":
-        leaf_public_key = ec.generate_private_key(ec.SECP256R1()).public_key()
     else:
-        raise AssertionError(f"unsupported leaf key type: {leaf_key_type}")
+        leaf_public_key = ec.generate_private_key(ec.SECP256R1()).public_key()
 
     not_before = datetime.datetime(2024, 1, 1)
     not_after = datetime.datetime(2034, 1, 1)
@@ -352,38 +350,38 @@ def _chain_with_leaf_key_usage(
 
 @pytest.mark.parametrize("verifier_kind", ["server", "client"])
 @pytest.mark.parametrize(
-    ("leaf_key_type", "key_usage", "error"),
+    ("rsa_leaf", "key_usage", "error"),
     [
-        ("ec", None, None),
-        ("ec", _key_usage(digital_signature=True), None),
+        (False, None, None),
+        (False, _key_usage(digital_signature=True), None),
         (
-            "ec",
+            False,
             _key_usage(key_encipherment=True),
             "EE keyUsage must assert digitalSignature",
         ),
         (
-            "ec",
+            False,
             _key_usage(digital_signature=True, key_cert_sign=True),
             "EE keyUsage must not assert keyCertSign",
         ),
-        ("rsa", None, None),
-        ("rsa", _key_usage(digital_signature=True), None),
-        ("rsa", _key_usage(key_encipherment=True), None),
+        (True, None, None),
+        (True, _key_usage(digital_signature=True), None),
+        (True, _key_usage(key_encipherment=True), None),
         (
-            "rsa",
+            True,
             _key_usage(),
             "RSA EE keyUsage must assert digitalSignature or keyEncipherment",
         ),
         (
-            "rsa",
+            True,
             _key_usage(key_encipherment=True, key_cert_sign=True),
             "EE keyUsage must not assert keyCertSign",
         ),
     ],
 )
-def test_default_ee_key_usage(verifier_kind, leaf_key_type, key_usage, error):
+def test_default_ee_key_usage(verifier_kind, rsa_leaf, key_usage, error):
     ca, leaf, validation_time = _chain_with_leaf_key_usage(
-        key_usage, leaf_key_type=leaf_key_type
+        key_usage, rsa_leaf=rsa_leaf
     )
     builder = PolicyBuilder().store(Store([ca])).time(validation_time)
 
