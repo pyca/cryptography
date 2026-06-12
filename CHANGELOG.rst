@@ -3,10 +3,8 @@ Changelog
 
 .. _v49-0-0:
 
-49.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+49.0.0 - 2026-06-12
+~~~~~~~~~~~~~~~~~~~
 
 * **BACKWARDS INCOMPATIBLE:** Support for ``x86_64`` macOS has been removed.
   We now only publish ``arm64`` wheels for macOS.
