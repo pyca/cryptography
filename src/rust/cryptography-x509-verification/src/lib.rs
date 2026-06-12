@@ -19,7 +19,7 @@ use asn1::ObjectIdentifier;
 use cryptography_x509::common::Asn1Read;
 use cryptography_x509::extensions::{
     AuthorityKeyIdentifier, DuplicateExtensionsError, Extensions, NameConstraints,
-    SubjectAlternativeName,
+    SequenceOfSubtrees, SubjectAlternativeName,
 };
 use cryptography_x509::name::GeneralName;
 use cryptography_x509::oid::{
@@ -426,27 +426,28 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         if let Some(nc) = working_cert_extensions.get_extension(&NAME_CONSTRAINTS_OID) {
             let constraints: NameConstraints<'chain, Asn1Read> = nc.value()?;
 
-            // We don't implement directoryName constraint matching, even
-            // though RFC 5280 4.2.1.10 requires it (applied to both the
-            // subject and any directoryName SANs in subsequent certificates).
-            // Per the same section, an application that cannot process a
-            // constraint imposed by a critical name constraints extension
-            // MUST reject the certificate, so a critical extension containing
-            // any directoryName constraint is a hard error. A non-critical
-            // extension may be (partially) ignored, so its directoryName
-            // constraints fall through to the per-SAN evaluation below.
-            if nc.critical
-                && [
-                    &constraints.permitted_subtrees,
-                    &constraints.excluded_subtrees,
-                ]
-                .into_iter()
-                .flatten()
-                .any(|subtrees| {
+            // RFC 5280 4.2.1.10 requires directoryName constraints to be
+            // applied to the subject field of subsequent certificates, not
+            // just to their directoryName SANs (which the evaluation below
+            // would handle), and requires applications that cannot process
+            // a constraint in a critical name constraints extension to
+            // reject the certificate. We don't implement directoryName
+            // matching, so a critical extension containing any directoryName
+            // constraint is a hard error. A non-critical extension may be
+            // (partially) ignored, so its directoryName constraints fall
+            // through to the per-SAN evaluation below.
+            fn contains_directory_name(
+                subtrees: &Option<SequenceOfSubtrees<'_, Asn1Read>>,
+            ) -> bool {
+                subtrees.as_ref().is_some_and(|subtrees| {
                     subtrees
                         .clone()
                         .any(|subtree| matches!(subtree.base, GeneralName::DirectoryName(_)))
                 })
+            }
+            if nc.critical
+                && (contains_directory_name(&constraints.permitted_subtrees)
+                    || contains_directory_name(&constraints.excluded_subtrees))
             {
                 return Err(ValidationError::new(ValidationErrorKind::FatalError(
                     "critical nameConstraints extension contains an unsupported \
