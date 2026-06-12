@@ -869,11 +869,16 @@ class TestNameConstraints:
     )
 
     @classmethod
-    def _build_chain(cls, name_constraints, leaf_sans):
+    def _build_chain(cls, name_constraints, leaf_sans, leaf_subject=None):
         # Builds a (ca, leaf) chain where the CA carries the given
         # nameConstraints extension and the leaf the given SANs.
         ca_key = ec.generate_private_key(ec.SECP256R1())
         leaf_key = ec.generate_private_key(ec.SECP256R1())
+
+        if leaf_subject is None:
+            leaf_subject = x509.Name(
+                [x509.NameAttribute(NameOID.COMMON_NAME, "example.com")]
+            )
 
         not_before = datetime.datetime(2024, 1, 1)
         not_after = datetime.datetime(2034, 1, 1)
@@ -913,18 +918,16 @@ class TestNameConstraints:
 
         leaf = (
             x509.CertificateBuilder()
-            .subject_name(
-                x509.Name(
-                    [x509.NameAttribute(NameOID.COMMON_NAME, "example.com")]
-                )
-            )
+            .subject_name(leaf_subject)
             .issuer_name(ca_name)
             .public_key(leaf_key.public_key())
             .serial_number(x509.random_serial_number())
             .not_valid_before(not_before)
             .not_valid_after(not_after)
+            # The SAN must be critical iff the subject is empty.
             .add_extension(
-                x509.SubjectAlternativeName(leaf_sans), critical=False
+                x509.SubjectAlternativeName(leaf_sans),
+                critical=not leaf_subject.rdns,
             )
             .add_extension(
                 x509.AuthorityKeyIdentifier.from_issuer_public_key(
@@ -942,38 +945,55 @@ class TestNameConstraints:
         builder = builder.time(self.validation_time)
         return builder.build_client_verifier()
 
-    def test_dirname_excluded_subtree_never_matches(self):
-        # We don't implement directoryName constraint matching, so an
-        # excluded directoryName subtree never excludes anything.
+    @pytest.mark.parametrize("subtree", ["permitted", "excluded"])
+    def test_dirname_constraint_with_nonempty_subject(self, subtree):
+        # Per RFC 5280 4.2.1.10, directoryName constraints apply to the
+        # subject field as well as directoryName SANs. We don't implement
+        # directoryName matching, so a directoryName constraint combined
+        # with a non-empty leaf subject is rejected.
         ca, leaf = self._build_chain(
             x509.NameConstraints(
-                permitted_subtrees=None, excluded_subtrees=[self.dirname]
+                permitted_subtrees=(
+                    [self.dirname] if subtree == "permitted" else None
+                ),
+                excluded_subtrees=(
+                    [self.dirname] if subtree == "excluded" else None
+                ),
             ),
-            [x509.DNSName("example.com"), self.dirname],
+            [x509.DNSName("example.com")],
         )
-        self._verifier(ca).verify(leaf, [])
+        with pytest.raises(
+            VerificationError,
+            match="directoryName constraints cannot be applied to a "
+            "non-empty subject",
+        ):
+            self._verifier(ca).verify(leaf, [])
 
-    def test_dirname_permitted_subtree_unsatisfiable(self):
-        # A directoryName SAN can never fall within a permitted
-        # directoryName subtree.
+    def test_dirname_constraint_with_dirname_san(self):
+        # An empty leaf subject sidesteps the subject check, but a
+        # directoryName constraint applied to a directoryName SAN is
+        # still unsupported.
         ca, leaf = self._build_chain(
             x509.NameConstraints(
                 permitted_subtrees=[self.dirname], excluded_subtrees=None
             ),
             [x509.DNSName("example.com"), self.dirname],
+            leaf_subject=x509.Name([]),
         )
         with pytest.raises(
-            VerificationError,
-            match="directoryName matching is not implemented",
+            VerificationError, match="unsupported name constraint"
         ):
             self._verifier(ca).verify(leaf, [])
 
-    def test_dirname_constraint_skipped_for_other_san_types(self):
-        # A directoryName constraint does not apply to SANs of other types.
+    def test_dirname_constraint_inapplicable(self):
+        # A directoryName constraint is allowed when it applies to
+        # nothing: the leaf subject is empty and no SAN is a
+        # directoryName.
         ca, leaf = self._build_chain(
             x509.NameConstraints(
                 permitted_subtrees=[self.dirname], excluded_subtrees=None
             ),
             [x509.DNSName("example.com")],
+            leaf_subject=x509.Name([]),
         )
         self._verifier(ca).verify(leaf, [])
