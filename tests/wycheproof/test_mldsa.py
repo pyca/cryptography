@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 import binascii
 import hashlib
 
@@ -170,7 +172,9 @@ def _compute_mu(pub_raw: bytes, msg: bytes, ctx: bytes) -> bytes:
     return hashlib.shake_256(tr + m_prime).digest(64)
 
 
-_MLDSA_PUBLIC_KEYS = {
+_MLDSA_PUBLIC_KEYS: dict[
+    str, type[MLDSA44PublicKey | MLDSA65PublicKey | MLDSA87PublicKey]
+] = {
     "ML-DSA-44": MLDSA44PublicKey,
     "ML-DSA-65": MLDSA65PublicKey,
     "ML-DSA-87": MLDSA87PublicKey,
