@@ -6,6 +6,7 @@
 import binascii
 import copy
 import dataclasses
+import hashlib
 import os
 
 import pytest
@@ -31,6 +32,7 @@ from ...utils import (
 
 @dataclasses.dataclass
 class MLDSAVariant:
+    name: str
     private_key_class: type
     public_key_class: type
     pub_key_size: int
@@ -41,6 +43,7 @@ class MLDSAVariant:
 ML_DSA_VARIANTS = [
     pytest.param(
         MLDSAVariant(
+            name="44",
             private_key_class=MLDSA44PrivateKey,
             public_key_class=MLDSA44PublicKey,
             pub_key_size=1312,
@@ -51,6 +54,7 @@ ML_DSA_VARIANTS = [
     ),
     pytest.param(
         MLDSAVariant(
+            name="65",
             private_key_class=MLDSA65PrivateKey,
             public_key_class=MLDSA65PublicKey,
             pub_key_size=1952,
@@ -61,6 +65,7 @@ ML_DSA_VARIANTS = [
     ),
     pytest.param(
         MLDSAVariant(
+            name="87",
             private_key_class=MLDSA87PrivateKey,
             public_key_class=MLDSA87PublicKey,
             pub_key_size=2592,
@@ -163,6 +168,66 @@ class TestMLDSA:
         sig2 = key.sign(data, b"")
         pub.verify(sig2, data)
 
+    @staticmethod
+    def _compute_mu(pub_raw: bytes, data: bytes, ctx: bytes = b"") -> bytes:
+        # FIPS 204: mu = SHAKE256(SHAKE256(pk, 64) || M', 64) where for pure
+        # ML-DSA M' = 0x00 || len(ctx) || ctx || M.
+        tr = hashlib.shake_256(pub_raw).digest(64)
+        m_prime = b"\x00" + bytes([len(ctx)]) + ctx + data
+        return hashlib.shake_256(tr + m_prime).digest(64)
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_sign_verify_mu(self, variant, backend):
+        key = variant.private_key_class.generate()
+        pub = key.public_key()
+        data = b"test data"
+        mu = self._compute_mu(pub.public_bytes_raw(), data)
+
+        sig = key.sign_mu(mu)
+        # Round-trips through the external-mu API.
+        pub.verify_mu(sig, mu)
+        # An external-mu signature is an ordinary ML-DSA signature.
+        pub.verify(sig, data)
+        # An ordinary signature verifies through the external-mu API.
+        sig2 = key.sign(data)
+        pub.verify_mu(sig2, mu)
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_sign_verify_mu_with_context(self, variant, backend):
+        key = variant.private_key_class.generate()
+        pub = key.public_key()
+        data = b"test data"
+        ctx = b"a context"
+        mu = self._compute_mu(pub.public_bytes_raw(), data, ctx)
+
+        sig = key.sign_mu(mu)
+        # The context is folded into mu, so the ordinary verify must supply it.
+        pub.verify(sig, data, ctx)
+        pub.verify_mu(sig, mu)
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_mu_wrong_length(self, variant, backend):
+        key = variant.private_key_class.generate()
+        pub = key.public_key()
+        with pytest.raises(ValueError):
+            key.sign_mu(b"0" * 63)
+        with pytest.raises(ValueError):
+            key.sign_mu(b"0" * 65)
+        sig = key.sign_mu(b"0" * 64)
+        with pytest.raises(ValueError):
+            pub.verify_mu(sig, b"0" * 63)
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_verify_mu_invalid(self, variant, backend):
+        key = variant.private_key_class.generate()
+        pub = key.public_key()
+        mu = b"\x01" * 64
+        sig = key.sign_mu(mu)
+        with pytest.raises(InvalidSignature):
+            pub.verify_mu(sig, b"\x02" * 64)
+        with pytest.raises(InvalidSignature):
+            pub.verify_mu(b"0" * variant.sig_size, mu)
+
     def test_kat_vectors_44(self, backend, subtests):
         vectors = load_vectors_from_file(
             os.path.join("asymmetric", "MLDSA", "kat_MLDSA_44_det_pure.rsp"),
@@ -225,6 +290,37 @@ class TestMLDSA:
 
                 pub = MLDSA87PublicKey.from_public_bytes(pk)
                 pub.verify(expected_sig, msg, ctx)
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_kat_vectors_external_mu(self, variant, backend, subtests):
+        # The deterministic pure KAT signatures come from an independent
+        # reference implementation. mu is fully determined by the public key,
+        # context, and message (FIPS 204 Algorithm 2), so deriving it and
+        # checking verify_mu accepts the reference signature exercises the
+        # external-mu path against known-answer data.
+        vectors = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "MLDSA", f"kat_MLDSA_{variant.name}_det_pure.rsp"
+            ),
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                pk = binascii.unhexlify(vector["pk"])
+                msg = binascii.unhexlify(vector["msg"])
+                ctx = binascii.unhexlify(vector["ctx"])
+                sm = binascii.unhexlify(vector["sm"])
+                expected_sig = sm[: variant.sig_size]
+                mu = self._compute_mu(pk, msg, ctx)
+
+                pub = variant.public_key_class.from_public_bytes(pk)
+                pub.verify_mu(expected_sig, mu)
+
+                # A signature that is valid for this mu must be rejected for a
+                # different mu.
+                wrong_mu = bytes([mu[0] ^ 0x01]) + mu[1:]
+                with pytest.raises(InvalidSignature):
+                    pub.verify_mu(expected_sig, wrong_mu)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
     def test_private_bytes_raw_round_trip(self, variant, backend):

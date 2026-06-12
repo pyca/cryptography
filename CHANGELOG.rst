@@ -67,6 +67,10 @@ Changelog
   (not an instance) encodes an RSA subject public key in the certificate's
   ``subjectPublicKeyInfo`` with the ``id-RSASSA-PSS`` OID and no
   parameters.
+* Added external mu (message representative) support to
+  :doc:`/hazmat/primitives/asymmetric/mldsa` via the
+  ``sign_mu`` and ``verify_mu`` methods, which sign and verify a precomputed
+  64-byte ``mu`` as defined in FIPS 204.
 
 .. _v48-0-1:
 

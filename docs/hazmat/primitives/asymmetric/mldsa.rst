@@ -95,6 +95,21 @@ Key interfaces
 
         :raises ValueError: If the context is longer than 255 bytes.
 
+    .. method:: sign_mu(mu)
+
+        .. versionadded:: 49.0.0
+
+        Sign a precomputed ``mu`` (message representative) using ML-DSA-44,
+        the "external mu" variant from FIPS 204. There is currently no API to
+        compute ``mu``, so you must compute it yourself.
+
+        :param mu: The 64-byte message representative.
+        :type mu: :term:`bytes-like`
+
+        :returns bytes: The signature (2420 bytes).
+
+        :raises ValueError: If ``mu`` is not 64 bytes.
+
     .. method:: private_bytes(encoding, format, encryption_algorithm)
 
         Allows serialization of the key to bytes. Encoding (
@@ -227,6 +242,25 @@ Key interfaces
             signature cannot be verified.
         :raises ValueError: If the context is longer than 255 bytes.
 
+    .. method:: verify_mu(signature, mu)
+
+        .. versionadded:: 49.0.0
+
+        Verify a signature over a precomputed ``mu`` (message representative),
+        the "external mu" variant from FIPS 204. There is currently no API to
+        compute ``mu``, so you must compute it yourself.
+
+        :param signature: The signature to verify.
+        :type signature: :term:`bytes-like`
+
+        :param mu: The 64-byte message representative.
+        :type mu: :term:`bytes-like`
+
+        :returns: None
+        :raises cryptography.exceptions.InvalidSignature: Raised when the
+            signature cannot be verified.
+        :raises ValueError: If ``mu`` is not 64 bytes.
+
 .. class:: MLDSA65PrivateKey
 
     .. versionadded:: 47.0.0
@@ -280,6 +314,21 @@ Key interfaces
         :returns bytes: The signature (3309 bytes).
 
         :raises ValueError: If the context is longer than 255 bytes.
+
+    .. method:: sign_mu(mu)
+
+        .. versionadded:: 49.0.0
+
+        Sign a precomputed ``mu`` (message representative) using ML-DSA-65,
+        the "external mu" variant from FIPS 204. There is currently no API to
+        compute ``mu``, so you must compute it yourself.
+
+        :param mu: The 64-byte message representative.
+        :type mu: :term:`bytes-like`
+
+        :returns bytes: The signature (3309 bytes).
+
+        :raises ValueError: If ``mu`` is not 64 bytes.
 
     .. method:: private_bytes(encoding, format, encryption_algorithm)
 
@@ -413,6 +462,25 @@ Key interfaces
             signature cannot be verified.
         :raises ValueError: If the context is longer than 255 bytes.
 
+    .. method:: verify_mu(signature, mu)
+
+        .. versionadded:: 49.0.0
+
+        Verify a signature over a precomputed ``mu`` (message representative),
+        the "external mu" variant from FIPS 204. There is currently no API to
+        compute ``mu``, so you must compute it yourself.
+
+        :param signature: The signature to verify.
+        :type signature: :term:`bytes-like`
+
+        :param mu: The 64-byte message representative.
+        :type mu: :term:`bytes-like`
+
+        :returns: None
+        :raises cryptography.exceptions.InvalidSignature: Raised when the
+            signature cannot be verified.
+        :raises ValueError: If ``mu`` is not 64 bytes.
+
 .. class:: MLDSA87PrivateKey
 
     .. versionadded:: 47.0.0
@@ -466,6 +534,21 @@ Key interfaces
         :returns bytes: The signature (4627 bytes).
 
         :raises ValueError: If the context is longer than 255 bytes.
+
+    .. method:: sign_mu(mu)
+
+        .. versionadded:: 49.0.0
+
+        Sign a precomputed ``mu`` (message representative) using ML-DSA-87,
+        the "external mu" variant from FIPS 204. There is currently no API to
+        compute ``mu``, so you must compute it yourself.
+
+        :param mu: The 64-byte message representative.
+        :type mu: :term:`bytes-like`
+
+        :returns bytes: The signature (4627 bytes).
+
+        :raises ValueError: If ``mu`` is not 64 bytes.
 
     .. method:: private_bytes(encoding, format, encryption_algorithm)
 
@@ -598,6 +681,25 @@ Key interfaces
         :raises cryptography.exceptions.InvalidSignature: Raised when the
             signature cannot be verified.
         :raises ValueError: If the context is longer than 255 bytes.
+
+    .. method:: verify_mu(signature, mu)
+
+        .. versionadded:: 49.0.0
+
+        Verify a signature over a precomputed ``mu`` (message representative),
+        the "external mu" variant from FIPS 204. There is currently no API to
+        compute ``mu``, so you must compute it yourself.
+
+        :param signature: The signature to verify.
+        :type signature: :term:`bytes-like`
+
+        :param mu: The 64-byte message representative.
+        :type mu: :term:`bytes-like`
+
+        :returns: None
+        :raises cryptography.exceptions.InvalidSignature: Raised when the
+            signature cannot be verified.
+        :raises ValueError: If ``mu`` is not 64 bytes.
 
 
 .. _`FIPS 204`: https://csrc.nist.gov/pubs/fips/204/final

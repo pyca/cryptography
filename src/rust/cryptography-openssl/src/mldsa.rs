@@ -4,14 +4,26 @@
 
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 use foreign_types_shared::ForeignType;
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+#[cfg(any(
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC,
+    CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+))]
 use foreign_types_shared::ForeignTypeRef;
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+#[cfg(any(
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC,
+    CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+))]
 use openssl_sys as ffi;
 #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
 use std::os::raw::c_int;
 
-#[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
+#[cfg(any(
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC,
+    CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+))]
 use crate::cvt;
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 use crate::cvt_p;
@@ -23,6 +35,10 @@ pub enum MlDsaVariant {
     MlDsa65,
     MlDsa87,
 }
+
+/// The length, in bytes, of an ML-DSA external mu (message representative)
+/// value, as defined in FIPS 204.
+pub const MLDSA_MU_BYTES: usize = 64;
 
 #[cfg(CRYPTOGRAPHY_IS_AWSLC)]
 pub const PKEY_ID: openssl::pkey::Id = openssl::pkey::Id::from_raw(ffi::NID_PQDSA);
@@ -262,6 +278,207 @@ pub fn verify(
         set_context_string(pkey_ctx, context)?;
     }
     Ok(md_ctx.digest_verify(data, signature).unwrap_or(false))
+}
+
+/// Enable "external mu" mode on an OpenSSL signing/verification context by
+/// setting the integer `mu` signature parameter (OSSL_SIGNATURE_PARAM_MU) to 1.
+#[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)]
+fn set_mu<T>(pkey_ctx: &mut openssl::pkey_ctx::PkeyCtxRef<T>) -> OpenSSLResult<()> {
+    // A fixed OSSL_PARAM array holding the integer "mu" parameter set to 1
+    // enables external mu mode. The provider reads it back with
+    // OSSL_PARAM_get_int, which accepts an unsigned integer param, so we can
+    // build the array on the stack rather than via an allocating
+    // OSSL_PARAM_BLD.
+    let mut mu: std::ffi::c_uint = 1;
+    // SAFETY: `params` and its backing `mu` value outlive the call into
+    // OpenSSL, and the array is terminated with OSSL_PARAM_construct_end().
+    unsafe {
+        let params = [
+            ffi::OSSL_PARAM_construct_uint(c"mu".as_ptr(), &mut mu),
+            ffi::OSSL_PARAM_construct_end(),
+        ];
+        cvt(ffi::EVP_PKEY_CTX_set_params(
+            pkey_ctx.as_ptr(),
+            params.as_ptr(),
+        ))?;
+    }
+    Ok(())
+}
+
+/// Sign a precomputed external mu (message representative). `mu` must be
+/// [`MLDSA_MU_BYTES`] long, and already incorporates any context string, so no
+/// context is accepted here.
+pub fn sign_mu(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+    mu: &[u8],
+) -> OpenSSLResult<Vec<u8>> {
+    // The BoringSSL path passes `mu` to the low-level API as a bare pointer
+    // that is read for exactly MLDSA_MU_BYTES, so enforce the length here for
+    // soundness rather than relying on callers.
+    assert_eq!(mu.len(), MLDSA_MU_BYTES);
+    cfg_if::cfg_if! {
+        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+            // BoringSSL has no EVP-level external mu support, so we drop down to
+            // the low-level ML-DSA API, reconstructing the private key from its
+            // 32-byte seed.
+            let seed = mldsa_seed_raw(pkey)?;
+            // SAFETY: `seed` is a valid 32-byte seed and `mu` is a valid
+            // MLDSA_MU_BYTES buffer; both outlive the calls below.
+            unsafe {
+                match MlDsaVariant::from_pkey(pkey) {
+                    MlDsaVariant::MlDsa44 => {
+                        let mut key = std::mem::MaybeUninit::<ffi::MLDSA44_private_key>::uninit();
+                        cvt(ffi::MLDSA44_private_key_from_seed(
+                            key.as_mut_ptr(),
+                            seed.as_ptr(),
+                            seed.len(),
+                        ))?;
+                        let key = key.assume_init();
+                        let mut sig = vec![0u8; ffi::MLDSA44_SIGNATURE_BYTES as usize];
+                        cvt(ffi::MLDSA44_sign_message_representative(
+                            sig.as_mut_ptr(),
+                            &key,
+                            mu.as_ptr(),
+                        ))?;
+                        Ok(sig)
+                    }
+                    MlDsaVariant::MlDsa65 => {
+                        let mut key = std::mem::MaybeUninit::<ffi::MLDSA65_private_key>::uninit();
+                        cvt(ffi::MLDSA65_private_key_from_seed(
+                            key.as_mut_ptr(),
+                            seed.as_ptr(),
+                            seed.len(),
+                        ))?;
+                        let key = key.assume_init();
+                        let mut sig = vec![0u8; ffi::MLDSA65_SIGNATURE_BYTES as usize];
+                        cvt(ffi::MLDSA65_sign_message_representative(
+                            sig.as_mut_ptr(),
+                            &key,
+                            mu.as_ptr(),
+                        ))?;
+                        Ok(sig)
+                    }
+                    MlDsaVariant::MlDsa87 => {
+                        let mut key = std::mem::MaybeUninit::<ffi::MLDSA87_private_key>::uninit();
+                        cvt(ffi::MLDSA87_private_key_from_seed(
+                            key.as_mut_ptr(),
+                            seed.as_ptr(),
+                            seed.len(),
+                        ))?;
+                        let key = key.assume_init();
+                        let mut sig = vec![0u8; ffi::MLDSA87_SIGNATURE_BYTES as usize];
+                        cvt(ffi::MLDSA87_sign_message_representative(
+                            sig.as_mut_ptr(),
+                            &key,
+                            mu.as_ptr(),
+                        ))?;
+                        Ok(sig)
+                    }
+                }
+            }
+        } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
+            // AWS-LC's EVP_PKEY_sign treats its input as an external mu (the
+            // "ExternalMu" format) for ML-DSA keys.
+            let mut ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
+            ctx.sign_init()?;
+            let mut sig = vec![];
+            ctx.sign_to_vec(mu, &mut sig)?;
+            Ok(sig)
+        } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
+            // OpenSSL signs an external mu by setting the "mu" parameter and
+            // passing the 64-byte mu in place of the message. ML-DSA only
+            // supports the digest-sign flow (EVP_PKEY_sign_init is not
+            // implemented for it), so we cannot use the one-shot PkeyCtx path
+            // the AWS-LC branch uses.
+            let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
+            let pkey_ctx = md_ctx.digest_sign_init(None, pkey)?;
+            set_mu(pkey_ctx)?;
+            let mut sig = vec![];
+            md_ctx.digest_sign_to_vec(mu, &mut sig)?;
+            Ok(sig)
+        }
+    }
+}
+
+/// Verify a signature over a precomputed external mu (message representative).
+/// `mu` must be [`MLDSA_MU_BYTES`] long.
+pub fn verify_mu(
+    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
+    signature: &[u8],
+    mu: &[u8],
+) -> OpenSSLResult<bool> {
+    // The BoringSSL path passes `mu` to the low-level API as a bare pointer
+    // that is read for exactly MLDSA_MU_BYTES, so enforce the length here for
+    // soundness rather than relying on callers.
+    assert_eq!(mu.len(), MLDSA_MU_BYTES);
+    cfg_if::cfg_if! {
+        if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
+            let raw = pkey.raw_public_key()?;
+            // SAFETY: We parse the low-level public key from its encoded form
+            // and verify the signature over the MLDSA_MU_BYTES `mu`.
+            unsafe {
+                match MlDsaVariant::from_pkey(pkey) {
+                    MlDsaVariant::MlDsa44 => {
+                        let mut key = std::mem::MaybeUninit::<ffi::MLDSA44_public_key>::uninit();
+                        let mut cbs = std::mem::MaybeUninit::<ffi::CBS>::uninit();
+                        ffi::CBS_init(cbs.as_mut_ptr(), raw.as_ptr(), raw.len());
+                        cvt(ffi::MLDSA44_parse_public_key(
+                            key.as_mut_ptr(),
+                            cbs.as_mut_ptr(),
+                        ))?;
+                        let key = key.assume_init();
+                        Ok(ffi::MLDSA44_verify_message_representative(
+                            &key,
+                            signature.as_ptr(),
+                            signature.len(),
+                            mu.as_ptr(),
+                        ) == 1)
+                    }
+                    MlDsaVariant::MlDsa65 => {
+                        let mut key = std::mem::MaybeUninit::<ffi::MLDSA65_public_key>::uninit();
+                        let mut cbs = std::mem::MaybeUninit::<ffi::CBS>::uninit();
+                        ffi::CBS_init(cbs.as_mut_ptr(), raw.as_ptr(), raw.len());
+                        cvt(ffi::MLDSA65_parse_public_key(
+                            key.as_mut_ptr(),
+                            cbs.as_mut_ptr(),
+                        ))?;
+                        let key = key.assume_init();
+                        Ok(ffi::MLDSA65_verify_message_representative(
+                            &key,
+                            signature.as_ptr(),
+                            signature.len(),
+                            mu.as_ptr(),
+                        ) == 1)
+                    }
+                    MlDsaVariant::MlDsa87 => {
+                        let mut key = std::mem::MaybeUninit::<ffi::MLDSA87_public_key>::uninit();
+                        let mut cbs = std::mem::MaybeUninit::<ffi::CBS>::uninit();
+                        ffi::CBS_init(cbs.as_mut_ptr(), raw.as_ptr(), raw.len());
+                        cvt(ffi::MLDSA87_parse_public_key(
+                            key.as_mut_ptr(),
+                            cbs.as_mut_ptr(),
+                        ))?;
+                        let key = key.assume_init();
+                        Ok(ffi::MLDSA87_verify_message_representative(
+                            &key,
+                            signature.as_ptr(),
+                            signature.len(),
+                            mu.as_ptr(),
+                        ) == 1)
+                    }
+                }
+            }
+        } else if #[cfg(CRYPTOGRAPHY_IS_AWSLC)] {
+            let mut ctx = openssl::pkey_ctx::PkeyCtx::new(pkey)?;
+            ctx.verify_init()?;
+            Ok(ctx.verify(mu, signature).unwrap_or(false))
+        } else if #[cfg(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER)] {
+            let mut md_ctx = openssl::md_ctx::MdCtx::new()?;
+            let pkey_ctx = md_ctx.digest_verify_init(None, pkey)?;
+            set_mu(pkey_ctx)?;
+            Ok(md_ctx.digest_verify(mu, signature).unwrap_or(false))
+        }
+    }
 }
 
 #[cfg(test)]
