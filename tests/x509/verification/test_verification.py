@@ -13,7 +13,10 @@ import pytest
 from cryptography import x509
 from cryptography.hazmat._oid import ExtendedKeyUsageOID
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric import ec, rsa
+from cryptography.hazmat.primitives.asymmetric.types import (
+    CertificatePublicKeyTypes,
+)
 from cryptography.x509 import ExtensionType
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.oid import NameOID
@@ -281,9 +284,19 @@ def _key_usage(
 
 def _chain_with_leaf_key_usage(
     key_usage: Optional[x509.KeyUsage],
+    *,
+    leaf_key_type="ec",
 ):
     ca_key = ec.generate_private_key(ec.SECP256R1())
-    leaf_key = ec.generate_private_key(ec.SECP256R1())
+    leaf_public_key: CertificatePublicKeyTypes
+    if leaf_key_type == "rsa":
+        leaf_public_key = rsa.generate_private_key(
+            public_exponent=65537, key_size=2048
+        ).public_key()
+    elif leaf_key_type == "ec":
+        leaf_public_key = ec.generate_private_key(ec.SECP256R1()).public_key()
+    else:
+        raise AssertionError(f"unsupported leaf key type: {leaf_key_type}")
 
     not_before = datetime.datetime(2024, 1, 1)
     not_after = datetime.datetime(2034, 1, 1)
@@ -316,7 +329,7 @@ def _chain_with_leaf_key_usage(
         x509.CertificateBuilder()
         .subject_name(leaf_name)
         .issuer_name(ca_name)
-        .public_key(leaf_key.public_key())
+        .public_key(leaf_public_key)
         .serial_number(x509.random_serial_number())
         .not_valid_before(not_before)
         .not_valid_after(not_after)
@@ -339,22 +352,39 @@ def _chain_with_leaf_key_usage(
 
 @pytest.mark.parametrize("verifier_kind", ["server", "client"])
 @pytest.mark.parametrize(
-    ("key_usage", "error"),
+    ("leaf_key_type", "key_usage", "error"),
     [
-        (None, None),
-        (_key_usage(digital_signature=True), None),
+        ("ec", None, None),
+        ("ec", _key_usage(digital_signature=True), None),
         (
+            "ec",
             _key_usage(key_encipherment=True),
-            "EE keyUsage must assert digitalSignature when present",
+            "EE keyUsage must assert digitalSignature",
         ),
         (
+            "ec",
             _key_usage(digital_signature=True, key_cert_sign=True),
+            "EE keyUsage must not assert keyCertSign",
+        ),
+        ("rsa", None, None),
+        ("rsa", _key_usage(digital_signature=True), None),
+        ("rsa", _key_usage(key_encipherment=True), None),
+        (
+            "rsa",
+            _key_usage(),
+            "RSA EE keyUsage must assert digitalSignature or keyEncipherment",
+        ),
+        (
+            "rsa",
+            _key_usage(key_encipherment=True, key_cert_sign=True),
             "EE keyUsage must not assert keyCertSign",
         ),
     ],
 )
-def test_default_ee_key_usage(verifier_kind, key_usage, error):
-    ca, leaf, validation_time = _chain_with_leaf_key_usage(key_usage)
+def test_default_ee_key_usage(verifier_kind, leaf_key_type, key_usage, error):
+    ca, leaf, validation_time = _chain_with_leaf_key_usage(
+        key_usage, leaf_key_type=leaf_key_type
+    )
     builder = PolicyBuilder().store(Store([ca])).time(validation_time)
 
     def verify_leaf():
