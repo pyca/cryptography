@@ -289,7 +289,7 @@ fn set_mu<T>(pkey_ctx: &mut openssl::pkey_ctx::PkeyCtxRef<T>) -> OpenSSLResult<(
     // OSSL_PARAM_get_int, which accepts an unsigned integer param, so we can
     // build the array on the stack rather than via an allocating
     // OSSL_PARAM_BLD.
-    let mut mu: std::os::raw::c_uint = 1;
+    let mut mu: std::ffi::c_uint = 1;
     // SAFETY: `params` and its backing `mu` value outlive the call into
     // OpenSSL, and the array is terminated with OSSL_PARAM_construct_end().
     unsafe {
@@ -312,6 +312,10 @@ pub fn sign_mu(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
     mu: &[u8],
 ) -> OpenSSLResult<Vec<u8>> {
+    // The BoringSSL path passes `mu` to the low-level API as a bare pointer
+    // that is read for exactly MLDSA_MU_BYTES, so enforce the length here for
+    // soundness rather than relying on callers.
+    assert_eq!(mu.len(), MLDSA_MU_BYTES);
     cfg_if::cfg_if! {
         if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
             // BoringSSL has no EVP-level external mu support, so we drop down to
@@ -403,6 +407,10 @@ pub fn verify_mu(
     signature: &[u8],
     mu: &[u8],
 ) -> OpenSSLResult<bool> {
+    // The BoringSSL path passes `mu` to the low-level API as a bare pointer
+    // that is read for exactly MLDSA_MU_BYTES, so enforce the length here for
+    // soundness rather than relying on callers.
+    assert_eq!(mu.len(), MLDSA_MU_BYTES);
     cfg_if::cfg_if! {
         if #[cfg(CRYPTOGRAPHY_IS_BORINGSSL)] {
             let raw = pkey.raw_public_key()?;
@@ -412,8 +420,12 @@ pub fn verify_mu(
                 match MlDsaVariant::from_pkey(pkey) {
                     MlDsaVariant::MlDsa44 => {
                         let mut key = std::mem::MaybeUninit::<ffi::MLDSA44_public_key>::uninit();
-                        let mut cbs = ffi::CBS { data: raw.as_ptr(), len: raw.len() };
-                        cvt(ffi::MLDSA44_parse_public_key(key.as_mut_ptr(), &mut cbs))?;
+                        let mut cbs = std::mem::MaybeUninit::<ffi::CBS>::uninit();
+                        ffi::CBS_init(cbs.as_mut_ptr(), raw.as_ptr(), raw.len());
+                        cvt(ffi::MLDSA44_parse_public_key(
+                            key.as_mut_ptr(),
+                            cbs.as_mut_ptr(),
+                        ))?;
                         let key = key.assume_init();
                         Ok(ffi::MLDSA44_verify_message_representative(
                             &key,
@@ -424,8 +436,12 @@ pub fn verify_mu(
                     }
                     MlDsaVariant::MlDsa65 => {
                         let mut key = std::mem::MaybeUninit::<ffi::MLDSA65_public_key>::uninit();
-                        let mut cbs = ffi::CBS { data: raw.as_ptr(), len: raw.len() };
-                        cvt(ffi::MLDSA65_parse_public_key(key.as_mut_ptr(), &mut cbs))?;
+                        let mut cbs = std::mem::MaybeUninit::<ffi::CBS>::uninit();
+                        ffi::CBS_init(cbs.as_mut_ptr(), raw.as_ptr(), raw.len());
+                        cvt(ffi::MLDSA65_parse_public_key(
+                            key.as_mut_ptr(),
+                            cbs.as_mut_ptr(),
+                        ))?;
                         let key = key.assume_init();
                         Ok(ffi::MLDSA65_verify_message_representative(
                             &key,
@@ -436,8 +452,12 @@ pub fn verify_mu(
                     }
                     MlDsaVariant::MlDsa87 => {
                         let mut key = std::mem::MaybeUninit::<ffi::MLDSA87_public_key>::uninit();
-                        let mut cbs = ffi::CBS { data: raw.as_ptr(), len: raw.len() };
-                        cvt(ffi::MLDSA87_parse_public_key(key.as_mut_ptr(), &mut cbs))?;
+                        let mut cbs = std::mem::MaybeUninit::<ffi::CBS>::uninit();
+                        ffi::CBS_init(cbs.as_mut_ptr(), raw.as_ptr(), raw.len());
+                        cvt(ffi::MLDSA87_parse_public_key(
+                            key.as_mut_ptr(),
+                            cbs.as_mut_ptr(),
+                        ))?;
                         let key = key.assume_init();
                         Ok(ffi::MLDSA87_verify_message_representative(
                             &key,

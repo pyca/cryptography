@@ -170,7 +170,23 @@ def _compute_mu(pub_raw: bytes, msg: bytes, ctx: bytes) -> bytes:
     return hashlib.shake_256(tr + m_prime).digest(64)
 
 
-def _external_mu_test(public_key_class, wycheproof):
+_MLDSA_PUBLIC_KEYS = {
+    "ML-DSA-44": MLDSA44PublicKey,
+    "ML-DSA-65": MLDSA65PublicKey,
+    "ML-DSA-87": MLDSA87PublicKey,
+}
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mldsa_supported(),
+    skip_message="Requires a backend with ML-DSA support",
+)
+@wycheproof_tests(
+    "mldsa_44_sign_seed_test.json",
+    "mldsa_65_sign_seed_test.json",
+    "mldsa_87_sign_seed_test.json",
+)
+def test_mldsa_external_mu(backend, wycheproof):
     # Only some sign vectors carry a precomputed mu ("External Mu"), so we
     # filter out the ones that don't. The ones that do include the "Internal"
     # cases that NIST provides as bare mu values with no message or context;
@@ -181,6 +197,7 @@ def _external_mu_test(public_key_class, wycheproof):
     if "mu" not in wycheproof.testcase or not wycheproof.valid:
         return
 
+    public_key_class = _MLDSA_PUBLIC_KEYS[wycheproof.testfiledata["algorithm"]]
     pub_raw = binascii.unhexlify(wycheproof.testgroup["publicKey"])
     pub = public_key_class.from_public_bytes(pub_raw)
     mu = binascii.unhexlify(wycheproof.testcase["mu"])
@@ -200,33 +217,6 @@ def _external_mu_test(public_key_class, wycheproof):
         ctx = binascii.unhexlify(wycheproof.testcase.get("ctx", ""))
         assert _compute_mu(pub_raw, msg, ctx) == mu
         pub.verify(sig, msg, ctx)
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mldsa_supported(),
-    skip_message="Requires a backend with ML-DSA support",
-)
-@wycheproof_tests("mldsa_44_sign_seed_test.json")
-def test_mldsa44_external_mu(backend, wycheproof):
-    _external_mu_test(MLDSA44PublicKey, wycheproof)
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mldsa_supported(),
-    skip_message="Requires a backend with ML-DSA support",
-)
-@wycheproof_tests("mldsa_65_sign_seed_test.json")
-def test_mldsa65_external_mu(backend, wycheproof):
-    _external_mu_test(MLDSA65PublicKey, wycheproof)
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mldsa_supported(),
-    skip_message="Requires a backend with ML-DSA support",
-)
-@wycheproof_tests("mldsa_87_sign_seed_test.json")
-def test_mldsa87_external_mu(backend, wycheproof):
-    _external_mu_test(MLDSA87PublicKey, wycheproof)
 
 
 @pytest.mark.supported(
