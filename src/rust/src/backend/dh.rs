@@ -55,18 +55,20 @@ fn generate_parameters(
 
 pub(crate) fn private_key_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
-) -> DHPrivateKey {
-    DHPrivateKey {
+) -> CryptographyResult<DHPrivateKey> {
+    check_dh_parameters(&pkey.dh()?)?;
+    Ok(DHPrivateKey {
         pkey: pkey.to_owned(),
-    }
+    })
 }
 
 pub(crate) fn public_key_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
-) -> DHPublicKey {
-    DHPublicKey {
+) -> CryptographyResult<DHPublicKey> {
+    check_dh_parameters(&pkey.dh()?)?;
+    Ok(DHPublicKey {
         pkey: pkey.to_owned(),
-    }
+    })
 }
 
 #[pyo3::pyfunction]
@@ -85,9 +87,9 @@ fn from_der_parameters(
         .transpose()?;
     let g = openssl::bn::BigNum::from_slice(asn1_params.g.as_bytes())?;
 
-    Ok(DHParameters {
-        dh: openssl::dh::Dh::from_pqg(p, q, g)?,
-    })
+    let dh = openssl::dh::Dh::from_pqg(p, q, g)?;
+    check_dh_parameters(&dh)?;
+    Ok(DHParameters { dh })
 }
 
 #[pyo3::pyfunction]
@@ -119,13 +121,19 @@ fn dh_parameters_from_numbers(
     let g = utils::py_int_to_bn(py, numbers.g.bind(py))?;
 
     let dh = openssl::dh::Dh::from_pqg(p, q, g)?;
+    check_dh_parameters(&dh)?;
+    Ok(dh)
+}
 
+fn check_dh_parameters<T: openssl::pkey::HasParams>(
+    dh: &openssl::dh::Dh<T>,
+) -> CryptographyResult<()> {
     if !dh.check_key()? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"),
         ));
     }
-    Ok(dh)
+    Ok(())
 }
 
 fn clone_dh<T: openssl::pkey::HasParams>(
