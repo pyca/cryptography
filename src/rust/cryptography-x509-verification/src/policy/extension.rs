@@ -640,6 +640,12 @@ mod ee {
                     "EE keyUsage must not assert keyCertSign".to_string(),
                 )));
             }
+
+            if !key_usage.digital_signature() {
+                return Err(ValidationError::new(ValidationErrorKind::Other(
+                    "EE keyUsage must assert digitalSignature when present".to_string(),
+                )));
+            }
         }
 
         Ok(())
