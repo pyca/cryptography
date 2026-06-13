@@ -38,18 +38,21 @@ struct DsaParameters {
 
 pub(crate) fn private_key_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
-) -> DsaPrivateKey {
-    DsaPrivateKey {
+) -> CryptographyResult<DsaPrivateKey> {
+    Ok(DsaPrivateKey {
         pkey: pkey.to_owned(),
-    }
+    })
 }
 
 pub(crate) fn public_key_from_pkey(
+    py: pyo3::Python<'_>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
-) -> DsaPublicKey {
-    DsaPublicKey {
+) -> CryptographyResult<DsaPublicKey> {
+    let key = DsaPublicKey {
         pkey: pkey.to_owned(),
-    }
+    };
+    check_dsa_public_numbers(py, &key.public_numbers(py)?)?;
+    Ok(key)
 }
 
 #[pyo3::pyfunction]
@@ -305,12 +308,40 @@ fn check_dsa_parameters(
     Ok(())
 }
 
+fn check_dsa_public_numbers(
+    py: pyo3::Python<'_>,
+    numbers: &DsaPublicNumbers,
+) -> CryptographyResult<()> {
+    let params = numbers.parameter_numbers.get();
+    check_dsa_parameters(py, params)?;
+
+    if numbers.y.bind(py).le(1)? || numbers.y.bind(py).ge(params.p.bind(py))? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("y must be > 1 and < p."),
+        ));
+    }
+
+    if numbers
+        .y
+        .bind(py)
+        .pow(params.q.bind(py), Some(params.p.bind(py)))?
+        .ne(1)?
+    {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("y ** q mod p must be 1."),
+        ));
+    }
+
+    Ok(())
+}
+
 fn check_dsa_private_numbers(
     py: pyo3::Python<'_>,
     numbers: &DsaPrivateNumbers,
 ) -> CryptographyResult<()> {
-    let params = numbers.public_numbers.get().parameter_numbers.get();
-    check_dsa_parameters(py, params)?;
+    let public_numbers = numbers.public_numbers.get();
+    let params = public_numbers.parameter_numbers.get();
+    check_dsa_public_numbers(py, public_numbers)?;
 
     if numbers.x.bind(py).le(0)? || numbers.x.bind(py).ge(params.q.bind(py))? {
         return Err(CryptographyError::from(
@@ -318,7 +349,7 @@ fn check_dsa_private_numbers(
         ));
     }
 
-    if (**numbers.public_numbers.get().y.bind(py)).ne(params
+    if (**public_numbers.y.bind(py)).ne(params
         .g
         .bind(py)
         .pow(numbers.x.bind(py), Some(params.p.bind(py)))?)?
@@ -440,7 +471,7 @@ impl DsaPublicNumbers {
 
         let parameter_numbers = self.parameter_numbers.get();
 
-        check_dsa_parameters(py, parameter_numbers)?;
+        check_dsa_public_numbers(py, self)?;
 
         let dsa = openssl::dsa::Dsa::from_public_components(
             utils::py_int_to_bn(py, parameter_numbers.p.bind(py))?,
