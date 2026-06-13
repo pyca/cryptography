@@ -317,11 +317,11 @@ jobs:
         uses: ./.github/actions/fetch-openssl
         with:
           workflow: build-macos-openssl.yml
-          name: openssl-macos-universal2
-          path: "../openssl-macos-universal2/"
+          name: openssl-macos-arm64
+          path: "../openssl-macos-arm64/"
       - name: Build nox environment
         run: |
-          OPENSSL_DIR=$(readlink -f ../openssl-macos-universal2/) \
+          OPENSSL_DIR=$(readlink -f ../openssl-macos-arm64/) \
             OPENSSL_STATIC=1 \
             CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function" \
             nox -v --install-only

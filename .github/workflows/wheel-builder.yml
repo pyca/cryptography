@@ -245,8 +245,8 @@ jobs:
           workflow: build-macos-openssl.yml
           branch: main
           workflow_conclusion: success
-          name: openssl-macos-universal2
-          path: "../openssl-macos-universal2/"
+          name: openssl-macos-arm64
+          path: "../openssl-macos-arm64/"
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
         with:
@@ -269,9 +269,9 @@ jobs:
               PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
           fi
 
-          OPENSSL_DIR="$(readlink -f ../openssl-macos-universal2/)" \
+          OPENSSL_DIR="$(readlink -f ../openssl-macos-arm64/)" \
               OPENSSL_STATIC=1 \
-              uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API --config-settings=build-args=--sbom-include="$(readlink -f ../openssl-macos-universal2/sbom.json)" cryptography*.tar.gz -o wheelhouse/
+              uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API --config-settings=build-args=--sbom-include="$(readlink -f ../openssl-macos-arm64/sbom.json)" cryptography*.tar.gz -o wheelhouse/
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.PYTHON.DEPLOYMENT_TARGET }}
           ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
