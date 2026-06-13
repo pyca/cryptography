@@ -5,6 +5,7 @@
 use std::sync::OnceLock;
 
 use cryptography_x509::certificate::Certificate;
+use cryptography_x509::crl::CertificateRevocationList;
 
 pub struct VerificationCertificate<'a, B: CryptoOps> {
     cert: &'a Certificate<'a>,
@@ -86,6 +87,14 @@ pub trait CryptoOps {
     /// if the key is malformed.
     fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err>;
 
+    /// Verifies the signature on `CertificateRevocationList` using
+    /// the given `Key`.
+    fn verify_crl_signed_by(
+        &self,
+        crl: &CertificateRevocationList<'_>,
+        key: &Self::Key,
+    ) -> Result<(), Self::Err>;
+
     /// Verifies the signature on `Certificate` using the given
     /// `Key`.
     fn verify_signed_by(&self, cert: &Certificate<'_>, key: &Self::Key) -> Result<(), Self::Err>;
@@ -100,6 +109,7 @@ pub trait CryptoOps {
 #[cfg(test)]
 pub(crate) mod tests {
     use cryptography_x509::certificate::Certificate;
+    use cryptography_x509::crl::CertificateRevocationList;
 
     use super::VerificationCertificate;
     use crate::certificate::tests::PublicKeyErrorOps;
@@ -127,6 +137,10 @@ zl9HYIMxATFyqSiD9jsx
 
     pub(crate) fn cert(cert_pem: &pem::Pem) -> Certificate<'_> {
         asn1::parse_single(cert_pem.contents()).unwrap()
+    }
+
+    pub(crate) fn crl(crl_pem: &pem::Pem) -> CertificateRevocationList<'_> {
+        asn1::parse_single(crl_pem.contents()).unwrap()
     }
 
     #[test]

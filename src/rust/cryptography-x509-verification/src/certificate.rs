@@ -14,8 +14,9 @@ pub(crate) fn cert_is_self_issued(cert: &Certificate<'_>) -> bool {
 pub(crate) mod tests {
     use super::cert_is_self_issued;
     use crate::certificate::Certificate;
-    use crate::ops::tests::{cert, v1_cert_pem};
+    use crate::ops::tests::{cert, crl, v1_cert_pem};
     use crate::ops::CryptoOps;
+    use cryptography_x509::crl::CertificateRevocationList;
 
     #[test]
     fn test_certificate_v1() {
@@ -42,6 +43,25 @@ Xw4nMqk=
         .unwrap()
     }
 
+    fn crl_pem() -> pem::Pem {
+        // From vectors/cryptography_vectors/x509/custom/crl_empty.pem
+        pem::parse(
+            "-----BEGIN X509 CRL-----
+MIIBxTCBrgIBATANBgkqhkiG9w0BAQUFADBhMQswCQYDVQQGEwJVUzERMA8GA1UE
+CAwISWxsaW5vaXMxEDAOBgNVBAcMB0NoaWNhZ28xETAPBgNVBAoMCHI1MDkgTExD
+MRowGAYDVQQDDBFyNTA5IENSTCBEZWxlZ2F0ZRcNMTUxMjIwMjM0NDQ3WhcNMTUx
+MjI4MDA0NDQ3WqAZMBcwCgYDVR0UBAMCAQEwCQYDVR0jBAIwADANBgkqhkiG9w0B
+AQUFAAOCAQEAXebqoZfEVAC4NcSEB5oGqUviUn/AnY6TzB6hUe8XC7yqEkBcyTgk
+G1Zq+b+T/5X1ewTldvuUqv19WAU/Epbbu4488PoH5qMV8Aii2XcotLJOR9OBANp0
+Yy4ir/n6qyw8kM3hXJloE+xgkELhd5JmKCnlXihM1BTl7Xp7jyKeQ86omR+DhItb
+CU+9RoqOK9Hm087Z7RurXVrz5RKltQo7VLCp8VmrxFwfALCZENXGEQ+g5VkvoCjc
+ph5jqOSyzp7aZy1pnLE/6U6V32ItskrwqA+x4oj2Wvzir/Q23y2zYfqOkuq4fTd2
+lWW+w5mB167fIWmd6efecDn1ZqbdECDPUg==
+-----END X509 CRL-----",
+        )
+        .unwrap()
+    }
+
     #[test]
     fn test_certificate_ca() {
         let cert_pem = ca_pem();
@@ -60,6 +80,14 @@ Xw4nMqk=
         fn public_key(&self, _cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
             // Simulate failing to retrieve a public key.
             Err(())
+        }
+
+        fn verify_crl_signed_by(
+            &self,
+            _crl: &CertificateRevocationList<'_>,
+            _key: &Self::Key,
+        ) -> Result<(), Self::Err> {
+            Ok(())
         }
 
         fn verify_signed_by(
@@ -98,9 +126,12 @@ Xw4nMqk=
         // Just to get coverage on the `PublicKeyErrorOps` helper.
         let cert_pem = ca_pem();
         let cert = cert(&cert_pem);
+        let crl_pem = crl_pem();
+        let crl = crl(&crl_pem);
         let ops = PublicKeyErrorOps {};
 
         assert!(ops.public_key(&cert).is_err());
         assert!(ops.verify_signed_by(&cert, &()).is_ok());
+        assert!(ops.verify_crl_signed_by(&crl, &()).is_ok());
     }
 }

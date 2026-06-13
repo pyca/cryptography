@@ -10,6 +10,7 @@ from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.x509.general_name import DNSName, IPAddress
 
 __all__ = [
+    "CRLRevocationChecker",
     "ClientVerifier",
     "Criticality",
     "ExtensionPolicy",
@@ -32,3 +33,4 @@ Policy = rust_x509.Policy
 ExtensionPolicy = rust_x509.ExtensionPolicy
 Criticality = rust_x509.Criticality
 VerificationError = rust_x509.VerificationError
+CRLRevocationChecker = rust_x509.CRLRevocationChecker
