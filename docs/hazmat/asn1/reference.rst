@@ -87,6 +87,13 @@ field types. They are encoded by embedding their DER serialization, and
 decoded by parsing the field as the corresponding X.509 object. These
 fields cannot have :class:`Implicit` annotations.
 
+.. versionadded:: 50.0.0
+
+:class:`~cryptography.x509.Name` can also be used as a field type. It is
+encoded and decoded as an X.509 ``Name`` (a ``SEQUENCE OF
+RelativeDistinguishedName``), and supports :class:`Implicit` and
+:class:`Explicit` annotations.
+
 .. code-block:: python
 
     from cryptography import x509

@@ -307,6 +307,19 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     encoding,
                 )?)
             }
+            Type::Name() => {
+                if !value.is_instance(&crate::types::NAME.get(py)?)? {
+                    return Err(CryptographyError::Py(
+                        pyo3::exceptions::PyTypeError::new_err(format!(
+                            "Name field must be an instance of x509.Name, got: {}",
+                            value.get_type().name()?,
+                        )),
+                    ));
+                }
+                let ka = cryptography_keepalive::KeepAlive::new();
+                let name = crate::x509::common::encode_name(py, &ka, &value)?;
+                Ok(write_value(writer, &name, encoding)?)
+            }
         }
     }
 }

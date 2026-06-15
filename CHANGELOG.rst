@@ -11,6 +11,8 @@ Changelog
 * Parsing a Signed Certificate Timestamp list now rejects encodings that
   carry trailing bytes after the list or after an individual SCT, instead of
   silently ignoring them.
+* Added support for using :class:`~cryptography.x509.Name` as a field type in
+  the :doc:`/hazmat/asn1/index` module.
 
 .. _v49-0-0:
 

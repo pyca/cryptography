@@ -245,6 +245,15 @@ fn decode_crl<'a>(
     Ok(pyo3::Bound::new(py, crl)?)
 }
 
+fn decode_name<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
+    let name = read_value::<cryptography_x509::name::NameReadable<'a>>(parser, encoding)?;
+    crate::x509::common::parse_name(py, &name)
+}
+
 fn decode_null<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -463,6 +472,7 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::Certificate() => decode_certificate(py, parser, encoding)?.into_any(),
         Type::CertificateSigningRequest() => decode_csr(py, parser, encoding)?.into_any(),
         Type::CertificateRevocationList() => decode_crl(py, parser, encoding)?.into_any(),
+        Type::Name() => decode_name(py, parser, encoding)?,
     };
 
     match &ann_type.annotation.get().default {
