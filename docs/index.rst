@@ -68,6 +68,7 @@ hazmat layer only when necessary.
     :caption: The recipes layer
 
     fernet
+    chunked
     x509/index
 
 .. toctree::

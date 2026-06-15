@@ -8,6 +8,10 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added :doc:`/chunked`, an implementation of the `C2SP chunked encryption
+  <https://github.com/C2SP/C2SP/blob/main/chunked-encryption.md>`_
+  specification for streaming authenticated encryption of large messages.
+
 .. _v49-0-0:
 
 49.0.0 - 2026-06-12

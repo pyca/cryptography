@@ -45,6 +45,7 @@ decrypts
 Decrypts
 decrypted
 decrypting
+decryptor
 deprecations
 DER
 dereference
@@ -60,6 +61,7 @@ duplicative
 El
 embeddability
 Encodings
+encryptor
 endian
 Euler
 extendable
@@ -80,6 +82,7 @@ hostnames
 incrementing
 indistinguishability
 initialisms
+instantiation
 interoperability
 interoperable
 introspectability
