@@ -260,7 +260,7 @@ urllib3==2.7.0 ; python_full_version >= '3.10'
     # via requests
 uv==0.11.21
     # via nox
-virtualenv==21.4.3
+virtualenv==21.5.0
     # via nox
 zipp==3.23.1 ; python_full_version < '3.10'
     # via importlib-metadata
