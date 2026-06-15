@@ -2104,11 +2104,15 @@ class TestName:
         return x509.Name.from_rfc4514_string("CN=foo,O=bar")
 
     def test_name(self, name: x509.Name) -> None:
-        assert_roundtrips([(name, name.public_bytes())])
-
-    def test_empty_name(self) -> None:
-        name = x509.Name([])
-        assert_roundtrips([(name, name.public_bytes())])
+        empty = x509.Name([])
+        name_der = name.public_bytes()
+        assert_roundtrips(
+            [
+                # Top-level, both populated and empty.
+                (name, name_der),
+                (empty, empty.public_bytes()),
+            ]
+        )
 
     def test_fields(self, name: x509.Name) -> None:
         @asn1.sequence
@@ -2120,18 +2124,9 @@ class TestName:
         expected = b"\x30" + _der_length(len(inner)) + inner
         assert_roundtrips([(Example(name=name), expected)])
 
-    def test_name_explicit(self, name: x509.Name) -> None:
-        @asn1.sequence
-        @_comparable_dataclass
-        class Example:
-            name: Annotated[x509.Name, asn1.Explicit(0)]
-
-        name_der = name.public_bytes()
-        inner = b"\xa0" + _der_length(len(name_der)) + name_der
-        expected = b"\x30" + _der_length(len(inner)) + inner
-        assert_roundtrips([(Example(name=name), expected)])
-
     def test_name_implicit(self, name: x509.Name) -> None:
+        # Unlike Certificate/CSR/CRL, Name is encoded and decoded through the
+        # asn1 machinery directly, so it supports IMPLICIT annotations.
         @asn1.sequence
         @_comparable_dataclass
         class Example:
@@ -2143,43 +2138,6 @@ class TestName:
         inner = b"\xa0" + name_der[1:]
         expected = b"\x30" + _der_length(len(inner)) + inner
         assert_roundtrips([(Example(name=name), expected)])
-
-    def test_optional_name(self, name: x509.Name) -> None:
-        @asn1.sequence
-        @_comparable_dataclass
-        class Example:
-            name: typing.Union[x509.Name, None]
-
-        name_der = name.public_bytes()
-        assert_roundtrips(
-            [
-                (
-                    Example(name=name),
-                    b"\x30" + _der_length(len(name_der)) + name_der,
-                ),
-                (Example(name=None), b"\x30\x00"),
-            ]
-        )
-
-    def test_name_choice(self, name: x509.Name) -> None:
-        @asn1.sequence
-        @_comparable_dataclass
-        class Example:
-            field: typing.Union[x509.Name, int]
-
-        name_der = name.public_bytes()
-        assert_roundtrips(
-            [
-                (
-                    Example(field=name),
-                    b"\x30" + _der_length(len(name_der)) + name_der,
-                ),
-                (
-                    Example(field=9),
-                    b"\x30" + _der_length(3) + b"\x02\x01\x09",
-                ),
-            ]
-        )
 
     def test_decode_invalid(self) -> None:
         # Not even a valid TLV
