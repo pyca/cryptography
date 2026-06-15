@@ -353,6 +353,11 @@ Key exchange
 * ``vectors/cryptography_vectors/asymmetric/DH/dh_key_256.pem`` contains
   a PEM PKCS8 encoded DH key with a 256-bit key size.
 
+* ``vectors/cryptography_vectors/asymmetric/DH/dhp_privatevaluelength.pem``
+  contains PKCS#3 ``DH PARAMETERS`` that include the optional
+  ``privateValueLength`` field, which must not be confused with an X9.42
+  subprime ``q``.
+
 * ``vectors/cryptoraphy_vectors/asymmetric/ECDH/brainpool.txt`` contains
   Brainpool vectors from :rfc:`7027`.
 

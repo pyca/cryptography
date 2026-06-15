@@ -979,6 +979,20 @@ class TestDHParameterSerialization:
         else:
             assert parameter_numbers.q is None
 
+    def test_load_pkcs3_with_private_value_length(self):
+        # A PKCS#3 "DH PARAMETERS" structure may carry an optional trailing
+        # INTEGER, privateValueLength. It must not be confused with the X9.42
+        # subprime q (which only appears in "X9.42 DH PARAMETERS").
+        param_bytes = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhp_privatevaluelength.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        parameters = serialization.load_pem_parameters(param_bytes)
+        parameter_numbers = parameters.parameter_numbers()
+        assert parameter_numbers.g == 2
+        assert parameter_numbers.q is None
+
     @pytest.mark.parametrize(
         ("encoding", "fmt"),
         [
