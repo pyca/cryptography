@@ -363,7 +363,7 @@ fn public_key_from_pkey<'p>(
             .into_pyobject(py)?
             .into_any()),
 
-        openssl::pkey::Id::DSA => Ok(crate::backend::dsa::public_key_from_pkey(py, pkey)?
+        openssl::pkey::Id::DSA => Ok(crate::backend::dsa::public_key_from_pkey(pkey)?
             .into_pyobject(py)?
             .into_any()),
         openssl::pkey::Id::DH => Ok(crate::backend::dh::public_key_from_pkey(pkey)

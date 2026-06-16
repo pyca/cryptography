@@ -274,6 +274,24 @@ class TestDSA:
                 DSA_KEY_1024.public_numbers.parameter_numbers.p,
                 DSA_KEY_1024.public_numbers.parameter_numbers.q,
                 DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                -1,
+                DSA_KEY_1024.x,
+            ),
+            (
+                DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                pow(
+                    DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                    DSA_KEY_1024.x + 1,
+                    DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                ),
+                DSA_KEY_1024.x,
+            ),
+            (
+                DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                DSA_KEY_1024.public_numbers.parameter_numbers.g,
                 2**100,
                 DSA_KEY_1024.x,
             ),
@@ -351,6 +369,12 @@ class TestDSA:
                 DSA_KEY_1024.public_numbers.parameter_numbers.q,
                 2**1200,
                 DSA_KEY_1024.public_numbers.y,
+            ),
+            (
+                DSA_KEY_1024.public_numbers.parameter_numbers.p,
+                DSA_KEY_1024.public_numbers.parameter_numbers.q,
+                DSA_KEY_1024.public_numbers.parameter_numbers.g,
+                -1,
             ),
             (
                 DSA_KEY_1024.public_numbers.parameter_numbers.p,
@@ -633,16 +657,13 @@ class TestDSASignature:
         skip_message="Requires OpenSSL 3.0.9+, LibreSSL, BoringSSL, or AWS-LC",
     )
     def test_nilpotent(self):
-        key = load_vectors_from_file(
-            os.path.join("asymmetric", "DSA", "custom", "nilpotent.pem"),
-            lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), password=None
-            ),
-        )
-        assert isinstance(key, dsa.DSAPrivateKey)
-
         with pytest.raises(ValueError):
-            key.sign(b"anything", hashes.SHA256())
+            load_vectors_from_file(
+                os.path.join("asymmetric", "DSA", "custom", "nilpotent.pem"),
+                lambda pemfile: serialization.load_pem_private_key(
+                    pemfile.read().encode(), password=None
+                ),
+            )
 
 
 class TestDSANumbers:
