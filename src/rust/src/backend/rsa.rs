@@ -797,26 +797,15 @@ impl RsaPrivateNumbers {
     }
 }
 
-fn check_public_key_components_from_py(
+fn py_int_to_signed_bn(
     py: pyo3::Python<'_>,
-    e: &pyo3::Bound<'_, pyo3::types::PyInt>,
-    n: &pyo3::Bound<'_, pyo3::types::PyInt>,
-) -> CryptographyResult<()> {
-    if n.lt(0)? {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("n must be >= 3."),
-        ));
-    }
-
-    if e.lt(0)? {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("e must be >= 3 and < n."),
-        ));
-    }
-
-    let e = utils::py_int_to_bn(py, e)?;
-    let n = utils::py_int_to_bn(py, n)?;
-    check_public_key_components(e.as_ref(), n.as_ref())
+    value: &pyo3::Bound<'_, pyo3::types::PyInt>,
+) -> CryptographyResult<openssl::bn::BigNum> {
+    let negative = value.lt(0)?;
+    let magnitude = value.call_method0(pyo3::intern!(py, "__abs__"))?;
+    let mut bn = utils::py_int_to_bn(py, &magnitude)?;
+    bn.set_negative(negative);
+    Ok(bn)
 }
 
 fn check_public_key_components(
@@ -861,13 +850,11 @@ impl RsaPublicNumbers {
     ) -> CryptographyResult<RsaPublicKey> {
         let _ = backend;
 
-        check_public_key_components_from_py(py, self.e.bind(py), self.n.bind(py))?;
+        let n = py_int_to_signed_bn(py, self.n.bind(py))?;
+        let e = py_int_to_signed_bn(py, self.e.bind(py))?;
+        check_public_key_components(&e, &n)?;
 
-        let rsa = openssl::rsa::Rsa::from_public_components(
-            utils::py_int_to_bn(py, self.n.bind(py))?,
-            utils::py_int_to_bn(py, self.e.bind(py))?,
-        )
-        .unwrap();
+        let rsa = openssl::rsa::Rsa::from_public_components(n, e).unwrap();
         let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
         Ok(RsaPublicKey { pkey })
     }
