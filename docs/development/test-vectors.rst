@@ -128,6 +128,10 @@ Custom asymmetric vectors
 * ``asymmetric/PEM_Serialization/dsa_public_key_y_p_minus_1.pem`` and
   ``asymmetric/DER_Serialization/dsa_public_key_y_p_minus_1.der`` - Contains a
   DSA public key with public value ``y = p - 1``.
+* ``asymmetric/PEM_Serialization/dsa_private_key_invalid_public_key.pem`` and
+  ``asymmetric/DER_Serialization/dsa_private_key_invalid_public_key.der`` -
+  Contains a DSA private key with a public value that does not match the
+  private value.
 * ``asymmetric/PKCS8/unenc-dsa-pkcs8.pem`` and
   ``asymmetric/DER_Serialization/unenc-dsa-pkcs8.der`` - Contains a DSA 1024
   bit key generated using OpenSSL.

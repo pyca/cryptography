@@ -428,6 +428,25 @@ class TestDERSerialization:
             load_der_public_key(data, backend)
 
     @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
+    def test_load_der_dsa_private_key_rejects_invalid_public_key(
+        self, backend
+    ):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "DER_Serialization",
+                "dsa_private_key_invalid_public_key.der",
+            ),
+            lambda derfile: derfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_der_private_key(data, None, backend)
+
+    @pytest.mark.supported(
         only_if=lambda backend: backend.dh_supported(),
         skip_message="DH not supported",
     )
@@ -896,6 +915,25 @@ class TestPEMSerialization:
         )
         with pytest.raises(ValueError):
             load_pem_public_key(data, backend)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
+    def test_load_pem_dsa_private_key_rejects_invalid_public_key(
+        self, backend
+    ):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "PEM_Serialization",
+                "dsa_private_key_invalid_public_key.pem",
+            ),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, None, backend)
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.dh_supported(),
