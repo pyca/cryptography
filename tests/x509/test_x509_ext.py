@@ -6244,6 +6244,59 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
         assert hash(psct1) == hash(psct2)
         assert hash(psct1) != hash(psct3)
 
+    def test_parse_rejects_trailing_data(
+        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+    ):
+        # The SCT list is read by a small hand-rolled TLS reader, so drive
+        # the trailing-byte rejection through a crafted certificate extension.
+        def sct_list(body: bytes) -> bytes:
+            entry = len(body).to_bytes(2, "big") + body
+            return len(entry).to_bytes(2, "big") + entry
+
+        # version, log id, timestamp, empty extensions, hash and signature
+        # algorithm, and an empty signature.
+        body = (
+            b"\x00"
+            + b"\x00" * 32
+            + b"\x00" * 8
+            + b"\x00\x00"
+            + b"\x04"
+            + b"\x03"
+            + b"\x00\x00"
+        )
+
+        def build(payload: bytes) -> x509.Certificate:
+            ext = x509.UnrecognizedExtension(
+                ExtensionOID.PRECERT_SIGNED_CERTIFICATE_TIMESTAMPS,
+                b"\x04" + bytes([len(payload)]) + payload,
+            )
+            return (
+                _make_certbuilder(rsa_key_2048)
+                .add_extension(ext, critical=False)
+                .sign(rsa_key_2048, hashes.SHA256(), backend)
+            )
+
+        # A well-formed list still parses.
+        cert = build(sct_list(body))
+        scts = cert.extensions.get_extension_for_class(
+            x509.PrecertificateSignedCertificateTimestamps
+        ).value
+        assert len(scts) == 1
+
+        # A trailing byte inside the SCT entry is rejected.
+        cert = build(sct_list(body + b"\x00"))
+        with pytest.raises(ValueError):
+            cert.extensions.get_extension_for_class(
+                x509.PrecertificateSignedCertificateTimestamps
+            )
+
+        # A trailing byte after the list is rejected.
+        cert = build(sct_list(body) + b"\x00")
+        with pytest.raises(ValueError):
+            cert.extensions.get_extension_for_class(
+                x509.PrecertificateSignedCertificateTimestamps
+            )
+
     def test_simple(self, backend):
         cert = _load_cert(
             os.path.join("x509", "badssl-sct.pem"),

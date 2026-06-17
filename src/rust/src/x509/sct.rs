@@ -278,51 +278,6 @@ pub(crate) fn parse_scts<'p>(
 mod tests {
     use super::*;
 
-    // Builds a minimal but well-formed SCT body (version, log id, timestamp,
-    // empty extensions, hash/signature algorithm and an empty signature).
-    fn minimal_sct_body() -> Vec<u8> {
-        let mut body = vec![0]; // version
-        body.extend_from_slice(&[0; 32]); // log id
-        body.extend_from_slice(&[0; 8]); // timestamp
-        body.extend_from_slice(&[0, 0]); // extensions (length-prefixed, empty)
-        body.push(4); // hash algorithm (sha256)
-        body.push(3); // signature algorithm (ecdsa)
-        body.extend_from_slice(&[0, 0]); // signature (length-prefixed, empty)
-        body
-    }
-
-    // Wraps `body` as a single entry in a length-prefixed SCT list.
-    fn sct_list(body: &[u8]) -> Vec<u8> {
-        let mut entry = (body.len() as u16).to_be_bytes().to_vec();
-        entry.extend_from_slice(body);
-        let mut list = (entry.len() as u16).to_be_bytes().to_vec();
-        list.extend_from_slice(&entry);
-        list
-    }
-
-    #[test]
-    fn test_parse_scts_rejects_trailing_data() {
-        pyo3::Python::initialize();
-        pyo3::Python::attach(|py| {
-            // A well-formed list parses to a single SCT.
-            let data = sct_list(&minimal_sct_body());
-            let scts = parse_scts(py, &data, LogEntryType::Certificate)
-                .ok()
-                .unwrap();
-            assert_eq!(scts.len().unwrap(), 1);
-
-            // A trailing byte inside the SCT entry must be rejected.
-            let mut body = minimal_sct_body();
-            body.push(0);
-            assert!(parse_scts(py, &sct_list(&body), LogEntryType::Certificate).is_err());
-
-            // A trailing byte after the list itself must be rejected.
-            let mut data = sct_list(&minimal_sct_body());
-            data.push(0);
-            assert!(parse_scts(py, &data, LogEntryType::Certificate).is_err());
-        });
-    }
-
     #[test]
     fn test_hash_algorithm_try_from() {
         for (n, ha) in &[
