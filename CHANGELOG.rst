@@ -8,6 +8,10 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Parsing a Signed Certificate Timestamp list now rejects encodings that
+  carry trailing bytes after the list or after an individual SCT, instead of
+  silently ignoring them.
+
 .. _v49-0-0:
 
 49.0.0 - 2026-06-12
