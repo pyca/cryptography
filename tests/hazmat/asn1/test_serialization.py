@@ -2098,6 +2098,65 @@ class TestX509Types:
             asn1.encode_der(Example(cert=9))  # type: ignore[arg-type]
 
 
+class TestName:
+    @pytest.fixture
+    def name(self) -> x509.Name:
+        return x509.Name.from_rfc4514_string("CN=foo,O=bar")
+
+    def test_name(self, name: x509.Name) -> None:
+        empty = x509.Name([])
+        name_der = name.public_bytes()
+        assert_roundtrips(
+            [
+                # Top-level, both populated and empty.
+                (name, name_der),
+                (empty, empty.public_bytes()),
+            ]
+        )
+
+    def test_fields(self, name: x509.Name) -> None:
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            name: x509.Name
+
+        inner = name.public_bytes()
+        expected = b"\x30" + _der_length(len(inner)) + inner
+        assert_roundtrips([(Example(name=name), expected)])
+
+    def test_name_implicit(self, name: x509.Name) -> None:
+        # Unlike Certificate/CSR/CRL, Name is encoded and decoded through the
+        # asn1 machinery directly, so it supports IMPLICIT annotations.
+        @asn1.sequence
+        @_comparable_dataclass
+        class Example:
+            name: Annotated[x509.Name, asn1.Implicit(0)]
+
+        name_der = name.public_bytes()
+        # IMPLICIT tagging replaces the outer SEQUENCE tag (0x30) with the
+        # constructed context-specific tag [0] (0xa0).
+        inner = b"\xa0" + name_der[1:]
+        expected = b"\x30" + _der_length(len(inner)) + inner
+        assert_roundtrips([(Example(name=name), expected)])
+
+    def test_decode_invalid(self) -> None:
+        # Not even a valid TLV
+        with pytest.raises(ValueError):
+            asn1.decode_der(x509.Name, b"")
+
+        # Wrong tag (INTEGER instead of SEQUENCE)
+        with pytest.raises(ValueError):
+            asn1.decode_der(x509.Name, b"\x02\x01\x00")
+
+    def test_encode_wrong_type(self) -> None:
+        @asn1.sequence
+        class Example:
+            name: x509.Name
+
+        with pytest.raises(TypeError):
+            asn1.encode_der(Example(name=9))  # type: ignore[arg-type]
+
+
 @asn1.value_set(x509.ObjectIdentifier)
 class Algorithm(enum.Enum):
     A = x509.ObjectIdentifier("1.2.3.4")
