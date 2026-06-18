@@ -362,6 +362,48 @@ class TestDERSerialization:
         with pytest.raises(ValueError):
             load_der_public_key(b"invalid data", backend)
 
+    def test_load_der_public_key_bit_string_padding(self, backend):
+        # The subjectPublicKey BIT STRING must use 0 unused bits. Take a valid
+        # Ed25519 SPKI and bump the unused-bits count; the last data bit is 0
+        # so it is still a well-formed BIT STRING, just an invalid encoding for
+        # a public key.
+        for _ in range(2000):
+            pub = ed25519.Ed25519PrivateKey.generate().public_key()
+            spki = pub.public_bytes(
+                Encoding.DER, PublicFormat.SubjectPublicKeyInfo
+            )
+            if spki[-1] & 0x07 == 0:
+                break
+        else:
+            pytest.fail("could not generate a suitable key")
+
+        data = bytearray(spki)
+        idx = data.rfind(b"\x03\x21\x00")
+        assert idx != -1
+        data[idx + 2] = 0x01
+
+        with pytest.raises(ValueError):
+            load_der_public_key(bytes(data), backend)
+
+    def test_load_der_ec_private_key_bit_string_padding(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        # The publicKey BIT STRING in an EC private key must use 0 unused bits.
+        for _ in range(3000):
+            der = ec.generate_private_key(ec.SECP256R1()).private_bytes(
+                Encoding.DER, PrivateFormat.TraditionalOpenSSL, NoEncryption()
+            )
+            idx = der.find(b"\x03\x42\x00\x04")
+            if idx != -1 and der[-1] & 0x07 == 0:
+                break
+        else:
+            pytest.fail("could not generate a suitable key")
+
+        data = bytearray(der)
+        data[idx + 2] = 0x01
+
+        with pytest.raises(ValueError):
+            load_der_private_key(bytes(data), password=None, backend=backend)
+
     @pytest.mark.supported(
         only_if=lambda backend: backend.dsa_supported(),
         skip_message="Does not support DSA.",
