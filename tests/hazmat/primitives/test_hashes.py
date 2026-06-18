@@ -156,6 +156,12 @@ class TestBLAKE2s:
             hashes.BLAKE2s(digest_size=-1)
 
 
+def test_non_contiguous_buffer_rejected():
+    h = hashes.Hash(hashes.SHA256())
+    with pytest.raises((TypeError, BufferError)):
+        h.update(memoryview(bytearray(10))[::-1])
+
+
 def test_buffer_protocol_hash(backend):
     data = binascii.unhexlify(b"b4190e")
     h = hashes.Hash(hashes.SHA256(), backend)

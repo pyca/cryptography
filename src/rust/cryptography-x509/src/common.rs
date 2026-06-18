@@ -53,10 +53,22 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::ED448_OID)]
     Ed448,
 
+    #[defined_by(oid::ML_DSA_44_OID)]
+    MlDsa44,
+    #[defined_by(oid::ML_DSA_65_OID)]
+    MlDsa65,
+    #[defined_by(oid::ML_DSA_87_OID)]
+    MlDsa87,
+
     #[defined_by(oid::X25519_OID)]
     X25519,
     #[defined_by(oid::X448_OID)]
     X448,
+
+    #[defined_by(oid::ML_KEM_768_OID)]
+    MlKem768,
+    #[defined_by(oid::ML_KEM_1024_OID)]
+    MlKem1024,
 
     // These encodings are only used in SPKI AlgorithmIdentifiers.
     #[defined_by(oid::EC_OID)]
@@ -65,18 +77,14 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::RSA_OID)]
     Rsa(Option<asn1::Null>),
 
-    // These ECDSA algorithms should have no parameters,
-    // but Java 11 (up to at least 11.0.19) encodes them
-    // with NULL parameters. The JDK team is looking to
-    // backport the fix as of June 2023.
     #[defined_by(oid::ECDSA_WITH_SHA224_OID)]
-    EcDsaWithSha224(Option<asn1::Null>),
+    EcDsaWithSha224,
     #[defined_by(oid::ECDSA_WITH_SHA256_OID)]
-    EcDsaWithSha256(Option<asn1::Null>),
+    EcDsaWithSha256,
     #[defined_by(oid::ECDSA_WITH_SHA384_OID)]
-    EcDsaWithSha384(Option<asn1::Null>),
+    EcDsaWithSha384,
     #[defined_by(oid::ECDSA_WITH_SHA512_OID)]
-    EcDsaWithSha512(Option<asn1::Null>),
+    EcDsaWithSha512,
 
     #[defined_by(oid::ECDSA_WITH_SHA3_224_OID)]
     EcDsaWithSha3_224,
@@ -120,13 +128,13 @@ pub enum AlgorithmParameters<'a> {
     Dsa(DssParams<'a>),
 
     #[defined_by(oid::DSA_WITH_SHA224_OID)]
-    DsaWithSha224(Option<asn1::Null>),
+    DsaWithSha224,
     #[defined_by(oid::DSA_WITH_SHA256_OID)]
-    DsaWithSha256(Option<asn1::Null>),
+    DsaWithSha256,
     #[defined_by(oid::DSA_WITH_SHA384_OID)]
-    DsaWithSha384(Option<asn1::Null>),
+    DsaWithSha384,
     #[defined_by(oid::DSA_WITH_SHA512_OID)]
-    DsaWithSha512(Option<asn1::Null>),
+    DsaWithSha512,
 
     #[defined_by(oid::DH_OID)]
     Dh(DHXParams<'a>),
@@ -696,13 +704,21 @@ impl asn1::SimpleAsn1Writable for Utf8StoredBMPString<'_> {
 
 #[derive(Clone)]
 pub struct WithTlv<'a, T> {
-    tlv: asn1::Tlv<'a>,
+    tlv: Option<asn1::Tlv<'a>>,
     value: T,
 }
 
 impl<'a, T> WithTlv<'a, T> {
+    /// Constructs a value that was not parsed, and therefore has no TLV.
+    /// Calling `tlv()` on it will panic.
+    pub fn new(value: T) -> Self {
+        Self { tlv: None, value }
+    }
+
     pub fn tlv(&self) -> &asn1::Tlv<'a> {
-        &self.tlv
+        self.tlv
+            .as_ref()
+            .expect("tlv() may only be called on parsed values")
     }
 }
 
@@ -718,7 +734,7 @@ impl<'a, T: asn1::Asn1Readable<'a>> asn1::Asn1Readable<'a> for WithTlv<'a, T> {
     fn parse(p: &mut asn1::Parser<'a>) -> asn1::ParseResult<Self> {
         let tlv = p.read_element::<asn1::Tlv<'a>>()?;
         Ok(Self {
-            tlv,
+            tlv: Some(tlv),
             value: tlv.parse()?,
         })
     }

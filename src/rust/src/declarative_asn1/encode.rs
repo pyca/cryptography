@@ -3,11 +3,11 @@
 // for complete details.
 
 use asn1::{SimpleAsn1Writable, Writer};
-use pyo3::types::{PyAnyMethods, PyListMethods};
+use pyo3::types::{PyAnyMethods, PyListMethods, PyTypeMethods};
 
 use crate::declarative_asn1::types::{
-    check_size_constraint, AnnotatedType, AnnotatedTypeObject, BitString, Encoding,
-    GeneralizedTime, IA5String, PrintableString, Type, UtcTime, Variant,
+    check_size_constraint, value_set_inner_type, AnnotatedType, AnnotatedTypeObject, BitString,
+    Encoding, GeneralizedTime, IA5String, PrintableString, Type, UtcTime, Variant,
 };
 use crate::error::CryptographyError;
 
@@ -74,10 +74,26 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     })
                     .collect();
 
-                check_size_constraint(&annotation.size, values.len(), "SEQUENCE OF")?;
+                check_size_constraint(&annotation.size, || values.len(), "SEQUENCE OF")?;
 
                 write_value(writer, &asn1::SequenceOfWriter::new(values), encoding)
             }
+            Type::Set(_cls, fields) => write_value(
+                writer,
+                &asn1::SetWriter::new(&|w| {
+                    for (name, ann_type) in fields.bind(py).into_iter() {
+                        let name = name.cast::<pyo3::types::PyString>()?;
+                        let ann_type = ann_type.cast::<AnnotatedType>()?;
+                        let object = AnnotatedTypeObject {
+                            annotated_type: ann_type.get(),
+                            value: self.value.getattr(name)?,
+                        };
+                        w.write_element(&object)?;
+                    }
+                    Ok(())
+                }),
+                encoding,
+            ),
             Type::SetOf(cls) => {
                 let setof = value.cast::<super::types::SetOf>()?;
                 let values: Vec<AnnotatedTypeObject<'_>> = setof
@@ -91,7 +107,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     })
                     .collect();
 
-                check_size_constraint(&annotation.size, values.len(), "SET OF")?;
+                check_size_constraint(&annotation.size, || values.len(), "SET OF")?;
 
                 write_value(writer, &asn1::SetOfWriter::new(values), encoding)
             }
@@ -165,30 +181,48 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                     ),
                 ))
             }
+            Type::ValueSet(cls, inner_type, _) => {
+                if !value.is_instance(cls.bind(py))? {
+                    return Err(CryptographyError::Py(
+                        pyo3::exceptions::PyTypeError::new_err(format!(
+                            "value set field must be an instance of {}, got: {}",
+                            cls.bind(py).name()?,
+                            value.get_type().name()?,
+                        )),
+                    ));
+                }
+                let object = AnnotatedTypeObject {
+                    annotated_type: &value_set_inner_type(py, inner_type.get(), annotation)?,
+                    value: value.getattr(pyo3::intern!(py, "value"))?,
+                };
+                object.write(writer)
+            }
             Type::PyBool() => {
                 let val: bool = value.extract()?;
                 Ok(write_value(writer, &val, encoding)?)
             }
             Type::PyInt() => {
-                let val: i64 = value.extract()?;
+                let int_value = value.cast_into::<pyo3::types::PyInt>()?;
+                let bytes = crate::asn1::py_int_to_der_bytes(py, int_value)?;
+                let val = asn1::BigInt::new(&bytes).unwrap();
                 Ok(write_value(writer, &val, encoding)?)
             }
             Type::PyBytes() => {
                 let val: &[u8] = value.extract()?;
-                check_size_constraint(&annotation.size, val.len(), "OCTET STRING")?;
+                check_size_constraint(&annotation.size, || val.len(), "OCTET STRING")?;
                 Ok(write_value(writer, &val, encoding)?)
             }
             Type::PyStr() => {
                 let val: pyo3::pybacked::PyBackedStr = value.extract()?;
                 let asn1_string: asn1::Utf8String<'_> = asn1::Utf8String::new(&val);
-                check_size_constraint(&annotation.size, val.len(), "UTF8String")?;
+                check_size_constraint(&annotation.size, || val.chars().count(), "UTF8String")?;
                 Ok(write_value(writer, &asn1_string, encoding)?)
             }
             Type::PrintableString() => {
                 let val: &pyo3::Bound<'_, PrintableString> = value.cast()?;
                 // TODO: Switch this to `to_str()` once our minimum version is py310+
                 let inner_str = val.get().inner.to_cow(py)?;
-                check_size_constraint(&annotation.size, inner_str.len(), "PrintableString")?;
+                check_size_constraint(&annotation.size, || inner_str.len(), "PrintableString")?;
                 let printable_string: asn1::PrintableString<'_> =
                     asn1::PrintableString::new(&inner_str).ok_or(CryptographyError::Py(
                         pyo3::exceptions::PyValueError::new_err(
@@ -202,7 +236,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 let val: &pyo3::Bound<'_, IA5String> = value.cast()?;
                 // TODO: Switch this to `to_str()` once our minimum version is py310+
                 let inner_str = val.get().inner.to_cow(py)?;
-                check_size_constraint(&annotation.size, inner_str.len(), "IA5String")?;
+                check_size_constraint(&annotation.size, || inner_str.len(), "IA5String")?;
                 let ia5_string: asn1::IA5String<'_> = asn1::IA5String::new(&inner_str).ok_or(
                     CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
                         "invalid value for IA5String".to_string(),
@@ -240,7 +274,7 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                             ),
                         ))?;
                 let n_bits = bitstring.as_bytes().len() * 8 - usize::from(bitstring.padding_bits());
-                check_size_constraint(&annotation.size, n_bits, "BIT STRING")?;
+                check_size_constraint(&annotation.size, || n_bits, "BIT STRING")?;
                 Ok(write_value(writer, &bitstring, encoding)?)
             }
             Type::Tlv() => Err(CryptographyError::Py(
@@ -249,6 +283,43 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
                 ),
             )),
             Type::Null() => Ok(write_value(writer, &(), encoding)?),
+            Type::Certificate() => {
+                let val = value.cast::<crate::x509::certificate::Certificate>()?;
+                Ok(write_value(
+                    writer,
+                    val.get().raw.borrow_dependent(),
+                    encoding,
+                )?)
+            }
+            Type::CertificateSigningRequest() => {
+                let val = value.cast::<crate::x509::csr::CertificateSigningRequest>()?;
+                Ok(write_value(
+                    writer,
+                    val.get().raw.borrow_dependent(),
+                    encoding,
+                )?)
+            }
+            Type::CertificateRevocationList() => {
+                let val = value.cast::<crate::x509::crl::CertificateRevocationList>()?;
+                Ok(write_value(
+                    writer,
+                    val.get().owned.borrow_dependent(),
+                    encoding,
+                )?)
+            }
+            Type::Name() => {
+                if !value.is_instance(&crate::types::NAME.get(py)?)? {
+                    return Err(CryptographyError::Py(
+                        pyo3::exceptions::PyTypeError::new_err(format!(
+                            "Name field must be an instance of x509.Name, got: {}",
+                            value.get_type().name()?,
+                        )),
+                    ));
+                }
+                let ka = cryptography_keepalive::KeepAlive::new();
+                let name = crate::x509::common::encode_name(py, &ka, &value)?;
+                Ok(write_value(writer, &name, encoding)?)
+            }
         }
     }
 }

@@ -7,11 +7,9 @@ use cryptography_x509::common::{
     SubjectPublicKeyInfo,
 };
 
-use crate::{KeyParsingError, KeyParsingResult, KeySerializationResult};
+use crate::{KeyParsingError, KeyParsingResult, KeySerializationResult, ParsedPublicKey};
 
-pub fn parse_public_key(
-    data: &[u8],
-) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Public>> {
+pub fn parse_public_key(data: &[u8]) -> KeyParsingResult<ParsedPublicKey> {
     let k = asn1::parse_single::<SubjectPublicKeyInfo<'_>>(data)?;
 
     match k.algorithm.params {
@@ -24,42 +22,53 @@ pub fn parse_public_key(
                 &mut bn_ctx,
             )
             .map_err(|_| KeyParsingError::InvalidKey)?;
-            let ec_key = openssl::ec::EcKey::from_public_key(&group, &ec_point)?;
-            Ok(openssl::pkey::PKey::from_ec_key(ec_key)?)
+            let ec_key = openssl::ec::EcKey::from_public_key(&group, &ec_point)
+                .map_err(|_| KeyParsingError::InvalidKey)?;
+            let pkey = openssl::pkey::PKey::from_ec_key(ec_key)?;
+            Ok(ParsedPublicKey::Pkey(pkey))
         }
-        AlgorithmParameters::Ed25519 => Ok(openssl::pkey::PKey::public_key_from_raw_bytes(
-            k.subject_public_key.as_bytes(),
-            openssl::pkey::Id::ED25519,
-        )
-        .map_err(|_| KeyParsingError::InvalidKey)?),
+        AlgorithmParameters::Ed25519 => Ok(ParsedPublicKey::Pkey(
+            openssl::pkey::PKey::public_key_from_raw_bytes(
+                k.subject_public_key.as_bytes(),
+                openssl::pkey::Id::ED25519,
+            )
+            .map_err(|_| KeyParsingError::InvalidKey)?,
+        )),
         #[cfg(not(any(
             CRYPTOGRAPHY_IS_LIBRESSL,
             CRYPTOGRAPHY_IS_BORINGSSL,
             CRYPTOGRAPHY_IS_AWSLC
         )))]
-        AlgorithmParameters::Ed448 => Ok(openssl::pkey::PKey::public_key_from_raw_bytes(
-            k.subject_public_key.as_bytes(),
-            openssl::pkey::Id::ED448,
-        )
-        .map_err(|_| KeyParsingError::InvalidKey)?),
-        AlgorithmParameters::X25519 => Ok(openssl::pkey::PKey::public_key_from_raw_bytes(
-            k.subject_public_key.as_bytes(),
-            openssl::pkey::Id::X25519,
-        )
-        .map_err(|_| KeyParsingError::InvalidKey)?),
+        AlgorithmParameters::Ed448 => Ok(ParsedPublicKey::Pkey(
+            openssl::pkey::PKey::public_key_from_raw_bytes(
+                k.subject_public_key.as_bytes(),
+                openssl::pkey::Id::ED448,
+            )
+            .map_err(|_| KeyParsingError::InvalidKey)?,
+        )),
+        AlgorithmParameters::X25519 => Ok(ParsedPublicKey::Pkey(
+            openssl::pkey::PKey::public_key_from_raw_bytes(
+                k.subject_public_key.as_bytes(),
+                openssl::pkey::Id::X25519,
+            )
+            .map_err(|_| KeyParsingError::InvalidKey)?,
+        )),
         #[cfg(not(any(
             CRYPTOGRAPHY_IS_LIBRESSL,
             CRYPTOGRAPHY_IS_BORINGSSL,
             CRYPTOGRAPHY_IS_AWSLC
         )))]
-        AlgorithmParameters::X448 => Ok(openssl::pkey::PKey::public_key_from_raw_bytes(
-            k.subject_public_key.as_bytes(),
-            openssl::pkey::Id::X448,
-        )
-        .map_err(|_| KeyParsingError::InvalidKey)?),
+        AlgorithmParameters::X448 => Ok(ParsedPublicKey::Pkey(
+            openssl::pkey::PKey::public_key_from_raw_bytes(
+                k.subject_public_key.as_bytes(),
+                openssl::pkey::Id::X448,
+            )
+            .map_err(|_| KeyParsingError::InvalidKey)?,
+        )),
         AlgorithmParameters::Rsa(_) | AlgorithmParameters::RsaPss(_) => {
             // RSA-PSS keys are treated the same as bare RSA keys.
             crate::rsa::parse_pkcs1_public_key(k.subject_public_key.as_bytes())
+                .map(ParsedPublicKey::Pkey)
         }
         AlgorithmParameters::Dsa(dsa_params) => {
             let p = openssl::bn::BigNum::from_slice(dsa_params.p.as_bytes())?;
@@ -71,7 +80,7 @@ pub fn parse_public_key(
             let pub_key = openssl::bn::BigNum::from_slice(pub_key_int.as_bytes())?;
 
             let dsa = openssl::dsa::Dsa::from_public_components(p, q, g, pub_key)?;
-            Ok(openssl::pkey::PKey::from_dsa(dsa)?)
+            Ok(ParsedPublicKey::Pkey(openssl::pkey::PKey::from_dsa(dsa)?))
         }
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         AlgorithmParameters::Dh(dh_params) => {
@@ -85,7 +94,7 @@ pub fn parse_public_key(
             let pub_key = openssl::bn::BigNum::from_slice(pub_key_int.as_bytes())?;
             let dh = dh.set_public_key(pub_key)?;
 
-            Ok(openssl::pkey::PKey::from_dh(dh)?)
+            Ok(ParsedPublicKey::Pkey(openssl::pkey::PKey::from_dh(dh)?))
         }
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         AlgorithmParameters::DhKeyAgreement(dh_params) => {
@@ -98,8 +107,69 @@ pub fn parse_public_key(
             let pub_key = openssl::bn::BigNum::from_slice(pub_key_int.as_bytes())?;
             let dh = dh.set_public_key(pub_key)?;
 
-            Ok(openssl::pkey::PKey::from_dh(dh)?)
+            Ok(ParsedPublicKey::Pkey(openssl::pkey::PKey::from_dh(dh)?))
         }
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        AlgorithmParameters::MlKem768 => Ok(ParsedPublicKey::Pkey(
+            cryptography_openssl::mlkem::new_raw_public_key(
+                cryptography_openssl::mlkem::MlKemVariant::MlKem768,
+                k.subject_public_key.as_bytes(),
+            )
+            .map_err(|_| KeyParsingError::InvalidKey)?,
+        )),
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        AlgorithmParameters::MlKem1024 => Ok(ParsedPublicKey::Pkey(
+            cryptography_openssl::mlkem::new_raw_public_key(
+                cryptography_openssl::mlkem::MlKemVariant::MlKem1024,
+                k.subject_public_key.as_bytes(),
+            )
+            .map_err(|_| KeyParsingError::InvalidKey)?,
+        )),
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        AlgorithmParameters::MlDsa44 => Ok(ParsedPublicKey::Pkey(
+            cryptography_openssl::mldsa::new_raw_public_key(
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa44,
+                k.subject_public_key.as_bytes(),
+            )
+            .map_err(|_| KeyParsingError::InvalidKey)?,
+        )),
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        AlgorithmParameters::MlDsa65 => Ok(ParsedPublicKey::Pkey(
+            cryptography_openssl::mldsa::new_raw_public_key(
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa65,
+                k.subject_public_key.as_bytes(),
+            )
+            .map_err(|_| KeyParsingError::InvalidKey)?,
+        )),
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        AlgorithmParameters::MlDsa87 => Ok(ParsedPublicKey::Pkey(
+            cryptography_openssl::mldsa::new_raw_public_key(
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa87,
+                k.subject_public_key.as_bytes(),
+            )
+            .map_err(|_| KeyParsingError::InvalidKey)?,
+        )),
+
         _ => Err(KeyParsingError::UnsupportedKeyType(
             k.algorithm.oid().clone(),
         )),
@@ -213,6 +283,37 @@ pub fn serialize_public_key(
             };
 
             (params, pub_key_der)
+        }
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        _ if cryptography_openssl::mlkem::is_mlkem_pkey(pkey) => {
+            let raw_bytes = pkey.raw_public_key()?;
+            let params = match cryptography_openssl::mlkem::MlKemVariant::from_pkey(pkey) {
+                cryptography_openssl::mlkem::MlKemVariant::MlKem768 => {
+                    AlgorithmParameters::MlKem768
+                }
+                cryptography_openssl::mlkem::MlKemVariant::MlKem1024 => {
+                    AlgorithmParameters::MlKem1024
+                }
+            };
+            (params, raw_bytes)
+        }
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        _ if cryptography_openssl::mldsa::is_mldsa_pkey(pkey) => {
+            let raw_bytes = pkey.raw_public_key()?;
+            let params = match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => AlgorithmParameters::MlDsa44,
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa65 => AlgorithmParameters::MlDsa65,
+                cryptography_openssl::mldsa::MlDsaVariant::MlDsa87 => AlgorithmParameters::MlDsa87,
+            };
+            (params, raw_bytes)
         }
         _ => {
             unimplemented!("Unknown key type");

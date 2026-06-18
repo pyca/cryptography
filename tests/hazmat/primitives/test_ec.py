@@ -7,7 +7,6 @@ import copy
 import itertools
 import os
 import textwrap
-import typing
 from binascii import hexlify
 
 import pytest
@@ -38,7 +37,7 @@ from ...utils import (
 from .fixtures_ec import EC_KEY_SECP384R1
 from .utils import skip_fips_traditional_openssl
 
-_HASH_TYPES: typing.Dict[str, typing.Type[hashes.HashAlgorithm]] = {
+_HASH_TYPES: dict[str, type[hashes.HashAlgorithm]] = {
     "SHA-1": hashes.SHA1,
     "SHA-224": hashes.SHA224,
     "SHA-256": hashes.SHA256,

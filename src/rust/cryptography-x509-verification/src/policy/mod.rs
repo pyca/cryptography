@@ -29,7 +29,9 @@ pub use crate::policy::extension::{
     PresentExtensionValidatorCallback,
 };
 use crate::types::{DNSName, DNSPattern, IPAddress};
-use crate::{ValidationError, ValidationErrorKind, ValidationResult, VerificationCertificate};
+use crate::{
+    Budget, ValidationError, ValidationErrorKind, ValidationResult, VerificationCertificate,
+};
 
 // RSA key constraints, as defined in CA/B 6.1.5.
 const WEBPKI_MINIMUM_RSA_MODULUS: usize = 2048;
@@ -131,19 +133,19 @@ static RSASSA_PSS_SHA512: LazyLock<AlgorithmIdentifier<'_>> =
 // For P-256: the signature MUST use ECDSA with SHA‐256
 const ECDSA_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::EcDsaWithSha256(None),
+    params: AlgorithmParameters::EcDsaWithSha256,
 };
 
 // For P-384: the signature MUST use ECDSA with SHA‐384
 const ECDSA_SHA384: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::EcDsaWithSha384(None),
+    params: AlgorithmParameters::EcDsaWithSha384,
 };
 
 // For P-521: the signature MUST use ECDSA with SHA‐512
 const ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
-    params: AlgorithmParameters::EcDsaWithSha512(None),
+    params: AlgorithmParameters::EcDsaWithSha512,
 };
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.2 (pages 96-98)
@@ -505,6 +507,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         child: &VerificationCertificate<'chain, B>,
         current_depth: u8,
         issuer_extensions: &Extensions<'_>,
+        budget: &mut Budget,
     ) -> ValidationResult<'chain, (), B> {
         // The issuer needs to be a valid CA at the current depth.
         self.permits_ca(issuer, current_depth, issuer_extensions)
@@ -519,7 +522,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         {
             return Err(ValidationError::new(ValidationErrorKind::Other(format!(
                 "Forbidden public key algorithm: {:?}",
-                &issuer.certificate().tbs_cert.spki.algorithm
+                issuer.certificate().tbs_cert.spki.algorithm
             ))));
         }
 
@@ -535,7 +538,7 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
         {
             return Err(ValidationError::new(ValidationErrorKind::Other(format!(
                 "Forbidden signature algorithm: {:?}",
-                &child.certificate().signature_alg
+                child.certificate().signature_alg
             ))));
         }
 
@@ -565,6 +568,10 @@ impl<'a, B: CryptoOps> Policy<'a, B> {
             }
         }
 
+        // Charge the (potentially expensive) signature verification against the
+        // budget before performing it, bounding the total work an attacker can
+        // force during chain building.
+        budget.signature_check()?;
         if self.ops.verify_signed_by(child.certificate(), pk).is_err() {
             return Err(ValidationError::new(ValidationErrorKind::Other(
                 "signature does not match".to_string(),

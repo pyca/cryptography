@@ -119,6 +119,9 @@ class SignatureAlgorithmOID:
     DSA_WITH_SHA512 = ObjectIdentifier("2.16.840.1.101.3.4.3.4")
     ED25519 = ObjectIdentifier("1.3.101.112")
     ED448 = ObjectIdentifier("1.3.101.113")
+    ML_DSA_44 = ObjectIdentifier("2.16.840.1.101.3.4.3.17")
+    ML_DSA_65 = ObjectIdentifier("2.16.840.1.101.3.4.3.18")
+    ML_DSA_87 = ObjectIdentifier("2.16.840.1.101.3.4.3.19")
     GOSTR3411_94_WITH_3410_2001 = ObjectIdentifier("1.2.643.2.2.3")
     GOSTR3410_2012_WITH_3411_2012_256 = ObjectIdentifier("1.2.643.7.1.1.3.2")
     GOSTR3410_2012_WITH_3411_2012_512 = ObjectIdentifier("1.2.643.7.1.1.3.3")
@@ -150,6 +153,9 @@ _SIG_OIDS_TO_HASH: dict[ObjectIdentifier, hashes.HashAlgorithm | None] = {
     SignatureAlgorithmOID.DSA_WITH_SHA256: hashes.SHA256(),
     SignatureAlgorithmOID.ED25519: None,
     SignatureAlgorithmOID.ED448: None,
+    SignatureAlgorithmOID.ML_DSA_44: None,
+    SignatureAlgorithmOID.ML_DSA_65: None,
+    SignatureAlgorithmOID.ML_DSA_87: None,
     SignatureAlgorithmOID.GOSTR3411_94_WITH_3410_2001: None,
     SignatureAlgorithmOID.GOSTR3410_2012_WITH_3411_2012_256: None,
     SignatureAlgorithmOID.GOSTR3410_2012_WITH_3411_2012_512: None,
@@ -181,6 +187,9 @@ class PublicKeyAlgorithmOID:
     X448 = ObjectIdentifier("1.3.101.111")
     ED25519 = ObjectIdentifier("1.3.101.112")
     ED448 = ObjectIdentifier("1.3.101.113")
+    ML_DSA_44 = ObjectIdentifier("2.16.840.1.101.3.4.3.17")
+    ML_DSA_65 = ObjectIdentifier("2.16.840.1.101.3.4.3.18")
+    ML_DSA_87 = ObjectIdentifier("2.16.840.1.101.3.4.3.19")
 
 
 class ExtendedKeyUsageOID:
@@ -276,6 +285,9 @@ _OID_NAMES = {
     SignatureAlgorithmOID.DSA_WITH_SHA256: "dsa-with-sha256",
     SignatureAlgorithmOID.ED25519: "ed25519",
     SignatureAlgorithmOID.ED448: "ed448",
+    SignatureAlgorithmOID.ML_DSA_44: "ML-DSA-44",
+    SignatureAlgorithmOID.ML_DSA_65: "ML-DSA-65",
+    SignatureAlgorithmOID.ML_DSA_87: "ML-DSA-87",
     SignatureAlgorithmOID.GOSTR3411_94_WITH_3410_2001: (
         "GOST R 34.11-94 with GOST R 34.10-2001"
     ),

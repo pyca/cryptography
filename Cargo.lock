@@ -31,15 +31,15 @@ checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
 name = "bitflags"
-version = "2.11.0"
+version = "2.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
+checksum = "b4388bee8683e3d04af747c73422af53102d2bd24d9eadb6cbc100baef4b43f8"
 
 [[package]]
 name = "cc"
-version = "1.2.57"
+version = "1.2.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a0dd1ca384932ff3641c8718a02769f1698e7563dc6974ffd03346116310423"
+checksum = "dad887fd958be91b5098c0248def011f4523ab786cd411be668777e55063501f"
 dependencies = [
  "find-msvc-tools",
  "shlex",
@@ -53,7 +53,7 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
 name = "cryptography-cffi"
-version = "0.1.0"
+version = "0.50.0-dev1"
 dependencies = [
  "cc",
  "openssl-sys",
@@ -62,21 +62,21 @@ dependencies = [
 
 [[package]]
 name = "cryptography-crypto"
-version = "0.1.0"
+version = "0.50.0-dev1"
 dependencies = [
  "openssl",
 ]
 
 [[package]]
 name = "cryptography-keepalive"
-version = "0.1.0"
+version = "0.50.0-dev1"
 dependencies = [
  "pyo3",
 ]
 
 [[package]]
 name = "cryptography-key-parsing"
-version = "0.1.0"
+version = "0.50.0-dev1"
 dependencies = [
  "asn1",
  "cfg-if",
@@ -90,7 +90,7 @@ dependencies = [
 
 [[package]]
 name = "cryptography-openssl"
-version = "0.1.0"
+version = "0.50.0-dev1"
 dependencies = [
  "cfg-if",
  "foreign-types",
@@ -101,7 +101,7 @@ dependencies = [
 
 [[package]]
 name = "cryptography-rust"
-version = "0.1.0"
+version = "0.50.0-dev1"
 dependencies = [
  "asn1",
  "base64",
@@ -118,20 +118,20 @@ dependencies = [
  "openssl-sys",
  "pem",
  "pyo3",
- "pyo3-build-config 0.28.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pyo3-build-config",
  "self_cell",
 ]
 
 [[package]]
 name = "cryptography-x509"
-version = "0.1.0"
+version = "0.50.0-dev1"
 dependencies = [
  "asn1",
 ]
 
 [[package]]
 name = "cryptography-x509-verification"
-version = "0.1.0"
+version = "0.50.0-dev1"
 dependencies = [
  "asn1",
  "cryptography-x509",
@@ -173,9 +173,9 @@ checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
 name = "libc"
-version = "0.2.183"
+version = "0.2.186"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5b646652bf6661599e1da8901b3b9522896f01e736bad5f723fe7a3a27f899d"
+checksum = "68ab91017fe16c622486840e4c83c9a37afeff978bd239b5293d61ece587de66"
 
 [[package]]
 name = "once_cell"
@@ -185,15 +185,14 @@ checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
 name = "openssl"
-version = "0.10.76"
+version = "0.10.81"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "951c002c75e16ea2c65b8c7e4d3d51d5530d8dfa7d060b4776828c88cfb18ecf"
+checksum = "77823a27f0babb03091cb9ed9ef80af3b39dbc82f97e8fa530374b7dafd87a45"
 dependencies = [
  "bitflags",
  "cfg-if",
  "foreign-types",
  "libc",
- "once_cell",
  "openssl-macros",
  "openssl-sys",
 ]
@@ -211,9 +210,9 @@ dependencies = [
 
 [[package]]
 name = "openssl-sys"
-version = "0.9.112"
+version = "0.9.117"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57d55af3b3e226502be1526dfdba67ab0e9c96fc293004e79576b2b9edb0dbdb"
+checksum = "b47e7e6bb2c38cd930d25a23b40fa52e068c10e85f3e03a7f5ba5aaca5713695"
 dependencies = [
  "cc",
  "libc",
@@ -232,9 +231,9 @@ dependencies = [
 
 [[package]]
 name = "pkg-config"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
+checksum = "19f132c84eca552bf34cab8ec81f1c1dcc229b811638f9d283dceabe58c5569e"
 
 [[package]]
 name = "portable-atomic"
@@ -253,47 +252,42 @@ dependencies = [
 
 [[package]]
 name = "pyo3"
-version = "0.28.2"
-source = "git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section#91a041953f3f0f219ffb717e321dac56cc56b2b4"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd274650b21d4bfc26a0a47587962c1edb425f69287324355cd040c3ea66071c"
 dependencies = [
  "libc",
  "once_cell",
  "portable-atomic",
- "pyo3-build-config 0.28.2 (git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section)",
+ "pyo3-build-config",
  "pyo3-ffi",
  "pyo3-macros",
 ]
 
 [[package]]
 name = "pyo3-build-config"
-version = "0.28.2"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8bf94ee265674bf76c09fa430b0e99c26e319c945d96ca0d5a8215f31bf81cf7"
-dependencies = [
- "target-lexicon",
-]
-
-[[package]]
-name = "pyo3-build-config"
-version = "0.28.2"
-source = "git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section#91a041953f3f0f219ffb717e321dac56cc56b2b4"
+checksum = "c5e2a7d2f0d013342f295c048ad19237add5154a55b1c5a254c0ec93d4109078"
 dependencies = [
  "target-lexicon",
 ]
 
 [[package]]
 name = "pyo3-ffi"
-version = "0.28.2"
-source = "git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section#91a041953f3f0f219ffb717e321dac56cc56b2b4"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca85c467da1bbc8d866eea5deff9cf29ea5f7785054a17da36e65bda9c05845b"
 dependencies = [
  "libc",
- "pyo3-build-config 0.28.2 (git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section)",
+ "pyo3-build-config",
 ]
 
 [[package]]
 name = "pyo3-macros"
-version = "0.28.2"
-source = "git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section#91a041953f3f0f219ffb717e321dac56cc56b2b4"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ac53762fd065daa3194dd09337a38bd793a188100fd1a9304c4ab312d901771"
 dependencies = [
  "proc-macro2",
  "pyo3-macros-backend",
@@ -303,8 +297,9 @@ dependencies = [
 
 [[package]]
 name = "pyo3-macros-backend"
-version = "0.28.2"
-source = "git+https://github.com/ngoldbaum/pyo3?branch=expose-critical-section#91a041953f3f0f219ffb717e321dac56cc56b2b4"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ca3a1557399783172dc5bf39cfca835157732532cba56b71d2292161e53b362"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -329,15 +324,15 @@ checksum = "b12e76d157a900eb52e81bc6e9f3069344290341720e9178cde2407113ac8d89"
 
 [[package]]
 name = "shlex"
-version = "1.3.0"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
+checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
 
 [[package]]
 name = "syn"
-version = "2.0.117"
+version = "2.0.118"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e665b8803e7b1d2a727f4023456bbbbe74da67099c585258af0ad9c5013b9b99"
+checksum = "1b9ae57f904213ebb649ce6895b8a66c66f0203b9319718f69a5612a065b1422"
 dependencies = [
  "proc-macro2",
  "quote",

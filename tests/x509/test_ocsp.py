@@ -1638,10 +1638,6 @@ class TestOCSPResponse:
 
 
 class TestOCSPEdDSA:
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support / OCSP",
-    )
     def test_invalid_algorithm(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
@@ -1670,10 +1666,6 @@ class TestOCSPEdDSA:
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256())
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support / OCSP",
-    )
     def test_sign_ed25519(self, backend):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()

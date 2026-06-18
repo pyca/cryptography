@@ -121,10 +121,10 @@ class GCM(ModeWithInitializationVector, ModeWithAuthenticationTag):
                 "and 1024 bits)."
             )
         self._initialization_vector = initialization_vector
+        if min_tag_length < 4:
+            raise ValueError("min_tag_length must be >= 4")
         if tag is not None:
             utils._check_bytes("tag", tag)
-            if min_tag_length < 4:
-                raise ValueError("min_tag_length must be >= 4")
             if len(tag) < min_tag_length:
                 raise ValueError(
                     f"Authentication tag must be {min_tag_length} bytes or "

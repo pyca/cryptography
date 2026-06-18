@@ -1,0 +1,70 @@
+name: Windows tests
+description: |
+  Runs the cryptography test suite on Windows. Used by ci.yml for both
+  x64 and arm64 jobs to avoid duplication.
+
+inputs:
+  python-version:
+    description: "Python version to test (e.g. 3.9, 3.14, 3.14t)"
+    required: true
+  noxsession:
+    description: "Nox session to run (e.g. tests, tests-nocoverage)"
+    required: true
+  arch:
+    description: "actions/setup-python architecture (x86, x64, arm64)"
+    required: true
+  openssl-name:
+    description: "OpenSSL artifact name suffix (win32, win64, arm64)"
+    required: true
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Setup python
+      id: setup-python
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      with:
+        python-version: ${{ inputs.python-version }}
+        architecture: ${{ inputs.arch }}
+        cache: pip
+        cache-dependency-path: ci-constraints-requirements.txt
+    # llvm-tools is only used to process Rust coverage data, which the
+    # tests-nocoverage session doesn't collect.
+    - run: rustup component add llvm-tools-preview
+      shell: bash
+      if: ${{ inputs.noxsession != 'tests-nocoverage' }}
+    - name: Cache rust and pip
+      uses: ./.github/actions/cache
+      with:
+        key: ${{ inputs.noxsession }}-${{ inputs.arch }}-${{ steps.setup-python.outputs.python-version }}
+    - run: python -m pip install -c ci-constraints-requirements.txt "nox[uv]" "tomli; python_version < '3.11'"
+      shell: bash
+
+    - name: Download OpenSSL
+      uses: ./.github/actions/fetch-openssl
+      with:
+        workflow: build-windows-openssl.yml
+        name: "openssl-${{ inputs.openssl-name }}"
+        path: "C:/openssl-${{ inputs.openssl-name }}/"
+    - name: Configure
+      run: |
+          echo "OPENSSL_DIR=C:/openssl-${OPENSSL_NAME}" >> $GITHUB_ENV
+      env:
+        OPENSSL_NAME: ${{ inputs.openssl-name }}
+      shell: bash
+
+    - name: Clone test vectors
+      uses: ./.github/actions/fetch-vectors
+
+    - name: Build nox environment
+      run: nox -v --install-only
+      env:
+        NOXSESSION: ${{ inputs.noxsession }}
+      shell: bash
+    - name: Tests
+      run: nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo
+      env:
+        NOXSESSION: ${{ inputs.noxsession }}
+        COLUMNS: 80
+      shell: bash

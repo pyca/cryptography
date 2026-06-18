@@ -51,6 +51,14 @@ impl From<openssl::error::ErrorStack> for KeyParsingError {
 
 pub type KeyParsingResult<T> = Result<T, KeyParsingError>;
 
+pub enum ParsedPrivateKey {
+    Pkey(openssl::pkey::PKey<openssl::pkey::Private>),
+}
+
+pub enum ParsedPublicKey {
+    Pkey(openssl::pkey::PKey<openssl::pkey::Public>),
+}
+
 pub enum KeySerializationError {
     PasswordMustBeUtf8,
     Write(asn1::WriteError),

@@ -223,7 +223,15 @@ pub(crate) fn parse_scts<'p>(
     data: &[u8],
     entry_type: LogEntryType,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    let mut reader = TLSReader::new(data).read_length_prefixed()?;
+    let mut outer = TLSReader::new(data);
+    let mut reader = outer.read_length_prefixed()?;
+    // The length-prefixed list must span the whole input; anything left over
+    // is a malformed encoding rather than a second list.
+    if !outer.is_empty() {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Invalid SCT length"),
+        ));
+    }
 
     let py_scts = pyo3::types::PyList::empty(py);
     while !reader.is_empty() {
@@ -242,6 +250,14 @@ pub(crate) fn parse_scts<'p>(
         let signature_algorithm = sct_data.read_byte()?.try_into()?;
 
         let signature = sct_data.read_length_prefixed()?.data.to_vec();
+
+        // The signature is the final field of an SCT; trailing bytes inside
+        // the length-prefixed entry mean the encoding is malformed.
+        if !sct_data.is_empty() {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Invalid SCT length"),
+            ));
+        }
 
         let sct = Sct {
             log_id,

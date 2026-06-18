@@ -169,7 +169,7 @@ mod _rust {
             load_pem_x509_certificates, Certificate,
         };
         #[pymodule_export]
-        use crate::x509::common::{encode_extension_value, encode_name_bytes};
+        use crate::x509::common::{encode_extension_value, encode_name_bytes, parse_name_bytes};
         #[pymodule_export]
         use crate::x509::crl::{
             create_revoked_certificate, create_x509_crl, load_der_x509_crl, load_pem_x509_crl,
@@ -242,6 +242,20 @@ mod _rust {
         use crate::backend::kdf::kdf;
         #[pymodule_export]
         use crate::backend::keys::keys;
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        #[pymodule_export]
+        use crate::backend::mldsa::mldsa;
+        #[cfg(any(
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC,
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+        ))]
+        #[pymodule_export]
+        use crate::backend::mlkem::mlkem;
         #[pymodule_export]
         use crate::backend::poly1305::poly1305;
         #[pymodule_export]

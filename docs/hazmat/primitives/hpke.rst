@@ -53,8 +53,19 @@ specifying auxiliary authenticated information.
         Encrypt a message using HPKE.
 
         :param bytes plaintext: The message to encrypt.
-        :param public_key: The recipient's public key.
-        :type public_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
+        :param public_key: The recipient's public key. The type must match the
+            :class:`KEM` chosen for the suite:
+            :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
+            for :attr:`KEM.X25519`;
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+            on the corresponding curve for :attr:`KEM.P256`,
+            :attr:`KEM.P384`, and :attr:`KEM.P521`;
+            :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PublicKey`
+            for :attr:`KEM.MLKEM768`;
+            :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM1024PublicKey`
+            for :attr:`KEM.MLKEM1024`;
+            :class:`MLKEM768X25519PublicKey` for :attr:`KEM.MLKEM768_X25519`;
+            and :class:`MLKEM1024P384PublicKey` for :attr:`KEM.MLKEM1024_P384`.
         :param bytes info: Application-specific context string for binding the
             encryption to a specific application or protocol.
         :returns: The encapsulated key concatenated with ciphertext (enc || ct).
@@ -65,8 +76,19 @@ specifying auxiliary authenticated information.
         Decrypt a message using HPKE.
 
         :param bytes ciphertext: The enc || ct value from :meth:`encrypt`.
-        :param private_key: The recipient's private key.
-        :type private_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`
+        :param private_key: The recipient's private key. The type must match the
+            :class:`KEM` chosen for the suite:
+            :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`
+            for :attr:`KEM.X25519`;
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            on the corresponding curve for :attr:`KEM.P256`,
+            :attr:`KEM.P384`, and :attr:`KEM.P521`;
+            :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PrivateKey`
+            for :attr:`KEM.MLKEM768`;
+            :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM1024PrivateKey`
+            for :attr:`KEM.MLKEM1024`;
+            :class:`MLKEM768X25519PrivateKey` for :attr:`KEM.MLKEM768_X25519`;
+            and :class:`MLKEM1024P384PrivateKey` for :attr:`KEM.MLKEM1024_P384`.
         :param bytes info: Application-specific context string (must match the
             value used during encryption).
         :returns: The decrypted plaintext.
@@ -76,6 +98,21 @@ specifying auxiliary authenticated information.
 .. class:: KEM
 
     An enumeration of key encapsulation mechanisms.
+
+    .. method:: enc_length()
+
+        .. versionadded:: 49.0.0
+
+        :returns: The length in bytes of the encapsulated key (``enc``)
+            produced by this KEM. The ``enc`` is the prefix of the value
+            returned by :meth:`Suite.encrypt`, so this can be used to split
+            the result into ``enc`` and the AEAD ciphertext::
+
+                ciphertext = suite.encrypt(plaintext, public_key)
+                enc_len = KEM.X25519.enc_length()
+                enc, ct = ciphertext[:enc_len], ciphertext[enc_len:]
+
+        :rtype: int
 
     .. attribute:: X25519
 
@@ -92,6 +129,106 @@ specifying auxiliary authenticated information.
     .. attribute:: P521
 
         DHKEM(P-521, HKDF-SHA512)
+
+    .. attribute:: MLKEM768
+
+        ML-KEM-768. Post-quantum secure. Only available on backends that
+        support ML-KEM.
+
+    .. attribute:: MLKEM1024
+
+        ML-KEM-1024. Post-quantum secure. Only available on backends that
+        support ML-KEM.
+
+    .. attribute:: MLKEM768_X25519
+
+        A hybrid KEM combining ML-KEM-768 with X25519 (also known as X-Wing).
+        Post-quantum secure. Only available on backends that support ML-KEM.
+        Public and private keys are :class:`MLKEM768X25519PublicKey` and
+        :class:`MLKEM768X25519PrivateKey`.
+
+    .. attribute:: MLKEM1024_P384
+
+        A hybrid KEM combining ML-KEM-1024 with P-384. Post-quantum secure.
+        Only available on backends that support ML-KEM. Public and private
+        keys are :class:`MLKEM1024P384PublicKey` and
+        :class:`MLKEM1024P384PrivateKey`.
+
+.. class:: MLKEM768X25519PrivateKey(mlkem_key, x25519_key)
+
+    .. versionadded:: 47.0.0
+
+    A hybrid ML-KEM-768 / X25519 private key for use with
+    :attr:`KEM.MLKEM768_X25519`. Combines an
+    :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PrivateKey`
+    and an
+    :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`
+    into a single recipient key.
+
+    :param mlkem_key: The ML-KEM-768 private key component.
+    :type mlkem_key: :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PrivateKey`
+
+    :param x25519_key: The X25519 private key component.
+    :type x25519_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`
+
+    .. method:: public_key()
+
+        :returns: :class:`MLKEM768X25519PublicKey`
+
+.. class:: MLKEM768X25519PublicKey(mlkem_key, x25519_key)
+
+    .. versionadded:: 47.0.0
+
+    A hybrid ML-KEM-768 / X25519 public key for use with
+    :attr:`KEM.MLKEM768_X25519`. Combines an
+    :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PublicKey`
+    and an
+    :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
+    into a single recipient key.
+
+    :param mlkem_key: The ML-KEM-768 public key component.
+    :type mlkem_key: :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PublicKey`
+
+    :param x25519_key: The X25519 public key component.
+    :type x25519_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
+
+.. class:: MLKEM1024P384PrivateKey(mlkem_key, p384_key)
+
+    .. versionadded:: 47.0.0
+
+    A hybrid ML-KEM-1024 / P-384 private key for use with
+    :attr:`KEM.MLKEM1024_P384`. Combines an
+    :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM1024PrivateKey`
+    and an
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+    on the SECP384R1 curve into a single recipient key.
+
+    :param mlkem_key: The ML-KEM-1024 private key component.
+    :type mlkem_key: :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM1024PrivateKey`
+
+    :param p384_key: The P-384 private key component.
+    :type p384_key: :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+
+    .. method:: public_key()
+
+        :returns: :class:`MLKEM1024P384PublicKey`
+
+.. class:: MLKEM1024P384PublicKey(mlkem_key, p384_key)
+
+    .. versionadded:: 47.0.0
+
+    A hybrid ML-KEM-1024 / P-384 public key for use with
+    :attr:`KEM.MLKEM1024_P384`. Combines an
+    :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM1024PublicKey`
+    and an
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+    on the SECP384R1 curve into a single recipient key.
+
+    :param mlkem_key: The ML-KEM-1024 public key component.
+    :type mlkem_key: :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM1024PublicKey`
+
+    :param p384_key: The P-384 public key component.
+    :type p384_key: :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
 
 .. class:: KDF
 

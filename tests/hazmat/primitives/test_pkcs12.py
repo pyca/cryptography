@@ -323,10 +323,6 @@ class TestPKCS12Creation:
                 ed25519.Ed25519PrivateKey.generate,
                 ed25519.Ed25519PrivateKey,
                 [],
-                marks=pytest.mark.supported(
-                    only_if=lambda backend: backend.ed25519_supported(),
-                    skip_message="Requires OpenSSL with Ed25519 support",
-                ),
             ),
             (rsa.generate_private_key, rsa.RSAPrivateKey, [65537, 1024]),
             (dsa.generate_private_key, dsa.DSAPrivateKey, [1024]),

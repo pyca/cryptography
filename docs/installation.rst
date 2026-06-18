@@ -21,27 +21,27 @@ single most common cause of installation problems.
 Supported platforms
 -------------------
 
-Currently we test ``cryptography`` on Python 3.8+ and PyPy3.11 on these
+Currently we test ``cryptography`` on Python 3.9+ and PyPy3.11 on these
 operating systems.
 
 * x86-64 CentOS Stream 9, 10
 * x86-64 Fedora (latest)
-* x86-64 and ARM64 macOS 15 Sequoia
-* x86-64 Ubuntu 22.04, 24.04, and rolling
+* ARM64 macOS 15 Sequoia
+* x86-64 Ubuntu 22.04, 24.04, 26.04, and rolling
 * ARM64, ARMv7l, and ``ppc64le`` Ubuntu rolling
 * x86-64 Debian Bookworm (12.x), Trixie (13.x), and Sid (unstable)
 * x86-64 and ARM64 Alpine (latest)
-* 32-bit and 64-bit Python on 64-bit Windows Server 2022
+* 64-bit Python on 64-bit Windows Server 2022
 
 We test compiling with ``clang`` as well as ``gcc`` and use the following
 OpenSSL releases in addition to distribution provided releases from the
 above supported platforms:
 
 * ``OpenSSL 3.0-latest``
-* ``OpenSSL 3.2-latest``
-* ``OpenSSL 3.3-latest``
 * ``OpenSSL 3.4-latest``
 * ``OpenSSL 3.5-latest``
+* ``OpenSSL 3.6-latest``
+* ``OpenSSL 4.0-latest``
 
 We also test against the latest commit of BoringSSL, the latest ``aws-lc`` release,
 and versions of LibreSSL that are receiving security support at the time of a
@@ -62,7 +62,7 @@ just run
 If you prefer to compile it yourself you'll need to have OpenSSL installed.
 You can compile OpenSSL yourself as well or use `a binary distribution`_.
 Be sure to download the proper version for your architecture and Python
-(VC2015 is required for 3.8 and above). Wherever you place your copy of OpenSSL
+(VC2015 is required for 3.9 and above). Wherever you place your copy of OpenSSL
 you'll need to set the ``OPENSSL_DIR`` environment variable to include the
 proper location. For example:
 

@@ -3,13 +3,13 @@
 // for complete details.
 
 use asn1::Parser;
-use pyo3::types::{PyAnyMethods, PyListMethods};
+use pyo3::types::{PyAnyMethods, PyDictMethods, PyListMethods, PyTypeMethods};
 
 use crate::asn1::big_byte_slice_to_py_int;
 use crate::declarative_asn1::types::{
-    check_size_constraint, is_tag_valid_for_type, is_tag_valid_for_variant, AnnotatedType,
-    Annotation, BitString, Encoding, GeneralizedTime, IA5String, Null, PrintableString, SetOf, Tlv,
-    Type, UtcTime, Variant,
+    check_size_constraint, is_tag_valid_for_type, is_tag_valid_for_variant, value_set_inner_type,
+    AnnotatedType, Annotation, BitString, Encoding, GeneralizedTime, IA5String, Null,
+    PrintableString, SetOf, Tlv, Type, UtcTime, Variant,
 };
 use crate::error::CryptographyError;
 
@@ -55,7 +55,7 @@ fn decode_pybytes<'a>(
     annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, pyo3::types::PyBytes>> {
     let value = read_value::<&[u8]>(parser, &annotation.encoding)?;
-    check_size_constraint(&annotation.size, value.len(), "OCTET STRING")?;
+    check_size_constraint(&annotation.size, || value.len(), "OCTET STRING")?;
     Ok(pyo3::types::PyBytes::new(py, value))
 }
 
@@ -65,7 +65,11 @@ fn decode_pystr<'a>(
     annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, pyo3::types::PyString>> {
     let value = read_value::<asn1::Utf8String<'a>>(parser, &annotation.encoding)?;
-    check_size_constraint(&annotation.size, value.as_str().len(), "UTF8String")?;
+    check_size_constraint(
+        &annotation.size,
+        || value.as_str().chars().count(),
+        "UTF8String",
+    )?;
     Ok(pyo3::types::PyString::new(py, value.as_str()))
 }
 
@@ -75,7 +79,7 @@ fn decode_printable_string<'a>(
     annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, PrintableString>> {
     let value = read_value::<asn1::PrintableString<'a>>(parser, &annotation.encoding)?.as_str();
-    check_size_constraint(&annotation.size, value.len(), "PrintableString")?;
+    check_size_constraint(&annotation.size, || value.len(), "PrintableString")?;
     let inner = pyo3::types::PyString::new(py, value).unbind();
     Ok(pyo3::Bound::new(py, PrintableString { inner })?)
 }
@@ -86,7 +90,7 @@ fn decode_ia5_string<'a>(
     annotation: &Annotation,
 ) -> ParseResult<pyo3::Bound<'a, IA5String>> {
     let value = read_value::<asn1::IA5String<'a>>(parser, &annotation.encoding)?.as_str();
-    check_size_constraint(&annotation.size, value.len(), "IA5String")?;
+    check_size_constraint(&annotation.size, || value.len(), "IA5String")?;
     let inner = pyo3::types::PyString::new(py, value).unbind();
     Ok(pyo3::Bound::new(py, IA5String { inner })?)
 }
@@ -149,7 +153,7 @@ fn decode_bitstring<'a>(
 ) -> ParseResult<pyo3::Bound<'a, BitString>> {
     let value = read_value::<asn1::BitString<'a>>(parser, &annotation.encoding)?;
     let n_bits = value.as_bytes().len() * 8 - usize::from(value.padding_bits());
-    check_size_constraint(&annotation.size, n_bits, "BIT STRING")?;
+    check_size_constraint(&annotation.size, || n_bits, "BIT STRING")?;
 
     let data = pyo3::types::PyBytes::new(py, value.as_bytes()).unbind();
     Ok(pyo3::Bound::new(
@@ -188,6 +192,68 @@ fn decode_tlv<'a>(
     )?)
 }
 
+// Reads a TLV from `parser` and returns its full data as `PyBytes`,
+// suitable for passing to the X.509 loaders.
+fn decode_x509_der_bytes<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Py<pyo3::types::PyBytes>> {
+    let tlv = match encoding {
+        Some(e) => match e.get() {
+            Encoding::Implicit(_) => Err(CryptographyError::Py(
+                // We don't support IMPLICIT X.509 fields
+                // (they are caught first at the Python level)
+                pyo3::exceptions::PyValueError::new_err(
+                    "invalid type definition: X.509 fields cannot be implicitly encoded",
+                ),
+            ))?,
+            Encoding::Explicit(n) => parser.read_explicit_element::<asn1::Tlv<'_>>(*n),
+        },
+        None => parser.read_element::<asn1::Tlv<'_>>(),
+    }?;
+    Ok(pyo3::types::PyBytes::new(py, tlv.full_data()).unbind())
+}
+
+fn decode_certificate<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, crate::x509::certificate::Certificate>> {
+    let data = decode_x509_der_bytes(py, parser, encoding)?;
+    let cert = crate::x509::certificate::load_der_x509_certificate(py, data, None)?;
+    Ok(pyo3::Bound::new(py, cert)?)
+}
+
+fn decode_csr<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, crate::x509::csr::CertificateSigningRequest>> {
+    let data = decode_x509_der_bytes(py, parser, encoding)?;
+    let csr = crate::x509::csr::load_der_x509_csr(py, data, None)?;
+    Ok(pyo3::Bound::new(py, csr)?)
+}
+
+fn decode_crl<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, crate::x509::crl::CertificateRevocationList>> {
+    let data = decode_x509_der_bytes(py, parser, encoding)?;
+    let crl = crate::x509::crl::load_der_x509_crl(py, data, None)?;
+    Ok(pyo3::Bound::new(py, crl)?)
+}
+
+fn decode_name<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    encoding: &Option<pyo3::Py<Encoding>>,
+) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
+    let name = read_value::<cryptography_x509::name::NameReadable<'a>>(parser, encoding)?;
+    crate::x509::common::parse_name(py, &name)
+}
+
 fn decode_null<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -195,6 +261,31 @@ fn decode_null<'a>(
 ) -> ParseResult<pyo3::Bound<'a, Null>> {
     read_value::<asn1::Null>(parser, encoding)?;
     Ok(pyo3::Bound::new(py, Null {})?)
+}
+
+// Decodes a value set field: decodes the underlying value, then maps
+// it back to the enum member with that value. Fails if the decoded
+// value does not correspond to any member.
+fn decode_value_set<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
+    cls: &pyo3::Py<pyo3::types::PyType>,
+    inner_type: &AnnotatedType,
+    value_map: &pyo3::Py<pyo3::types::PyDict>,
+    annotation: &Annotation,
+) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
+    let inner_ann_type = value_set_inner_type(py, inner_type, annotation)?;
+    let decoded = decode_annotated_type(py, parser, &inner_ann_type)?;
+    if let Some(member) = value_map.bind(py).get_item(&decoded)? {
+        return Ok(member);
+    }
+    Err(CryptographyError::Py(
+        pyo3::exceptions::PyValueError::new_err(format!(
+            "{} is not a valid value for {}",
+            decoded.repr()?,
+            cls.bind(py).name()?,
+        )),
+    ))
 }
 
 // Utility function to handle explicit encoding when parsing
@@ -282,8 +373,23 @@ pub(crate) fn decode_annotated_type<'a>(
                     let val = decode_annotated_type(py, d, inner_ann_type)?;
                     list.append(val)?;
                 }
-                check_size_constraint(&annotation.size, list.len(), "SEQUENCE OF")?;
+                check_size_constraint(&annotation.size, || list.len(), "SEQUENCE OF")?;
                 Ok(list.into_any())
+            })?
+        }
+        Type::Set(cls, fields) => {
+            let set_parse_result = read_value::<asn1::Set<'_>>(parser, encoding)?;
+
+            set_parse_result.parse(|d| -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
+                let kwargs = pyo3::types::PyDict::new(py);
+                let fields = fields.bind(py);
+                for (name, ann_type) in fields.into_iter() {
+                    let ann_type = ann_type.cast::<AnnotatedType>()?;
+                    let value = decode_annotated_type(py, d, ann_type.get())?;
+                    kwargs.set_item(name, value)?;
+                }
+                let val = cls.call(py, (), Some(&kwargs))?.into_bound(py);
+                Ok(val)
             })?
         }
         Type::SetOf(cls) => {
@@ -296,7 +402,7 @@ pub(crate) fn decode_annotated_type<'a>(
                     let val = decode_annotated_type(py, d, inner_ann_type)?;
                     list.append(val)?;
                 }
-                check_size_constraint(&annotation.size, list.len(), "SET OF")?;
+                check_size_constraint(&annotation.size, || list.len(), "SET OF")?;
                 Ok(pyo3::Bound::new(
                     py,
                     SetOf {
@@ -348,6 +454,9 @@ pub(crate) fn decode_annotated_type<'a>(
                 ))?
             }
         },
+        Type::ValueSet(cls, inner_type, value_map) => {
+            decode_value_set(py, parser, cls, inner_type.get(), value_map, annotation)?
+        }
         Type::PyBool() => decode_pybool(py, parser, encoding)?.into_any(),
         Type::PyInt() => decode_pyint(py, parser, encoding)?.into_any(),
         Type::PyBytes() => decode_pybytes(py, parser, annotation)?.into_any(),
@@ -360,6 +469,10 @@ pub(crate) fn decode_annotated_type<'a>(
         Type::BitString() => decode_bitstring(py, parser, annotation)?.into_any(),
         Type::Tlv() => decode_tlv(py, parser, encoding)?.into_any(),
         Type::Null() => decode_null(py, parser, encoding)?.into_any(),
+        Type::Certificate() => decode_certificate(py, parser, encoding)?.into_any(),
+        Type::CertificateSigningRequest() => decode_csr(py, parser, encoding)?.into_any(),
+        Type::CertificateRevocationList() => decode_crl(py, parser, encoding)?.into_any(),
+        Type::Name() => decode_name(py, parser, encoding)?,
     };
 
     match &ann_type.annotation.get().default {
@@ -413,6 +526,21 @@ mod tests {
             let error = result.unwrap_err();
             assert!(format!("{error}")
                 .contains("invalid type definition: TLV/ANY fields cannot be implicitly encoded"));
+        });
+    }
+
+    #[test]
+    fn test_decode_implicit_x509() {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| {
+            let result = asn1::parse(&[], |parser| {
+                let encoding = pyo3::Py::new(py, Encoding::Implicit(0)).ok();
+                super::decode_x509_der_bytes(py, parser, &encoding)
+            });
+            assert!(result.is_err());
+            let error = result.unwrap_err();
+            assert!(format!("{error}")
+                .contains("invalid type definition: X.509 fields cannot be implicitly encoded"));
         });
     }
 }

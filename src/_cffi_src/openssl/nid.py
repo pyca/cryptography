@@ -10,8 +10,6 @@ INCLUDES = """
 
 TYPES = """
 static const int NID_undef;
-
-static const int NID_subject_alt_name;
 """
 
 FUNCTIONS = """

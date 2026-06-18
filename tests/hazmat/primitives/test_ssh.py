@@ -68,9 +68,6 @@ class TestOpenSSHSerialization:
         ],
     )
     def test_load_ssh_public_key(self, key_file, cert_file, backend):
-        if "ed25519" in key_file and not backend.ed25519_supported():
-            pytest.skip("Requires OpenSSL with Ed25519 support")
-
         # normal public key
         pub_data = load_vectors_from_file(
             os.path.join("asymmetric", "OpenSSH", key_file),
@@ -174,8 +171,6 @@ class TestOpenSSHSerialization:
         ],
     )
     def test_load_ssh_private_key(self, key_file, backend):
-        if "ed25519" in key_file and not backend.ed25519_supported():
-            pytest.skip("Requires OpenSSL with Ed25519 support")
         if "-psw" in key_file and not ssh._bcrypt_supported:
             pytest.skip("Requires bcrypt module")
 
@@ -261,10 +256,6 @@ class TestOpenSSHSerialization:
         maxline = max(map(len, priv_data2.split(b"\n")))
         assert maxline < 80
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires Ed25519 support",
-    )
     @pytest.mark.parametrize(
         "key_file",
         [
@@ -281,10 +272,6 @@ class TestOpenSSHSerialization:
         with pytest.raises(UnsupportedAlgorithm):
             load_ssh_private_key(data, None)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires Ed25519 support",
-    )
     @pytest.mark.supported(
         only_if=lambda backend: ssh._bcrypt_supported,
         skip_message="Requires that bcrypt exists",
@@ -304,10 +291,6 @@ class TestOpenSSHSerialization:
         with pytest.raises(InvalidTag):
             load_ssh_private_key(priv_data, b"password")
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires Ed25519 support",
-    )
     @pytest.mark.supported(
         only_if=lambda backend: ssh._bcrypt_supported,
         skip_message="Requires that bcrypt exists",
@@ -1140,10 +1123,6 @@ class TestECDSASSHSerialization:
             load_ssh_public_key(ssh_key, backend)
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.ed25519_supported(),
-    skip_message="Requires OpenSSL with Ed25519 support",
-)
 class TestEd25519SSHSerialization:
     def test_load_ssh_public_key(self, backend):
         ssh_key = (
@@ -1186,10 +1165,6 @@ class TestEd25519SSHSerialization:
 
 
 class TestSSHCertificate:
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support",
-    )
     def test_loads_ssh_cert(self, backend):
         # secp256r1 public key, ed25519 signing key
         cert = load_ssh_public_identity(
@@ -1718,10 +1693,6 @@ class TestSSHCertificateBuilder:
             (b"zebra@cryptography.io", b""),
         ]
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support",
-    )
     def test_sign_ed25519(self, backend):
         private_key = ed25519.Ed25519PrivateKey.generate()
         builder = (
@@ -1818,10 +1789,6 @@ class TestSSHCertificateBuilder:
             b"zbwL217Q93R08bJn1hDWuiTiaHGauSy2gPUI+cnkvlEocHM"
         )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support",
-    )
     def test_sign_and_byte_compare_ed25519(self, monkeypatch, backend):
         # Monkey patch urandom to return a known value so we
         # get a deterministic signature with Ed25519.
@@ -1911,10 +1878,7 @@ class TestSSHKeyFingerprint:
         )
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            backend.hash_supported(hashes.MD5())
-            and backend.ed25519_supported()
-        ),
+        only_if=lambda backend: backend.hash_supported(hashes.MD5()),
         skip_message="Does not support MD5 or Ed25519",
     )
     def test_ssh_key_fingerprint_ed25519_md5(self):
@@ -1927,10 +1891,6 @@ class TestSSHKeyFingerprint:
         fingerprint = ssh_key_fingerprint(public_key, hashes.MD5())
         assert fingerprint == b"\xe5R=\x01\x9e\xa0\xc1\xe9\x8c?L|\xc5\x94W\x85"
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Ed25519 not supported",
-    )
     def test_ssh_key_fingerprint_ed25519_sha256(self):
         ssh_key = load_vectors_from_file(
             os.path.join("asymmetric", "OpenSSH", "ed25519-nopsw.key.pub"),

@@ -4,6 +4,7 @@
 
 use std::env;
 
+#[allow(clippy::unusual_byte_groupings)]
 fn main() {
     if env::var("DEP_OPENSSL_LIBRESSL_VERSION_NUMBER").is_ok() {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_LIBRESSL");
@@ -15,6 +16,13 @@ fn main() {
 
     if env::var("DEP_OPENSSL_AWSLC").is_ok() {
         println!("cargo:rustc-cfg=CRYPTOGRAPHY_IS_AWSLC");
+    }
+
+    if let Ok(version) = env::var("DEP_OPENSSL_VERSION_NUMBER") {
+        let version = u64::from_str_radix(&version, 16).unwrap();
+        if version >= 0x3_05_00_00_0 {
+            println!("cargo:rustc-cfg=CRYPTOGRAPHY_OPENSSL_350_OR_GREATER");
+        }
     }
 
     if let Ok(vars) = env::var("DEP_OPENSSL_CONF") {

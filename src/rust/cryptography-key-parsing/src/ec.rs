@@ -160,7 +160,7 @@ pub fn parse_pkcs1_private_key(
     } else {
         let mut public_point = openssl::ec::EcPoint::new(&group)?;
         public_point
-            .mul_generator(&group, &private_number, &bn_ctx)
+            .mul_generator2(&group, &private_number, &mut bn_ctx)
             .map_err(|_| crate::KeyParsingError::InvalidKey)?;
         public_point
     };

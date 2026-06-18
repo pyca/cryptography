@@ -79,6 +79,13 @@ class TestGCM:
         with pytest.raises(ValueError):
             modes.GCM(b"0" * size)
 
+    @pytest.mark.parametrize("min_tag_length", [0, 1, 2, 3])
+    def test_gcm_rejects_delayed_tag_min_tag_length_too_short(
+        self, min_tag_length
+    ):
+        with pytest.raises(ValueError, match="min_tag_length must be >= 4"):
+            modes.GCM(b"\x00" * 12, min_tag_length=min_tag_length)
+
 
 class TestCamellia:
     @pytest.mark.parametrize(

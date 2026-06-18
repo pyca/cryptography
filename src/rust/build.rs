@@ -46,4 +46,15 @@ fn main() {
             println!("cargo:rustc-cfg=CRYPTOGRAPHY_OSSLCONF=\"{var}\"");
         }
     }
+
+    // macOS 15 CI runners use Apple's new linker (ld_prime), which reserves
+    // significantly less Mach-O header padding than the old ld. Tools like
+    // Homebrew use install_name_tool to rewrite dylib paths post-install, and
+    // that requires spare space in the header. Without this flag the relink
+    // fails with "updated load commands do not fit in the header". This was
+    // first observed with cryptography 46.0.4 when wheel builds moved from
+    // macos-13 to macos-15 runners.
+    if env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("macos") {
+        println!("cargo:rustc-link-arg=-Wl,-headerpad_max_install_names");
+    }
 }

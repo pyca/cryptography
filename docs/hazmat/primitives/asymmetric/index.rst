@@ -23,6 +23,8 @@ private key is able to decrypt it.
 .. toctree::
     :maxdepth: 1
 
+    mldsa
+    mlkem
     ed25519
     x25519
     ed448

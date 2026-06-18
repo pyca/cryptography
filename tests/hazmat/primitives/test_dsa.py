@@ -29,7 +29,7 @@ from ...utils import (
 from .fixtures_dsa import DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
 from .utils import skip_fips_traditional_openssl
 
-_ALGORITHMS_DICT: typing.Dict[str, hashes.HashAlgorithm] = {
+_ALGORITHMS_DICT: dict[str, hashes.HashAlgorithm] = {
     "SHA1": hashes.SHA1(),
     "SHA224": hashes.SHA224(),
     "SHA256": hashes.SHA256(),

@@ -23,6 +23,10 @@ pub enum Type {
     Sequence(pyo3::Py<pyo3::types::PyType>, pyo3::Py<pyo3::types::PyDict>),
     /// SEQUENCE OF (`list[`T`]`)
     SequenceOf(pyo3::Py<AnnotatedType>),
+    /// SET(`class`, `dict`)
+    /// The first element is the Python class that represents the set,
+    /// the second element is a dict of the (already converted) fields of the class.
+    Set(pyo3::Py<pyo3::types::PyType>, pyo3::Py<pyo3::types::PyDict>),
     /// SET OF (`list[`T`]`)
     SetOf(pyo3::Py<AnnotatedType>),
     /// OPTIONAL (`T | None`)
@@ -30,6 +34,17 @@ pub enum Type {
     /// CHOICE (`T | U | ...`)
     /// The list contains elements of type Variant
     Choice(pyo3::Py<pyo3::types::PyList>),
+    /// Value set (an `enum.Enum` whose member values all share
+    /// a single underlying ASN.1 type).
+    /// The first element is the Python enum class, the second
+    /// element is the (already converted) underlying type of the
+    /// member values, and the third element is a map from member
+    /// value to enum member, used when decoding.
+    ValueSet(
+        pyo3::Py<pyo3::types::PyType>,
+        pyo3::Py<AnnotatedType>,
+        pyo3::Py<pyo3::types::PyDict>,
+    ),
 
     // Python types that we map to canonical ASN.1 types
     //
@@ -57,6 +72,18 @@ pub enum Type {
     Tlv(),
     /// NULL
     Null(),
+
+    // X.509 types that we special-case to allow embedding them
+    // in ASN.1 structures.
+    //
+    /// `x509.Certificate`
+    Certificate(),
+    /// `x509.CertificateSigningRequest`
+    CertificateSigningRequest(),
+    /// `x509.CertificateRevocationList`
+    CertificateRevocationList(),
+    /// `x509.Name`
+    Name(),
 }
 
 /// A type that we know how to encode/decode, along with any
@@ -240,6 +267,10 @@ impl PrintableString {
         (**self.inner.bind(py)).eq(other.inner.bind(py))
     }
 
+    fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
+        (**self.inner.bind(py)).hash()
+    }
+
     pub fn __repr__<'py>(
         &self,
         py: pyo3::Python<'py>,
@@ -285,6 +316,10 @@ impl IA5String {
 
     fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
         (**self.inner.bind(py)).eq(other.inner.bind(py))
+    }
+
+    fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
+        (**self.inner.bind(py)).hash()
     }
 
     pub fn __repr__<'py>(
@@ -345,6 +380,10 @@ impl UtcTime {
         (**self.inner.bind(py)).eq(other.inner.bind(py))
     }
 
+    fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
+        (**self.inner.bind(py)).hash()
+    }
+
     pub fn __repr__<'py>(
         &self,
         py: pyo3::Python<'py>,
@@ -388,6 +427,10 @@ impl GeneralizedTime {
 
     fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
         (**self.inner.bind(py)).eq(other.inner.bind(py))
+    }
+
+    fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
+        (**self.inner.bind(py)).hash()
     }
 
     pub fn __repr__<'py>(
@@ -439,6 +482,12 @@ impl BitString {
             && self.padding_bits == other.padding_bits)
     }
 
+    fn __hash__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<isize> {
+        (self.data.bind(py), self.padding_bits)
+            .into_pyobject(py)?
+            .hash()
+    }
+
     pub fn __repr__<'py>(
         &self,
         py: pyo3::Python<'py>,
@@ -469,7 +518,7 @@ impl Null {
 }
 
 #[derive(pyo3::FromPyObject)]
-#[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+#[pyo3::pyclass(frozen, generic, module = "cryptography.hazmat.bindings._rust.asn1")]
 pub struct SetOf {
     pub(crate) inner: pyo3::Py<pyo3::types::PyList>,
 }
@@ -492,25 +541,6 @@ impl SetOf {
 
     fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {
         Ok(format!("SetOf({})", self.inner.bind(py).repr()?))
-    }
-
-    // TODO: Once the minimum Python version is >= 3.9, replace this manual
-    // `__class_getitem__` with `#[pyclass(generic)]`, which uses
-    // `pyo3::types::PyGenericAlias` to create `types.GenericAlias` objects.
-    #[classmethod]
-    fn __class_getitem__(
-        cls: &pyo3::Bound<'_, pyo3::types::PyType>,
-        py: pyo3::Python<'_>,
-        item: &pyo3::Bound<'_, pyo3::PyAny>,
-    ) -> pyo3::PyResult<pyo3::Py<pyo3::PyAny>> {
-        // types.GenericAlias is available from Python 3.9+.
-        // Fall back to typing._GenericAlias for Python 3.8.
-        if let Ok(generic_alias) = crate::types::TYPES_GENERICALIAS.get(py) {
-            Ok(generic_alias.call1((cls, item))?.unbind())
-        } else {
-            let generic_alias = crate::types::TYPING_GENERICALIAS.get(py)?;
-            Ok(generic_alias.call1((cls, (item,)))?.unbind())
-        }
     }
 }
 
@@ -545,6 +575,14 @@ pub fn non_root_python_to_rust<'p>(
         Type::Tlv().into_pyobject(py)
     } else if class.is(Null::type_object(py)) {
         Type::Null().into_pyobject(py)
+    } else if class.is(crate::x509::certificate::Certificate::type_object(py)) {
+        Type::Certificate().into_pyobject(py)
+    } else if class.is(crate::x509::csr::CertificateSigningRequest::type_object(py)) {
+        Type::CertificateSigningRequest().into_pyobject(py)
+    } else if class.is(crate::x509::crl::CertificateRevocationList::type_object(py)) {
+        Type::CertificateRevocationList().into_pyobject(py)
+    } else if class.is(&crate::types::NAME.get(py)?) {
+        Type::Name().into_pyobject(py)
     } else {
         Err(pyo3::exceptions::PyTypeError::new_err(format!(
             "cannot handle type: {class:?}"
@@ -650,12 +688,14 @@ pub(crate) fn is_tag_valid_for_type(
 ) -> bool {
     match type_ {
         Type::Sequence(_, _) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
+        Type::Set(_, _) => check_tag_with_encoding(asn1::Set::TAG, encoding, tag),
         Type::SequenceOf(_) => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
         Type::SetOf(_) => check_tag_with_encoding(asn1::SetOf::<()>::TAG, encoding, tag),
         Type::Option(t) => is_tag_valid_for_type(py, tag, t.get().inner.get(), encoding),
         Type::Choice(variants) => variants.bind(py).into_iter().any(|v| {
             is_tag_valid_for_variant(py, tag, v.cast::<Variant>().unwrap().get(), encoding)
         }),
+        Type::ValueSet(_, t, _) => is_tag_valid_for_type(py, tag, t.get().inner.get(), encoding),
         Type::PyBool() => check_tag_with_encoding(bool::TAG, encoding, tag),
         Type::PyInt() => check_tag_with_encoding(asn1::BigInt::TAG, encoding, tag),
         Type::PyBytes() => {
@@ -687,15 +727,44 @@ pub(crate) fn is_tag_valid_for_type(
             }
         }
         Type::Null() => check_tag_with_encoding(asn1::Null::TAG, encoding, tag),
+        // Certificates, CSRs, CRLs, and Names are all SEQUENCEs
+        Type::Certificate()
+        | Type::CertificateSigningRequest()
+        | Type::CertificateRevocationList()
+        | Type::Name() => check_tag_with_encoding(asn1::Sequence::TAG, encoding, tag),
     }
+}
+
+// Builds the AnnotatedType used to encode/decode the underlying value of
+// a value set member: the underlying type, annotated with the encoding of
+// the value set field. The DEFAULT annotation (if any) applies to the enum
+// member (not the underlying value), so it is handled at the value set
+// level and not propagated here.
+pub(crate) fn value_set_inner_type(
+    py: pyo3::Python<'_>,
+    inner: &AnnotatedType,
+    annotation: &Annotation,
+) -> pyo3::PyResult<AnnotatedType> {
+    Ok(AnnotatedType {
+        inner: inner.inner.clone_ref(py),
+        annotation: pyo3::Py::new(
+            py,
+            Annotation {
+                default: None,
+                encoding: annotation.encoding.as_ref().map(|e| e.clone_ref(py)),
+                size: annotation.size.as_ref().map(|s| s.clone_ref(py)),
+            },
+        )?,
+    })
 }
 
 pub(crate) fn check_size_constraint(
     size_annotation: &Option<pyo3::Py<Size>>,
-    data_length: usize,
+    data_length: impl FnOnce() -> usize,
     field_type: &str,
 ) -> Result<(), CryptographyError> {
     if let Some(size) = size_annotation {
+        let data_length = data_length();
         let min = size.get().min;
         let max = size.get().max.unwrap_or(usize::MAX);
         if !(min..=max).contains(&data_length) {

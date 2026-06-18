@@ -79,7 +79,7 @@ LIMBO_SKIP_TESTCASES = {
     "webpki::aki::root-with-aki-all-fields",
     # We allow RSA keys that aren't divisible by 8, which is technically
     # forbidden under CABF. No other implementation checks this either.
-    "webpki::forbidden-rsa-not-divisable-by-8-in-root",
+    "webpki::forbidden-rsa-not-divisible-by-8-in-root",
     # We disallow CAs in the leaf position, which is explicitly forbidden
     # by CABF (but implicitly permitted under RFC 5280). This is consistent
     # with what webpki and rustls do, but inconsistent with Go and OpenSSL.
@@ -191,14 +191,17 @@ def _limbo_testcase(id_, testcase):
             verifier.verify(peer_certificate, untrusted_intermediates)
 
 
-def test_limbo(subtests, pytestconfig):
+@pytest.fixture(scope="session")
+def _limbo_testcases(pytestconfig):
     limbo_root = pytestconfig.getoption("--x509-limbo-root", skip=True)
-    limbo_path = os.path.join(limbo_root, "limbo.json")
-    with open(limbo_path, mode="rb") as limbo_file:
-        limbo = json.load(limbo_file)
-        testcases = limbo["testcases"]
-        for testcase in testcases:
-            with subtests.test():
-                # NOTE: Pass in the id separately to make pytest
-                # error renderings slightly nicer.
-                _limbo_testcase(testcase["id"], testcase)
+    with open(os.path.join(limbo_root, "limbo.json"), mode="rb") as f:
+        return json.load(f)["testcases"]
+
+
+@pytest.mark.parametrize("shard", range(4))
+def test_limbo(subtests, _limbo_testcases, shard):
+    for testcase in _limbo_testcases[shard::4]:
+        with subtests.test():
+            # NOTE: Pass in the id separately to make pytest
+            # error renderings slightly nicer.
+            _limbo_testcase(testcase["id"], testcase)

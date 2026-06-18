@@ -375,7 +375,16 @@ impl BaseArgon2 {
             self.memory_cost,
             output,
         )
-        .map_err(CryptographyError::from)?;
+        .map_err(|_| {
+            // In theory other init issues (e.g. PROV_R_INVALID_THREAD_POOL_SIZE
+            // on builds without thread-pool support) can also occur here, but
+            // in practice failures from OpenSSL's argon2 provider at this point
+            // are memory-allocation failures, so we strictly map to MemoryError.
+            CryptographyError::from(pyo3::exceptions::PyMemoryError::new_err(format!(
+                "Not enough memory to derive key. These parameters require {}KiB of memory.",
+                self.memory_cost
+            )))
+        })?;
 
         Ok(self.length)
     }

@@ -1399,10 +1399,6 @@ class TestKeySerializationEncryptionTypes:
             BestAvailableEncryption(b"")
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.ed25519_supported(),
-    skip_message="Requires OpenSSL with Ed25519 support",
-)
 class TestEd25519Serialization:
     def test_load_der_private_key(self, backend):
         data = load_vectors_from_file(

@@ -1,12 +1,120 @@
 Changelog
 =========
 
-.. _v47-0-0:
+.. _v50-0-0:
 
-47.0.0 - `main`_
+50.0.0 - `main`_
 ~~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
+* Parsing a Signed Certificate Timestamp list now rejects encodings that
+  carry trailing bytes after the list or after an individual SCT, instead of
+  silently ignoring them.
+* Added support for using :class:`~cryptography.x509.Name` as a field type in
+  the :doc:`/hazmat/asn1/index` module.
+
+.. _v49-0-0:
+
+49.0.0 - 2026-06-12
+~~~~~~~~~~~~~~~~~~~
+
+* **BACKWARDS INCOMPATIBLE:** Support for ``x86_64`` macOS has been removed.
+  We now only publish ``arm64`` wheels for macOS.
+* **BACKWARDS INCOMPATIBLE:** Support for 32-bit Windows has been removed.
+  Users should move to a 64-bit Python installation.
+* **BACKWARDS INCOMPATIBLE:** Removed the deprecated
+  ``PUBLIC_KEY_TYPES``, ``PRIVATE_KEY_TYPES``,
+  ``CERTIFICATE_PRIVATE_KEY_TYPES``, ``CERTIFICATE_ISSUER_PUBLIC_KEY_TYPES``,
+  and ``CERTIFICATE_PUBLIC_KEY_TYPES`` type aliases. Use
+  ``PublicKeyTypes``, ``PrivateKeyTypes``, ``CertificateIssuerPrivateKeyTypes``,
+  ``CertificateIssuerPublicKeyTypes``, and ``CertificatePublicKeyTypes``
+  instead. These were deprecated in version 40.0.
+* **BACKWARDS INCOMPATIBLE:** :class:`~cryptography.hazmat.primitives.ciphers.algorithms.ChaCha20`
+  now treats the first 4 bytes of the ``nonce`` as a 32-bit little-endian block
+  counter (as defined in :rfc:`7539`) and tracks the number of bytes processed.
+  Attempting to encrypt or decrypt more data than the counter allows before it
+  would overflow now raises a :class:`ValueError` rather than silently diverging
+  from RFC 7539. Setting the counter portion of the ``nonce`` to zero allows
+  encrypting up to 256 GiB with a given nonce.
+* **BACKWARDS INCOMPATIBLE:** Loading an X.509 certificate whose ECDSA or DSA
+  signature ``AlgorithmIdentifier`` contains encoded NULL parameters now raises
+  a :class:`ValueError`. Such certificates are invalid, but older versions of
+  Java emitted them; previously they loaded with a deprecation warning.
+* Fixed cross-compilation of the CFFI bindings when ``PYO3_CROSS_LIB_DIR``
+  is set. The build now derives the Python include directory from
+  ``PYO3_CROSS_LIB_DIR`` instead of querying the host interpreter, which
+  previously caused the build to fail during cross-compilations for embedded
+  systems, on hosts which have same-version Python development headers
+  installed as the target Python.
+* Added support for signing and verifying X.509 certificates, certificate
+  signing requests, and certificate revocation lists with
+  :doc:`/hazmat/primitives/asymmetric/mldsa` keys, as well as loading
+  certificates that contain ML-DSA public keys.
+* Added :meth:`~cryptography.hazmat.primitives.hpke.KEM.enc_length` to
+  :class:`~cryptography.hazmat.primitives.hpke.KEM` so callers can split the
+  encapsulated key from the ciphertext returned by
+  :meth:`~cryptography.hazmat.primitives.hpke.Suite.encrypt`.
+* :meth:`~cryptography.x509.verification.ExtensionPolicy.require_present`,
+  :meth:`~cryptography.x509.verification.ExtensionPolicy.may_be_present`, and
+  :meth:`~cryptography.x509.verification.ExtensionPolicy.require_not_present`
+  now accept any extension type. Previously only a fixed set of extension
+  types was supported, which made it impossible to account for otherwise
+  unrecognized critical extensions during path validation.
+* Added support for using :class:`~cryptography.x509.Certificate`,
+  :class:`~cryptography.x509.CertificateSigningRequest`, and
+  :class:`~cryptography.x509.CertificateRevocationList` as field types in
+  :doc:`/hazmat/asn1/index` structures.
+* Added :func:`~cryptography.hazmat.asn1.value_set`, a class decorator that
+  registers an :class:`enum.Enum` subclass as an ASN.1 value set: members
+  are encoded as their underlying value, and decoding fails if the decoded
+  value does not match one of the declared members.
+* Added :meth:`~cryptography.x509.Name.from_bytes` for parsing a
+  :class:`~cryptography.x509.Name` from DER bytes, the inverse of
+  :meth:`~cryptography.x509.Name.public_bytes`.
+* Added the ``rsa_padding`` keyword-only parameter to
+  :meth:`~cryptography.x509.CertificateBuilder.public_key`. Passing the
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.PSS` class
+  (not an instance) encodes an RSA subject public key in the certificate's
+  ``subjectPublicKeyInfo`` with the ``id-RSASSA-PSS`` OID and no
+  parameters.
+* Added external mu (message representative) support to
+  :doc:`/hazmat/primitives/asymmetric/mldsa` via the
+  ``sign_mu`` and ``verify_mu`` methods, which sign and verify a precomputed
+  64-byte ``mu`` as defined in FIPS 204.
+
+.. _v48-0-1:
+
+48.0.1 - 2026-06-09
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 4.0.1.
+
+.. _v48-0-0:
+
+48.0.0 - 2026-05-04
+~~~~~~~~~~~~~~~~~~~
+
+* **BACKWARDS INCOMPATIBLE:** Support for Python 3.8 has been removed.
+  ``cryptography`` now requires Python 3.9 or later.
+* **BACKWARDS INCOMPATIBLE:** Loading an X.509 CRL whose inner
+  ``TBSCertList.signature`` algorithm does not match the outer
+  ``signatureAlgorithm`` now raises ``ValueError``. Previously, such CRLs
+  were parsed successfully and only rejected during signature validation.
+* Added support for :doc:`/hazmat/primitives/asymmetric/mlkem` and
+  :doc:`/hazmat/primitives/asymmetric/mldsa` when using OpenSSL 3.5.0 or
+  later, in addition to the existing AWS-LC and BoringSSL support. This means
+  post-quantum algorithms are now available to users of our wheels.
+
+  * **Note:** Going forward, we do not guarantee that all functionality
+    in ``cryptography`` will be available when building against
+    OpenSSL. See :doc:`/statements/state-of-openssl` for more information.
+
+
+.. _v47-0-0:
+
+47.0.0 - 2026-04-24
+~~~~~~~~~~~~~~~~~~~
 
 * Support for Python 3.8 is deprecated and will be removed in the next
   ``cryptography`` release.
@@ -89,6 +197,34 @@ Changelog
   method for computing hashes.
 * Added :doc:`/hazmat/primitives/hpke` support implementing :rfc:`9180` for
   hybrid authenticated encryption.
+* Added new :doc:`/hazmat/primitives/asymmetric/mlkem` module with
+  support for ML-KEM key encapsulation with AWS-LC and BoringSSL.
+
+  * **Note:** Post-quantum algorithm support requires AWS-LC or BoringSSL.
+    As we ship our wheels with OpenSSL, most users will not have access to
+    these APIs yet. See :doc:`/statements/state-of-openssl` for more
+    information on OpenSSL support.
+* Added new :doc:`/hazmat/primitives/asymmetric/mldsa` module with
+  support for ML-DSA signing and verification with AWS-LC and BoringSSL.
+
+  * **Note:** Post-quantum algorithm support requires AWS-LC or BoringSSL.
+    As we ship our wheels with OpenSSL, most users will not have access to
+    these APIs yet. See :doc:`/statements/state-of-openssl` for more
+    information on OpenSSL support.
+* Added new :doc:`/hazmat/asn1/index` module with support for declaratively
+  defining custom ASN.1 types and encoding/decoding them.
+* Fixed compilation when using LibreSSL 4.3.0 and OpenSSL 4.0.0.
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 4.0.0.
+
+.. _v46-0-7:
+
+46.0.7 - 2026-04-07
+~~~~~~~~~~~~~~~~~~~
+
+* **SECURITY ISSUE**: Fixed an issue where non-contiguous buffers could be
+  passed to APIs that accept Python buffers, which could lead to buffer
+  overflow. **CVE-2026-39892**
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 3.5.6.
 
 .. _v46-0-6:
 

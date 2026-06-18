@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     name: sdists
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           # The tag to build or the tag received by the tag event
           ref: ${{ github.event.inputs.version || github.ref }}
@@ -44,11 +44,11 @@ jobs:
         run: uv build --build-constraint=$BUILD_REQUIREMENTS_PATH --require-hashes --sdist
       - name: Make sdist and wheel (vectors)
         run: uv build --build-constraint=$BUILD_REQUIREMENTS_PATH --require-hashes vectors/
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "cryptography-sdist"
           path: dist/cryptography*
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "vectors-sdist-wheel"
           path: vectors/dist/cryptography*
@@ -60,13 +60,12 @@ jobs:
       image: ghcr.io/pyca/${{ matrix.MANYLINUX.CONTAINER }}
       volumes:
         - /staticnodehost:/staticnodecontainer:rw,rshared
-        - /staticnodehost/20:/__e/node20:ro,rshared
         - /staticnodehost/24:/__e/node24:ro,rshared
     strategy:
       fail-fast: false
       matrix:
         PYTHON:
-          - { VERSION: "cp311-cp311", ABI_VERSION: 'py38' }
+          - { VERSION: "cp311-cp311", ABI_VERSION: 'py39' }
           - { VERSION: "cp311-cp311", ABI_VERSION: 'py311' }
           - { VERSION: "cp314-cp314t" }
           - { VERSION: "pp311-pypy311_pp73" }
@@ -111,7 +110,7 @@ jobs:
 
     name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
-      - name: Ridiculous-er workaround for static node20
+      - name: Ridiculous-er workaround for static node
         run: |
           cp -R /staticnode/* /staticnodecontainer/
       - name: Ridiculous alpine workaround for actions support on arm64
@@ -124,7 +123,7 @@ jobs:
         if: startsWith(matrix.MANYLINUX.NAME, 'musllinux') && endsWith(matrix.MANYLINUX.NAME, 'aarch64')
 
       - name: Get build-requirements.txt from repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           # The tag to build or the tag received by the tag event
           ref: ${{ github.event.inputs.version || github.ref }}
@@ -170,7 +169,7 @@ jobs:
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
           test-pip: ${{ startsWith(matrix.PYTHON.VERSION, 'cp') }}
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
           path: wheelhouse/
@@ -183,39 +182,25 @@ jobs:
       matrix:
         PYTHON:
           - VERSION: '3.11'
-            ABI_VERSION: 'py38'
-            # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
+            ABI_VERSION: 'py39'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.14/bin/python3'
-            DEPLOYMENT_TARGET: '10.13'
-            # This archflags is default, but let's be explicit
-            ARCHFLAGS: '-arch x86_64 -arch arm64'
-            # See https://github.com/pypa/cibuildwheel/blob/8602e864d4d22919d7d8eefb2346f2f89ea23252/cibuildwheel/platforms/macos.py#L317
-            # This will change in the future as we change the base Python we
-            # build against
-            _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
+            DEPLOYMENT_TARGET: '11.0'
+            ARCHFLAGS: '-arch arm64'
+            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
           - VERSION: '3.14'
             ABI_VERSION: 'py311'
-            # Despite the name, this is built for the macOS 11 SDK on arm64 and 10.9+ on intel
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.14/bin/python3'
-            DEPLOYMENT_TARGET: '10.13'
-            # This archflags is default, but let's be explicit
-            ARCHFLAGS: '-arch x86_64 -arch arm64'
-            # See https://github.com/pypa/cibuildwheel/blob/c8876b5c54a6c6b08de5d4b1586906b56203bd9e/cibuildwheel/macos.py#L257-L269
-            # This will change in the future as we change the base Python we
-            # build against
-            _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
+            DEPLOYMENT_TARGET: '11.0'
+            ARCHFLAGS: '-arch arm64'
+            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
           - VERSION: '3.14t'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/PythonT.framework/Versions/3.14/bin/python3.14t'
-            DEPLOYMENT_TARGET: '10.13'
-            # This archflags is default, but let's be explicit
-            ARCHFLAGS: '-arch x86_64 -arch arm64'
-            # See https://github.com/pypa/cibuildwheel/blob/c8876b5c54a6c6b08de5d4b1586906b56203bd9e/cibuildwheel/macos.py#L257-L269
-            # This will change in the future as we change the base Python we
-            # build against
-            _PYTHON_HOST_PLATFORM: 'macosx-10.9-universal2'
+            DEPLOYMENT_TARGET: '11.0'
+            ARCHFLAGS: '-arch arm64'
+            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
           - VERSION: 'pypy-3.11'
             BIN_PATH: 'pypy3'
             DEPLOYMENT_TARGET: '11.0'
@@ -224,7 +209,7 @@ jobs:
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS ${{ matrix.PYTHON.ARCHFLAGS }}"
     steps:
       - name: Get build-requirements.txt from repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           # The tag to build or the tag received by the tag event
           ref: ${{ github.event.inputs.version || github.ref }}
@@ -254,20 +239,18 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
         if: contains(matrix.PYTHON.VERSION, 'pypy')
-      - uses: dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927 # v19
+      - uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
         with:
           repo: pyca/infra
           workflow: build-macos-openssl.yml
           branch: main
           workflow_conclusion: success
-          name: openssl-macos-universal2
-          path: "../openssl-macos-universal2/"
+          name: openssl-macos-arm64
+          path: "../openssl-macos-arm64/"
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
         with:
           toolchain: stable
-          # Add the x86-64 target in addition to the native arch (arm64)
-          target: x86_64-apple-darwin
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: cryptography-sdist
@@ -286,9 +269,9 @@ jobs:
               PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
           fi
 
-          OPENSSL_DIR="$(readlink -f ../openssl-macos-universal2/)" \
+          OPENSSL_DIR="$(readlink -f ../openssl-macos-arm64/)" \
               OPENSSL_STATIC=1 \
-              uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API --config-settings=build-args=--sbom-include="$(readlink -f ../openssl-macos-universal2/sbom.json)" cryptography*.tar.gz -o wheelhouse/
+              uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API --config-settings=build-args=--sbom-include="$(readlink -f ../openssl-macos-arm64/sbom.json)" cryptography*.tar.gz -o wheelhouse/
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.PYTHON.DEPLOYMENT_TARGET }}
           ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
@@ -301,7 +284,7 @@ jobs:
 
       - run: |
           echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls wheelhouse/cryptography*.whl))" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: "${{ env.CRYPTOGRAPHY_WHEEL_NAME }}"
           path: wheelhouse/
@@ -309,25 +292,30 @@ jobs:
   windows:
     needs: [sdist]
     runs-on: ${{ matrix.WINDOWS.RUNNER }}
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         WINDOWS:
-          - {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc', RUNNER: 'windows-latest'}
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc', RUNNER: 'windows-latest'}
         PYTHON:
-          - {VERSION: "3.14", "ABI_VERSION": "py38"}
+          - {VERSION: "3.14", "ABI_VERSION": "py39"}
           - {VERSION: "3.14", "ABI_VERSION": "py311"}
           - {VERSION: "3.14t"}
           - {VERSION: "pypy-3.11"}
-        exclude:
-          # We need to exclude the below configuration because there is no 32-bit pypy3
-          - WINDOWS: {ARCH: 'x86', WINDOWS: 'win32', RUST_TRIPLE: 'i686-pc-windows-msvc'}
-            PYTHON: {VERSION: "pypy-3.11"}
+        include:
+          # Windows on ARM is in a stability validation period; the work
+          # step uses `continue-on-error` only for these entries so transient
+          # failures don't block the release pipeline and no broken wheel
+          # is uploaded.
+          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
+            PYTHON: {VERSION: "3.14", "ABI_VERSION": "py311"}
+          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
+            PYTHON: {VERSION: "3.14t"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - name: Get build-requirements.txt from repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           # The tag to build or the tag received by the tag event
           ref: ${{ github.event.inputs.version || github.ref }}
@@ -335,56 +323,24 @@ jobs:
           sparse-checkout: |
             ${{ env.BUILD_REQUIREMENTS_PATH }}
             ${{ env.UV_REQUIREMENTS_PATH }}
+            .github/actions/windows-wheel/
             .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: cryptography-sdist
-
-      - name: Setup python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - id: build
+        continue-on-error: ${{ matrix.WINDOWS.ARCH == 'arm64' }}
+        uses: ./.github/actions/windows-wheel
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
-          architecture: ${{ matrix.WINDOWS.ARCH }}
-        timeout-minutes: 3
-      - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
-        with:
-          toolchain: stable
-          target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
-
-      - uses: dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927 # v19
-        with:
-          repo: pyca/infra
-          workflow: build-windows-openssl.yml
-          branch: main
-          workflow_conclusion: success
-          name: "openssl-${{ matrix.WINDOWS.WINDOWS }}"
-          path: "C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Configure OpenSSL
-        run: |
-            echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
-            echo "OPENSSL_STATIC=1" >> $GITHUB_ENV
-        shell: bash
-
-      - run: pip install -r "${UV_REQUIREMENTS_PATH}"
-        shell: bash
-      - run: mkdir wheelhouse
-      - run: |
-          if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
-              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
-          fi
-
-          uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API --config-settings=build-args=--sbom-include=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/sbom.json -o wheelhouse/
-        shell: bash
-
-      - name: Smoketest
-        uses: ./.github/actions/wheel-smoketest
-        with:
+          abi-version: ${{ matrix.PYTHON.ABI_VERSION }}
+          arch: ${{ matrix.WINDOWS.ARCH }}
+          rust-triple: ${{ matrix.WINDOWS.RUST_TRIPLE }}
+          openssl-name: ${{ matrix.WINDOWS.WINDOWS }}
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
-
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
-          path: wheelhouse\
+          uv-requirements-path: ${{ env.UV_REQUIREMENTS_PATH }}
+          wheel-artifact-name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
+      - name: Report soft failure
+        if: always() && matrix.WINDOWS.ARCH == 'arm64' && steps.build.outcome != 'success'
+        shell: bash
+        run: |
+          echo "::warning title=windows-arm64 soft failure::A step failed but the job is reported as success while Windows on ARM is in stability validation."

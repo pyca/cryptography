@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     ec,
     ed448,
     ed25519,
+    mldsa,
     padding,
     rsa,
 )
@@ -539,10 +540,6 @@ class TestCertificateRevocationListBuilder:
                 backend,
             )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support",
-    )
     def test_sign_with_invalid_hash_ed25519(self, backend):
         private_key = ed25519.Ed25519PrivateKey.generate()
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
@@ -708,10 +705,6 @@ class TestCertificateRevocationListBuilder:
         assert ext.critical is False
         assert ext.value == invalidity_date
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.ed25519_supported(),
-        skip_message="Requires OpenSSL with Ed25519 support",
-    )
     def test_sign_ed25519_key(self, backend):
         private_key = ed25519.Ed25519PrivateKey.generate()
         invalidity_date = x509.InvalidityDate(
@@ -819,6 +812,64 @@ class TestCertificateRevocationListBuilder:
         ext = crl[0].extensions.get_extension_for_class(x509.InvalidityDate)
         assert ext.critical is False
         assert ext.value == invalidity_date
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    @pytest.mark.parametrize(
+        ("priv_key_cls", "sig_oid"),
+        [
+            (mldsa.MLDSA44PrivateKey, SignatureAlgorithmOID.ML_DSA_44),
+            (mldsa.MLDSA65PrivateKey, SignatureAlgorithmOID.ML_DSA_65),
+            (mldsa.MLDSA87PrivateKey, SignatureAlgorithmOID.ML_DSA_87),
+        ],
+    )
+    def test_sign_mldsa_key(self, priv_key_cls, sig_oid, backend):
+        private_key = priv_key_cls.generate()
+        invalidity_date = x509.InvalidityDate(
+            datetime.datetime(2002, 1, 1, 0, 0)
+        )
+        ian = x509.IssuerAlternativeName(
+            [x509.UniformResourceIdentifier("https://cryptography.io")]
+        )
+        revoked_cert0 = (
+            x509.RevokedCertificateBuilder()
+            .serial_number(2)
+            .revocation_date(datetime.datetime(2012, 1, 1, 1, 1))
+            .add_extension(invalidity_date, False)
+            .build(backend)
+        )
+        last_update = datetime.datetime(2002, 1, 1, 12, 1)
+        next_update = datetime.datetime(2030, 1, 1, 12, 1)
+        builder = (
+            x509.CertificateRevocationListBuilder()
+            .issuer_name(
+                x509.Name(
+                    [
+                        x509.NameAttribute(
+                            NameOID.COMMON_NAME, "cryptography.io CA"
+                        )
+                    ]
+                )
+            )
+            .last_update(last_update)
+            .next_update(next_update)
+            .add_revoked_certificate(revoked_cert0)
+            .add_extension(ian, False)
+        )
+
+        crl = builder.sign(private_key, None, backend)
+        assert crl.signature_hash_algorithm is None
+        assert crl.signature_algorithm_oid == sig_oid
+        assert crl.is_signature_valid(private_key.public_key())
+        assert (
+            crl.extensions.get_extension_for_class(
+                x509.IssuerAlternativeName
+            ).value
+            == ian
+        )
+        assert crl[0].serial_number == revoked_cert0.serial_number
 
     def test_dsa_key_sign_md5(self, backend):
         private_key = DSA_KEY_2048.private_key(backend)

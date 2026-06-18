@@ -13,7 +13,7 @@ jobs:
     if: github.repository_owner == 'pyca'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           # Needed so we can push back to the repo
           persist-credentials: true
@@ -29,6 +29,16 @@ jobs:
             --comment-pattern 'Latest commit on the BoringSSL main branch.*?\.' \
             --commit-url-template "{repo_url}/+/{version}" \
             --diff-url-template "{repo_url}/+/{old_version}..{new_version}"
+      - id: bump-openssl
+        run: |
+          python3 .github/bin/bump_dependency.py \
+            --name "OpenSSL" \
+            --repo-url "https://github.com/openssl/openssl" \
+            --branch "master" \
+            --file-path ".github/workflows/ci.yml" \
+            --current-version-pattern 'TYPE: "openssl", VERSION: "([a-f0-9]{40})"' \
+            --update-pattern 'TYPE: "openssl", VERSION: "{new_version}"' \
+            --comment-pattern 'Latest commit on the OpenSSL master branch.*?\.'
       - id: bump-awslc
         run: |
           python3 .github/bin/bump_dependency.py \
@@ -43,14 +53,17 @@ jobs:
             --tag-pattern 'v[0-9\.]*'
       - name: Check for updates
         run: git status
-      - uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a # v2.1.0
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: generate-token
         with:
-          app_id: ${{ secrets.BORINGBOT_APP_ID }}
-          private_key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
-        if: steps.bump-boringssl.outputs.HAS_UPDATES == 'true' || steps.bump-awslc.outputs.HAS_UPDATES == 'true'
+          app-id: ${{ secrets.BORINGBOT_APP_ID }}
+          private-key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-workflows: write
+        if: steps.bump-boringssl.outputs.HAS_UPDATES == 'true' || steps.bump-openssl.outputs.HAS_UPDATES == 'true' || steps.bump-awslc.outputs.HAS_UPDATES == 'true'
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           branch: "bump-openssl-boringssl"
           commit-message: "Bump BoringSSL, OpenSSL, AWS-LC in CI"
@@ -58,6 +71,7 @@ jobs:
           author: "pyca-boringbot[bot] <pyca-boringbot[bot]+106132319@users.noreply.github.com>"
           body: |
             ${{ steps.bump-boringssl.outputs.COMMIT_MSG }}
+            ${{ steps.bump-openssl.outputs.COMMIT_MSG }}
             ${{ steps.bump-awslc.outputs.COMMIT_MSG }}
           token: ${{ steps.generate-token.outputs.token }}
-        if: steps.bump-boringssl.outputs.HAS_UPDATES == 'true' || steps.bump-awslc.outputs.HAS_UPDATES == 'true'
+        if: steps.bump-boringssl.outputs.HAS_UPDATES == 'true' || steps.bump-openssl.outputs.HAS_UPDATES == 'true' || steps.bump-awslc.outputs.HAS_UPDATES == 'true'

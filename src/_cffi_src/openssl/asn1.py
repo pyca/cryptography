@@ -13,18 +13,11 @@ typedef int... time_t;
 
 typedef ... ASN1_INTEGER;
 
-struct asn1_string_st {
-    int length;
-    int type;
-    unsigned char *data;
-    long flags;
-};
-
-typedef struct asn1_string_st ASN1_OCTET_STRING;
-typedef struct asn1_string_st ASN1_IA5STRING;
-typedef struct asn1_string_st ASN1_TIME;
+typedef ... ASN1_OCTET_STRING;
+typedef ... ASN1_IA5STRING;
+typedef ... ASN1_TIME;
 typedef ... ASN1_OBJECT;
-typedef struct asn1_string_st ASN1_STRING;
+typedef ... ASN1_STRING;
 typedef ... ASN1_GENERALIZEDTIME;
 typedef ... ASN1_ENUMERATED;
 
@@ -50,7 +43,6 @@ void ASN1_GENERALIZEDTIME_free(ASN1_GENERALIZEDTIME *);
 
 int ASN1_STRING_type(const ASN1_STRING *);
 int ASN1_STRING_to_UTF8(unsigned char **, const ASN1_STRING *);
-int i2a_ASN1_INTEGER(BIO *, const ASN1_INTEGER *);
 
 ASN1_GENERALIZEDTIME *ASN1_TIME_to_generalizedtime(const ASN1_TIME *,
                                                    ASN1_GENERALIZEDTIME **);

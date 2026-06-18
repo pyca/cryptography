@@ -33,10 +33,7 @@ DeprecatedIn47 = CryptographyDeprecationWarning
 # be more accurately named: Bufferable. It means something which has an
 # `__buffer__`. Which means you can't actually treat the result as a buffer
 # (and do things like take a `len()`).
-if sys.version_info >= (3, 9):
-    Buffer = typing.Union[bytes, bytearray, memoryview]
-else:
-    Buffer = typing.ByteString
+Buffer = typing.Union[bytes, bytearray, memoryview]
 
 
 def _check_bytes(name: str, value: bytes) -> None:

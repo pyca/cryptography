@@ -17,6 +17,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     ec,
     ed448,
     ed25519,
+    mldsa,
     padding,
     rsa,
     x448,
@@ -301,6 +302,7 @@ class CertificateBuilder:
         not_valid_before: datetime.datetime | None = None,
         not_valid_after: datetime.datetime | None = None,
         extensions: list[Extension[ExtensionType]] = [],
+        public_key_rsa_padding: type[padding.PSS] | None = None,
     ) -> None:
         self._version = Version.v3
         self._issuer_name = issuer_name
@@ -310,6 +312,7 @@ class CertificateBuilder:
         self._not_valid_before = not_valid_before
         self._not_valid_after = not_valid_after
         self._extensions = extensions
+        self._public_key_rsa_padding = public_key_rsa_padding
 
     def issuer_name(self, name: Name) -> CertificateBuilder:
         """
@@ -327,6 +330,7 @@ class CertificateBuilder:
             self._not_valid_before,
             self._not_valid_after,
             self._extensions,
+            self._public_key_rsa_padding,
         )
 
     def subject_name(self, name: Name) -> CertificateBuilder:
@@ -345,11 +349,14 @@ class CertificateBuilder:
             self._not_valid_before,
             self._not_valid_after,
             self._extensions,
+            self._public_key_rsa_padding,
         )
 
     def public_key(
         self,
         key: CertificatePublicKeyTypes,
+        *,
+        rsa_padding: type[padding.PSS] | None = None,
     ) -> CertificateBuilder:
         """
         Sets the requestor's public key (as found in the signing request).
@@ -362,6 +369,9 @@ class CertificateBuilder:
                 ec.EllipticCurvePublicKey,
                 ed25519.Ed25519PublicKey,
                 ed448.Ed448PublicKey,
+                mldsa.MLDSA44PublicKey,
+                mldsa.MLDSA65PublicKey,
+                mldsa.MLDSA87PublicKey,
                 x25519.X25519PublicKey,
                 x448.X448PublicKey,
             ),
@@ -369,9 +379,19 @@ class CertificateBuilder:
             raise TypeError(
                 "Expecting one of DSAPublicKey, RSAPublicKey,"
                 " EllipticCurvePublicKey, Ed25519PublicKey,"
-                " Ed448PublicKey, X25519PublicKey, or "
+                " Ed448PublicKey, MLDSA44PublicKey, MLDSA65PublicKey,"
+                " MLDSA87PublicKey, X25519PublicKey, or "
                 "X448PublicKey."
             )
+        if rsa_padding is not None:
+            if rsa_padding is not padding.PSS:
+                raise TypeError(
+                    "rsa_padding must be the PSS class, not an instance"
+                )
+            if not isinstance(key, rsa.RSAPublicKey):
+                raise TypeError(
+                    "rsa_padding is only supported with RSA public keys"
+                )
         if self._public_key is not None:
             raise ValueError("The public key may only be set once.")
         return CertificateBuilder(
@@ -382,6 +402,7 @@ class CertificateBuilder:
             self._not_valid_before,
             self._not_valid_after,
             self._extensions,
+            rsa_padding,
         )
 
     def serial_number(self, number: int) -> CertificateBuilder:
@@ -409,6 +430,7 @@ class CertificateBuilder:
             self._not_valid_before,
             self._not_valid_after,
             self._extensions,
+            self._public_key_rsa_padding,
         )
 
     def not_valid_before(self, time: datetime.datetime) -> CertificateBuilder:
@@ -438,6 +460,7 @@ class CertificateBuilder:
             time,
             self._not_valid_after,
             self._extensions,
+            self._public_key_rsa_padding,
         )
 
     def not_valid_after(self, time: datetime.datetime) -> CertificateBuilder:
@@ -469,6 +492,7 @@ class CertificateBuilder:
             self._not_valid_before,
             time,
             self._extensions,
+            self._public_key_rsa_padding,
         )
 
     def add_extension(
@@ -491,6 +515,7 @@ class CertificateBuilder:
             self._not_valid_before,
             self._not_valid_after,
             [*self._extensions, extension],
+            self._public_key_rsa_padding,
         )
 
     def sign(
