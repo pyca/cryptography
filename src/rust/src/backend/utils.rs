@@ -191,10 +191,16 @@ pub(crate) fn pkey_private_bytes<'p>(
     // OpenSSH + PEM
     if openssh_allowed && format == PrivateFormat::OpenSSH {
         if encoding == Encoding::PEM {
-            return Ok(types::SERIALIZE_SSH_PRIVATE_KEY
+            let raw_bytes = types::SERIALIZE_SSH_PRIVATE_KEY
                 .get(py)?
                 .call1((key_obj, password, encryption_algorithm))?
-                .extract()?);
+                .extract()?;
+            return crate::asn1::encode_der_data(
+                py,
+                "OPENSSH PRIVATE KEY".to_string(),
+                raw_bytes,
+                encoding,
+            );
         }
 
         return Err(CryptographyError::from(
