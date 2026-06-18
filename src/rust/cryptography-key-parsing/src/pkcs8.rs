@@ -69,7 +69,11 @@ pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
 
             let mut bn_ctx = openssl::bn::BigNumContext::new()?;
             let mut pub_key = openssl::bn::BigNum::new()?;
-            pub_key.mod_exp(&g, &dsa_private_key, &p, &mut bn_ctx)?;
+            // This can fail with malformed parameters (e.g. p == 0), in which
+            // case the key data is invalid.
+            pub_key
+                .mod_exp(&g, &dsa_private_key, &p, &mut bn_ctx)
+                .map_err(|_| KeyParsingError::InvalidKey)?;
 
             let dsa =
                 openssl::dsa::Dsa::from_private_components(p, q, g, dsa_private_key, pub_key)?;
