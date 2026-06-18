@@ -28,6 +28,8 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "rust"}
           - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1"}}
           - {VERSION: "3.14t", NOXSESSION: "rust,tests"}
+          - {VERSION: "3.15-dev", NOXSESSION: "rust,tests"}
+          - {VERSION: "3.15t-dev", NOXSESSION: "rust,tests"}
           - {VERSION: "pypy-3.11", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
           - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "0"}}
@@ -286,6 +288,8 @@ jobs:
           - {VERSION: "3.9", NOXSESSION: "tests"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
+          - {VERSION: "3.15-dev", NOXSESSION: "tests"}
+          - {VERSION: "3.15t-dev", NOXSESSION: "tests"}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -347,6 +351,8 @@ jobs:
           - {VERSION: "3.9", NOXSESSION: "tests-nocoverage"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
+          - {VERSION: "3.15-dev", NOXSESSION: "tests"}
+          - {VERSION: "3.15t-dev", NOXSESSION: "tests"}
         include:
           # Windows on ARM is in a stability validation period; the work
           # step uses `continue-on-error` only for this entry so transient
