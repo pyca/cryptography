@@ -2,7 +2,7 @@
 # These requirements must be kept sync with the requirements in
 # ./.github/requirements/build-requirements.{in,txt}
 requires = [
-    "maturin @ git+https://github.com/pyo3/maturin",
+    "maturin @ git+https://github.com/ngoldbaum/maturin@fix-pyo3-cffi-build-script",
 
     # Must be kept in sync with `project.dependencies`
     "cffi @ git+https://github.com/ngoldbaum/cffi@abi3t.abi3 ; platform_python_implementation != 'PyPy'",
