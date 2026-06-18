@@ -6,6 +6,8 @@ use std::env;
 use std::path::Path;
 use std::process::Command;
 
+use pyo3_build_config::{PythonAbiKind, StableAbi};
+
 fn main() {
     let target = env::var("TARGET").unwrap();
     let openssl_static = env::var("OPENSSL_STATIC")
@@ -102,37 +104,33 @@ fn main() {
         build.include(python_include);
     }
 
-    let is_free_threaded = run_python_script(
-        &python,
-        "import sysconfig; print(bool(sysconfig.get_config_var('Py_GIL_DISABLED')), end='')",
-    )
-    .unwrap()
-        == "True";
-    let at_least_py_315 = run_python_script(
-        &python,
-        "import sys; print(sys.version_info > (3, 14), end='')",
-    )
-    .unwrap()
-        == "True";
+    // Drive the limited-API level off the ABI that pyo3 (and therefore
+    // maturin) is targeting for this build, resolved from the abi3/abi3t Cargo
+    // features, rather than off the host interpreter.
+    let config = pyo3_build_config::get();
 
-    // Enable abi3 mode if we're not using PyPy or the free-threaded build on 3.14 and older
-    if !(python_impl == "PyPy" || is_free_threaded || at_least_py_315) {
-        // cp39 (Python 3.9 to help our grep when we some day drop 3.9 support)
-        build.define("Py_LIMITED_API", "0x030900F0");
+    match config.target_abi().kind() {
+        // GIL-enabled limited API (abi3): a single wheel for CPython 3.9 to 3.14 (not free-threaded)
+        PythonAbiKind::Stable(StableAbi::Abi3) => {
+            // cp39 (Python 3.9 to help our grep when we some day drop 3.9 support)
+            build.define("Py_LIMITED_API", "0x030900f0");
+        }
+        // Free-threaded limited API (abi3t): a single wheel CPython 3.15+.
+        PythonAbiKind::Stable(StableAbi::Abi3t) => {
+            // cp315 (Python 3.15 to help our grep when we some day drop 3.15 support)
+            build.define("Py_LIMITED_API", "0x030f00f0");
+        }
+        // PyPy, or a free-threaded build older than abi3t (e.g. 3.14t):
+        // compile against the full, version-specific ABI.
+        PythonAbiKind::VersionSpecific(_) => {}
     }
 
-    // Enable abi3t mode if we're targeting Python 3.15 or newer
-    if at_least_py_315 {
-        // cp315 (Python 3.15 to help out grep when we some day drop 3.15 support)
-        build.define("Py_LIMITED_API", "0x030F0000");
-        build.define("Py_GIL_DISABLED", "1");
-    }
-
-    if cfg!(windows) && !at_least_py_315 {
+    if cfg!(windows) {
         build.define("WIN32_LEAN_AND_MEAN", None);
+
         // python.h doesn't set this on the Windows free-threaded build
         // see https://github.com/python/cpython/issues/127294
-        if is_free_threaded {
+        if config.is_free_threaded() {
             build.define("Py_GIL_DISABLED", "1");
         }
 
