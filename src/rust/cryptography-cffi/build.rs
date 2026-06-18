@@ -126,7 +126,6 @@ fn main() {
         // cp315 (Python 3.15 to help out grep when we some day drop 3.15 support)
         build.define("Py_LIMITED_API", "0x030F0000");
         build.define("Py_GIL_DISABLED", "1");
-        build.define("_Py_OPAQUE_PYOBJECT", "1");
     }
 
     if cfg!(windows) && !at_least_py_315 {
