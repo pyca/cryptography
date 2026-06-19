@@ -10,7 +10,6 @@ import os
 import re
 import typing
 import warnings
-from base64 import encodebytes as _base64_encode
 from dataclasses import dataclass
 
 from cryptography import utils
@@ -166,14 +165,6 @@ def _ecdsa_key_type(public_key: ec.EllipticCurvePublicKey) -> bytes:
             f"Unsupported curve for ssh private key: {curve.name!r}"
         )
     return _ECDSA_KEY_TYPE[curve.name]
-
-
-def _ssh_pem_encode(
-    data: utils.Buffer,
-    prefix: bytes = _SK_START + b"\n",
-    suffix: bytes = _SK_END + b"\n",
-) -> bytes:
-    return b"".join([prefix, _base64_encode(data), suffix])
 
 
 def _check_block_size(data: utils.Buffer, block_len: int) -> None:
@@ -869,7 +860,7 @@ def _serialize_ssh_private_key(
     if ciph is not None:
         ciph.encryptor().update_into(buf[ofs:mlen], buf[ofs:])
 
-    return _ssh_pem_encode(buf[:mlen])
+    return bytes(buf[:mlen])
 
 
 SSHPublicKeyTypes = typing.Union[

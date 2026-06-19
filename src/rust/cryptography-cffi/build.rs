@@ -104,9 +104,8 @@ fn main() {
         build.include(python_include);
     }
 
-    // Drive the limited-API level off the ABI that pyo3 (and therefore
-    // maturin) is targeting for this build, resolved from the abi3/abi3t Cargo
-    // features, rather than off the host interpreter.
+    // Derive the target ABI from what pyo3 is targeting for this build,
+    // resolved from the abi3/abi3t Cargo features
     let config = pyo3_build_config::get();
 
     match config.target_abi().kind() {
@@ -127,7 +126,6 @@ fn main() {
 
     if cfg!(windows) {
         build.define("WIN32_LEAN_AND_MEAN", None);
-
         // python.h doesn't set this on the Windows free-threaded build
         // see https://github.com/python/cpython/issues/127294
         if config.is_free_threaded() {

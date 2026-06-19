@@ -797,6 +797,19 @@ class TestDSASerialization:
         priv_num = key.private_numbers()
         assert loaded_priv_num == priv_num
 
+    def test_load_pkcs8_invalid_dsa_parameters(self, backend):
+        # A PKCS8 DSA key with malformed parameters (p == 0) must raise a
+        # ValueError rather than an InternalError. See
+        # https://github.com/pyca/cryptography/issues/15061
+        key_bytes = (
+            b"0D\x02\x01\x000'\x06\x07*\x86H\xce8\x04\x010\x1c\x02\x01\x00"
+            b"\x02\x14*F\x00\x02\x02\x01)\x04\x16\x02\x14<\x06\x01\x00F\x00"
+            b"\x02\x00\x02\x02\x01)\x04\x16\x02\x14<\x06\x01\x00\x00\x00"
+            b"\x86H\xce8\x04\x010\x1c\x02\x14*\x04\xf7\r"
+        )
+        with pytest.raises(ValueError):
+            serialization.load_der_private_key(key_bytes, None, backend)
+
     @pytest.mark.parametrize(
         ("encoding", "fmt"),
         [

@@ -444,7 +444,7 @@ class TestOpenSSHSerialization:
         main.put_sshstr(secret)
 
         res = main.tobytes()
-        return ssh._ssh_pem_encode(res[:cut], header, footer)
+        return header + base64.encodebytes(res[:cut]) + footer
 
     def test_ssh_make_file(self, backend):
         # check if works by default

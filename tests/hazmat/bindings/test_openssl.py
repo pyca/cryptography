@@ -23,10 +23,11 @@ class TestOpenSSL:
     def test_ssl_ctx_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
-        # SSL_OP_ALL is 0 on BoringSSL
+        # SSL_OP_ALL is 0 on BoringSSL, AWS-LC and recent LibreSSL
         if not (
             rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
             or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            or rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
         ):
             assert b.lib.SSL_OP_ALL > 0
         ctx = b.lib.SSL_CTX_new(b.lib.TLS_method())
@@ -41,10 +42,11 @@ class TestOpenSSL:
     def test_ssl_options(self):
         # Test that we're properly handling 32-bit unsigned on all platforms.
         b = Binding()
-        # SSL_OP_ALL is 0 on BoringSSL
+        # SSL_OP_ALL is 0 on BoringSSL, AWS-LC and recent LibreSSL
         if not (
             rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
             or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            or rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
         ):
             assert b.lib.SSL_OP_ALL > 0
         ctx = b.lib.SSL_CTX_new(b.lib.TLS_method())
