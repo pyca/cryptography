@@ -1,0 +1,63 @@
+# Minimal s390x wheel builder for cryptography.
+#
+# Derived from a proven UBI9-based builder; keeps only deps required to compile
+# cryptography (Rust/maturin + static OpenSSL + auditwheel), not generic
+# packages like Pillow/NumPy.
+#
+# Build (on any host with QEMU/binfmt for s390x):
+#   docker build --platform linux/s390x -f docker/Dockerfile.s390x -t cryptography-s390x-builder .
+#
+# Or use scripts/s390x/build.sh from the repository root.
+
+FROM registry.access.redhat.com/ubi9/ubi
+
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    PYTHONUNBUFFERED=1 \
+    CARGO_HOME=/root/.cargo \
+    RUSTUP_HOME=/root/.rustup \
+    PATH="/root/.cargo/bin:/usr/local/bin:${PATH}"
+
+WORKDIR /io
+
+# ---- cryptography build toolchain ----
+RUN dnf install -y --allowerasing \
+    gcc gcc-c++ \
+    make \
+    git curl \
+    tar gzip xz \
+    autoconf automake libtool \
+    pkgconf-pkg-config \
+    python3.12 python3.12-devel python3.12-pip \
+    openssl-devel \
+    libffi-devel \
+    zlib-devel \
+    perl \
+    && dnf clean all
+
+# auditwheel needs patchelf; not packaged on UBI9.
+RUN git clone --depth 1 https://github.com/NixOS/patchelf.git /tmp/patchelf \
+    && cd /tmp/patchelf \
+    && ./bootstrap.sh \
+    && ./configure \
+    && make -j"$(nproc)" \
+    && make install \
+    && rm -rf /tmp/patchelf
+
+RUN python3.12 -m pip install --upgrade pip \
+    && python3.12 -m pip install \
+       uv \
+       maturin \
+       auditwheel \
+       wheel \
+       build
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --profile minimal --default-toolchain stable
+
+RUN mkdir -p /wheelhouse
+
+COPY scripts/s390x/build-wheel.sh /io/build-wheel.sh
+RUN chmod +x /io/build-wheel.sh
+
+ENTRYPOINT ["/io/build-wheel.sh"]

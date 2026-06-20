@@ -1,0 +1,68 @@
+name: s390x Wheel (experimental)
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: PyPI version to build (leave empty to build from the checked-out ref)
+        required: false
+        type: string
+      openssl_version:
+        description: OpenSSL version for static linking
+        required: false
+        default: "3.4.6"
+        type: string
+
+env:
+  IMAGE: cryptography-s390x-builder
+  WHEELHOUSE: wheelhouse
+
+jobs:
+  s390x-wheel:
+    name: s390x manylinux wheel
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@3b5aeead8caba617bcda9a68a66745a079fc368 # v3.6.0
+        with:
+          platforms: all
+
+      - name: Build s390x builder image
+        run: |
+          docker build --platform linux/s390x \
+            -f docker/Dockerfile.s390x \
+            -t "${IMAGE}" \
+            .
+
+      - name: Build cryptography wheel on s390x
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+          OPENSSL_VERSION: ${{ github.event.inputs.openssl_version }}
+        run: |
+          mkdir -p "${WHEELHOUSE}"
+          args=(
+            --rm
+            --platform linux/s390x
+            -v "$PWD:/src:ro"
+            -v "$PWD/${WHEELHOUSE}:/wheelhouse"
+            -e SOURCE_DIR=/src
+            -e WHEELHOUSE=/wheelhouse
+            -e OPENSSL_VERSION="${OPENSSL_VERSION}"
+          )
+          if [ -n "${VERSION}" ]; then
+            args+=(-e "VERSION=${VERSION}")
+          fi
+          docker run "${args[@]}" "${IMAGE}"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cryptography-s390x-wheel
+          path: wheelhouse/*.whl
