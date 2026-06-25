@@ -29,12 +29,21 @@ def pytest_addoption(parser):
     parser.addoption("--wycheproof-root", default=None)
     parser.addoption("--x509-limbo-root", default=None)
     parser.addoption("--enable-fips", default=False)
+    parser.addoption(
+        "--enable-malloc-failure", action="store_true", default=False
+    )
 
 
 def pytest_runtest_setup(item):
     if openssl_backend._fips_enabled:
         for marker in item.iter_markers(name="skip_fips"):
             pytest.skip(marker.kwargs["reason"])
+    if not item.config.getoption("--enable-malloc-failure"):
+        for _ in item.iter_markers(name="malloc_failure"):
+            pytest.skip(
+                "expects malloc to fail on pressure, "
+                "pass --enable-malloc-failure to run"
+            )
 
 
 @pytest.fixture(autouse=True)

@@ -6,7 +6,6 @@
 import base64
 import binascii
 import os
-import sys
 
 import pytest
 
@@ -141,14 +140,7 @@ class TestArgon2:
                 memory_cost=memory_cost,
             )
 
-    @pytest.mark.skipif(
-        sys.platform == "darwin",
-        reason=(
-            "macOS overcommits the 4 TiB virtual reservation, then the "
-            "subsequent memset triggers an OOM-kill before MemoryError "
-            "can be raised."
-        ),
-    )
+    @pytest.mark.malloc_failure
     def test_argon2_malloc_failure(self, clazz, backend):
         # memory_cost is in KiB, so 2**32 - 1 KiB is ~4 TiB. This should
         # fail to allocate on any reasonable system.

@@ -151,7 +151,7 @@ jobs:
           PYO3_USE_ABI3_FORWARD_COMPATIBILITY: 1
       - name: Tests
         run: |
-            nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo ${{ matrix.PYTHON.NOXARGS }}
+            nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo --enable-malloc-failure ${{ matrix.PYTHON.NOXARGS }}
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           COLUMNS: 80
