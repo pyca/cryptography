@@ -3,6 +3,8 @@
 # for complete details.
 
 import contextlib
+import functools
+import mmap
 
 import pytest
 
@@ -25,6 +27,18 @@ def pytest_report_header(config):
     )
 
 
+@functools.cache
+def overcommit_probe() -> bool:
+    # Try to allocate 4TiB of memory, if it succeeds - environment either
+    # has more RAM, or overcommits.
+    try:
+        m = mmap.mmap(-1, (2**32 - 1) * 1024)
+    except (OSError, OverflowError):
+        return False
+    m.close()
+    return True
+
+
 def pytest_addoption(parser):
     parser.addoption("--wycheproof-root", default=None)
     parser.addoption("--x509-limbo-root", default=None)
@@ -35,6 +49,9 @@ def pytest_runtest_setup(item):
     if openssl_backend._fips_enabled:
         for marker in item.iter_markers(name="skip_fips"):
             pytest.skip(marker.kwargs["reason"])
+    if overcommit_probe():
+        for _ in item.iter_markers(name="malloc_failure"):
+            pytest.skip("malloc never fails in this environment")
 
 
 @pytest.fixture(autouse=True)

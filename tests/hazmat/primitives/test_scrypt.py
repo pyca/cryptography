@@ -96,6 +96,7 @@ class TestScrypt:
                 backend,
             )
 
+    @pytest.mark.malloc_failure
     def test_scrypt_malloc_failure(self, backend):
         password = b"NaCl"
         work_factor = 1024**3
