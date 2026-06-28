@@ -129,7 +129,7 @@ pub(crate) fn signature_from_py(algorithm: PySignatureAlgorithm) -> AlgorithmIde
 }
 
 pub(crate) fn parse_spki_frozenset(
-    py: pyo3::Python<'_>,
+    _py: pyo3::Python<'_>,
     algorithms: &pyo3::Bound<'_, pyo3::types::PyFrozenSet>,
 ) -> CryptographyResult<Arc<HashSet<AlgorithmIdentifier<'static>>>> {
     if algorithms.len()? == 0 {
@@ -149,7 +149,7 @@ pub(crate) fn parse_spki_frozenset(
 }
 
 pub(crate) fn parse_signature_frozenset(
-    py: pyo3::Python<'_>,
+    _py: pyo3::Python<'_>,
     algorithms: &pyo3::Bound<'_, pyo3::types::PyFrozenSet>,
 ) -> CryptographyResult<Arc<HashSet<AlgorithmIdentifier<'static>>>> {
     if algorithms.len()? == 0 {

@@ -80,7 +80,9 @@ class TestPolicyBuilder:
     def test_permitted_algorithms_already_set(self):
         webpki_spki = frozenset([SubjectPublicKeyInfoAlgorithm.RSA])
         with pytest.raises(ValueError):
-            PolicyBuilder().permitted_public_key_algorithms(webpki_spki).permitted_public_key_algorithms(
+            PolicyBuilder().permitted_public_key_algorithms(
+                webpki_spki
+            ).permitted_public_key_algorithms(
                 webpki_spki
             )
 

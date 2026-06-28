@@ -147,6 +147,8 @@ SHA
 Solaris
 Sonoma
 SPKI
+SubjectPublicKeyInfoAlgorithm
+SignatureAlgorithm
 Sur
 syscall
 Tanja
