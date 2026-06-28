@@ -2,6 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use std::collections::HashSet;
+use std::sync::Arc;
+
 use cryptography_x509::certificate::Certificate;
 use cryptography_x509::extensions::SubjectAlternativeName;
 use cryptography_x509::oid::SUBJECT_ALTERNATIVE_NAME_OID;
@@ -13,8 +16,10 @@ use pyo3::types::{PyAnyMethods, PyListMethods};
 
 mod extension_policy;
 mod policy;
+mod algorithm_policy;
 pub(crate) use extension_policy::{PyCriticality, PyExtensionPolicy};
 pub(crate) use policy::PyPolicy;
+pub(crate) use algorithm_policy::{PySignatureAlgorithm, PySubjectPublicKeyInfoAlgorithm};
 
 use super::parse_general_names;
 use crate::backend::keys;
@@ -87,6 +92,9 @@ pub(crate) struct PolicyBuilder {
     max_chain_depth: Option<u8>,
     ca_ext_policy: Option<pyo3::Py<PyExtensionPolicy>>,
     ee_ext_policy: Option<pyo3::Py<PyExtensionPolicy>>,
+    minimum_rsa_modulus: Option<usize>,
+    permitted_public_key_algorithms: Option<Arc<HashSet<AlgorithmIdentifier<'static>>>>,
+    permitted_signature_algorithms: Option<Arc<HashSet<AlgorithmIdentifier<'static>>>>,
 }
 
 impl PolicyBuilder {
@@ -97,6 +105,15 @@ impl PolicyBuilder {
             max_chain_depth: self.max_chain_depth,
             ca_ext_policy: self.ca_ext_policy.as_ref().map(|p| p.clone_ref(py)),
             ee_ext_policy: self.ee_ext_policy.as_ref().map(|p| p.clone_ref(py)),
+            minimum_rsa_modulus: self.minimum_rsa_modulus,
+            permitted_public_key_algorithms: self
+                .permitted_public_key_algorithms
+                .as_ref()
+                .map(Arc::clone),
+            permitted_signature_algorithms: self
+                .permitted_signature_algorithms
+                .as_ref()
+                .map(Arc::clone),
         }
     }
 }
@@ -111,6 +128,9 @@ impl PolicyBuilder {
             max_chain_depth: None,
             ca_ext_policy: None,
             ee_ext_policy: None,
+            minimum_rsa_modulus: None,
+            permitted_public_key_algorithms: None,
+            permitted_signature_algorithms: None,
         }
     }
 
@@ -170,6 +190,57 @@ impl PolicyBuilder {
         })
     }
 
+    fn minimum_rsa_modulus(
+        &self,
+        py: pyo3::Python<'_>,
+        minimum_rsa_modulus: usize,
+    ) -> CryptographyResult<PolicyBuilder> {
+        policy_builder_set_once_check!(self, minimum_rsa_modulus, "minimum RSA modulus");
+
+        Ok(PolicyBuilder {
+            minimum_rsa_modulus: Some(minimum_rsa_modulus),
+            ..self.py_clone(py)
+        })
+    }
+
+    fn permitted_public_key_algorithms(
+        &self,
+        py: pyo3::Python<'_>,
+        algorithms: &pyo3::Bound<'_, pyo3::types::PyFrozenSet>,
+    ) -> CryptographyResult<PolicyBuilder> {
+        policy_builder_set_once_check!(
+            self,
+            permitted_public_key_algorithms,
+            "permitted public key algorithms"
+        );
+
+        Ok(PolicyBuilder {
+            permitted_public_key_algorithms: Some(algorithm_policy::parse_spki_frozenset(
+                py, algorithms,
+            )?),
+            ..self.py_clone(py)
+        })
+    }
+
+    fn permitted_signature_algorithms(
+        &self,
+        py: pyo3::Python<'_>,
+        algorithms: &pyo3::Bound<'_, pyo3::types::PyFrozenSet>,
+    ) -> CryptographyResult<PolicyBuilder> {
+        policy_builder_set_once_check!(
+            self,
+            permitted_signature_algorithms,
+            "permitted signature algorithms"
+        );
+
+        Ok(PolicyBuilder {
+            permitted_signature_algorithms: Some(algorithm_policy::parse_signature_frozenset(
+                py, algorithms,
+            )?),
+            ..self.py_clone(py)
+        })
+    }
+
     fn build_client_verifier(&self, py: pyo3::Python<'_>) -> CryptographyResult<PyClientVerifier> {
         let store = match self.store.as_ref() {
             Some(s) => s.clone_ref(py),
@@ -188,7 +259,7 @@ impl PolicyBuilder {
         };
 
         let policy_definition = OwnedPolicyDefinition::try_new(None, |_subject| {
-            PolicyDefinition::client(
+            let mut def = PolicyDefinition::client(
                 PyCryptoOps {},
                 time,
                 self.max_chain_depth,
@@ -199,7 +270,9 @@ impl PolicyBuilder {
                     .as_ref()
                     .map(|p| p.get().clone_inner_policy()),
             )
-            .map_err(pyo3::exceptions::PyValueError::new_err)
+            .map_err(pyo3::exceptions::PyValueError::new_err)?;
+            apply_algorithm_policy(&mut def, self);
+            Ok(def)
         })?;
 
         let py_policy = PyPolicy {
@@ -244,7 +317,7 @@ impl PolicyBuilder {
                         .expect("subject_owner for ServerVerifier can not be None"),
                 )?;
 
-                PolicyDefinition::server(
+                let mut def = PolicyDefinition::server(
                     PyCryptoOps {},
                     subject,
                     time,
@@ -256,7 +329,9 @@ impl PolicyBuilder {
                         .as_ref()
                         .map(|p| p.get().clone_inner_policy()),
                 )
-                .map_err(pyo3::exceptions::PyValueError::new_err)
+                .map_err(pyo3::exceptions::PyValueError::new_err)?;
+                apply_algorithm_policy(&mut def, self);
+                Ok(def)
             })?;
 
         let py_policy = PyPolicy {
@@ -426,6 +501,18 @@ impl PyServerVerifier {
             result.append(c.extra())?;
         }
         Ok(result)
+    }
+}
+
+fn apply_algorithm_policy(def: &mut PyCryptoPolicyDefinition<'_>, builder: &PolicyBuilder) {
+    if let Some(minimum) = builder.minimum_rsa_modulus {
+        def.set_minimum_rsa_modulus(minimum);
+    }
+    if let Some(algorithms) = builder.permitted_public_key_algorithms.as_ref() {
+        def.set_permitted_public_key_algorithms(Arc::clone(algorithms));
+    }
+    if let Some(algorithms) = builder.permitted_signature_algorithms.as_ref() {
+        def.set_permitted_signature_algorithms(Arc::clone(algorithms));
     }
 }
 

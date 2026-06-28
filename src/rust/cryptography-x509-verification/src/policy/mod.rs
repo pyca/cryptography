@@ -39,25 +39,25 @@ const WEBPKI_MINIMUM_RSA_MODULUS: usize = 2048;
 // SubjectPublicKeyInfo AlgorithmIdentifier constants, as defined in CA/B 7.1.3.1.
 
 // RSA
-const SPKI_RSA: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+pub const SPKI_RSA: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::Rsa(Some(())),
 };
 
 // SECP256R1
-const SPKI_SECP256R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+pub const SPKI_SECP256R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::Ec(EcParameters::NamedCurve(EC_SECP256R1)),
 };
 
 // SECP384R1
-const SPKI_SECP384R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+pub const SPKI_SECP384R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::Ec(EcParameters::NamedCurve(EC_SECP384R1)),
 };
 
 // SECP521R1
-const SPKI_SECP521R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+pub const SPKI_SECP521R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::Ec(EcParameters::NamedCurve(EC_SECP521R1)),
 };
@@ -77,25 +77,25 @@ pub static WEBPKI_PERMITTED_SPKI_ALGORITHMS: LazyLock<Arc<HashSet<AlgorithmIdent
 // Signature AlgorithmIdentifier constants, as defined in CA/B 7.1.3.2.
 
 // RSASSA‐PKCS1‐v1_5 with SHA‐256
-const RSASSA_PKCS1V15_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+pub const RSASSA_PKCS1V15_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::RsaWithSha256(Some(())),
 };
 
 // RSASSA‐PKCS1‐v1_5 with SHA‐384
-const RSASSA_PKCS1V15_SHA384: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+pub const RSASSA_PKCS1V15_SHA384: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::RsaWithSha384(Some(())),
 };
 
 // RSASSA‐PKCS1‐v1_5 with SHA‐512
-const RSASSA_PKCS1V15_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+pub const RSASSA_PKCS1V15_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::RsaWithSha512(Some(())),
 };
 
 // RSASSA‐PSS with SHA‐256, MGF‐1 with SHA‐256, and a salt length of 32 bytes
-static RSASSA_PSS_SHA256: LazyLock<AlgorithmIdentifier<'_>> =
+pub static RSASSA_PSS_SHA256: LazyLock<AlgorithmIdentifier<'_>> =
     LazyLock::new(|| AlgorithmIdentifier {
         oid: asn1::DefinedByMarker::marker(),
         params: AlgorithmParameters::RsaPss(Some(Box::new(RsaPssParameters {
@@ -107,7 +107,7 @@ static RSASSA_PSS_SHA256: LazyLock<AlgorithmIdentifier<'_>> =
     });
 
 // RSASSA‐PSS with SHA‐384, MGF‐1 with SHA‐384, and a salt length of 48 bytes
-static RSASSA_PSS_SHA384: LazyLock<AlgorithmIdentifier<'_>> =
+pub static RSASSA_PSS_SHA384: LazyLock<AlgorithmIdentifier<'_>> =
     LazyLock::new(|| AlgorithmIdentifier {
         oid: asn1::DefinedByMarker::marker(),
         params: AlgorithmParameters::RsaPss(Some(Box::new(RsaPssParameters {
@@ -119,7 +119,7 @@ static RSASSA_PSS_SHA384: LazyLock<AlgorithmIdentifier<'_>> =
     });
 
 // RSASSA‐PSS with SHA‐512, MGF‐1 with SHA‐512, and a salt length of 64 bytes
-static RSASSA_PSS_SHA512: LazyLock<AlgorithmIdentifier<'_>> =
+pub static RSASSA_PSS_SHA512: LazyLock<AlgorithmIdentifier<'_>> =
     LazyLock::new(|| AlgorithmIdentifier {
         oid: asn1::DefinedByMarker::marker(),
         params: AlgorithmParameters::RsaPss(Some(Box::new(RsaPssParameters {
@@ -131,19 +131,19 @@ static RSASSA_PSS_SHA512: LazyLock<AlgorithmIdentifier<'_>> =
     });
 
 // For P-256: the signature MUST use ECDSA with SHA‐256
-const ECDSA_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+pub const ECDSA_SHA256: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::EcDsaWithSha256,
 };
 
 // For P-384: the signature MUST use ECDSA with SHA‐384
-const ECDSA_SHA384: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+pub const ECDSA_SHA384: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::EcDsaWithSha384,
 };
 
 // For P-521: the signature MUST use ECDSA with SHA‐512
-const ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
+pub const ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::EcDsaWithSha512,
 };
@@ -337,6 +337,24 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
             ca_extension_policy,
             ee_extension_policy,
         )
+    }
+
+    pub fn set_minimum_rsa_modulus(&mut self, minimum: usize) {
+        self.minimum_rsa_modulus = minimum;
+    }
+
+    pub fn set_permitted_public_key_algorithms(
+        &mut self,
+        algorithms: Arc<HashSet<AlgorithmIdentifier<'a>>>,
+    ) {
+        self.permitted_public_key_algorithms = algorithms;
+    }
+
+    pub fn set_permitted_signature_algorithms(
+        &mut self,
+        algorithms: Arc<HashSet<AlgorithmIdentifier<'a>>>,
+    ) {
+        self.permitted_signature_algorithms = algorithms;
     }
 }
 

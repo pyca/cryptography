@@ -263,6 +263,30 @@ the root of trust:
 
         :returns: A new instance of :class:`PolicyBuilder`
 
+    .. method:: minimum_rsa_modulus(minimum_rsa_modulus)
+
+        Sets the minimum RSA modulus size (in bits) required for certificates
+        validated by this policy. Defaults to WebPKI (2048 bits).
+
+        :param minimum_rsa_modulus: Minimum RSA modulus size in bits
+        :returns: A new instance of :class:`PolicyBuilder`
+
+    .. method:: permitted_public_key_algorithms(algorithms)
+
+        Restricts which subject public key algorithms are permitted during
+        verification. Defaults to WebPKI (RSA, P-256, P-384, P-521).
+
+        :param algorithms: A ``frozenset`` of :class:`SubjectPublicKeyInfoAlgorithm` values
+        :returns: A new instance of :class:`PolicyBuilder`
+
+    .. method:: permitted_signature_algorithms(algorithms)
+
+        Restricts which signature algorithms are permitted during verification.
+        Defaults to WebPKI (RSA-PKCS1/PSS and ECDSA with SHA-256/384/512).
+
+        :param algorithms: A ``frozenset`` of :class:`SignatureAlgorithm` values
+        :returns: A new instance of :class:`PolicyBuilder`
+
     .. method:: extension_policies(*, ee_policy, ca_policy)
 
         .. versionadded:: 45.0.0

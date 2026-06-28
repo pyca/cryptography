@@ -22,7 +22,9 @@ from cryptography.x509.verification import (
     ExtensionPolicy,
     Policy,
     PolicyBuilder,
+    SignatureAlgorithm,
     Store,
+    SubjectPublicKeyInfoAlgorithm,
     VerificationError,
 )
 from tests.x509.test_x509 import _load_cert
@@ -53,6 +55,48 @@ class TestPolicyBuilder:
     def test_max_chain_depth_already_set(self):
         with pytest.raises(ValueError):
             PolicyBuilder().max_chain_depth(8).max_chain_depth(9)
+
+    def test_minimum_rsa_modulus_already_set(self):
+        with pytest.raises(ValueError):
+            PolicyBuilder().minimum_rsa_modulus(1024).minimum_rsa_modulus(2048)
+
+    def test_minimum_rsa_modulus_reflected_on_policy(self):
+        verifier = (
+            PolicyBuilder()
+            .store(dummy_store())
+            .minimum_rsa_modulus(1024)
+            .build_server_verifier(DNSName("cryptography.io"))
+        )
+        assert verifier.policy.minimum_rsa_modulus == 1024
+
+    def test_permitted_public_key_algorithms_empty(self):
+        with pytest.raises(ValueError):
+            PolicyBuilder().permitted_public_key_algorithms(frozenset())
+
+    def test_permitted_signature_algorithms_empty(self):
+        with pytest.raises(ValueError):
+            PolicyBuilder().permitted_signature_algorithms(frozenset())
+
+    def test_permitted_algorithms_already_set(self):
+        webpki_spki = frozenset([SubjectPublicKeyInfoAlgorithm.RSA])
+        with pytest.raises(ValueError):
+            PolicyBuilder().permitted_public_key_algorithms(webpki_spki).permitted_public_key_algorithms(
+                webpki_spki
+            )
+
+    def test_ed25519_algorithms_accepted_on_builder(self):
+        builder = (
+            PolicyBuilder()
+            .store(dummy_store())
+            .permitted_public_key_algorithms(
+                frozenset([SubjectPublicKeyInfoAlgorithm.Ed25519])
+            )
+            .permitted_signature_algorithms(
+                frozenset([SignatureAlgorithm.Ed25519])
+            )
+        )
+        verifier = builder.build_server_verifier(DNSName("cryptography.io"))
+        assert verifier.policy is not None
 
     def test_ipaddress_subject(self):
         verifier = (

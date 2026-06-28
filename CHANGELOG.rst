@@ -13,6 +13,11 @@ Changelog
   silently ignoring them.
 * Added support for using :class:`~cryptography.x509.Name` as a field type in
   the :doc:`/hazmat/asn1/index` module.
+* Added :meth:`~cryptography.x509.verification.PolicyBuilder.minimum_rsa_modulus`,
+  :meth:`~cryptography.x509.verification.PolicyBuilder.permitted_public_key_algorithms`,
+  and :meth:`~cryptography.x509.verification.PolicyBuilder.permitted_signature_algorithms`
+  for custom X.509 verification policies (including Ed25519 and legacy Authenticode
+  algorithms).
 
 .. _v49-0-0:
 

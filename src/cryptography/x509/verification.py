@@ -16,8 +16,10 @@ __all__ = [
     "Policy",
     "PolicyBuilder",
     "ServerVerifier",
+    "SignatureAlgorithm",
     "Store",
     "Subject",
+    "SubjectPublicKeyInfoAlgorithm",
     "VerificationError",
     "VerifiedClient",
 ]
@@ -31,4 +33,6 @@ PolicyBuilder = rust_x509.PolicyBuilder
 Policy = rust_x509.Policy
 ExtensionPolicy = rust_x509.ExtensionPolicy
 Criticality = rust_x509.Criticality
+SubjectPublicKeyInfoAlgorithm = rust_x509.SubjectPublicKeyInfoAlgorithm
+SignatureAlgorithm = rust_x509.SignatureAlgorithm
 VerificationError = rust_x509.VerificationError
