@@ -447,9 +447,9 @@ the root of trust:
 
     .. attribute:: SECP521R1
 
-    .. attribute:: ED25519
+    .. attribute:: Ed25519
 
-    .. attribute:: ED448
+    .. attribute:: Ed448
 
 .. class:: SignatureAlgorithm
 
@@ -476,9 +476,9 @@ the root of trust:
 
     .. attribute:: ECDSA_SHA512
 
-    .. attribute:: ED25519
+    .. attribute:: Ed25519
 
-    .. attribute:: ED448
+    .. attribute:: Ed448
 
 .. class:: Policy
 
