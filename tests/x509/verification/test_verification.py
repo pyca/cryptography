@@ -84,15 +84,46 @@ class TestPolicyBuilder:
                 webpki_spki
             ).permitted_public_key_algorithms(webpki_spki)
 
-    def test_ed25519_algorithms_accepted_on_builder(self):
+    def test_permitted_signature_algorithms_already_set(self):
+        webpki_sig = frozenset([SignatureAlgorithm.RSA_PKCS1_SHA256])
+        with pytest.raises(ValueError):
+            PolicyBuilder().permitted_signature_algorithms(
+                webpki_sig
+            ).permitted_signature_algorithms(webpki_sig)
+
+    def test_algorithm_policy_enums_accepted_on_builder(self):
         builder = (
             PolicyBuilder()
             .store(dummy_store())
             .permitted_public_key_algorithms(
-                frozenset([SubjectPublicKeyInfoAlgorithm.Ed25519])
+                frozenset(
+                    [
+                        SubjectPublicKeyInfoAlgorithm.RSA,
+                        SubjectPublicKeyInfoAlgorithm.SECP256R1,
+                        SubjectPublicKeyInfoAlgorithm.SECP384R1,
+                        SubjectPublicKeyInfoAlgorithm.SECP521R1,
+                        SubjectPublicKeyInfoAlgorithm.Ed25519,
+                        SubjectPublicKeyInfoAlgorithm.Ed448,
+                    ]
+                )
             )
             .permitted_signature_algorithms(
-                frozenset([SignatureAlgorithm.Ed25519])
+                frozenset(
+                    [
+                        SignatureAlgorithm.RSA_PKCS1_SHA256,
+                        SignatureAlgorithm.RSA_PKCS1_SHA384,
+                        SignatureAlgorithm.RSA_PKCS1_SHA512,
+                        SignatureAlgorithm.RSA_PKCS1_SHA1,
+                        SignatureAlgorithm.RSA_PSS_SHA256,
+                        SignatureAlgorithm.RSA_PSS_SHA384,
+                        SignatureAlgorithm.RSA_PSS_SHA512,
+                        SignatureAlgorithm.ECDSA_SHA256,
+                        SignatureAlgorithm.ECDSA_SHA384,
+                        SignatureAlgorithm.ECDSA_SHA512,
+                        SignatureAlgorithm.Ed25519,
+                        SignatureAlgorithm.Ed448,
+                    ]
+                )
             )
         )
         verifier = builder.build_server_verifier(DNSName("cryptography.io"))

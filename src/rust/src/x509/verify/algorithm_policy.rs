@@ -16,6 +16,7 @@ use crate::error::{CryptographyError, CryptographyResult};
 use pyo3::types::PyAnyMethods;
 
 /// SubjectPublicKeyInfo algorithms exposed to Python policy configuration.
+// NO-COVERAGE-START
 #[pyo3::pyclass(
     frozen,
     eq,
@@ -25,6 +26,7 @@ use pyo3::types::PyAnyMethods;
     module = "cryptography.x509.verification",
     name = "SubjectPublicKeyInfoAlgorithm"
 )]
+// NO-COVERAGE-END
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub(crate) enum PySubjectPublicKeyInfoAlgorithm {
     #[pyo3(name = "RSA")]
@@ -40,6 +42,7 @@ pub(crate) enum PySubjectPublicKeyInfoAlgorithm {
 }
 
 /// Signature algorithms exposed to Python policy configuration.
+// NO-COVERAGE-START
 #[pyo3::pyclass(
     frozen,
     eq,
@@ -49,6 +52,7 @@ pub(crate) enum PySubjectPublicKeyInfoAlgorithm {
     module = "cryptography.x509.verification",
     name = "SignatureAlgorithm"
 )]
+// NO-COVERAGE-END
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub(crate) enum PySignatureAlgorithm {
     #[pyo3(name = "RSA_PKCS1_SHA256")]
