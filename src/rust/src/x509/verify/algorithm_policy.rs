@@ -105,9 +105,11 @@ pub(crate) fn parse_spki_frozenset(
     algorithms: &pyo3::Bound<'_, pyo3::types::PyFrozenSet>,
 ) -> CryptographyResult<Arc<HashSet<AlgorithmIdentifier<'static>>>> {
     if algorithms.is_empty() {
-        return Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-            "permitted public key algorithms must not be empty.",
-        )));
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "permitted public key algorithms must not be empty.",
+            ),
+        ));
     }
 
     let mut set = HashSet::new();
@@ -123,9 +125,11 @@ pub(crate) fn parse_signature_frozenset(
     algorithms: &pyo3::Bound<'_, pyo3::types::PyFrozenSet>,
 ) -> CryptographyResult<Arc<HashSet<AlgorithmIdentifier<'static>>>> {
     if algorithms.is_empty() {
-        return Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-            "permitted signature algorithms must not be empty.",
-        )));
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "permitted signature algorithms must not be empty.",
+            ),
+        ));
     }
 
     let mut set = HashSet::new();

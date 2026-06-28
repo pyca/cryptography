@@ -14,12 +14,12 @@ use cryptography_x509_verification::trust_store::Store;
 use cryptography_x509_verification::types::{DNSName, IPAddress};
 use pyo3::types::{PyAnyMethods, PyListMethods};
 
+mod algorithm_policy;
 mod extension_policy;
 mod policy;
-mod algorithm_policy;
+pub(crate) use algorithm_policy::{PySignatureAlgorithm, PySubjectPublicKeyInfoAlgorithm};
 pub(crate) use extension_policy::{PyCriticality, PyExtensionPolicy};
 pub(crate) use policy::PyPolicy;
-pub(crate) use algorithm_policy::{PySignatureAlgorithm, PySubjectPublicKeyInfoAlgorithm};
 
 use super::parse_general_names;
 use crate::backend::keys;
