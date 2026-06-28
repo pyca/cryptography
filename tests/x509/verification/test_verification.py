@@ -82,9 +82,7 @@ class TestPolicyBuilder:
         with pytest.raises(ValueError):
             PolicyBuilder().permitted_public_key_algorithms(
                 webpki_spki
-            ).permitted_public_key_algorithms(
-                webpki_spki
-            )
+            ).permitted_public_key_algorithms(webpki_spki)
 
     def test_ed25519_algorithms_accepted_on_builder(self):
         builder = (

@@ -178,6 +178,7 @@ Verisign
 versioning
 wildcard
 WoSign
+WebPKI
 Wycheproof
 Xcode
 XEX
