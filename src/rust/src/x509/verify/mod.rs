@@ -6,6 +6,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use cryptography_x509::certificate::Certificate;
+use cryptography_x509::common::AlgorithmIdentifier;
 use cryptography_x509::extensions::SubjectAlternativeName;
 use cryptography_x509::oid::SUBJECT_ALTERNATIVE_NAME_OID;
 use cryptography_x509_verification::ops::{CryptoOps, VerificationCertificate};
@@ -272,7 +273,7 @@ impl PolicyBuilder {
             )
             .map_err(pyo3::exceptions::PyValueError::new_err)?;
             apply_algorithm_policy(&mut def, self);
-            Ok(def)
+            Ok::<PyCryptoPolicyDefinition<'_>, CryptographyError>(def)
         })?;
 
         let py_policy = PyPolicy {
@@ -331,7 +332,7 @@ impl PolicyBuilder {
                 )
                 .map_err(pyo3::exceptions::PyValueError::new_err)?;
                 apply_algorithm_policy(&mut def, self);
-                Ok(def)
+                Ok::<PyCryptoPolicyDefinition<'_>, CryptographyError>(def)
             })?;
 
         let py_policy = PyPolicy {
