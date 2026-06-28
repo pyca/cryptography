@@ -19,12 +19,13 @@ use pyo3::types::PyAnyMethods;
 #[pyo3::pyclass(
     frozen,
     eq,
+    hash,
     eq_int,
     from_py_object,
     module = "cryptography.x509.verification",
     name = "SubjectPublicKeyInfoAlgorithm"
 )]
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub(crate) enum PySubjectPublicKeyInfoAlgorithm {
     #[pyo3(name = "RSA")]
     Rsa,
@@ -42,12 +43,13 @@ pub(crate) enum PySubjectPublicKeyInfoAlgorithm {
 #[pyo3::pyclass(
     frozen,
     eq,
+    hash,
     eq_int,
     from_py_object,
     module = "cryptography.x509.verification",
     name = "SignatureAlgorithm"
 )]
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub(crate) enum PySignatureAlgorithm {
     #[pyo3(name = "RSA_PKCS1_SHA256")]
     RsaPkcs1Sha256,

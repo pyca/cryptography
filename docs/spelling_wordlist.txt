@@ -4,6 +4,7 @@ affine
 argon2
 argon2id
 Authenticator
+Authenticode
 authenticator
 AVX
 backend
