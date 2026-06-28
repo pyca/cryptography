@@ -434,6 +434,52 @@ the root of trust:
 
         The extension must not be marked as critical.
 
+.. class:: SubjectPublicKeyInfoAlgorithm
+
+    An enumeration of subject public key algorithms for use with
+    :meth:`PolicyBuilder.permitted_public_key_algorithms`.
+
+    .. attribute:: RSA
+
+    .. attribute:: SECP256R1
+
+    .. attribute:: SECP384R1
+
+    .. attribute:: SECP521R1
+
+    .. attribute:: ED25519
+
+    .. attribute:: ED448
+
+.. class:: SignatureAlgorithm
+
+    An enumeration of signature algorithms for use with
+    :meth:`PolicyBuilder.permitted_signature_algorithms`.
+
+    .. attribute:: RSA_PKCS1_SHA256
+
+    .. attribute:: RSA_PKCS1_SHA384
+
+    .. attribute:: RSA_PKCS1_SHA512
+
+    .. attribute:: RSA_PKCS1_SHA1
+
+    .. attribute:: RSA_PSS_SHA256
+
+    .. attribute:: RSA_PSS_SHA384
+
+    .. attribute:: RSA_PSS_SHA512
+
+    .. attribute:: ECDSA_SHA256
+
+    .. attribute:: ECDSA_SHA384
+
+    .. attribute:: ECDSA_SHA512
+
+    .. attribute:: ED25519
+
+    .. attribute:: ED448
+
 .. class:: Policy
 
     .. versionadded:: 45.0.0

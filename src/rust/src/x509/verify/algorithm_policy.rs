@@ -26,9 +26,13 @@ use pyo3::types::PyAnyMethods;
 )]
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub(crate) enum PySubjectPublicKeyInfoAlgorithm {
+    #[pyo3(name = "RSA")]
     Rsa,
+    #[pyo3(name = "SECP256R1")]
     Secp256R1,
+    #[pyo3(name = "SECP384R1")]
     Secp384R1,
+    #[pyo3(name = "SECP521R1")]
     Secp521R1,
     Ed25519,
     Ed448,
@@ -45,15 +49,25 @@ pub(crate) enum PySubjectPublicKeyInfoAlgorithm {
 )]
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub(crate) enum PySignatureAlgorithm {
+    #[pyo3(name = "RSA_PKCS1_SHA256")]
     RsaPkcs1Sha256,
+    #[pyo3(name = "RSA_PKCS1_SHA384")]
     RsaPkcs1Sha384,
+    #[pyo3(name = "RSA_PKCS1_SHA512")]
     RsaPkcs1Sha512,
+    #[pyo3(name = "RSA_PKCS1_SHA1")]
     RsaPkcs1Sha1,
+    #[pyo3(name = "RSA_PSS_SHA256")]
     RsaPssSha256,
+    #[pyo3(name = "RSA_PSS_SHA384")]
     RsaPssSha384,
+    #[pyo3(name = "RSA_PSS_SHA512")]
     RsaPssSha512,
+    #[pyo3(name = "ECDSA_SHA256")]
     EcdsaSha256,
+    #[pyo3(name = "ECDSA_SHA384")]
     EcdsaSha384,
+    #[pyo3(name = "ECDSA_SHA512")]
     EcdsaSha512,
     Ed25519,
     Ed448,
