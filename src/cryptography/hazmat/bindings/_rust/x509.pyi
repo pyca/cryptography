@@ -218,10 +218,39 @@ class PolicyBuilder:
     def extension_policies(
         self, *, ca_policy: ExtensionPolicy, ee_policy: ExtensionPolicy
     ) -> PolicyBuilder: ...
+    def minimum_rsa_modulus(self, minimum_rsa_modulus: int) -> PolicyBuilder: ...
+    def permitted_public_key_algorithms(
+        self, algorithms: frozenset[SubjectPublicKeyInfoAlgorithm]
+    ) -> PolicyBuilder: ...
+    def permitted_signature_algorithms(
+        self, algorithms: frozenset[SignatureAlgorithm]
+    ) -> PolicyBuilder: ...
     def build_client_verifier(self) -> ClientVerifier: ...
     def build_server_verifier(
         self, subject: x509.verification.Subject
     ) -> ServerVerifier: ...
+
+class SubjectPublicKeyInfoAlgorithm:
+    RSA: SubjectPublicKeyInfoAlgorithm
+    SECP256R1: SubjectPublicKeyInfoAlgorithm
+    SECP384R1: SubjectPublicKeyInfoAlgorithm
+    SECP521R1: SubjectPublicKeyInfoAlgorithm
+    Ed25519: SubjectPublicKeyInfoAlgorithm
+    Ed448: SubjectPublicKeyInfoAlgorithm
+
+class SignatureAlgorithm:
+    RSA_PKCS1_SHA256: SignatureAlgorithm
+    RSA_PKCS1_SHA384: SignatureAlgorithm
+    RSA_PKCS1_SHA512: SignatureAlgorithm
+    RSA_PKCS1_SHA1: SignatureAlgorithm
+    RSA_PSS_SHA256: SignatureAlgorithm
+    RSA_PSS_SHA384: SignatureAlgorithm
+    RSA_PSS_SHA512: SignatureAlgorithm
+    ECDSA_SHA256: SignatureAlgorithm
+    ECDSA_SHA384: SignatureAlgorithm
+    ECDSA_SHA512: SignatureAlgorithm
+    Ed25519: SignatureAlgorithm
+    Ed448: SignatureAlgorithm
 
 class Policy:
     @property
