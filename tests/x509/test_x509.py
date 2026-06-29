@@ -1334,6 +1334,20 @@ class TestRSACertificate:
         with pytest.raises(ValueError, match="issuer"):
             cert.issuer
 
+    def test_name_attribute_unsupported_type_tag(self, backend):
+        # A name attribute value whose ASN.1 tag is not one of the recognised
+        # string types must raise a ValueError, not a bare KeyError.
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "name_attribute_unsupported_tag.pem"
+            ),
+            x509.load_pem_x509_certificate,
+        )
+        with pytest.raises(ValueError, match="subject"):
+            cert.subject
+        with pytest.raises(ValueError, match="issuer"):
+            cert.issuer
+
     def test_non_ascii_dns_name(self, backend):
         cert = _load_cert(
             os.path.join("x509", "utf8-dnsname.pem"),
