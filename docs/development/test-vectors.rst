@@ -476,7 +476,7 @@ Custom X.509 Vectors
   ``UTF8String`` common name with an invalid UTF-8 byte sequence.
 * ``name_attribute_unsupported_tag.pem`` - A certificate whose subject and
   issuer common name values carry an ASN.1 tag (``0x69``) that is not one of
-  the recognised string types. The signature on this certificate is invalid.
+  the recognized string types. The signature on this certificate is invalid.
 * ``two_basic_constraints.pem`` - An RSA 2048 bit self-signed certificate
   containing two basic constraints extensions.
 * ``basic_constraints_not_critical.pem`` - An RSA 2048 bit self-signed
