@@ -3,7 +3,6 @@
 // for complete details.
 
 use asn1::Asn1Writable;
-use pyo3::types::PyAnyMethods;
 
 use crate::declarative_asn1::decode::decode_annotated_type;
 use crate::declarative_asn1::types as asn1_types;
@@ -13,9 +12,7 @@ pub(crate) fn encode_der<'p>(
     py: pyo3::Python<'p>,
     value: &pyo3::Bound<'p, pyo3::types::PyAny>,
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let class = value.get_type();
-
-    let annotated_type = asn1_types::python_class_to_annotated(py, &class)?;
+    let annotated_type = asn1_types::encode_value_to_annotated(py, value)?;
     let object = asn1_types::AnnotatedTypeObject {
         annotated_type: annotated_type.get(),
         value: value.clone(),

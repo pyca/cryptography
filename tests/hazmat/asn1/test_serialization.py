@@ -1143,6 +1143,19 @@ class TestSet:
         )
 
 
+class TestSetOf:
+    # A top-level `SetOf` can be passed directly to `encode_der`. It cannot
+    # be decoded, since `decode_der` requires a concrete element type.
+    def test_ok_encode_setof(self) -> None:
+        assert (
+            asn1.encode_der(asn1.SetOf([3, 1, 2]))
+            == b"\x31\x09\x02\x01\x01\x02\x01\x02\x02\x01\x03"
+        )
+
+    def test_ok_encode_empty_setof(self) -> None:
+        assert asn1.encode_der(asn1.SetOf([])) == b"\x31\x00"
+
+
 class TestSize:
     def test_ok_sequenceof_size_restriction(self) -> None:
         @asn1.sequence
