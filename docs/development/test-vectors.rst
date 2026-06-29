@@ -185,6 +185,9 @@ Custom asymmetric vectors
   ``sect233k1``.
 * ``asymmetric/EC/sect233r1-spki.pem`` - Contains an EC SPKI on the curve
   ``sect233r1``.
+* ``asymmetric/EC/ec_private_key_non_zero_unused_bits.der`` - Contains a
+  ``secp256r1`` private key whose ``publicKey`` bit string has the unused-bits
+  count set to 1 rather than the required 0.
 * ``asymmetric/X448/x448-pkcs8-enc.pem`` and
   ``asymmetric/X448/x448-pkcs8-enc.der`` contain an X448 key encrypted with
   AES 256 CBC with the password ``password``.
@@ -199,6 +202,9 @@ Custom asymmetric vectors
   ``asymmetric/Ed25519/ed25519-pkcs8.der`` contain an unencrypted Ed25519 key.
 * ``asymmetric/Ed25519/ed25519-pub.pem`` and
   ``asymmetric/Ed25519/ed25519-pub.der`` contain an Ed25519 public key.
+* ``asymmetric/Ed25519/ed25519-pub-non-zero-unused-bits.der`` contains an
+  Ed25519 SPKI whose ``subjectPublicKey`` bit string has the unused-bits count
+  set to 1 rather than the required 0.
 * ``asymmetric/X25519/x25519-pkcs8-enc.pem`` and
   ``asymmetric/X25519/x25519-pkcs8-enc.der`` contain an X25519 key encrypted
   with AES 256 CBC with the password ``password``.

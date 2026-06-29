@@ -13,6 +13,9 @@ Changelog
   silently ignoring them.
 * Added support for using :class:`~cryptography.x509.Name` as a field type in
   the :doc:`/hazmat/asn1/index` module.
+* Loading a public key or an EC private key now rejects DER where the
+  ``subjectPublicKey`` (or EC ``publicKey``) ``BIT STRING`` declares a non-zero
+  number of unused bits, instead of silently ignoring it.
 
 .. _v49-0-0:
 

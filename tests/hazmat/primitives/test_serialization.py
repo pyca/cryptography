@@ -362,6 +362,34 @@ class TestDERSerialization:
         with pytest.raises(ValueError):
             load_der_public_key(b"invalid data", backend)
 
+    def test_load_der_public_key_bit_string_padding(self, backend):
+        # An Ed25519 SPKI whose subjectPublicKey BIT STRING declares a non-zero
+        # unused-bits count. It is octet-aligned, so that is a malformed
+        # encoding for a public key.
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "Ed25519", "ed25519-pub-non-zero-unused-bits.der"
+            ),
+            lambda derfile: derfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_der_public_key(data, backend)
+
+    def test_load_der_ec_private_key_bit_string_padding(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+        # An EC private key whose publicKey BIT STRING declares a non-zero
+        # unused-bits count, which is malformed for the octet-aligned point.
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "EC", "ec_private_key_non_zero_unused_bits.der"
+            ),
+            lambda derfile: derfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_der_private_key(data, password=None, backend=backend)
+
     @pytest.mark.supported(
         only_if=lambda backend: backend.dsa_supported(),
         skip_message="Does not support DSA.",
