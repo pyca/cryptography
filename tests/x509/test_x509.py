@@ -1337,28 +1337,14 @@ class TestRSACertificate:
     def test_name_attribute_unsupported_type_tag(self, backend):
         # A name attribute value whose ASN.1 tag is not one of the recognised
         # string types must raise a ValueError, not a bare KeyError.
-        key = ec.generate_private_key(ec.SECP256R1())
-        cert = (
-            x509.CertificateBuilder()
-            .subject_name(
-                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA")])
-            )
-            .issuer_name(
-                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "PyCA")])
-            )
-            .public_key(key.public_key())
-            .serial_number(1)
-            .not_valid_before(datetime.datetime(2020, 1, 1))
-            .not_valid_after(datetime.datetime(2030, 1, 1))
-            .sign(key, hashes.SHA256())
+        cert = _load_cert(
+            os.path.join(
+                "x509", "custom", "name_attribute_unsupported_tag.pem"
+            ),
+            x509.load_pem_x509_certificate,
         )
-        der = bytearray(cert.public_bytes(serialization.Encoding.DER))
-        # Find id-at-commonName (2.5.4.3) and replace the following
-        # UTF8String tag with an unsupported tag value. The first occurrence
-        # is the issuer name.
-        idx = der.index(b"\x06\x03\x55\x04\x03")
-        der[idx + 5] = 0x69
-        cert = x509.load_der_x509_certificate(bytes(der))
+        with pytest.raises(ValueError, match="subject"):
+            cert.subject
         with pytest.raises(ValueError, match="issuer"):
             cert.issuer
 

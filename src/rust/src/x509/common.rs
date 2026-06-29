@@ -240,7 +240,11 @@ fn parse_name_attribute<'p>(
     let py_tag = types::ASN1_TYPE_TO_ENUM
         .get(py)?
         .get_item(tag_val)
-        .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?;
+        .map_err(|_| {
+            asn1::ParseError::new(asn1::ParseErrorKind::UnexpectedTag {
+                actual: attribute.value.tag(),
+            })
+        })?;
     let py_data = match attribute.value {
         AttributeValue::AnyString(s) => {
             if s.tag() == asn1::BitString::TAG {
