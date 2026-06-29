@@ -9,6 +9,7 @@
 pub mod certificate;
 pub mod ops;
 pub mod policy;
+pub mod revocation;
 pub mod trust_store;
 pub mod types;
 
@@ -30,6 +31,7 @@ use cryptography_x509::oid::{
 use crate::certificate::cert_is_self_issued;
 use crate::ops::{CryptoOps, VerificationCertificate};
 use crate::policy::Policy;
+use crate::revocation::CrlRevocationChecker;
 use crate::trust_store::Store;
 use crate::types::{
     DNSConstraint, DNSPattern, IPAddress, IPConstraint, RFC822Constraint, RFC822Name,
@@ -44,6 +46,7 @@ pub enum ValidationErrorKind<'chain, B: CryptoOps> {
         reason: &'static str,
     },
     FatalError(&'static str),
+    RevocationNotDetermined(String),
     Other(String),
 }
 
@@ -95,6 +98,9 @@ impl<B: CryptoOps> Display for ValidationError<'_, B> {
                 write!(f, "invalid extension: {oid}: {reason}")
             }
             ValidationErrorKind::FatalError(err) => write!(f, "fatal error: {err}"),
+            ValidationErrorKind::RevocationNotDetermined(reason) => {
+                write!(f, "unable to determine revocation status: {reason}")
+            }
             ValidationErrorKind::Other(err) => write!(f, "{err}"),
         }
     }
@@ -306,9 +312,10 @@ pub fn verify<'chain, B: CryptoOps>(
     leaf: &VerificationCertificate<'chain, B>,
     intermediates: &[VerificationCertificate<'chain, B>],
     policy: &Policy<'_, B>,
+    revocation_checker: Option<&'_ CrlRevocationChecker<'_>>,
     store: &Store<'chain, B>,
 ) -> ValidationResult<'chain, Chain<'chain, B>, B> {
-    let builder = ChainBuilder::new(intermediates, policy, store);
+    let builder = ChainBuilder::new(intermediates, policy, revocation_checker, store);
 
     let mut budget = Budget::new();
     builder.build_chain(leaf, &mut budget)
@@ -317,6 +324,7 @@ pub fn verify<'chain, B: CryptoOps>(
 struct ChainBuilder<'a, 'chain, B: CryptoOps> {
     intermediates: &'a [VerificationCertificate<'chain, B>],
     policy: &'a Policy<'a, B>,
+    revocation_checker: Option<&'a CrlRevocationChecker<'a>>,
     store: &'a Store<'chain, B>,
 }
 
@@ -353,11 +361,13 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
     fn new(
         intermediates: &'a [VerificationCertificate<'chain, B>],
         policy: &'a Policy<'a, B>,
+        revocation_checker: Option<&'a CrlRevocationChecker<'a>>,
         store: &'a Store<'chain, B>,
     ) -> Self {
         Self {
             intermediates,
             policy,
+            revocation_checker,
             store,
         }
     }
@@ -462,6 +472,14 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         // If it is, we've reached the end.
         if self.store.contains(working_cert) {
             return Ok(vec![working_cert.clone()]);
+        }
+
+        if let Some(revocation_checker) = self.revocation_checker {
+            if revocation_checker.is_revoked(working_cert, self.policy)? {
+                return Err(ValidationError::new(ValidationErrorKind::Other(
+                    "certificate revoked".to_string(),
+                )));
+            }
         }
 
         // Check that our current depth does not exceed our policy-configured
@@ -599,7 +617,8 @@ mod tests {
     use cryptography_x509::certificate::Certificate;
     use cryptography_x509::oid::SUBJECT_ALTERNATIVE_NAME_OID;
 
-    use crate::certificate::tests::PublicKeyErrorOps;
+    use crate::certificate::tests::{crl_pem, PublicKeyErrorOps};
+    use crate::ops::tests::{crl, NullOps};
     use crate::ops::{CryptoOps, VerificationCertificate};
     use crate::policy::{Policy, PolicyDefinition, Subject};
     use crate::trust_store::Store;
@@ -622,43 +641,27 @@ mod tests {
             "invalid extension: 2.5.29.17: duplicate extension"
         );
 
+        let err = ValidationError::<PublicKeyErrorOps>::new(
+            ValidationErrorKind::RevocationNotDetermined("oops".to_owned()),
+        );
+        assert_eq!(
+            err.to_string(),
+            "unable to determine revocation status: oops"
+        );
+
         let err =
             ValidationError::<PublicKeyErrorOps>::new(ValidationErrorKind::FatalError("oops"));
         assert_eq!(err.to_string(), "fatal error: oops");
-    }
-
-    /// A `CryptoOps` whose public key extraction and signature verification
-    /// always succeed, so that `valid_issuer` can be driven to completion
-    /// without real cryptographic material.
-    struct NullOps;
-
-    impl CryptoOps for NullOps {
-        type Key = ();
-        type Err = ();
-        type CertificateExtra = ();
-        type PolicyExtra = ();
-
-        fn public_key(&self, _cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
-            Ok(())
-        }
-
-        fn verify_signed_by(
-            &self,
-            _cert: &Certificate<'_>,
-            _key: &Self::Key,
-        ) -> Result<(), Self::Err> {
-            Ok(())
-        }
-
-        fn clone_public_key(_key: &Self::Key) -> Self::Key {}
-
-        fn clone_extra(_extra: &Self::CertificateExtra) -> Self::CertificateExtra {}
     }
 
     #[test]
     fn test_clone() {
         assert_eq!(NullOps::clone_public_key(&()), ());
         assert_eq!(NullOps::clone_extra(&()), ());
+
+        let crl_pem = crl_pem();
+        let crl = crl(&crl_pem);
+        assert!(NullOps.verify_crl_signed_by(&crl, &()).is_ok());
     }
 
     // A self-issued ("looping") CA certificate that is its own issuer.
@@ -706,7 +709,7 @@ qolIOwIgCaIgj9ipK0Q0p+45UJiq+L/ncrxsweJkFq/UYubzhX0=
             PolicyDefinition::server(NullOps, subject, time, Some(u8::MAX), None, None).unwrap();
         let policy = Policy::new(&policy_def, ());
 
-        let builder = ChainBuilder::new(&intermediates, &policy, &store);
+        let builder = ChainBuilder::new(&intermediates, &policy, None, &store);
         let mut budget = Budget {
             name_constraint_checks: usize::MAX,
             signature_checks: usize::MAX,
