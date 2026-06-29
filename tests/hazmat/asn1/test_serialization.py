@@ -328,14 +328,23 @@ class TestTLV:
         assert isinstance(decoded_example, Example)
         assert decoded_example.foo == 9
 
-    def test_fail_encode_tlv(self) -> None:
-        tlv = asn1.decode_der(asn1.TLV, b"\x03\x02\x07\x40")
-        assert isinstance(tlv, asn1.TLV)
+    def test_ok_encode_tlv(self) -> None:
+        for original in [
+            b"\x03\x02\x07\x40",
+            b"\x02\x01\x01",
+            b"\x30\x03\x02\x01\x09",
+            b"\x05\x00",
+        ]:
+            tlv = asn1.decode_der(asn1.TLV, original)
+            assert isinstance(tlv, asn1.TLV)
+            assert asn1.encode_der(tlv) == original
 
-        with pytest.raises(
-            NotImplementedError, match="TLV encoding currently not supported"
-        ):
-            asn1.encode_der(tlv)
+    def test_ok_encode_tlv_issue_example(self) -> None:
+        # The example from the original feature request: parse an
+        # arbitrary part with the TLV specifier, then serialize it back.
+        tlv = asn1.decode_der(asn1.TLV, asn1.encode_der(1))
+        assert isinstance(tlv, asn1.TLV)
+        assert asn1.encode_der(tlv) == asn1.encode_der(1)
 
 
 class TestNull:
@@ -1053,6 +1062,10 @@ class TestSequence:
         assert isinstance(decoded.bar, asn1.TLV)
         assert decoded.bar.tag_bytes == b"\x02"
         assert bytes(decoded.bar.data) == b"\x09"
+
+        # Re-encoding the EXPLICIT-tagged TLV fields produces the
+        # original DER.
+        assert asn1.encode_der(decoded) == encoded
 
     def test_fail_sequence_with_tlv_with_explicit_annotation(
         self,
