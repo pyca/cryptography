@@ -65,7 +65,13 @@ pub(crate) fn private_key_from_pkey(
 pub(crate) fn public_key_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
 ) -> CryptographyResult<DHPublicKey> {
-    check_dh_parameters(&pkey.dh()?)?;
+    let dh = pkey.dh()?;
+    check_dh_parameters(&dh)?;
+    if dh.prime_p().num_bits() < cryptography_key_parsing::MIN_DH_MODULUS_SIZE as i32 {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Invalid key"),
+        ));
+    }
     Ok(DHPublicKey {
         pkey: pkey.to_owned(),
     })
