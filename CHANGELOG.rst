@@ -16,6 +16,8 @@ Changelog
 * Loading a public key or an EC private key now rejects DER where the
   ``subjectPublicKey`` (or EC ``publicKey``) ``BIT STRING`` declares a non-zero
   number of unused bits, instead of silently ignoring it.
+* :class:`~cryptography.hazmat.primitives.hashes.XOFHash` is now supported
+  when building against AWS-LC.
 
 .. _v49-0-0:
 

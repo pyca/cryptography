@@ -192,13 +192,16 @@ impl XOFHash {
             if #[cfg(any(
                 CRYPTOGRAPHY_IS_LIBRESSL,
                 CRYPTOGRAPHY_IS_BORINGSSL,
-                not(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER)
+                not(any(
+                    CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+                    CRYPTOGRAPHY_IS_AWSLC
+                ))
             ))] {
                 let _ = py;
                 let _ = algorithm;
                 Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err((
-                        "Extendable output functions are not supported on LibreSSL or BoringSSL.",
+                        "Extendable output functions are not supported on this backend.",
                     )),
                 ))
             } else {
@@ -234,10 +237,13 @@ impl XOFHash {
         }
         self.update_bytes(data.as_bytes())
     }
-    #[cfg(all(
-        CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
-        not(CRYPTOGRAPHY_IS_LIBRESSL),
-        not(CRYPTOGRAPHY_IS_BORINGSSL),
+    #[cfg(any(
+        CRYPTOGRAPHY_IS_AWSLC,
+        all(
+            CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+            not(CRYPTOGRAPHY_IS_LIBRESSL),
+            not(CRYPTOGRAPHY_IS_BORINGSSL),
+        )
     ))]
     fn squeeze<'p>(
         &mut self,

@@ -18,22 +18,25 @@ from ...utils import load_nist_vectors
 from .utils import _load_all_params
 
 
+def _xof_supported() -> bool:
+    return (
+        rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER
+        and not rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
+        and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+    ) or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+
+
 @pytest.mark.supported(
-    only_if=lambda backend: (
-        not rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER
-        or rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
-        or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
-        or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
-    ),
+    only_if=lambda backend: not _xof_supported(),
     skip_message="Requires backend without XOF support",
 )
-def test_unsupported_boring_libre(backend):
+def test_unsupported_xof(backend):
     with pytest.raises(UnsupportedAlgorithm):
         hashes.XOFHash(hashes.SHAKE128(digest_size=32))
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+    only_if=lambda backend: _xof_supported(),
     skip_message="Requires backend with XOF support",
 )
 class TestXOFHash:
@@ -77,7 +80,7 @@ class TestXOFHash:
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+    only_if=lambda backend: _xof_supported(),
     skip_message="Requires backend with XOF support",
 )
 class TestXOFSHAKE128:
@@ -105,7 +108,7 @@ class TestXOFSHAKE128:
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+    only_if=lambda backend: _xof_supported(),
     skip_message="Requires backend with XOF support",
 )
 class TestXOFSHAKE256:
