@@ -196,7 +196,7 @@ class TestHashHash:
         ),
         skip_message="Requires backend with XOF support",
     )
-    def test_hash_xof(self, backend):
+    def test_hash_xof(self):
         digest = hashes.Hash.hash(hashes.SHAKE256(32), b"data")
         assert digest == (
             b"\xc7=\xbe\xd8R\x7fZ\xe0V\x86y\xf3\x0e\xcc\\\xb6\x97\x8b!\x08"
