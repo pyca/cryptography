@@ -189,14 +189,10 @@ impl XOFHash {
         algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<XOFHash> {
         cfg_if::cfg_if! {
-            if #[cfg(any(
-                CRYPTOGRAPHY_IS_LIBRESSL,
-                CRYPTOGRAPHY_IS_BORINGSSL,
-                not(any(
-                    CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
-                    CRYPTOGRAPHY_IS_AWSLC
-                ))
-            ))] {
+            if #[cfg(not(any(
+                CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+                CRYPTOGRAPHY_IS_AWSLC
+            )))] {
                 let _ = py;
                 let _ = algorithm;
                 Err(CryptographyError::from(
@@ -237,14 +233,7 @@ impl XOFHash {
         }
         self.update_bytes(data.as_bytes())
     }
-    #[cfg(any(
-        CRYPTOGRAPHY_IS_AWSLC,
-        all(
-            CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
-            not(CRYPTOGRAPHY_IS_LIBRESSL),
-            not(CRYPTOGRAPHY_IS_BORINGSSL),
-        )
-    ))]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER, CRYPTOGRAPHY_IS_AWSLC))]
     fn squeeze<'p>(
         &mut self,
         py: pyo3::Python<'p>,
