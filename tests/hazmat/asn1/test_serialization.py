@@ -339,12 +339,13 @@ class TestTLV:
             assert isinstance(tlv, asn1.TLV)
             assert asn1.encode_der(tlv) == original
 
-    def test_ok_encode_tlv_issue_example(self) -> None:
-        # The example from the original feature request: parse an
-        # arbitrary part with the TLV specifier, then serialize it back.
-        tlv = asn1.decode_der(asn1.TLV, asn1.encode_der(1))
+    def test_ok_encode_tlv_roundtrip_from_value(self) -> None:
+        # Parse an arbitrary element with the TLV specifier, then
+        # serialize just that element back to its original DER.
+        original = asn1.encode_der(1)
+        tlv = asn1.decode_der(asn1.TLV, original)
         assert isinstance(tlv, asn1.TLV)
-        assert asn1.encode_der(tlv) == asn1.encode_der(1)
+        assert asn1.encode_der(tlv) == original
 
 
 class TestNull:
