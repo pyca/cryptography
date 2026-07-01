@@ -65,7 +65,17 @@ pub(crate) fn private_key_from_pkey(
 pub(crate) fn public_key_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
 ) -> CryptographyResult<DHPublicKey> {
-    check_dh_parameters(&pkey.dh()?)?;
+    let dh = pkey.dh()?;
+    // Enforce the modulus minimum ourselves, matching the DH private-key
+    // loader and DHParameterNumbers, rather than relying on OpenSSL's
+    // DH_check. Do it before check_dh_parameters so this is the gate that
+    // rejects an undersized modulus regardless of backend behaviour.
+    if dh.prime_p().num_bits() < cryptography_key_parsing::MIN_DH_MODULUS_SIZE as i32 {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Invalid key"),
+        ));
+    }
+    check_dh_parameters(&dh)?;
     Ok(DHPublicKey {
         pkey: pkey.to_owned(),
     })
