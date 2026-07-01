@@ -8,7 +8,6 @@ import binascii
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, _Reasons
-from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes
 
 from ...doubles import DummyHashAlgorithm
@@ -192,7 +191,9 @@ class TestHashHash:
             hashes.Hash.hash(DummyHashAlgorithm(), b"data")
 
     @pytest.mark.supported(
-        only_if=lambda _: rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE256(digest_size=32)
+        ),
         skip_message="Requires backend with XOF support",
     )
     def test_hash_xof(self):
