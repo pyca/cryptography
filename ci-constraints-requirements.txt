@@ -248,7 +248,7 @@ tomli==2.4.1 ; python_full_version <= '3.11'
     #   nox
     #   pytest
     #   sphinx
-typing-extensions==4.15.0
+typing-extensions==4.16.0
     # via
     #   cryptography (pyproject.toml)
     #   exceptiongroup
