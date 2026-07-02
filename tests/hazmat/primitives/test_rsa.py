@@ -2328,7 +2328,9 @@ class TestRSANumbers:
     @pytest.mark.parametrize(
         ("e", "n"),
         [
+            (-1, 15),  # public_exponent < 3
             (7, 2),  # modulus < 3
+            (7, -1),  # modulus < 3
             (1, 15),  # public_exponent < 3
             (17, 15),  # public_exponent > modulus
             (14, 15),  # public_exponent not odd
