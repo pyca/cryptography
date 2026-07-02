@@ -502,3 +502,21 @@ class MLDSA87PrivateKey(metaclass=abc.ABCMeta):
 
 if hasattr(rust_openssl, "mldsa"):
     MLDSA87PrivateKey.register(rust_openssl.mldsa.MLDSA87PrivateKey)
+
+
+if hasattr(rust_openssl, "mldsa"):
+    MLDSAMuHasher = rust_openssl.mldsa.MLDSAMuHasher
+else:
+    # The rust mldsa module is only present on backends with ML-DSA support.
+    # Keep the name importable everywhere and defer to construction time to
+    # raise.
+    class MLDSAMuHasher:  # type: ignore[no-redef]
+        def __init__(
+            self,
+            public_key: MLDSA44PublicKey | MLDSA65PublicKey | MLDSA87PublicKey,
+            context: Buffer | None = None,
+        ) -> None:
+            raise UnsupportedAlgorithm(
+                "ML-DSA is not supported by this backend.",
+                _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM,
+            )

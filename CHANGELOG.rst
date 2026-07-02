@@ -18,6 +18,10 @@ Changelog
   number of unused bits, instead of silently ignoring it.
 * :class:`~cryptography.hazmat.primitives.hashes.XOFHash` is now supported
   when building against AWS-LC.
+* Added
+  :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSAMuHasher` for
+  incrementally computing the ML-DSA ``mu`` (message representative) used by
+  the external-mu signing and verification APIs.
 
 .. _v49-0-0:
 

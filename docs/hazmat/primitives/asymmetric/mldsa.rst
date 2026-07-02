@@ -38,6 +38,32 @@ different contexts or protocols.
     >>> # Verification requires the same context
     >>> public_key.verify(signature, b"my authenticated message", context)
 
+External mu
+~~~~~~~~~~~
+
+ML-DSA supports an "external mu" mode, where the message representative
+``mu`` is computed separately from signing and verification (see
+:meth:`MLDSA65PrivateKey.sign_mu` and :meth:`MLDSA65PublicKey.verify_mu`).
+:class:`MLDSAMuHasher` computes ``mu`` incrementally, which is useful when the
+message is large or only available as a stream.
+
+On backends that do not support computing ``mu``, :class:`MLDSAMuHasher`
+raises :class:`~cryptography.exceptions.UnsupportedAlgorithm`; ``sign_mu``
+and ``verify_mu`` still work with a ``mu`` computed elsewhere.
+
+.. doctest::
+    :skipif: not _backend.mldsa_supported()
+
+    >>> from cryptography.hazmat.primitives.asymmetric import mldsa
+    >>> private_key = mldsa.MLDSA65PrivateKey.generate()
+    >>> public_key = private_key.public_key()
+    >>> hasher = mldsa.MLDSAMuHasher(public_key)
+    >>> hasher.update(b"my authenticated ")
+    >>> hasher.update(b"message")
+    >>> mu = hasher.finalize()
+    >>> signature = private_key.sign_mu(mu)
+    >>> public_key.verify_mu(signature, mu)
+
 Key interfaces
 ~~~~~~~~~~~~~~
 
@@ -100,8 +126,8 @@ Key interfaces
         .. versionadded:: 49.0.0
 
         Sign a precomputed ``mu`` (message representative) using ML-DSA-44,
-        the "external mu" variant from FIPS 204. There is currently no API to
-        compute ``mu``, so you must compute it yourself.
+        the "external mu" variant from FIPS 204. ``mu`` can be computed
+        incrementally with :class:`MLDSAMuHasher`.
 
         :param mu: The 64-byte message representative.
         :type mu: :term:`bytes-like`
@@ -247,8 +273,8 @@ Key interfaces
         .. versionadded:: 49.0.0
 
         Verify a signature over a precomputed ``mu`` (message representative),
-        the "external mu" variant from FIPS 204. There is currently no API to
-        compute ``mu``, so you must compute it yourself.
+        the "external mu" variant from FIPS 204. ``mu`` can be computed
+        incrementally with :class:`MLDSAMuHasher`.
 
         :param signature: The signature to verify.
         :type signature: :term:`bytes-like`
@@ -320,8 +346,8 @@ Key interfaces
         .. versionadded:: 49.0.0
 
         Sign a precomputed ``mu`` (message representative) using ML-DSA-65,
-        the "external mu" variant from FIPS 204. There is currently no API to
-        compute ``mu``, so you must compute it yourself.
+        the "external mu" variant from FIPS 204. ``mu`` can be computed
+        incrementally with :class:`MLDSAMuHasher`.
 
         :param mu: The 64-byte message representative.
         :type mu: :term:`bytes-like`
@@ -467,8 +493,8 @@ Key interfaces
         .. versionadded:: 49.0.0
 
         Verify a signature over a precomputed ``mu`` (message representative),
-        the "external mu" variant from FIPS 204. There is currently no API to
-        compute ``mu``, so you must compute it yourself.
+        the "external mu" variant from FIPS 204. ``mu`` can be computed
+        incrementally with :class:`MLDSAMuHasher`.
 
         :param signature: The signature to verify.
         :type signature: :term:`bytes-like`
@@ -540,8 +566,8 @@ Key interfaces
         .. versionadded:: 49.0.0
 
         Sign a precomputed ``mu`` (message representative) using ML-DSA-87,
-        the "external mu" variant from FIPS 204. There is currently no API to
-        compute ``mu``, so you must compute it yourself.
+        the "external mu" variant from FIPS 204. ``mu`` can be computed
+        incrementally with :class:`MLDSAMuHasher`.
 
         :param mu: The 64-byte message representative.
         :type mu: :term:`bytes-like`
@@ -687,8 +713,8 @@ Key interfaces
         .. versionadded:: 49.0.0
 
         Verify a signature over a precomputed ``mu`` (message representative),
-        the "external mu" variant from FIPS 204. There is currently no API to
-        compute ``mu``, so you must compute it yourself.
+        the "external mu" variant from FIPS 204. ``mu`` can be computed
+        incrementally with :class:`MLDSAMuHasher`.
 
         :param signature: The signature to verify.
         :type signature: :term:`bytes-like`
@@ -700,6 +726,59 @@ Key interfaces
         :raises cryptography.exceptions.InvalidSignature: Raised when the
             signature cannot be verified.
         :raises ValueError: If ``mu`` is not 64 bytes.
+
+.. class:: MLDSAMuHasher(public_key, context=None)
+
+    .. versionadded:: 50.0.0
+
+    Incrementally computes the ML-DSA ``mu`` (message representative) for the
+    "external mu" signing and verification APIs. For pure ML-DSA, FIPS 204
+    defines ``mu = SHAKE256(SHAKE256(pk, 64) || 0x00 || len(ctx) || ctx || M,
+    64)``, where ``M`` is the message. The portion derived from the public key
+    and context is computed when the hasher is created, and the message is
+    supplied incrementally with :meth:`update`.
+
+    :param public_key: The ML-DSA public key the ``mu`` is bound to.
+    :type public_key: An ML-DSA public key, e.g. :class:`MLDSA65PublicKey`.
+
+    :param context: An optional context string (up to 255 bytes). It must
+        match the context later passed to :meth:`MLDSA65PublicKey.verify`.
+    :type context: :term:`bytes-like` or ``None``
+
+    :raises TypeError: If ``public_key`` is not an ML-DSA public key.
+
+    :raises ValueError: If the context is longer than 255 bytes.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the backend does
+        not support computing ``mu``.
+
+    .. method:: update(data)
+
+        :param data: The bytes to hash into ``mu``.
+        :type data: :term:`bytes-like`
+
+        :raises cryptography.exceptions.AlreadyFinalized: If :meth:`finalize`
+            has already been called.
+
+    .. method:: copy()
+
+        Copy the current state so that ``mu`` can be computed over a common
+        prefix and then diverging suffixes.
+
+        :returns: A new :class:`MLDSAMuHasher` with the same internal state.
+
+        :raises cryptography.exceptions.AlreadyFinalized: If :meth:`finalize`
+            has already been called.
+
+    .. method:: finalize()
+
+        Finalize the hasher and return the computed ``mu``. After calling this
+        the hasher can no longer be used.
+
+        :return bytes: The 64-byte message representative ``mu``.
+
+        :raises cryptography.exceptions.AlreadyFinalized: If :meth:`finalize`
+            has already been called.
 
 
 .. _`FIPS 204`: https://csrc.nist.gov/pubs/fips/204/final
