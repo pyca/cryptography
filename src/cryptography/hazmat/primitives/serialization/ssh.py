@@ -1144,10 +1144,10 @@ def _parse_exts_opts(exts_opts: memoryview) -> dict[bytes, bytes]:
 
 def ssh_key_fingerprint(
     key: SSHPublicKeyTypes,
-    hash_algorithm: hashes.MD5 | hashes.SHA256,
+    hash_algorithm: hashes.MD5 | hashes.SHA1 | hashes.SHA256,
 ) -> bytes:
-    if not isinstance(hash_algorithm, (hashes.MD5, hashes.SHA256)):
-        raise TypeError("hash_algorithm must be either MD5 or SHA256")
+    if not isinstance(hash_algorithm, (hashes.MD5, hashes.SHA1, hashes.SHA256)):
+        raise TypeError("hash_algorithm must be either MD5, SHA1, or SHA256")
 
     key_type = _get_ssh_key_type(key)
     kformat = _lookup_kformat(key_type)
