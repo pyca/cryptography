@@ -27,7 +27,21 @@ fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
     // FIXME: maybe pyo3-build-config should provide a way to do this?
     let python = env::var("PYO3_PYTHON").unwrap_or_else(|_| "python3".to_string());
-    println!("cargo:rerun-if-env-changed=PYO3_PYTHON");
+    // PEP 517 build frontends create build isolation venvs at random paths and
+    // point PYO3_PYTHON at them, so keying the build-script cache on PYO3_PYTHON
+    // defeats caching (a rebuild every invocation). When the frontend provides
+    // PYO3_BASE_PYTHON (the stable underlying interpreter, ~sys._base_executable),
+    // key on that instead -- a venv cannot change the implementation, version,
+    // ABI, or headers of its base, which is all this script derives from the
+    // interpreter. We still invoke PYO3_PYTHON to find the binary (it has cffi
+    // installed; the base interpreter may not). When PYO3_BASE_PYTHON is absent,
+    // fall back to keying on PYO3_PYTHON so manual interpreter switches still
+    // trigger a rebuild.
+    if env::var_os("PYO3_BASE_PYTHON").is_some() {
+        println!("cargo:rerun-if-env-changed=PYO3_BASE_PYTHON");
+    } else {
+        println!("cargo:rerun-if-env-changed=PYO3_PYTHON");
+    }
     println!("cargo:rerun-if-changed=../../_cffi_src/");
     println!("cargo:rerun-if-changed=../../cryptography/__about__.py");
     let output = Command::new(&python)
