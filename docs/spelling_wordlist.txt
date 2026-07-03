@@ -72,6 +72,7 @@ Gaynor
 GiB
 Google
 Graviola
+hasher
 hazmat
 Heartbleed
 Homebrew

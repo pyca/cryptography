@@ -502,3 +502,4 @@ class MLDSA87PrivateKey(metaclass=abc.ABCMeta):
 
 if hasattr(rust_openssl, "mldsa"):
     MLDSA87PrivateKey.register(rust_openssl.mldsa.MLDSA87PrivateKey)
+    MLDSAMuHasher = rust_openssl.mldsa.MLDSAMuHasher

@@ -23,6 +23,10 @@ Changelog
   reject Diffie-Hellman public keys whose modulus is smaller than 512 bits,
   matching the minimum already enforced when loading DH private keys and when
   constructing :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
+* Added
+  :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSAMuHasher` for
+  incrementally computing the ML-DSA ``mu`` (message representative) used by
+  the external-mu signing and verification APIs.
 
 .. _v49-0-0:
 
