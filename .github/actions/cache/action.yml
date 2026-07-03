@@ -20,3 +20,31 @@ runs:
     - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
       with:
         key: ${{ steps.normalized-key.outputs.key }}-5
+    # Prebuilt sccache binaries are only published for these architectures;
+    # everywhere else (e.g. ppc64le) the job proceeds without sccache.
+    - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad  # v0.0.9
+      if: runner.arch == 'X64' || runner.arch == 'ARM64'
+      continue-on-error: true
+    - name: Enable sccache
+      id: sccache
+      run: |
+        if command -v sccache > /dev/null && command -v rustc > /dev/null; then
+          echo "enabled=true" >> $GITHUB_OUTPUT
+          echo "rustc-id=$(rustc -vV | awk '/^(host|release):/ { print $2 }' | paste -sd- -)" >> $GITHUB_OUTPUT
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+          echo "SCCACHE_DIR=${RUNNER_TEMP}/sccache" >> $GITHUB_ENV
+          echo "SCCACHE_CACHE_SIZE=512M" >> $GITHUB_ENV
+        else
+          echo "enabled=false" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+      if: steps.sccache.outputs.enabled == 'true'
+      with:
+        path: ${{ runner.temp }}/sccache
+        # sccache verifies its own inputs (compiler digest, args, env), so
+        # the key only affects hit rate, never correctness. restore-keys
+        # keeps the cache useful across Cargo.lock changes, which is
+        # exactly when rust-cache goes fully cold.
+        key: sccache-${{ steps.sccache.outputs.rustc-id }}-${{ steps.normalized-key.outputs.key }}-${{ hashFiles('Cargo.lock') }}
+        restore-keys: sccache-${{ steps.sccache.outputs.rustc-id }}-${{ steps.normalized-key.outputs.key }}-
