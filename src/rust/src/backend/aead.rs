@@ -673,7 +673,7 @@ impl AesGcm {
     }
 
     #[pyo3(signature = (nonce, data, associated_data, buf))]
-    fn decrypt_into(
+    pub(crate) fn decrypt_into(
         &self,
         py: pyo3::Python<'_>,
         nonce: CffiBuf<'_>,

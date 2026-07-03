@@ -119,7 +119,7 @@ message — an overhead of roughly 0.1%.
     Once any method raises
     :class:`~cryptography.exceptions.InvalidTag`, the instance is
     permanently unusable and all further calls raise
-    :class:`~cryptography.exceptions.InvalidTag` as well.
+    :class:`~cryptography.exceptions.AlreadyFinalized`.
 
     :param key: The 16-byte key the message was encrypted with.
     :type key: :term:`bytes-like`

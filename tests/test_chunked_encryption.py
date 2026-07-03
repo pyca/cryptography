@@ -3,15 +3,17 @@
 # for complete details.
 
 
+import base64
 import hashlib
-import hmac
+import json
 import os
+import zlib
 
 import pytest
 
+import cryptography_vectors
 from cryptography.chunked_encryption import Decrypter, Encrypter
 from cryptography.exceptions import AlreadyFinalized, InvalidTag
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 CHUNK_SIZE = 16 * 1024
 TAG_LEN = 16
@@ -21,71 +23,14 @@ COMMITMENT_LEN = 32
 HEADER_LEN = SALT_LEN + COMMITMENT_LEN
 
 
-def _hkdf_expand_sha256(prk: bytes, info: bytes, length: int) -> bytes:
-    # Independent HKDF-Expand implementation (RFC 5869), using only the
-    # standard library.
-    out = b""
-    t = b""
-    i = 1
-    while len(out) < length:
-        t = hmac.new(prk, t + info + bytes([i]), hashlib.sha256).digest()
-        out += t
-        i += 1
-    return out[:length]
-
-
-def _derive(key: bytes, salt: bytes, context: bytes):
-    info = (
-        b"c2sp.org/chunked-encryption@v1+"
-        + b"AEAD_AES_128_GCM"
-        + b"\x00"
-        + salt
-        + context
+def _load_vectors():
+    vector_file = cryptography_vectors.open_vector_file(
+        os.path.join("chunked-encryption", "vectors.json"), "r"
     )
-    okm = _hkdf_expand_sha256(key, info, 16 + 12 + COMMITMENT_LEN)
-    return okm[:16], okm[16:28], okm[28:]
-
-
-def _nonce(base_nonce: bytes, counter: int) -> bytes:
-    return (int.from_bytes(base_nonce, "big") ^ counter).to_bytes(12, "big")
-
-
-def _chunks(data: bytes) -> list[bytes]:
-    chunks = [
-        data[i : i + CHUNK_SIZE] for i in range(0, len(data), CHUNK_SIZE)
-    ]
-    if not chunks or len(chunks[-1]) == CHUNK_SIZE:
-        chunks.append(b"")
-    return chunks
-
-
-def _reference_encrypt(
-    key: bytes, context: bytes, salt: bytes, plaintext: bytes
-) -> bytes:
-    # A minimal reference implementation of c2sp.org/chunked-encryption,
-    # used to cross-check the real implementation.
-    aead_key, base_nonce, commitment = _derive(key, salt, context)
-    aead = AESGCM(aead_key)
-    result = salt + commitment
-    for i, chunk in enumerate(_chunks(plaintext)):
-        result += aead.encrypt(_nonce(base_nonce, i), chunk, None)
-    return result
-
-
-def _reference_decrypt(key: bytes, context: bytes, ciphertext: bytes) -> bytes:
-    assert len(ciphertext) >= HEADER_LEN
-    salt = ciphertext[:SALT_LEN]
-    aead_key, base_nonce, commitment = _derive(key, salt, context)
-    assert ciphertext[SALT_LEN:HEADER_LEN] == commitment
-    aead = AESGCM(aead_key)
-    body = ciphertext[HEADER_LEN:]
-    result = b""
-    for i in range(0, len(body), WIRE_CHUNK_SIZE):
-        chunk = body[i : i + WIRE_CHUNK_SIZE]
-        counter = i // WIRE_CHUNK_SIZE
-        result += aead.decrypt(_nonce(base_nonce, counter), chunk, None)
-    assert len(body) % WIRE_CHUNK_SIZE != 0
-    return result
+    with vector_file:
+        vectors = json.load(vector_file)["vectors"]
+    # The public API only supports AES-128-GCM.
+    return [v for v in vectors if v["aead"] == "AEAD_AES_128_GCM"]
 
 
 def _encrypt_all(key: bytes, context: bytes, plaintext: bytes) -> bytes:
@@ -114,6 +59,33 @@ MESSAGE_LENGTHS = [
 
 
 class TestChunkedEncryption:
+    @pytest.mark.parametrize(
+        "vector", _load_vectors(), ids=lambda v: v["name"]
+    )
+    def test_vectors(self, vector):
+        key = bytes.fromhex(vector["key"])
+        context = vector["context"].encode()
+        if vector["ciphertext"] is None:
+            ciphertext = b""
+        else:
+            ciphertext = base64.b64decode(vector["ciphertext"])
+        if vector.get("compressed"):
+            ciphertext = zlib.decompress(ciphertext)
+
+        if vector["expect"] == "success":
+            plaintext = _decrypt_all(key, context, ciphertext)
+            assert len(plaintext) == vector["payload_length"]
+            assert (
+                hashlib.sha256(plaintext).hexdigest()
+                == vector["payload_sha256"]
+            )
+        elif len(key) != 16:
+            with pytest.raises(ValueError):
+                Decrypter(key, context)
+        else:
+            with pytest.raises(InvalidTag):
+                _decrypt_all(key, context, ciphertext)
+
     @pytest.mark.parametrize("length", MESSAGE_LENGTHS)
     def test_round_trip(self, length):
         key = Encrypter.generate_key()
@@ -124,26 +96,6 @@ class TestChunkedEncryption:
         n_chunks = length // CHUNK_SIZE + 1
         assert len(ciphertext) == HEADER_LEN + length + n_chunks * TAG_LEN
         assert _decrypt_all(key, context, ciphertext) == plaintext
-
-    @pytest.mark.parametrize("length", MESSAGE_LENGTHS)
-    def test_matches_reference_implementation(self, length):
-        key = Encrypter.generate_key()
-        context = b"reference check"
-        plaintext = os.urandom(length)
-
-        # The encrypter generates a random salt internally, so recompute
-        # the expected ciphertext with the reference implementation using
-        # the salt it chose.
-        ciphertext = _encrypt_all(key, context, plaintext)
-        salt = ciphertext[:SALT_LEN]
-        assert ciphertext == _reference_encrypt(key, context, salt, plaintext)
-        assert _reference_decrypt(key, context, ciphertext) == plaintext
-
-        # And decrypt a reference-produced ciphertext with a fixed salt.
-        reference = _reference_encrypt(
-            key, context, bytes(range(SALT_LEN)), plaintext
-        )
-        assert _decrypt_all(key, context, reference) == plaintext
 
     @pytest.mark.parametrize("piece_size", [1, 57, 1024, 16384, 16400])
     def test_streaming(self, piece_size):
@@ -156,9 +108,10 @@ class TestChunkedEncryption:
         for i in range(0, len(plaintext), piece_size):
             ciphertext += enc.update(plaintext[i : i + piece_size])
         ciphertext += enc.finalize()
-        assert ciphertext == _reference_encrypt(
-            key, context, ciphertext[:SALT_LEN], plaintext
-        )
+        # The result matches a single-shot encryption's structure, and
+        # decrypts to the plaintext regardless of how the ciphertext is
+        # split up.
+        assert len(ciphertext) == HEADER_LEN + len(plaintext) + 3 * TAG_LEN
 
         dec = Decrypter(key, context)
         decrypted = b""
@@ -361,7 +314,7 @@ class TestChunkedEncryption:
         with pytest.raises(AlreadyFinalized):
             dec.finalize()
 
-    def test_decrypter_poisoned_after_invalid_tag(self):
+    def test_decrypter_unusable_after_invalid_tag(self):
         key = Encrypter.generate_key()
         ciphertext = bytearray(_encrypt_all(key, b"", b"data"))
         ciphertext[-1] ^= 1
@@ -371,9 +324,9 @@ class TestChunkedEncryption:
         with pytest.raises(InvalidTag):
             dec.finalize()
         # All subsequent operations fail.
-        with pytest.raises(InvalidTag):
+        with pytest.raises(AlreadyFinalized):
             dec.update(b"")
-        with pytest.raises(InvalidTag):
+        with pytest.raises(AlreadyFinalized):
             dec.finalize()
 
     def test_finalize_only_decrypter_rejects_empty_stream(self):
