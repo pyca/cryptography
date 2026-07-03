@@ -22,7 +22,7 @@ runs:
         key: ${{ steps.normalized-key.outputs.key }}-5
     # Prebuilt sccache binaries are only published for these architectures;
     # everywhere else (e.g. ppc64le) the job proceeds without sccache.
-    - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad  # v0.0.9
+    - uses: mozilla-actions/sccache-action@9e7fa8a12102821edf02ca5dbea1acd0f89a2696  # v0.0.10
       if: runner.arch == 'X64' || runner.arch == 'ARM64'
       continue-on-error: true
     - name: Enable sccache
