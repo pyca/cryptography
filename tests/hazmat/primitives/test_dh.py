@@ -393,6 +393,21 @@ class TestDH:
         with pytest.raises(ValueError):
             serialization.load_pem_private_key(data, None, backend)
 
+    def test_load_small_modulus_public_key(self, backend):
+        # SPKI (SubjectPublicKeyInfo) built from the public half of the
+        # 256-bit PKCS#3 DH key in dh_key_256.pem. The group is otherwise
+        # valid, so it clears the DH_check parameter validation, but its
+        # 256-bit modulus is well below the 512-bit minimum already enforced
+        # for private keys and DHParameterNumbers.
+        der = binascii.unhexlify(
+            "305a303306092a864886f70d0103013026022100813e0e814bee676d"
+            "bd3d9d28ed73d36735d21ff6457236f68d3d6145560c0fab02010203"
+            "230002202229529e73a612153eb1d5180040c2ceb50cfcf9bd86d221"
+            "2441626ecf288e06"
+        )
+        with pytest.raises(ValueError):
+            serialization.load_der_public_key(der, backend)
+
     @pytest.mark.parametrize(
         "vector",
         load_vectors_from_file(

@@ -145,6 +145,15 @@ fn dh_parameters_from_numbers(
 fn check_dh_parameters<T: openssl::pkey::HasParams>(
     dh: &openssl::dh::Dh<T>,
 ) -> CryptographyResult<()> {
+    // Enforce the modulus minimum ourselves rather than relying on OpenSSL's
+    // DH_check, so an undersized modulus is rejected consistently across every
+    // DH construction path and regardless of backend behaviour. This matches
+    // the minimum already enforced for DH private keys and DHParameterNumbers.
+    if dh.prime_p().num_bits() < cryptography_key_parsing::MIN_DH_MODULUS_SIZE as i32 {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"),
+        ));
+    }
     if !dh.check_key()? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"),
