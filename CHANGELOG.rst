@@ -18,6 +18,11 @@ Changelog
   number of unused bits, instead of silently ignoring it.
 * :class:`~cryptography.hazmat.primitives.hashes.XOFHash` is now supported
   when building against AWS-LC.
+* :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key` and
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key` now
+  reject Diffie-Hellman public keys whose modulus is smaller than 512 bits,
+  matching the minimum already enforced when loading DH private keys and when
+  constructing :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
 
 .. _v49-0-0:
 
