@@ -27,10 +27,6 @@ can only be decrypted with the key it was encrypted with.
     >>> decrypter.update(ciphertext) + decrypter.finalize()
     b'a secret message'
 
-The ciphertext is 56 bytes (a salt and a key commitment), plus the
-message itself, plus 16 bytes for each started 16 KiB chunk of the
-message — an overhead of roughly 0.1%.
-
 .. class:: Encrypter(key, context)
 
     .. versionadded:: 50.0.0

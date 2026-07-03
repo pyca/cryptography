@@ -211,6 +211,9 @@ impl Encrypter {
         header + n_chunks * (CHUNK_SIZE + self.cipher.tag_len)
     }
 
+    // `out` must be at least `self.update_out_len(data.len())` bytes; both
+    // callers check this before any state is modified, so the header and
+    // every chunk written below are guaranteed to fit.
     fn update_impl(
         &mut self,
         py: pyo3::Python<'_>,
