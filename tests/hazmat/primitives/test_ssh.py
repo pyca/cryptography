@@ -1864,6 +1864,16 @@ class TestSSHKeyFingerprint:
         fingerprint = ssh_key_fingerprint(public_key, hashes.MD5())
         assert fingerprint == b"\x10G\xc2es\xd6QIH\x0b\x81\x1f6\x04{R"
 
+    def test_ssh_key_fingerprint_rsa_sha1(self):
+        ssh_key = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "rsa-nopsw.key.pub"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        public_key = load_ssh_public_key(ssh_key)
+        fingerprint = ssh_key_fingerprint(public_key, hashes.SHA1())
+        assert fingerprint == b"cQ{L\xf8V\xb5N\x8c\x8e^ni?\xb7(1\xc4\xba\xc5"
+
     def test_ssh_key_fingerprint_rsa_sha256(self):
         ssh_key = load_vectors_from_file(
             os.path.join("asymmetric", "OpenSSH", "rsa-nopsw.key.pub"),
@@ -1890,6 +1900,16 @@ class TestSSHKeyFingerprint:
         public_key = load_ssh_public_key(ssh_key)
         fingerprint = ssh_key_fingerprint(public_key, hashes.MD5())
         assert fingerprint == b"\xe5R=\x01\x9e\xa0\xc1\xe9\x8c?L|\xc5\x94W\x85"
+
+    def test_ssh_key_fingerprint_ed25519_sha1(self):
+        ssh_key = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "ed25519-nopsw.key.pub"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        public_key = load_ssh_public_key(ssh_key)
+        fingerprint = ssh_key_fingerprint(public_key, hashes.SHA1())
+        assert fingerprint == b"$\x8a\x8d~p` <\xc4\xdb\x80\xf7*\xaf{)-RX{"
 
     def test_ssh_key_fingerprint_ed25519_sha256(self):
         ssh_key = load_vectors_from_file(
@@ -1918,6 +1938,16 @@ class TestSSHKeyFingerprint:
         fingerprint = ssh_key_fingerprint(public_key, hashes.MD5())
         assert fingerprint == b"\re\xf2-\xfaGq\x8c^\x16\xb05+\x06\x1b7"
 
+    def test_ssh_key_fingerprint_ecdsa_sha1(self):
+        ssh_key = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "ecdsa-nopsw.key.pub"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        public_key = load_ssh_public_key(ssh_key)
+        fingerprint = ssh_key_fingerprint(public_key, hashes.SHA1())
+        assert fingerprint == b"\xdd\xa58\x87cl\x8f\x89\xd9\xd2\x836~\xd1R\xd7\xd7\xf2\x87\xa9"
+
     def test_ssh_key_fingerprint_ecdsa_sha256(self):
         ssh_key = load_vectors_from_file(
             os.path.join("asymmetric", "OpenSSH", "ecdsa-nopsw.key.pub"),
@@ -1939,7 +1969,7 @@ class TestSSHKeyFingerprint:
         )
         public_key = load_ssh_public_key(ssh_key)
         with pytest.raises(TypeError):
-            ssh_key_fingerprint(public_key, hashes.SHA1())  # type: ignore[arg-type]
+            ssh_key_fingerprint(public_key, hashes.SHAKE256())  # type: ignore[arg-type]
 
     def test_ssh_key_fingerprint_unsupported_key(self):
         with pytest.raises(ValueError):
