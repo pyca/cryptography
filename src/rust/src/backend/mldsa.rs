@@ -723,9 +723,7 @@ impl MlDsa87PublicKey {
     }
 }
 
-/// Extract the raw public key bytes from any ML-DSA public key object. Private
-/// keys (and other key types) are rejected: mu computation is a public-key
-/// operation.
+/// Extract the raw public key bytes from any ML-DSA public key object.
 fn mldsa_public_key_raw(public_key: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>> {
     if let Ok(k) = public_key.cast::<MlDsa44PublicKey>() {
         Ok(k.get().pkey.raw_public_key()?)

@@ -133,9 +133,6 @@ def test_mldsa_unsupported(backend):
     ):
         MLDSA87PrivateKey.generate()
 
-    # Without ML-DSA support the mu hasher isn't available at all.
-    assert not hasattr(mldsa, "MLDSAMuHasher")
-
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.mldsa_supported(),

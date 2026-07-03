@@ -47,10 +47,6 @@ ML-DSA supports an "external mu" mode, where the message representative
 :class:`MLDSAMuHasher` computes ``mu`` incrementally, which is useful when the
 message is large or only available as a stream.
 
-On backends that do not support computing ``mu``, :class:`MLDSAMuHasher`
-raises :class:`~cryptography.exceptions.UnsupportedAlgorithm`; ``sign_mu``
-and ``verify_mu`` still work with a ``mu`` computed elsewhere.
-
 .. doctest::
     :skipif: not _backend.mldsa_supported()
 
@@ -732,11 +728,8 @@ Key interfaces
     .. versionadded:: 50.0.0
 
     Incrementally computes the ML-DSA ``mu`` (message representative) for the
-    "external mu" signing and verification APIs. For pure ML-DSA, FIPS 204
-    defines ``mu = SHAKE256(SHAKE256(pk, 64) || 0x00 || len(ctx) || ctx || M,
-    64)``, where ``M`` is the message. The portion derived from the public key
-    and context is computed when the hasher is created, and the message is
-    supplied incrementally with :meth:`update`.
+    "external mu" signing and verification APIs. The message is supplied
+    incrementally with :meth:`update`, so it need not be buffered in memory.
 
     :param public_key: The ML-DSA public key the ``mu`` is bound to.
     :type public_key: An ML-DSA public key, e.g. :class:`MLDSA65PublicKey`.
