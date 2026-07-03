@@ -34,6 +34,7 @@ use crate::error::CryptographyResult;
 mod asn1;
 mod backend;
 mod buf;
+mod chunked_encryption;
 mod declarative_asn1;
 mod error;
 mod exceptions;
@@ -131,6 +132,8 @@ mod _rust {
 
     #[pymodule_export]
     use crate::asn1::asn1_mod;
+    #[pymodule_export]
+    use crate::chunked_encryption::chunked_encryption_mod;
     #[pymodule_export]
     use crate::exceptions::exceptions;
     #[pymodule_export]
