@@ -4,6 +4,7 @@
 
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::sync::LazyLock;
 
 use pyo3::types::PyAnyMethods;
 
@@ -812,15 +813,16 @@ fn check_public_key_components(
     e: &openssl::bn::BigNumRef,
     n: &openssl::bn::BigNumRef,
 ) -> CryptographyResult<()> {
-    let three = openssl::bn::BigNum::from_u32(3)?;
+    static THREE: LazyLock<openssl::bn::BigNum> =
+        LazyLock::new(|| openssl::bn::BigNum::from_u32(3).unwrap());
 
-    if n.cmp(three.as_ref()).is_lt() {
+    if n.cmp(&THREE).is_lt() {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("n must be >= 3."),
         ));
     }
 
-    if e.cmp(three.as_ref()).is_lt() || e >= n {
+    if e.cmp(&THREE).is_lt() || e >= n {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("e must be >= 3 and < n."),
         ));
