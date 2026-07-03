@@ -333,7 +333,7 @@ fn public_key_from_pkey<'p>(
     // `id` is a separate argument so we can test this while passing something
     // unsupported.
     match id {
-        openssl::pkey::Id::RSA => Ok(crate::backend::rsa::public_key_from_pkey(py, pkey)?
+        openssl::pkey::Id::RSA => Ok(crate::backend::rsa::public_key_from_pkey(pkey)?
             .into_pyobject(py)?
             .into_any()),
         openssl::pkey::Id::EC => Ok(crate::backend::ec::public_key_from_pkey(py, pkey)?

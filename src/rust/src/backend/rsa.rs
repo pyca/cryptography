@@ -4,6 +4,7 @@
 
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::sync::LazyLock;
 
 use pyo3::types::PyAnyMethods;
 
@@ -55,14 +56,10 @@ pub(crate) fn private_key_from_pkey(
 }
 
 pub(crate) fn public_key_from_pkey(
-    py: pyo3::Python<'_>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
 ) -> CryptographyResult<RsaPublicKey> {
     let rsa = pkey.rsa()?;
-    check_public_key_components(
-        &utils::bn_to_py_int(py, rsa.e())?,
-        &utils::bn_to_py_int(py, rsa.n())?,
-    )?;
+    check_public_key_components(rsa.e(), rsa.n())?;
     Ok(RsaPublicKey {
         pkey: pkey.to_owned(),
     })
@@ -801,23 +798,37 @@ impl RsaPrivateNumbers {
     }
 }
 
+fn py_int_to_signed_bn(
+    py: pyo3::Python<'_>,
+    value: &pyo3::Bound<'_, pyo3::types::PyInt>,
+) -> CryptographyResult<openssl::bn::BigNum> {
+    let negative = value.lt(0)?;
+    let magnitude = value.call_method0(pyo3::intern!(py, "__abs__"))?;
+    let mut bn = utils::py_int_to_bn(py, &magnitude)?;
+    bn.set_negative(negative);
+    Ok(bn)
+}
+
 fn check_public_key_components(
-    e: &pyo3::Bound<'_, pyo3::PyAny>,
-    n: &pyo3::Bound<'_, pyo3::PyAny>,
+    e: &openssl::bn::BigNumRef,
+    n: &openssl::bn::BigNumRef,
 ) -> CryptographyResult<()> {
-    if n.lt(3)? {
+    static THREE: LazyLock<openssl::bn::BigNum> =
+        LazyLock::new(|| openssl::bn::BigNum::from_u32(3).unwrap());
+
+    if n.cmp(&THREE).is_lt() {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("n must be >= 3."),
         ));
     }
 
-    if e.lt(3)? || e.ge(n)? {
+    if e.cmp(&THREE).is_lt() || e >= n {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("e must be >= 3 and < n."),
         ));
     }
 
-    if e.bitand(1)?.eq(0)? {
+    if e.is_even() {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("e must be odd."),
         ));
@@ -841,10 +852,10 @@ impl RsaPublicNumbers {
     ) -> CryptographyResult<RsaPublicKey> {
         let _ = backend;
 
-        check_public_key_components(self.e.bind(py), self.n.bind(py))?;
+        let n = py_int_to_signed_bn(py, self.n.bind(py))?;
+        let e = py_int_to_signed_bn(py, self.e.bind(py))?;
+        check_public_key_components(&e, &n)?;
 
-        let n = utils::py_int_to_bn(py, self.n.bind(py))?;
-        let e = utils::py_int_to_bn(py, self.e.bind(py))?;
         let rsa = openssl::rsa::Rsa::from_public_components(n, e).unwrap();
         let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
         Ok(RsaPublicKey { pkey })
