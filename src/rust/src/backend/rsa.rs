@@ -56,10 +56,12 @@ pub(crate) fn private_key_from_pkey(
 
 pub(crate) fn public_key_from_pkey(
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
-) -> RsaPublicKey {
-    RsaPublicKey {
+) -> CryptographyResult<RsaPublicKey> {
+    let rsa = pkey.rsa()?;
+    check_public_key_components(rsa.e(), rsa.n())?;
+    Ok(RsaPublicKey {
         pkey: pkey.to_owned(),
-    }
+    })
 }
 
 #[pyo3::pyfunction]
@@ -795,23 +797,36 @@ impl RsaPrivateNumbers {
     }
 }
 
+fn py_int_to_signed_bn(
+    py: pyo3::Python<'_>,
+    value: &pyo3::Bound<'_, pyo3::types::PyInt>,
+) -> CryptographyResult<openssl::bn::BigNum> {
+    let negative = value.lt(0)?;
+    let magnitude = value.call_method0(pyo3::intern!(py, "__abs__"))?;
+    let mut bn = utils::py_int_to_bn(py, &magnitude)?;
+    bn.set_negative(negative);
+    Ok(bn)
+}
+
 fn check_public_key_components(
-    e: &pyo3::Bound<'_, pyo3::types::PyInt>,
-    n: &pyo3::Bound<'_, pyo3::types::PyInt>,
+    e: &openssl::bn::BigNumRef,
+    n: &openssl::bn::BigNumRef,
 ) -> CryptographyResult<()> {
-    if n.lt(3)? {
+    let three = openssl::bn::BigNum::from_u32(3)?;
+
+    if n.cmp(three.as_ref()).is_lt() {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("n must be >= 3."),
         ));
     }
 
-    if e.lt(3)? || e.ge(n)? {
+    if e.cmp(three.as_ref()).is_lt() || e >= n {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("e must be >= 3 and < n."),
         ));
     }
 
-    if e.bitand(1)?.eq(0)? {
+    if e.is_even() {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("e must be odd."),
         ));
@@ -835,13 +850,11 @@ impl RsaPublicNumbers {
     ) -> CryptographyResult<RsaPublicKey> {
         let _ = backend;
 
-        check_public_key_components(self.e.bind(py), self.n.bind(py))?;
+        let n = py_int_to_signed_bn(py, self.n.bind(py))?;
+        let e = py_int_to_signed_bn(py, self.e.bind(py))?;
+        check_public_key_components(&e, &n)?;
 
-        let rsa = openssl::rsa::Rsa::from_public_components(
-            utils::py_int_to_bn(py, self.n.bind(py))?,
-            utils::py_int_to_bn(py, self.e.bind(py))?,
-        )
-        .unwrap();
+        let rsa = openssl::rsa::Rsa::from_public_components(n, e).unwrap();
         let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
         Ok(RsaPublicKey { pkey })
     }
