@@ -1166,6 +1166,7 @@ Recipes
 ~~~~~~~
 
 * Fernet from its `specification repository`_.
+* Chunked encryption from the `chunked reference implementation`_.
 
 Symmetric ciphers
 ~~~~~~~~~~~~~~~~~
@@ -1267,6 +1268,7 @@ header format (substituting the correct information):
 .. _`RIPEMD website`: https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 .. _`draft RFC`: https://datatracker.ietf.org/doc/html/draft-josefsson-scrypt-kdf-01
 .. _`Specification repository`: https://github.com/fernet/spec
+.. _`chunked reference implementation`: https://github.com/FiloSottile/chunked
 .. _`errata`: https://www.rfc-editor.org/errata_search.php?rfc=6238
 .. _`enc-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/encpkcs8.pem
 .. _`enc2-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/enc2pkcs8.pem
