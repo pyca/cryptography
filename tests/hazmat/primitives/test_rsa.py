@@ -2328,9 +2328,7 @@ class TestRSANumbers:
     @pytest.mark.parametrize(
         ("e", "n"),
         [
-            (-1, 15),  # public_exponent < 3
             (7, 2),  # modulus < 3
-            (7, -1),  # modulus < 3
             (1, 15),  # public_exponent < 3
             (17, 15),  # public_exponent > modulus
             (14, 15),  # public_exponent not odd
@@ -2341,6 +2339,17 @@ class TestRSANumbers:
         # time to test the bounds.
 
         with pytest.raises(ValueError):
+            rsa.RSAPublicNumbers(e=e, n=n).public_key(backend)
+
+    @pytest.mark.parametrize(
+        ("e", "n"),
+        [
+            (-1, 15),  # public_exponent < 0
+            (7, -1),  # modulus < 0
+        ],
+    )
+    def test_negative_public_numbers_argument_values(self, e, n, backend):
+        with pytest.raises(OverflowError):
             rsa.RSAPublicNumbers(e=e, n=n).public_key(backend)
 
     @pytest.mark.parametrize(
