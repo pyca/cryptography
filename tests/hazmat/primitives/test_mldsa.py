@@ -11,8 +11,14 @@ import os
 
 import pytest
 
-from cryptography.exceptions import InvalidSignature, _Reasons
-from cryptography.hazmat.primitives import serialization
+from cryptography.exceptions import (
+    AlreadyFinalized,
+    InvalidSignature,
+    UnsupportedAlgorithm,
+    _Reasons,
+)
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ed25519, mldsa
 from cryptography.hazmat.primitives.asymmetric.mldsa import (
     MLDSA44PrivateKey,
     MLDSA44PublicKey,
@@ -321,6 +327,152 @@ class TestMLDSA:
                 wrong_mu = bytes([mu[0] ^ 0x01]) + mu[1:]
                 with pytest.raises(InvalidSignature):
                     pub.verify_mu(expected_sig, wrong_mu)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE256(digest_size=64)
+        ),
+        skip_message="Requires SHAKE256 support for mu computation",
+    )
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    @pytest.mark.parametrize("ctx", [b"", b"a context"])
+    def test_mu_hasher_matches_reference(self, variant, ctx, backend):
+        key = variant.private_key_class.generate()
+        pub = key.public_key()
+        data = b"the quick brown fox jumps over the lazy dog"
+        expected = self._compute_mu(pub.public_bytes_raw(), data, ctx)
+
+        # One-shot update.
+        hasher = mldsa.MLDSAMuHasher(pub, ctx)
+        hasher.update(data)
+        mu = hasher.finalize()
+        assert mu == expected
+        assert len(mu) == 64
+
+        # Chunked updates produce the same mu.
+        chunked = mldsa.MLDSAMuHasher(pub, ctx)
+        for i in range(0, len(data), 7):
+            chunked.update(data[i : i + 7])
+        assert chunked.finalize() == expected
+
+        # The computed mu round-trips through the external-mu API.
+        sig = key.sign_mu(mu)
+        pub.verify_mu(sig, mu)
+        pub.verify(sig, data, ctx)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE256(digest_size=64)
+        ),
+        skip_message="Requires SHAKE256 support for mu computation",
+    )
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_mu_hasher_kat(self, variant, backend, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "MLDSA", f"kat_MLDSA_{variant.name}_det_pure.rsp"
+            ),
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                pk = binascii.unhexlify(vector["pk"])
+                msg = binascii.unhexlify(vector["msg"])
+                ctx = binascii.unhexlify(vector["ctx"])
+                sm = binascii.unhexlify(vector["sm"])
+                expected_sig = sm[: variant.sig_size]
+
+                pub = variant.public_key_class.from_public_bytes(pk)
+                hasher = mldsa.MLDSAMuHasher(pub, ctx)
+                hasher.update(msg)
+                mu = hasher.finalize()
+
+                assert mu == self._compute_mu(pk, msg, ctx)
+                pub.verify_mu(expected_sig, mu)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE256(digest_size=64)
+        ),
+        skip_message="Requires SHAKE256 support for mu computation",
+    )
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_mu_hasher_context_too_long(self, variant, backend):
+        pub = variant.private_key_class.generate().public_key()
+        mldsa.MLDSAMuHasher(pub, b"a" * 255)
+        with pytest.raises(ValueError):
+            mldsa.MLDSAMuHasher(pub, b"a" * 256)
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_mu_hasher_rejects_private_key(self, variant, backend):
+        # mu computation is a public-key operation; private keys are rejected.
+        key = variant.private_key_class.generate()
+        with pytest.raises(TypeError):
+            mldsa.MLDSAMuHasher(key)
+
+    def test_mu_hasher_invalid_key_type(self, backend):
+        with pytest.raises(TypeError):
+            mldsa.MLDSAMuHasher(
+                ed25519.Ed25519PrivateKey.generate()  # type: ignore[arg-type]
+            )
+        with pytest.raises(TypeError):
+            mldsa.MLDSAMuHasher(b"not a key")  # type: ignore[arg-type]
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE256(digest_size=64)
+        ),
+        skip_message="Requires SHAKE256 support for mu computation",
+    )
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_mu_hasher_already_finalized(self, variant, backend):
+        pub = variant.private_key_class.generate().public_key()
+        hasher = mldsa.MLDSAMuHasher(pub)
+        hasher.update(b"data")
+        hasher.finalize()
+        with pytest.raises(AlreadyFinalized):
+            hasher.update(b"more")
+        with pytest.raises(AlreadyFinalized):
+            hasher.finalize()
+        with pytest.raises(AlreadyFinalized):
+            hasher.copy()
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE256(digest_size=64)
+        ),
+        skip_message="Requires SHAKE256 support for mu computation",
+    )
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_mu_hasher_copy(self, variant, backend):
+        pub = variant.private_key_class.generate().public_key()
+        hasher = mldsa.MLDSAMuHasher(pub)
+        hasher.update(b"common prefix")
+
+        forked = hasher.copy()
+        hasher.update(b"-a")
+        forked.update(b"-b")
+        mu_a = hasher.finalize()
+        mu_b = forked.finalize()
+        assert mu_a != mu_b
+
+        # The fork is independent and matches a from-scratch computation.
+        reference = mldsa.MLDSAMuHasher(pub)
+        reference.update(b"common prefix-b")
+        assert mu_b == reference.finalize()
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            not backend.hash_supported(hashes.SHAKE256(digest_size=64))
+        ),
+        skip_message="Requires a backend without SHAKE256 support",
+    )
+    def test_mu_hasher_unsupported(self, backend):
+        # On backends with ML-DSA but no SHAKE256 through the EVP interface
+        # (BoringSSL), sign_mu/verify_mu work but mu cannot be computed.
+        pub = MLDSA65PrivateKey.generate().public_key()
+        with pytest.raises(UnsupportedAlgorithm):
+            mldsa.MLDSAMuHasher(pub)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
     def test_private_bytes_raw_round_trip(self, variant, backend):
