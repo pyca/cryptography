@@ -97,13 +97,40 @@ fn derive_keys<'p>(
     })
 }
 
-// A single-message AEAD context that encrypts or decrypts successive chunks
-// with the base nonce XOR'd with a chunk counter.
+// The per-chunk nonce sequence: the base nonce XOR'd with an incrementing
+// chunk counter.
+struct ChunkNonces {
+    base_nonce: [u8; NONCE_LEN],
+    counter: u64,
+}
+
+impl ChunkNonces {
+    fn check_capacity(&self, n_chunks: u64) -> CryptographyResult<()> {
+        if n_chunks > MAX_CHUNK_COUNT - self.counter {
+            return Err(message_too_large_error());
+        }
+        Ok(())
+    }
+
+    fn next(&mut self) -> CryptographyResult<[u8; NONCE_LEN]> {
+        self.check_capacity(1)?;
+        let mut nonce = self.base_nonce;
+        for (n, c) in nonce[NONCE_LEN - 8..]
+            .iter_mut()
+            .zip(self.counter.to_be_bytes())
+        {
+            *n ^= c;
+        }
+        self.counter += 1;
+        Ok(nonce)
+    }
+}
+
+// A single-message AEAD context that encrypts or decrypts successive chunks.
 struct ChunkCipher {
     aead: AesGcm,
-    base_nonce: [u8; NONCE_LEN],
+    nonces: ChunkNonces,
     tag_len: usize,
-    counter: u64,
 }
 
 impl ChunkCipher {
@@ -115,28 +142,12 @@ impl ChunkCipher {
         let aead = AesGcm::new(py, keys.key.clone().unbind().into_any())?;
         Ok(ChunkCipher {
             aead,
-            base_nonce: keys.base_nonce,
+            nonces: ChunkNonces {
+                base_nonce: keys.base_nonce,
+                counter: 0,
+            },
             tag_len: params.tag_len,
-            counter: 0,
         })
-    }
-
-    fn remaining_chunks(&self) -> u64 {
-        MAX_CHUNK_COUNT - self.counter
-    }
-
-    fn next_nonce(&self) -> CryptographyResult<[u8; NONCE_LEN]> {
-        if self.counter >= MAX_CHUNK_COUNT {
-            return Err(message_too_large_error());
-        }
-        let mut nonce = self.base_nonce;
-        for (n, c) in nonce[NONCE_LEN - 8..]
-            .iter_mut()
-            .zip(self.counter.to_be_bytes())
-        {
-            *n ^= c;
-        }
-        Ok(nonce)
     }
 
     // `out` must be exactly `plaintext.len() + self.tag_len` bytes.
@@ -146,7 +157,7 @@ impl ChunkCipher {
         plaintext: &[u8],
         out: &mut [u8],
     ) -> CryptographyResult<()> {
-        let nonce = self.next_nonce()?;
+        let nonce = self.nonces.next()?;
         self.aead.encrypt_into(
             py,
             CffiBuf::from_bytes(py, &nonce),
@@ -154,7 +165,6 @@ impl ChunkCipher {
             None,
             CffiMutBuf::from_bytes(py, out),
         )?;
-        self.counter += 1;
         Ok(())
     }
 
@@ -166,7 +176,7 @@ impl ChunkCipher {
         ciphertext: &[u8],
         out: &mut [u8],
     ) -> CryptographyResult<()> {
-        let nonce = self.next_nonce()?;
+        let nonce = self.nonces.next()?;
         self.aead.decrypt_into(
             py,
             CffiBuf::from_bytes(py, &nonce),
@@ -174,7 +184,6 @@ impl ChunkCipher {
             None,
             CffiMutBuf::from_bytes(py, out),
         )?;
-        self.counter += 1;
         Ok(())
     }
 }
@@ -211,9 +220,7 @@ impl Encrypter {
         // Check the chunk counter limit up front so that the error doesn't
         // leave a partially written output behind.
         let n_chunks = ((self.buffer.len() + data.len()) / CHUNK_SIZE) as u64;
-        if n_chunks > self.cipher.remaining_chunks() {
-            return Err(message_too_large_error());
-        }
+        self.cipher.nonces.check_capacity(n_chunks)?;
 
         let wire_chunk = CHUNK_SIZE + self.cipher.tag_len;
         let mut written = 0;
@@ -293,15 +300,11 @@ impl Encrypter {
         self.check_active()?;
         let data = data.as_bytes();
         let out_len = self.update_out_len(data.len());
-        let result = pyo3::types::PyBytes::new_with(py, out_len, |b| {
+        Ok(pyo3::types::PyBytes::new_with(py, out_len, |b| {
             let n = self.update_impl(py, data, b)?;
             debug_assert_eq!(n, out_len);
             Ok(())
-        });
-        if result.is_err() {
-            self.finalized = true;
-        }
-        Ok(result?)
+        })?)
     }
 
     fn update_into(
@@ -321,11 +324,7 @@ impl Encrypter {
                 )),
             ));
         }
-        let result = self.update_impl(py, data, out);
-        if result.is_err() {
-            self.finalized = true;
-        }
-        result
+        self.update_impl(py, data, out)
     }
 
     fn finalize<'p>(
@@ -361,70 +360,75 @@ enum DecrypterState {
         cipher: ChunkCipher,
         buffer: Vec<u8>,
     },
-    // Also used after any error: a failed context cannot process more data.
-    Finalized,
 }
 
 #[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.chunked_encryption")]
 pub(crate) struct Decrypter {
-    state: DecrypterState,
+    // `None` once finalized, or after any error: a failed context cannot
+    // process more data.
+    state: Option<DecrypterState>,
 }
 
 impl Decrypter {
-    fn check_active(&self) -> CryptographyResult<()> {
-        match self.state {
-            DecrypterState::Header { .. } | DecrypterState::Body { .. } => Ok(()),
-            DecrypterState::Finalized => Err(exceptions::already_finalized_error()),
+    fn active_state(&mut self) -> CryptographyResult<&mut DecrypterState> {
+        match &mut self.state {
+            Some(state) => Ok(state),
+            None => Err(exceptions::already_finalized_error()),
         }
     }
 
-    fn update_out_len(&self, data_len: usize) -> usize {
-        let wire_chunk = AES_128_GCM.wire_chunk_size();
-        let body_len = match &self.state {
+    fn update_out_len(state: &DecrypterState, data_len: usize) -> usize {
+        let body_len = match state {
             DecrypterState::Header { buf, .. } => data_len.saturating_sub(HEADER_LEN - buf.len()),
             DecrypterState::Body { buffer, .. } => buffer.len() + data_len,
-            DecrypterState::Finalized => unreachable!(),
         };
-        (body_len / wire_chunk) * CHUNK_SIZE
+        (body_len / AES_128_GCM.wire_chunk_size()) * CHUNK_SIZE
     }
 
     fn update_impl(
-        &mut self,
         py: pyo3::Python<'_>,
+        state: &mut DecrypterState,
         mut data: &[u8],
         out: &mut [u8],
     ) -> CryptographyResult<usize> {
-        if let DecrypterState::Header { key, context, buf } = &mut self.state {
-            let take = std::cmp::min(HEADER_LEN - buf.len(), data.len());
-            buf.extend_from_slice(&data[..take]);
-            data = &data[take..];
-            if buf.len() < HEADER_LEN {
-                debug_assert!(data.is_empty());
-                return Ok(0);
+        match state {
+            DecrypterState::Header { key, context, buf } => {
+                let take = std::cmp::min(HEADER_LEN - buf.len(), data.len());
+                buf.extend_from_slice(&data[..take]);
+                data = &data[take..];
+                if buf.len() < HEADER_LEN {
+                    debug_assert!(data.is_empty());
+                    return Ok(0);
+                }
+                let (salt, commitment) = buf.split_at(SALT_LEN);
+                let keys = derive_keys(py, &AES_128_GCM, key, salt, context)?;
+                if !cryptography_crypto::constant_time::bytes_eq(&keys.commitment, commitment) {
+                    return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+                }
+                let mut cipher = ChunkCipher::new(py, &AES_128_GCM, &keys)?;
+                let mut buffer = Vec::with_capacity(AES_128_GCM.wire_chunk_size());
+                let written = Self::decrypt_chunks(py, &mut cipher, &mut buffer, data, out)?;
+                *state = DecrypterState::Body { cipher, buffer };
+                Ok(written)
             }
-            let (salt, commitment) = buf.split_at(SALT_LEN);
-            let keys = derive_keys(py, &AES_128_GCM, key, salt, context)?;
-            if !cryptography_crypto::constant_time::bytes_eq(&keys.commitment, commitment) {
-                return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+            DecrypterState::Body { cipher, buffer } => {
+                Self::decrypt_chunks(py, cipher, buffer, data, out)
             }
-            let cipher = ChunkCipher::new(py, &AES_128_GCM, &keys)?;
-            self.state = DecrypterState::Body {
-                cipher,
-                buffer: Vec::with_capacity(AES_128_GCM.wire_chunk_size()),
-            };
         }
-        let (cipher, buffer) = match &mut self.state {
-            DecrypterState::Body { cipher, buffer } => (cipher, buffer),
-            DecrypterState::Header { .. } | DecrypterState::Finalized => unreachable!(),
-        };
+    }
 
+    fn decrypt_chunks(
+        py: pyo3::Python<'_>,
+        cipher: &mut ChunkCipher,
+        buffer: &mut Vec<u8>,
+        mut data: &[u8],
+        out: &mut [u8],
+    ) -> CryptographyResult<usize> {
         let wire_chunk = CHUNK_SIZE + cipher.tag_len;
         // Check the chunk counter limit up front so that the error doesn't
         // leave a partially written output behind.
         let n_chunks = ((buffer.len() + data.len()) / wire_chunk) as u64;
-        if n_chunks > cipher.remaining_chunks() {
-            return Err(message_too_large_error());
-        }
+        cipher.nonces.check_capacity(n_chunks)?;
 
         // Any complete wire chunk is necessarily not the final chunk (the
         // final chunk is always shorter), so it can be decrypted, and its
@@ -463,11 +467,11 @@ impl Decrypter {
             ));
         }
         Ok(Decrypter {
-            state: DecrypterState::Header {
+            state: Some(DecrypterState::Header {
                 key: key.as_bytes().to_vec(),
                 context: context.as_bytes().to_vec(),
                 buf: Vec::with_capacity(HEADER_LEN),
-            },
+            }),
         })
     }
 
@@ -483,16 +487,16 @@ impl Decrypter {
         py: pyo3::Python<'p>,
         data: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        self.check_active()?;
         let data = data.as_bytes();
-        let out_len = self.update_out_len(data.len());
+        let state = self.active_state()?;
+        let out_len = Self::update_out_len(state, data.len());
         let result = pyo3::types::PyBytes::new_with(py, out_len, |b| {
-            let n = self.update_impl(py, data, b)?;
+            let n = Self::update_impl(py, state, data, b)?;
             debug_assert_eq!(n, out_len);
             Ok(())
         });
         if result.is_err() {
-            self.state = DecrypterState::Finalized;
+            self.state = None;
         }
         Ok(result?)
     }
@@ -503,9 +507,9 @@ impl Decrypter {
         data: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.check_active()?;
         let data = data.as_bytes();
-        let out_len = self.update_out_len(data.len());
+        let state = self.active_state()?;
+        let out_len = Self::update_out_len(state, data.len());
         let out = buf.as_mut_bytes();
         if out.len() < out_len {
             return Err(CryptographyError::from(
@@ -514,9 +518,9 @@ impl Decrypter {
                 )),
             ));
         }
-        let result = self.update_impl(py, data, out);
+        let result = Self::update_impl(py, state, data, out);
         if result.is_err() {
-            self.state = DecrypterState::Finalized;
+            self.state = None;
         }
         result
     }
@@ -525,35 +529,32 @@ impl Decrypter {
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        self.check_active()?;
-        let result = match &mut self.state {
+        // Whether it succeeds or fails, finalization consumes the state: no
+        // further data may be processed.
+        match self.state.take() {
+            None => Err(exceptions::already_finalized_error()),
             // The full salt and commitment never arrived: the message is
             // truncated.
-            DecrypterState::Header { .. } => {
+            Some(DecrypterState::Header { .. }) => {
                 Err(CryptographyError::from(exceptions::InvalidTag::new_err(())))
             }
-            DecrypterState::Body { cipher, buffer } => {
+            Some(DecrypterState::Body { mut cipher, buffer }) => {
                 if buffer.len() < cipher.tag_len {
                     // The final chunk is missing (the ciphertext ended
                     // exactly on a chunk boundary) or is too short to be
                     // valid: the message is truncated.
-                    Err(CryptographyError::from(exceptions::InvalidTag::new_err(())))
-                } else {
-                    // buffer is always shorter than a wire chunk, so the
-                    // final chunk's plaintext is necessarily shorter than
-                    // CHUNK_SIZE, as the specification requires.
-                    let out_len = buffer.len() - cipher.tag_len;
-                    pyo3::types::PyBytes::new_with(py, out_len, |b| {
-                        cipher.decrypt_chunk(py, buffer, b)?;
-                        Ok(())
-                    })
-                    .map_err(CryptographyError::from)
+                    return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
                 }
+                // buffer is always shorter than a wire chunk, so the final
+                // chunk's plaintext is necessarily shorter than CHUNK_SIZE,
+                // as the specification requires.
+                let out_len = buffer.len() - cipher.tag_len;
+                Ok(pyo3::types::PyBytes::new_with(py, out_len, |b| {
+                    cipher.decrypt_chunk(py, &buffer, b)?;
+                    Ok(())
+                })?)
             }
-            DecrypterState::Finalized => unreachable!(),
-        };
-        self.state = DecrypterState::Finalized;
-        result
+        }
     }
 }
 
@@ -562,4 +563,51 @@ impl Decrypter {
 pub(crate) mod chunked_encryption_mod {
     #[pymodule_export]
     use super::{Decrypter, Encrypter};
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ChunkNonces, MAX_CHUNK_COUNT, NONCE_LEN};
+
+    #[test]
+    fn test_chunk_nonces_xor_counter() {
+        let mut nonces = ChunkNonces {
+            base_nonce: [0xab; NONCE_LEN],
+            counter: 0,
+        };
+        assert_eq!(nonces.next().ok().unwrap(), [0xab; NONCE_LEN]);
+
+        let mut expected = [0xab; NONCE_LEN];
+        expected[NONCE_LEN - 1] ^= 0x01;
+        assert_eq!(nonces.next().ok().unwrap(), expected);
+
+        let mut nonces = ChunkNonces {
+            base_nonce: [0xab; NONCE_LEN],
+            counter: 0x0123456789,
+        };
+        let mut expected = [0xab; NONCE_LEN];
+        for (n, c) in expected[NONCE_LEN - 8..]
+            .iter_mut()
+            .zip(0x0123456789u64.to_be_bytes())
+        {
+            *n ^= c;
+        }
+        assert_eq!(nonces.next().ok().unwrap(), expected);
+    }
+
+    #[test]
+    fn test_chunk_nonces_counter_limit() {
+        let mut nonces = ChunkNonces {
+            base_nonce: [0; NONCE_LEN],
+            counter: MAX_CHUNK_COUNT - 1,
+        };
+        assert!(nonces.check_capacity(1).is_ok());
+        assert!(nonces.check_capacity(2).is_err());
+        // The final counter value is usable...
+        assert!(nonces.next().is_ok());
+        // ...but nothing past it.
+        assert!(nonces.check_capacity(0).is_ok());
+        assert!(nonces.check_capacity(1).is_err());
+        assert!(nonces.next().is_err());
+    }
 }

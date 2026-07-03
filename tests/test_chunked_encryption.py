@@ -329,6 +329,22 @@ class TestChunkedEncryption:
         with pytest.raises(AlreadyFinalized):
             dec.finalize()
 
+    def test_decrypter_update_into_unusable_after_invalid_tag(self):
+        key = Encrypter.generate_key()
+        plaintext = os.urandom(CHUNK_SIZE + 100)
+        ciphertext = bytearray(_encrypt_all(key, b"", plaintext))
+        ciphertext[HEADER_LEN] ^= 1  # corrupt the first full chunk
+
+        dec = Decrypter(key, b"")
+        buf = bytearray(2 * CHUNK_SIZE)
+        with pytest.raises(InvalidTag):
+            dec.update_into(bytes(ciphertext), buf)
+        # All subsequent operations fail.
+        with pytest.raises(AlreadyFinalized):
+            dec.update_into(b"", buf)
+        with pytest.raises(AlreadyFinalized):
+            dec.finalize()
+
     def test_finalize_only_decrypter_rejects_empty_stream(self):
         key = Decrypter.generate_key()
         dec = Decrypter(key, b"")
