@@ -1946,7 +1946,9 @@ class TestSSHKeyFingerprint:
         )
         public_key = load_ssh_public_key(ssh_key)
         fingerprint = ssh_key_fingerprint(public_key, hashes.SHA1())
-        assert fingerprint == b"\xdd\xa58\x87cl\x8f\x89\xd9\xd2\x836~\xd1R\xd7\xd7\xf2\x87\xa9"
+        assert fingerprint == (
+            b"\xdd\xa58\x87cl\x8f\x89\xd9\xd2\x836~\xd1R\xd7\xd7\xf2\x87\xa9"
+        )
 
     def test_ssh_key_fingerprint_ecdsa_sha256(self):
         ssh_key = load_vectors_from_file(
@@ -1969,7 +1971,7 @@ class TestSSHKeyFingerprint:
         )
         public_key = load_ssh_public_key(ssh_key)
         with pytest.raises(TypeError):
-            ssh_key_fingerprint(public_key, hashes.SHAKE256())  # type: ignore[arg-type]
+            ssh_key_fingerprint(public_key, hashes.SM3())  # type: ignore[arg-type]
 
     def test_ssh_key_fingerprint_unsupported_key(self):
         with pytest.raises(ValueError):
