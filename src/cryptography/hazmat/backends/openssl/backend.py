@@ -144,6 +144,10 @@ class Backend:
                     hashes.SHA512,
                     hashes.SHA512_224,
                     hashes.SHA512_256,
+                    hashes.SHA3_224,
+                    hashes.SHA3_256,
+                    hashes.SHA3_384,
+                    hashes.SHA3_512,
                 ),
             )
         return self.hash_supported(algorithm)
