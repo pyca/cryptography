@@ -1,4 +1,4 @@
-From 9f32b0620e6c21debbd8b6e4097b4065d7aa24bc Mon Sep 17 00:00:00 2001
+From 29692a5f6c430c67ac268eb90e53afaec11a713c Mon Sep 17 00:00:00 2001
 From: Claude <noreply@anthropic.com>
 Date: Sat, 4 Jul 2026 22:26:23 +0000
 Subject: [PATCH] Reduce macro-generated code size
@@ -31,10 +31,10 @@ without changing runtime behavior:
  src/impl_/extract_argument.rs         |  94 ++++++++++++
  src/impl_/pyclass.rs                  |  23 ++-
  src/impl_/pyclass/lazy_type_object.rs |  11 ++
- src/impl_/trampoline.rs               |  11 +-
+ src/impl_/trampoline.rs               |   4 +
  src/impl_/wrap.rs                     |  95 ++++++++++++-
  src/pyclass/create_type_object.rs     |  24 +++-
- 12 files changed, 462 insertions(+), 200 deletions(-)
+ 12 files changed, 458 insertions(+), 197 deletions(-)
 
 diff --git a/pyo3-macros-backend/src/method.rs b/pyo3-macros-backend/src/method.rs
 index 65b3727c..14cca157 100644
@@ -969,26 +969,10 @@ index 2142b1d4..06f28e27 100644
  fn wrap_in_runtime_error(py: Python<'_>, err: PyErr, message: String) -> PyErr {
      let runtime_err = PyRuntimeError::new_err(message);
 diff --git a/src/impl_/trampoline.rs b/src/impl_/trampoline.rs
-index 8ff1fa3f..9d55384a 100644
+index 8ff1fa3f..5987b462 100644
 --- a/src/impl_/trampoline.rs
 +++ b/src/impl_/trampoline.rs
-@@ -46,11 +46,12 @@ pub trait MethodDef<T> {
- #[doc(hidden)]
- macro_rules! get_trampoline_function {
-     ($trampoline:ident, $f:path) => {{
-+        use $crate::impl_::trampoline as _t;
-         struct Def;
--        impl $crate::impl_::trampoline::MethodDef<$crate::impl_::trampoline::$trampoline::Func> for Def {
--            const METH: $crate::impl_::trampoline::$trampoline::Func = $f;
-+        impl _t::MethodDef<_t::$trampoline::Func> for Def {
-+            const METH: _t::$trampoline::Func = $f;
-         }
--        $crate::impl_::trampoline::$trampoline::<Def>
-+        _t::$trampoline::<Def>
-     }};
- }
- 
-@@ -154,6 +155,10 @@ pub use self::fastcall_cfunction_with_keywords as maybe_fastcall_cfunction_with_
+@@ -154,6 +154,10 @@ pub use self::fastcall_cfunction_with_keywords as maybe_fastcall_cfunction_with_
  #[cfg(not(any(Py_3_10, not(Py_LIMITED_API))))]
  pub use self::cfunction_with_keywords as maybe_fastcall_cfunction_with_keywords;
  

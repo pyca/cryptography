@@ -931,26 +931,10 @@ index 63d92cd1..bab5eb94 100644
  fn wrap_in_runtime_error(py: Python<'_>, err: PyErr, message: String) -> PyErr {
      let runtime_err = PyRuntimeError::new_err(message);
 diff --git a/src/impl_/trampoline.rs b/src/impl_/trampoline.rs
-index f1d9e040..a6b763d4 100644
+index f1d9e040..fffa1337 100644
 --- a/src/impl_/trampoline.rs
 +++ b/src/impl_/trampoline.rs
-@@ -45,11 +45,12 @@ pub trait MethodDef<T> {
- #[doc(hidden)]
- macro_rules! get_trampoline_function {
-     ($trampoline:ident, $f:path) => {{
-+        use $crate::impl_::trampoline as _t;
-         struct Def;
--        impl $crate::impl_::trampoline::MethodDef<$crate::impl_::trampoline::$trampoline::Func> for Def {
--            const METH: $crate::impl_::trampoline::$trampoline::Func = $f;
-+        impl _t::MethodDef<_t::$trampoline::Func> for Def {
-+            const METH: _t::$trampoline::Func = $f;
-         }
--        $crate::impl_::trampoline::$trampoline::<Def>
-+        _t::$trampoline::<Def>
-     }};
- }
- 
-@@ -153,6 +154,10 @@ pub use self::fastcall_cfunction_with_keywords as maybe_fastcall_cfunction_with_
+@@ -153,6 +153,10 @@ pub use self::fastcall_cfunction_with_keywords as maybe_fastcall_cfunction_with_
  #[cfg(not(any(Py_3_10, not(Py_LIMITED_API))))]
  pub use self::cfunction_with_keywords as maybe_fastcall_cfunction_with_keywords;
  
