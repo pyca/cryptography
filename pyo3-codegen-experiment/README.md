@@ -9,7 +9,7 @@ amount of code its attribute macros generate, and quantifies the effect on
 - `0001-Reduce-macro-generated-code-size.patch` — the same change rebased onto
   PyO3 `main` (commit `90d63e8c`, 2026-07-04) as a `git am`-able mailbox patch.
   The rebase was conflict-free and the reduction is unchanged (probe crate:
-  351 → 238 expanded lines on both v0.29.0 and main). To put it on a branch:
+  351 → 239 expanded lines on both v0.29.0 and main). To put it on a branch:
 
   ```sh
   git clone https://github.com/PyO3/pyo3.git && cd pyo3
@@ -32,7 +32,7 @@ Measured on the leaf crate `cryptography-rust` (25,711 source lines; 119
 
 | Metric (median)                                        | stock 0.29.0 | patched | Δ |
 |--------------------------------------------------------|--------------|---------|-----|
-| Macro-expanded size (`-Zunpretty=expanded`, lines)      | 84,975       | 66,985  | **−21.2%** |
+| Macro-expanded size (`-Zunpretty=expanded`, lines)      | 84,975       | 67,038  | **−21.1%** |
 | …of which pyo3-generated (excl. ~25.7k user lines)      | ~59,300      | ~41,300 | **−30%** |
 | Debug touch-rebuild of leaf, incremental (7 runs)       | 2.84 s       | 2.53 s  | **−11.0%** |
 | Debug rebuild of leaf, non-incremental (4 runs)         | 10.31 s      | 9.59 s  | **−6.9%** |
@@ -55,18 +55,18 @@ Per-construct expansion cost (minimal probe crate):
 | Construct                              | stock | patched |
 |----------------------------------------|-------|---------|
 | bare `#[pyclass]` struct               | 115   | 78      |
-| pyclass + `#[new]` + 2 methods + getter| 351   | 238     |
-| `#[pyfunction]` (2 args)               | 96    | 64      |
-| + declarative `#[pymodule]` export     | 128   | 96      |
+| pyclass + `#[new]` + 2 methods + getter| 351   | 239     |
+| `#[pyfunction]` (2 args)               | 96    | 63      |
+| + declarative `#[pymodule]` export     | 128   | 95      |
 
 Per-category, in cryptography-rust's expansion:
 
 | Category                       | stock  | patched | Δ |
 |--------------------------------|--------|---------|------|
-| 760 `__pymethod_*` wrappers    | 27,704 | 16,922  | −39% |
+| 760 `__pymethod_*` wrappers    | 27,704 | 16,949  | −39% |
 | 133 `PyClassImpl` impls        | 10,694 | 8,517   | −20% |
 | 96 `PyMethods` items arrays    | 6,986  | 6,624   | −5%  |
-| 77 `__pyfunction_*` wrappers   | 4,808  | 2,569   | −47% |
+| 77 `__pyfunction_*` wrappers   | 4,808  | 2,595   | −46% |
 | 146 `PyTypeInfo` impls         | 2,032  | 1,500   | −26% |
 | 108 `IntoPyObject` impls       | 1,973  | 1,433   | −27% |
 
@@ -97,18 +97,17 @@ expansion site. In rough order of impact:
    `extract_receiver[_trusted]` helpers instead of a ~10-line
    `Ok(cast?)…and_then(TryFrom…)` chain.
 
-4. **Path-width reduction inside wrappers.** One
-   `use pyo3::impl_::extract_argument as _e;` (and `_a` for the
-   argument-parsing preamble, `_t` inside trampoline shims) per wrapper
-   instead of fully-qualified `::pyo3::impl_::…` paths at every use. This
-   sounds cosmetic, but the pretty-printer line count (and token/AST volume)
-   drops substantially: long paths forced most expressions onto 2–4 wrapped
-   lines. Argument holders are also declared with a single tuple pattern
-   (`let (mut h0, mut h1, …) = (INIT, INIT, …);`) instead of one `let` plus a
-   clippy `allow` each, and the vestigial per-argument
-   `use …::Probe as _;` import was dropped entirely (nothing in the
-   non-`experimental-inspect` argument path references a probe; verified
-   against PyO3's full test suite).
+4. **Smaller wrapper preambles.** Argument holders are declared with a
+   single tuple pattern (`let (mut h0, mut h1, …) = (INIT, INIT, …);`)
+   instead of one `let` plus a clippy `allow` each, and the vestigial
+   per-argument `use …::Probe as _;` import was dropped entirely (nothing in
+   the non-`experimental-inspect` argument path references a probe; verified
+   against PyO3's full test suite). An earlier revision of this patch also
+   emitted short module aliases (`use …::extract_argument as _e;`) to shrink
+   pretty-printed paths; that turned out to be worth only ~50 expanded lines
+   crate-wide once the fused helpers landed, and was dropped for
+   readability. (`_t` inside `get_trampoline_function!`'s shim is still
+   used, since the trampoline paths appear three times per shim.)
 
 5. **`PyClassImpl` slimming.** `MODULE` and `RAW_DOC` gained trait-level
    defaults, so the macro emits `MODULE`/`RAW_DOC`/`IS_BASETYPE`/`IS_SUBCLASS`/
