@@ -4,6 +4,7 @@
 
 
 import binascii
+import typing
 
 import pytest
 
@@ -19,11 +20,11 @@ class TestHashContext:
     def test_hash_reject_unicode(self, backend):
         m = hashes.Hash(hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            m.update("\u00fc")  # type: ignore[arg-type]
+            m.update(typing.cast(typing.Any, "\u00fc"))
 
     def test_hash_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
-            hashes.Hash(hashes.SHA1, backend=backend)  # type: ignore[arg-type]
+            hashes.Hash(typing.cast(typing.Any, hashes.SHA1), backend=backend)
 
     def test_raises_after_finalize(self, backend):
         h = hashes.Hash(hashes.SHA1(), backend=backend)
@@ -180,11 +181,13 @@ class TestHashHash:
 
     def test_hash_algorithm_instance(self):
         with pytest.raises(TypeError):
-            hashes.Hash.hash(hashes.SHA1, b"data")  # type: ignore[arg-type]
+            hashes.Hash.hash(typing.cast(typing.Any, hashes.SHA1), b"data")
 
     def test_hash_reject_unicode(self):
         with pytest.raises(TypeError):
-            hashes.Hash.hash(hashes.SHA256(), "\u00fc")  # type: ignore[arg-type]
+            hashes.Hash.hash(
+                hashes.SHA256(), typing.cast(typing.Any, "\u00fc")
+            )
 
     def test_hash_unsupported_algorithm(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):

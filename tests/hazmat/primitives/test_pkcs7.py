@@ -57,11 +57,11 @@ class TestPKCS7Loading:
 
     def test_not_bytes_der(self, backend):
         with pytest.raises(TypeError):
-            pkcs7.load_der_pkcs7_certificates(38)  # type: ignore[arg-type]
+            pkcs7.load_der_pkcs7_certificates(typing.cast(typing.Any, 38))
 
     def test_not_bytes_pem(self, backend):
         with pytest.raises(TypeError):
-            pkcs7.load_pem_pkcs7_certificates(38)  # type: ignore[arg-type]
+            pkcs7.load_pem_pkcs7_certificates(typing.cast(typing.Any, 38))
 
     def test_load_pkcs7_pem(self, backend):
         certs = load_vectors_from_file(
@@ -175,7 +175,7 @@ class TestPKCS7SignatureBuilder:
     def test_invalid_data(self, backend):
         builder = pkcs7.PKCS7SignatureBuilder()
         with pytest.raises(TypeError):
-            builder.set_data("not bytes")  # type: ignore[arg-type]
+            builder.set_data(typing.cast(typing.Any, "not bytes"))
 
     def test_set_data_twice(self, backend):
         builder = pkcs7.PKCS7SignatureBuilder().set_data(b"test")
@@ -201,14 +201,14 @@ class TestPKCS7SignatureBuilder:
             pkcs7.PKCS7SignatureBuilder().add_signer(
                 cert,
                 key,
-                hashes.SHA512_256(),  # type: ignore[arg-type]
+                typing.cast(typing.Any, hashes.SHA512_256()),
             )
 
     def test_not_a_cert(self, backend):
         _, key = _load_cert_key()
         with pytest.raises(TypeError):
             pkcs7.PKCS7SignatureBuilder().add_signer(
-                b"notacert",  # type: ignore[arg-type]
+                typing.cast(typing.Any, b"notacert"),
                 key,
                 hashes.SHA256(),
             )
@@ -219,7 +219,7 @@ class TestPKCS7SignatureBuilder:
         with pytest.raises(TypeError):
             pkcs7.PKCS7SignatureBuilder().add_signer(
                 cert,
-                key,  # type: ignore[arg-type]
+                typing.cast(typing.Any, key),
                 hashes.SHA256(),
             )
 
@@ -756,7 +756,7 @@ class TestPKCS7SignatureBuilder:
                 rsa_cert,
                 rsa_key,
                 hashes.SHA512(),
-                rsa_padding=object(),  # type: ignore[arg-type]
+                rsa_padding=typing.cast(typing.Any, object()),
             )
 
     def test_multiple_signers(self, backend):
@@ -835,7 +835,7 @@ class TestPKCS7SignatureBuilder:
     def test_add_additional_cert_not_a_cert(self, backend):
         with pytest.raises(TypeError):
             pkcs7.PKCS7SignatureBuilder().add_certificate(
-                b"notacert"  # type: ignore[arg-type]
+                typing.cast(typing.Any, b"notacert")
             )
 
     def test_add_additional_cert(self, backend):
@@ -912,7 +912,7 @@ class TestPKCS7EnvelopeBuilder:
     def test_invalid_data(self, backend):
         builder = pkcs7.PKCS7EnvelopeBuilder()
         with pytest.raises(TypeError):
-            builder.set_data("not bytes")  # type: ignore[arg-type]
+            builder.set_data(typing.cast(typing.Any, "not bytes"))
 
     def test_set_data_twice(self, backend):
         builder = pkcs7.PKCS7EnvelopeBuilder().set_data(b"test")
@@ -938,7 +938,7 @@ class TestPKCS7EnvelopeBuilder:
     def test_not_a_cert(self, backend):
         with pytest.raises(TypeError):
             pkcs7.PKCS7EnvelopeBuilder().add_recipient(
-                b"notacert",  # type: ignore[arg-type]
+                typing.cast(typing.Any, b"notacert"),
             )
 
     def test_set_content_encryption_algorithm_twice(self, backend):
@@ -953,7 +953,7 @@ class TestPKCS7EnvelopeBuilder:
 
         with pytest.raises(TypeError):
             pkcs7.PKCS7EnvelopeBuilder().set_content_encryption_algorithm(
-                InvalidAlgorithm,  # type: ignore[arg-type]
+                typing.cast(typing.Any, InvalidAlgorithm),
             )
 
     def test_encrypt_invalid_options(self, backend):
@@ -1166,11 +1166,15 @@ class TestPKCS7Decrypt:
 
     def test_not_a_cert(self, backend, private_key):
         with pytest.raises(TypeError):
-            pkcs7.pkcs7_decrypt_der(b"", b"wrong_type", private_key, [])  # type: ignore[arg-type]
+            pkcs7.pkcs7_decrypt_der(
+                b"", typing.cast(typing.Any, b"wrong_type"), private_key, []
+            )
 
     def test_not_a_pkey(self, backend, certificate):
         with pytest.raises(TypeError):
-            pkcs7.pkcs7_decrypt_der(b"", certificate, b"wrong_type", [])  # type: ignore[arg-type]
+            pkcs7.pkcs7_decrypt_der(
+                b"", certificate, typing.cast(typing.Any, b"wrong_type"), []
+            )
 
     @pytest.mark.parametrize(
         "invalid_options",
@@ -1497,7 +1501,7 @@ class TestPKCS7SerializeCerts:
         )
         with pytest.raises(TypeError):
             pkcs7.serialize_certificates(
-                object(),  # type: ignore[arg-type]
+                typing.cast(typing.Any, object()),
                 serialization.Encoding.PEM,
             )
 
@@ -1507,7 +1511,7 @@ class TestPKCS7SerializeCerts:
         with pytest.raises(TypeError):
             pkcs7.serialize_certificates(
                 certs,
-                "not an encoding",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "not an encoding"),
             )
 
 

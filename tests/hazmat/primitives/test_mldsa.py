@@ -8,6 +8,7 @@ import copy
 import dataclasses
 import hashlib
 import os
+import typing
 
 import pytest
 
@@ -413,10 +414,10 @@ class TestMLDSA:
     def test_mu_hasher_invalid_key_type(self, backend):
         with pytest.raises(TypeError):
             mldsa.MLDSAMuHasher(
-                ed25519.Ed25519PrivateKey.generate()  # type: ignore[arg-type]
+                typing.cast(typing.Any, ed25519.Ed25519PrivateKey.generate())
             )
         with pytest.raises(TypeError):
-            mldsa.MLDSAMuHasher(b"not a key")  # type: ignore[arg-type]
+            mldsa.MLDSAMuHasher(typing.cast(typing.Any, b"not a key"))
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.hash_supported(

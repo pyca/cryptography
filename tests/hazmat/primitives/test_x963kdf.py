@@ -5,6 +5,7 @@
 
 import binascii
 import sys
+import typing
 
 import pytest
 
@@ -86,7 +87,7 @@ class TestX963KDF:
             X963KDF(
                 hashes.SHA256(),
                 16,
-                sharedinfo="foo",  # type: ignore[arg-type]
+                sharedinfo=typing.cast(typing.Any, "foo"),
                 backend=backend,
             )
 
@@ -95,21 +96,21 @@ class TestX963KDF:
                 hashes.SHA256(), 16, sharedinfo=None, backend=backend
             )
 
-            xkdf.derive("foo")  # type: ignore[arg-type]
+            xkdf.derive(typing.cast(typing.Any, "foo"))
 
         with pytest.raises(TypeError):
             xkdf = X963KDF(
                 hashes.SHA256(), 16, sharedinfo=None, backend=backend
             )
 
-            xkdf.verify("foo", b"bar")  # type: ignore[arg-type]
+            xkdf.verify(typing.cast(typing.Any, "foo"), b"bar")
 
         with pytest.raises(TypeError):
             xkdf = X963KDF(
                 hashes.SHA256(), 16, sharedinfo=None, backend=backend
             )
 
-            xkdf.verify(b"foo", "bar")  # type: ignore[arg-type]
+            xkdf.verify(b"foo", typing.cast(typing.Any, "bar"))
 
     def test_derive_into(self, backend):
         key = binascii.unhexlify(

@@ -46,13 +46,15 @@ def test_dh_parameternumbers():
     assert params.g == 2
 
     with pytest.raises(TypeError):
-        dh.DHParameterNumbers(None, 2)  # type: ignore[arg-type]
+        dh.DHParameterNumbers(typing.cast(typing.Any, None), 2)
 
     with pytest.raises(TypeError):
-        dh.DHParameterNumbers(P_1536, None)  # type: ignore[arg-type]
+        dh.DHParameterNumbers(P_1536, typing.cast(typing.Any, None))
 
     with pytest.raises(TypeError):
-        dh.DHParameterNumbers(None, None)  # type: ignore[arg-type]
+        dh.DHParameterNumbers(
+            typing.cast(typing.Any, None), typing.cast(typing.Any, None)
+        )
 
     with pytest.raises(ValueError):
         dh.DHParameterNumbers(P_1536, 1)
@@ -68,7 +70,7 @@ def test_dh_parameternumbers():
     assert params.q == 1245
 
     with pytest.raises(TypeError):
-        dh.DHParameterNumbers(P_1536, 2, "hello")  # type: ignore[arg-type]
+        dh.DHParameterNumbers(P_1536, 2, typing.cast(typing.Any, "hello"))
 
 
 @pytest.mark.skip_fips(reason="RHEL8 FIPS doesn't like this")
@@ -88,10 +90,10 @@ def test_dh_numbers():
     assert public.y == 1
 
     with pytest.raises(TypeError):
-        dh.DHPublicNumbers(1, None)  # type: ignore[arg-type]
+        dh.DHPublicNumbers(1, typing.cast(typing.Any, None))
 
     with pytest.raises(TypeError):
-        dh.DHPublicNumbers(None, params)  # type:ignore[arg-type]
+        dh.DHPublicNumbers(typing.cast(typing.Any, None), params)
 
     private = dh.DHPrivateNumbers(1, public)
 
@@ -99,10 +101,10 @@ def test_dh_numbers():
     assert private.x == 1
 
     with pytest.raises(TypeError):
-        dh.DHPrivateNumbers(1, None)  # type: ignore[arg-type]
+        dh.DHPrivateNumbers(1, typing.cast(typing.Any, None))
 
     with pytest.raises(TypeError):
-        dh.DHPrivateNumbers(None, public)  # type:ignore[arg-type]
+        dh.DHPrivateNumbers(typing.cast(typing.Any, None), public)
 
 
 def test_dh_parameter_numbers_equality():
@@ -286,7 +288,7 @@ class TestDH:
         parameters = FFDH3072_P.parameters(backend)
         key1 = parameters.generate_private_key()
         with pytest.raises(TypeError):
-            key1.exchange(b"invalidtype")  # type: ignore[arg-type]
+            key1.exchange(typing.cast(typing.Any, b"invalidtype"))
 
     def test_exchange(self, backend):
         parameters = FFDH3072_P.parameters(backend)
@@ -708,7 +710,7 @@ class TestDHPrivateKeySerialization:
         key = parameters.generate_private_key()
         with pytest.raises(TypeError):
             key.private_bytes(
-                "notencoding",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notencoding"),
                 serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption(),
             )
@@ -719,7 +721,7 @@ class TestDHPrivateKeySerialization:
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
-                "invalidformat",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "invalidformat"),
                 serialization.NoEncryption(),
             )
 
@@ -730,7 +732,7 @@ class TestDHPrivateKeySerialization:
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.PKCS8,
-                "notanencalg",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notanencalg"),
             )
 
     def test_private_bytes_unsupported_encryption_type(self, backend):
@@ -876,7 +878,7 @@ class TestDHPublicKeySerialization:
         key = parameters.generate_private_key().public_key()
         with pytest.raises(TypeError):
             key.public_bytes(
-                "notencoding",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notencoding"),
                 serialization.PublicFormat.SubjectPublicKeyInfo,
             )
 
@@ -1041,7 +1043,7 @@ class TestDHParameterSerialization:
         parameters = FFDH3072_P.parameters(backend)
         with pytest.raises(TypeError):
             parameters.parameter_bytes(
-                "notencoding",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notencoding"),
                 serialization.ParameterFormat.PKCS3,
             )
 
@@ -1050,7 +1052,7 @@ class TestDHParameterSerialization:
         with pytest.raises(TypeError):
             parameters.parameter_bytes(
                 serialization.Encoding.PEM,
-                "notformat",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "notformat"),
             )
 
     def test_parameter_bytes_openssh_unsupported(self, backend):

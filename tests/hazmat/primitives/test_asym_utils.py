@@ -3,6 +3,8 @@
 # for complete details.
 
 
+import typing
+
 import pytest
 
 from cryptography.hazmat.primitives import hashes
@@ -36,19 +38,25 @@ def test_dss_signature():
 
 def test_encode_dss_non_integer():
     with pytest.raises(TypeError):
-        encode_dss_signature("h", 3)  # type: ignore[arg-type]
+        encode_dss_signature(typing.cast(typing.Any, "h"), 3)
 
     with pytest.raises(TypeError):
-        encode_dss_signature("3", "2")  # type: ignore[arg-type]
+        encode_dss_signature(
+            typing.cast(typing.Any, "3"), typing.cast(typing.Any, "2")
+        )
 
     with pytest.raises(TypeError):
-        encode_dss_signature(3, "h")  # type: ignore[arg-type]
+        encode_dss_signature(3, typing.cast(typing.Any, "h"))
 
     with pytest.raises(TypeError):
-        encode_dss_signature(3.3, 1.2)  # type: ignore[arg-type]
+        encode_dss_signature(
+            typing.cast(typing.Any, 3.3), typing.cast(typing.Any, 1.2)
+        )
 
     with pytest.raises(TypeError):
-        encode_dss_signature("hello", "world")  # type: ignore[arg-type]
+        encode_dss_signature(
+            typing.cast(typing.Any, "hello"), typing.cast(typing.Any, "world")
+        )
 
 
 def test_encode_dss_negative():
@@ -76,7 +84,7 @@ def test_decode_dss_invalid_asn1():
 
 def test_pass_invalid_prehashed_arg():
     with pytest.raises(TypeError):
-        Prehashed(object())  # type: ignore[arg-type]
+        Prehashed(typing.cast(typing.Any, object()))
 
 
 def test_prehashed_digest_size():

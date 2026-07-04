@@ -7,6 +7,7 @@ import binascii
 import copy
 import os
 import textwrap
+import typing
 
 import pytest
 
@@ -121,13 +122,13 @@ class TestEd25519Signing:
     def test_invalid_type_public_bytes(self, backend):
         with pytest.raises(TypeError):
             Ed25519PublicKey.from_public_bytes(
-                object()  # type: ignore[arg-type]
+                typing.cast(typing.Any, object())
             )
 
     def test_invalid_type_private_bytes(self, backend):
         with pytest.raises(TypeError):
             Ed25519PrivateKey.from_private_bytes(
-                object()  # type: ignore[arg-type]
+                typing.cast(typing.Any, object())
             )
 
     def test_invalid_length_from_public_bytes(self, backend):
@@ -148,7 +149,7 @@ class TestEd25519Signing:
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.Raw,
-                None,  # type: ignore[arg-type]
+                typing.cast(typing.Any, None),
             )
         with pytest.raises(ValueError):
             key.private_bytes(

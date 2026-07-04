@@ -4,6 +4,7 @@
 
 
 import binascii
+import typing
 
 import pytest
 
@@ -33,13 +34,13 @@ class TestHMAC:
     def test_hmac_reject_unicode(self, backend):
         h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.update("\u00fc")  # type: ignore[arg-type]
+            h.update(typing.cast(typing.Any, "\u00fc"))
 
     def test_hmac_algorithm_instance(self, backend):
         with pytest.raises(TypeError):
             hmac.HMAC(
                 b"key",
-                hashes.SHA1,  # type: ignore[arg-type]
+                typing.cast(typing.Any, hashes.SHA1),
                 backend=backend,
             )
 
@@ -77,7 +78,7 @@ class TestHMAC:
     def test_verify_reject_unicode(self, backend):
         h = hmac.HMAC(b"", hashes.SHA1(), backend=backend)
         with pytest.raises(TypeError):
-            h.verify("")  # type: ignore[arg-type]
+            h.verify(typing.cast(typing.Any, ""))
 
     def test_unsupported_hash(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):

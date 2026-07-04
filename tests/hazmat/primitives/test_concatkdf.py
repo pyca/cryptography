@@ -5,6 +5,7 @@
 
 import binascii
 import sys
+import typing
 
 import pytest
 
@@ -100,7 +101,7 @@ class TestConcatKDFHash:
             ConcatKDFHash(
                 hashes.SHA256(),
                 16,
-                otherinfo="foo",  # type: ignore[arg-type]
+                otherinfo=typing.cast(typing.Any, "foo"),
                 backend=backend,
             )
 
@@ -109,21 +110,21 @@ class TestConcatKDFHash:
                 hashes.SHA256(), 16, otherinfo=None, backend=backend
             )
 
-            ckdf.derive("foo")  # type: ignore[arg-type]
+            ckdf.derive(typing.cast(typing.Any, "foo"))
 
         with pytest.raises(TypeError):
             ckdf = ConcatKDFHash(
                 hashes.SHA256(), 16, otherinfo=None, backend=backend
             )
 
-            ckdf.verify("foo", b"bar")  # type: ignore[arg-type]
+            ckdf.verify(typing.cast(typing.Any, "foo"), b"bar")
 
         with pytest.raises(TypeError):
             ckdf = ConcatKDFHash(
                 hashes.SHA256(), 16, otherinfo=None, backend=backend
             )
 
-            ckdf.verify(b"foo", "bar")  # type: ignore[arg-type]
+            ckdf.verify(b"foo", typing.cast(typing.Any, "bar"))
 
     def test_derive_into(self, backend):
         prk = binascii.unhexlify(
@@ -279,7 +280,7 @@ class TestConcatKDFHMAC:
             ConcatKDFHMAC(
                 hashes.SHA256(),
                 16,
-                salt="foo",  # type: ignore[arg-type]
+                salt=typing.cast(typing.Any, "foo"),
                 otherinfo=None,
                 backend=backend,
             )
@@ -289,7 +290,7 @@ class TestConcatKDFHMAC:
                 hashes.SHA256(),
                 16,
                 salt=None,
-                otherinfo="foo",  # type: ignore[arg-type]
+                otherinfo=typing.cast(typing.Any, "foo"),
                 backend=backend,
             )
 
@@ -298,21 +299,21 @@ class TestConcatKDFHMAC:
                 hashes.SHA256(), 16, salt=None, otherinfo=None, backend=backend
             )
 
-            ckdf.derive("foo")  # type: ignore[arg-type]
+            ckdf.derive(typing.cast(typing.Any, "foo"))
 
         with pytest.raises(TypeError):
             ckdf = ConcatKDFHMAC(
                 hashes.SHA256(), 16, salt=None, otherinfo=None, backend=backend
             )
 
-            ckdf.verify("foo", b"bar")  # type: ignore[arg-type]
+            ckdf.verify(typing.cast(typing.Any, "foo"), b"bar")
 
         with pytest.raises(TypeError):
             ckdf = ConcatKDFHMAC(
                 hashes.SHA256(), 16, salt=None, otherinfo=None, backend=backend
             )
 
-            ckdf.verify(b"foo", "bar")  # type: ignore[arg-type]
+            ckdf.verify(b"foo", typing.cast(typing.Any, "bar"))
 
     def test_unsupported_hash_algorithm(self, backend):
         # ConcatKDF requires a hash algorithm with an internal block size.

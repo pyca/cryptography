@@ -7,6 +7,7 @@ import binascii
 import copy
 import os
 import textwrap
+import typing
 
 import pytest
 
@@ -100,7 +101,7 @@ class TestX25519Exchange:
         key = X25519PrivateKey.generate().public_key()
         with pytest.raises(TypeError):
             key.public_bytes(
-                None,  # type: ignore[arg-type]
+                typing.cast(typing.Any, None),
                 serialization.PublicFormat.Raw,
             )
         with pytest.raises(ValueError):
@@ -110,7 +111,7 @@ class TestX25519Exchange:
         with pytest.raises(TypeError):
             key.public_bytes(
                 serialization.Encoding.DER,
-                None,  # type: ignore[arg-type]
+                typing.cast(typing.Any, None),
             )
         with pytest.raises(TypeError):
             key.public_bytes(
@@ -180,7 +181,7 @@ class TestX25519Exchange:
     def test_invalid_type_exchange(self, backend):
         key = X25519PrivateKey.generate()
         with pytest.raises(TypeError):
-            key.exchange(object())  # type: ignore[arg-type]
+            key.exchange(typing.cast(typing.Any, object()))
 
     def test_invalid_length_from_public_bytes(self, backend):
         with pytest.raises(ValueError):
@@ -202,7 +203,7 @@ class TestX25519Exchange:
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.Raw,
-                None,  # type: ignore[arg-type]
+                typing.cast(typing.Any, None),
             )
         with pytest.raises(ValueError):
             key.private_bytes(
@@ -226,20 +227,24 @@ class TestX25519Exchange:
             )
 
         with pytest.raises(TypeError):
-            key.private_bytes(None, None, None)  # type: ignore[arg-type]
+            key.private_bytes(
+                typing.cast(typing.Any, None),
+                typing.cast(typing.Any, None),
+                typing.cast(typing.Any, None),
+            )
 
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.Raw,
-                None,  # type: ignore[arg-type]
-                None,  # type: ignore[arg-type]
+                typing.cast(typing.Any, None),
+                typing.cast(typing.Any, None),
             )
 
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.PKCS8,
-                object(),  # type: ignore[arg-type]
+                typing.cast(typing.Any, object()),
             )
 
         with pytest.raises(ValueError):

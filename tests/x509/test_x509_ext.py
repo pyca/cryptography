@@ -63,14 +63,14 @@ class TestExtension:
     def test_not_an_oid(self):
         bc = x509.BasicConstraints(ca=False, path_length=None)
         with pytest.raises(TypeError):
-            x509.Extension("notanoid", True, bc)  # type:ignore[arg-type]
+            x509.Extension(typing.cast(typing.Any, "notanoid"), True, bc)
 
     def test_critical_not_a_bool(self):
         bc = x509.BasicConstraints(ca=False, path_length=None)
         with pytest.raises(TypeError):
             x509.Extension(
                 ExtensionOID.BASIC_CONSTRAINTS,
-                "notabool",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notabool"),
                 bc,
             )
 
@@ -221,7 +221,7 @@ class TestUnrecognizedExtension:
     def test_invalid_oid(self):
         with pytest.raises(TypeError):
             x509.UnrecognizedExtension(
-                "notanoid",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notanoid"),
                 b"somedata",
             )
 
@@ -349,7 +349,7 @@ class TestCertificateIssuer:
 class TestCRLReason:
     def test_invalid_reason_flags(self):
         with pytest.raises(TypeError):
-            x509.CRLReason("notareason")  # type:ignore[arg-type]
+            x509.CRLReason(typing.cast(typing.Any, "notareason"))
 
     def test_eq(self):
         reason1 = x509.CRLReason(x509.ReasonFlags.unspecified)
@@ -382,7 +382,7 @@ class TestCRLReason:
 class TestDeltaCRLIndicator:
     def test_not_int(self):
         with pytest.raises(TypeError):
-            x509.DeltaCRLIndicator("notanint")  # type:ignore[arg-type]
+            x509.DeltaCRLIndicator(typing.cast(typing.Any, "notanint"))
 
     def test_eq(self):
         delta1 = x509.DeltaCRLIndicator(1)
@@ -414,7 +414,7 @@ class TestDeltaCRLIndicator:
 class TestInvalidityDate:
     def test_invalid_invalidity_date(self):
         with pytest.raises(TypeError):
-            x509.InvalidityDate("notadate")  # type:ignore[arg-type]
+            x509.InvalidityDate(typing.cast(typing.Any, "notadate"))
 
     def test_eq(self):
         invalid1 = x509.InvalidityDate(datetime.datetime(2015, 1, 1, 1, 1))
@@ -475,7 +475,7 @@ class TestNoticeReference:
 
     def test_notice_numbers_none(self):
         with pytest.raises(TypeError):
-            x509.NoticeReference("org", None)  # type:ignore[arg-type]
+            x509.NoticeReference("org", typing.cast(typing.Any, None))
 
     def test_iter_input(self):
         numbers = [1, 3, 4]
@@ -513,7 +513,7 @@ class TestNoticeReference:
 class TestUserNotice:
     def test_notice_reference_invalid(self):
         with pytest.raises(TypeError):
-            x509.UserNotice("invalid", None)  # type:ignore[arg-type]
+            x509.UserNotice(typing.cast(typing.Any, "invalid"), None)
 
     def test_notice_reference_none(self):
         un = x509.UserNotice(None, "text")
@@ -557,7 +557,7 @@ class TestUserNotice:
 class TestPolicyInformation:
     def test_invalid_policy_identifier(self):
         with pytest.raises(TypeError):
-            x509.PolicyInformation("notanoid", None)  # type:ignore[arg-type]
+            x509.PolicyInformation(typing.cast(typing.Any, "notanoid"), None)
 
     def test_none_policy_qualifiers(self):
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), None)
@@ -1266,7 +1266,7 @@ class TestAuthorityKeyIdentifier:
             x509.AuthorityKeyIdentifier(
                 b"identifier",
                 [dirname],
-                "notanint",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notanint"),
             )
 
     def test_authority_issuer_none_serial_not_none(self):
@@ -1379,7 +1379,7 @@ class TestBasicConstraints:
     def test_ca_not_boolean(self):
         with pytest.raises(TypeError):
             x509.BasicConstraints(
-                ca="notbool",  # type:ignore[arg-type]
+                ca=typing.cast(typing.Any, "notbool"),
                 path_length=None,
             )
 
@@ -1391,13 +1391,13 @@ class TestBasicConstraints:
         with pytest.raises(TypeError):
             x509.BasicConstraints(
                 ca=True,
-                path_length=1.1,  # type:ignore[arg-type]
+                path_length=typing.cast(typing.Any, 1.1),
             )
 
         with pytest.raises(TypeError):
             x509.BasicConstraints(
                 ca=True,
-                path_length="notint",  # type:ignore[arg-type]
+                path_length=typing.cast(typing.Any, "notint"),
             )
 
     def test_path_length_negative(self):
@@ -1872,7 +1872,10 @@ class TestKeyUsageExtension:
 class TestPrivateKeyUsagePeriodExtension:
     def test_not_validity(self):
         with pytest.raises(TypeError):
-            x509.PrivateKeyUsagePeriod("notValidBefore", "notValidAfter")  # type:ignore[arg-type]
+            x509.PrivateKeyUsagePeriod(
+                typing.cast(typing.Any, "notValidBefore"),
+                typing.cast(typing.Any, "notValidAfter"),
+            )
 
     def test_repr(self):
         period = x509.PrivateKeyUsagePeriod(
@@ -1934,7 +1937,7 @@ class TestPrivateKeyUsagePeriodExtension:
         with pytest.raises(TypeError):
             x509.PrivateKeyUsagePeriod(
                 not_before=datetime.datetime(2012, 1, 1),
-                not_after="invalid type",  # type:ignore[arg-type]
+                not_after=typing.cast(typing.Any, "invalid type"),
             )
 
     def test_not_before_after_not_after(self):
@@ -2096,10 +2099,10 @@ class TestDNSName:
         assert name.value == "*.xn--4ca7aey.example.com"
 
         with pytest.raises(TypeError):
-            x509.DNSName(1.3)  # type:ignore[arg-type]
+            x509.DNSName(typing.cast(typing.Any, 1.3))
 
         with pytest.raises(TypeError):
-            x509.DNSName(b"bytes not allowed")  # type:ignore[arg-type]
+            x509.DNSName(typing.cast(typing.Any, b"bytes not allowed"))
 
     def test_ne(self):
         n1 = x509.DNSName("test1")
@@ -2119,10 +2122,10 @@ class TestDNSName:
 class TestDirectoryName:
     def test_not_name(self):
         with pytest.raises(TypeError):
-            x509.DirectoryName(b"notaname")  # type:ignore[arg-type]
+            x509.DirectoryName(typing.cast(typing.Any, b"notaname"))
 
         with pytest.raises(TypeError):
-            x509.DirectoryName(1.3)  # type:ignore[arg-type]
+            x509.DirectoryName(typing.cast(typing.Any, 1.3))
 
     def test_repr(self):
         name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "value1")])
@@ -2181,10 +2184,10 @@ class TestRFC822Name:
 
     def test_not_text(self):
         with pytest.raises(TypeError):
-            x509.RFC822Name(1.3)  # type:ignore[arg-type]
+            x509.RFC822Name(typing.cast(typing.Any, 1.3))
 
         with pytest.raises(TypeError):
-            x509.RFC822Name(b"bytes")  # type:ignore[arg-type]
+            x509.RFC822Name(typing.cast(typing.Any, b"bytes"))
 
     def test_invalid_email(self):
         with pytest.raises(ValueError):
@@ -2221,7 +2224,7 @@ class TestUniformResourceIdentifier:
 
     def test_not_text(self):
         with pytest.raises(TypeError):
-            x509.UniformResourceIdentifier(1.3)  # type:ignore[arg-type]
+            x509.UniformResourceIdentifier(typing.cast(typing.Any, 1.3))
 
     def test_no_parsed_hostname(self):
         gn = x509.UniformResourceIdentifier("singlelabel")
@@ -2257,10 +2260,10 @@ class TestUniformResourceIdentifier:
 class TestRegisteredID:
     def test_not_oid(self):
         with pytest.raises(TypeError):
-            x509.RegisteredID(b"notanoid")  # type:ignore[arg-type]
+            x509.RegisteredID(typing.cast(typing.Any, b"notanoid"))
 
         with pytest.raises(TypeError):
-            x509.RegisteredID(1.3)  # type:ignore[arg-type]
+            x509.RegisteredID(typing.cast(typing.Any, 1.3))
 
     def test_repr(self):
         gn = x509.RegisteredID(NameOID.COMMON_NAME)
@@ -2291,10 +2294,10 @@ class TestRegisteredID:
 class TestIPAddress:
     def test_not_ipaddress(self):
         with pytest.raises(TypeError):
-            x509.IPAddress(b"notanipaddress")  # type:ignore[arg-type]
+            x509.IPAddress(typing.cast(typing.Any, b"notanipaddress"))
 
         with pytest.raises(TypeError):
-            x509.IPAddress(1.3)  # type:ignore[arg-type]
+            x509.IPAddress(typing.cast(typing.Any, 1.3))
 
     def test_repr(self):
         gn = x509.IPAddress(ipaddress.IPv4Address("127.0.0.1"))
@@ -2332,14 +2335,14 @@ class TestOtherName:
     def test_invalid_args(self):
         with pytest.raises(TypeError):
             x509.OtherName(
-                b"notanobjectidentifier",  # type:ignore[arg-type]
+                typing.cast(typing.Any, b"notanobjectidentifier"),
                 b"derdata",
             )
 
         with pytest.raises(TypeError):
             x509.OtherName(
                 x509.ObjectIdentifier("1.2.3.4"),
-                "notderdata",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notderdata"),
             )
 
     def test_repr(self):
@@ -2561,7 +2564,7 @@ class TestCRLNumber:
 
     def test_invalid_number(self):
         with pytest.raises(TypeError):
-            x509.CRLNumber("notanumber")  # type:ignore[arg-type]
+            x509.CRLNumber(typing.cast(typing.Any, "notanumber"))
 
     def test_hash(self):
         c1 = x509.CRLNumber(1)
@@ -2965,7 +2968,7 @@ class TestAccessDescription:
     def test_invalid_access_method(self):
         with pytest.raises(TypeError):
             x509.AccessDescription(
-                "notanoid",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notanoid"),
                 x509.DNSName("test"),
             )
 
@@ -2973,7 +2976,7 @@ class TestAccessDescription:
         with pytest.raises(TypeError):
             x509.AccessDescription(
                 AuthorityInformationAccessOID.CA_ISSUERS,
-                "invalid",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "invalid"),
             )
 
     def test_valid_nonstandard_method(self):
@@ -3042,11 +3045,11 @@ class TestAccessDescription:
 class TestPolicyConstraints:
     def test_invalid_explicit_policy(self):
         with pytest.raises(TypeError):
-            x509.PolicyConstraints("invalid", None)  # type:ignore[arg-type]
+            x509.PolicyConstraints(typing.cast(typing.Any, "invalid"), None)
 
     def test_invalid_inhibit_policy(self):
         with pytest.raises(TypeError):
-            x509.PolicyConstraints(None, "invalid")  # type:ignore[arg-type]
+            x509.PolicyConstraints(None, typing.cast(typing.Any, "invalid"))
 
     def test_both_none(self):
         with pytest.raises(ValueError):
@@ -3864,11 +3867,11 @@ class TestNameConstraints:
 
     def test_invalid_permitted_subtrees(self):
         with pytest.raises(TypeError):
-            x509.NameConstraints("badpermitted", None)  # type:ignore[arg-type]
+            x509.NameConstraints(typing.cast(typing.Any, "badpermitted"), None)
 
     def test_invalid_excluded_subtrees(self):
         with pytest.raises(TypeError):
-            x509.NameConstraints(None, "badexcluded")  # type:ignore[arg-type]
+            x509.NameConstraints(None, typing.cast(typing.Any, "badexcluded"))
 
     def test_no_subtrees(self):
         with pytest.raises(ValueError):
@@ -4163,7 +4166,7 @@ class TestDistributionPoint:
         with pytest.raises(TypeError):
             x509.DistributionPoint(
                 None,
-                "notname",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notname"),
                 None,
                 None,
             )
@@ -4206,7 +4209,7 @@ class TestDistributionPoint:
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier("http://crypt.og/crl")],
                 None,
-                [x509.ReasonFlags.ca_compromise],  # type:ignore[arg-type]
+                typing.cast(typing.Any, [x509.ReasonFlags.ca_compromise]),
                 None,
             )
 
@@ -5345,7 +5348,7 @@ class TestOCSPNoCheckExtension:
 class TestInhibitAnyPolicy:
     def test_not_int(self):
         with pytest.raises(TypeError):
-            x509.InhibitAnyPolicy("notint")  # type:ignore[arg-type]
+            x509.InhibitAnyPolicy(typing.cast(typing.Any, "notint"))
 
     def test_negative_int(self):
         with pytest.raises(ValueError):
@@ -6443,7 +6446,7 @@ class TestInvalidExtension:
 class TestOCSPNonce:
     def test_non_bytes(self):
         with pytest.raises(TypeError):
-            x509.OCSPNonce(38)  # type:ignore[arg-type]
+            x509.OCSPNonce(typing.cast(typing.Any, 38))
 
     def test_eq(self):
         nonce1 = x509.OCSPNonce(b"0" * 5)
@@ -6475,7 +6478,7 @@ class TestOCSPNonce:
 class TestOCSPAcceptableResponses:
     def test_invalid_types(self):
         with pytest.raises(TypeError):
-            x509.OCSPAcceptableResponses(38)  # type:ignore[arg-type]
+            x509.OCSPAcceptableResponses(typing.cast(typing.Any, 38))
         with pytest.raises(TypeError):
             x509.OCSPAcceptableResponses([38])  # type:ignore[list-item]
 
@@ -6543,7 +6546,7 @@ class TestMSCertificateTemplate:
     def test_invalid_type(self):
         with pytest.raises(TypeError):
             x509.MSCertificateTemplate(
-                "notanoid",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notanoid"),
                 None,
                 None,
             )
@@ -6551,14 +6554,14 @@ class TestMSCertificateTemplate:
         with pytest.raises(TypeError):
             x509.MSCertificateTemplate(
                 oid,
-                "notanint",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notanint"),
                 None,
             )
         with pytest.raises(TypeError):
             x509.MSCertificateTemplate(
                 oid,
                 None,
-                "notanint",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notanint"),
             )
 
     def test_eq(self):
@@ -6632,21 +6635,21 @@ class TestNamingAuthority:
     def test_invalid_init(self):
         with pytest.raises(TypeError):
             x509.NamingAuthority(
-                42,  # type:ignore[arg-type]
+                typing.cast(typing.Any, 42),
                 None,
                 None,
             )
         with pytest.raises(TypeError):
             x509.NamingAuthority(
                 x509.ObjectIdentifier("1.2.3"),
-                42,  # type:ignore[arg-type]
+                typing.cast(typing.Any, 42),
                 None,
             )
         with pytest.raises(TypeError):
             x509.NamingAuthority(
                 x509.ObjectIdentifier("1.2.3"),
                 "https://example.com",
-                42,  # type:ignore[arg-type]
+                typing.cast(typing.Any, 42),
             )
 
     def test_eq(self):
@@ -6739,14 +6742,14 @@ class TestProfessionInfo:
         with pytest.raises(TypeError):
             x509.ProfessionInfo(
                 None,
-                None,  # type:ignore[arg-type]
+                typing.cast(typing.Any, None),
                 None,
                 None,
                 None,
             )
         with pytest.raises(TypeError):
             x509.ProfessionInfo(
-                "spam",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "spam"),
                 [],
                 [],
                 None,
@@ -6764,7 +6767,7 @@ class TestProfessionInfo:
             x509.ProfessionInfo(
                 None,
                 [],
-                "spam",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "spam"),
                 None,
                 None,
             )
@@ -6773,7 +6776,7 @@ class TestProfessionInfo:
                 None,
                 [],
                 [],
-                42,  # type:ignore[arg-type]
+                typing.cast(typing.Any, 42),
                 None,
             )
         with pytest.raises(TypeError):
@@ -6782,7 +6785,7 @@ class TestProfessionInfo:
                 [],
                 [],
                 None,
-                42,  # type:ignore[arg-type]
+                typing.cast(typing.Any, 42),
             )
 
     def test_eq(self):
@@ -6991,21 +6994,21 @@ class TestAdmission:
     def test_invalid_init(self):
         with pytest.raises(TypeError):
             x509.Admission(
-                42,  # type:ignore[arg-type]
+                typing.cast(typing.Any, 42),
                 None,
                 [],
             )
         with pytest.raises(TypeError):
             x509.Admission(
                 None,
-                42,  # type:ignore[arg-type]
+                typing.cast(typing.Any, 42),
                 [],
             )
         with pytest.raises(TypeError):
             x509.Admission(
                 None,
                 None,
-                42,  # type:ignore[arg-type]
+                typing.cast(typing.Any, 42),
             )
         with pytest.raises(TypeError):
             x509.Admission(
@@ -7318,13 +7321,13 @@ class TestAdmissions:
     def test_invalid_init(self):
         with pytest.raises(TypeError):
             x509.Admissions(
-                42,  # type:ignore[arg-type]
+                typing.cast(typing.Any, 42),
                 [],
             )
         with pytest.raises(TypeError):
             x509.Admissions(
                 None,
-                42,  # type:ignore[arg-type]
+                typing.cast(typing.Any, 42),
             )
         with pytest.raises(TypeError):
             x509.Admissions(

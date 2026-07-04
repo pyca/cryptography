@@ -4,6 +4,7 @@
 
 import datetime
 import os
+import typing
 from functools import lru_cache
 from ipaddress import IPv4Address
 from typing import Optional
@@ -74,18 +75,20 @@ class TestPolicyBuilder:
         # Subject must be a supported GeneralName type
         with pytest.raises(TypeError):
             PolicyBuilder().store(dummy_store()).build_server_verifier(
-                "cryptography.io"  # type: ignore[arg-type]
+                typing.cast(typing.Any, "cryptography.io")
             )
         with pytest.raises(TypeError):
             PolicyBuilder().store(dummy_store()).build_server_verifier(
-                "0.0.0.0"  # type: ignore[arg-type]
+                typing.cast(typing.Any, "0.0.0.0")
             )
         with pytest.raises(TypeError):
             PolicyBuilder().store(dummy_store()).build_server_verifier(
-                IPv4Address("0.0.0.0")  # type: ignore[arg-type]
+                typing.cast(typing.Any, IPv4Address("0.0.0.0"))
             )
         with pytest.raises(TypeError):
-            PolicyBuilder().store(dummy_store()).build_server_verifier(None)  # type: ignore[arg-type]
+            PolicyBuilder().store(dummy_store()).build_server_verifier(
+                typing.cast(typing.Any, None)
+            )
 
     def test_builder_pattern(self):
         now = datetime.datetime.now().replace(microsecond=0)

@@ -4,6 +4,7 @@
 
 
 import os
+import typing
 
 import pytest
 
@@ -42,7 +43,7 @@ class TestHOTP:
         secret = os.urandom(16)
 
         with pytest.raises(TypeError):
-            HOTP(secret, 6, MD5(), backend)  # type: ignore[arg-type]
+            HOTP(secret, 6, typing.cast(typing.Any, MD5()), backend)
 
     @pytest.mark.parametrize("params", vectors)
     def test_truncate(self, backend, params):
@@ -86,7 +87,7 @@ class TestHOTP:
         secret = b"12345678901234567890"
 
         with pytest.raises(TypeError):
-            HOTP(secret, b"foo", SHA1(), backend)  # type: ignore[arg-type]
+            HOTP(secret, typing.cast(typing.Any, b"foo"), SHA1(), backend)
 
     def test_get_provisioning_uri(self, backend):
         secret = b"12345678901234567890"
@@ -113,7 +114,7 @@ class TestHOTP:
         hotp = HOTP(key, 6, SHA1(), backend)
 
         with pytest.raises(TypeError):
-            hotp.generate(2.5)  # type: ignore[arg-type]
+            hotp.generate(typing.cast(typing.Any, 2.5))
 
         with pytest.raises(ValueError):
             hotp.generate(2**64)

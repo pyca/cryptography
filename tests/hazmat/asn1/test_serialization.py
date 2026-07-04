@@ -863,7 +863,7 @@ class TestSequence:
         with pytest.raises(
             ValueError,
         ):
-            asn1.encode_der(Example(foo=3))  # type: ignore[arg-type]
+            asn1.encode_der(Example(foo=typing.cast(typing.Any, 3)))
 
     def test_sequence_with_explicit_choice(self) -> None:
         @asn1.sequence
@@ -2122,7 +2122,7 @@ class TestX509Types:
             cert: x509.Certificate
 
         with pytest.raises(TypeError):
-            asn1.encode_der(Example(cert=9))  # type: ignore[arg-type]
+            asn1.encode_der(Example(cert=typing.cast(typing.Any, 9)))
 
 
 class TestName:
@@ -2181,7 +2181,7 @@ class TestName:
             name: x509.Name
 
         with pytest.raises(TypeError):
-            asn1.encode_der(Example(name=9))  # type: ignore[arg-type]
+            asn1.encode_der(Example(name=typing.cast(typing.Any, 9)))
 
 
 @asn1.value_set(x509.ObjectIdentifier)
@@ -2355,7 +2355,11 @@ class TestValueSet:
             "got: ObjectIdentifier",
         ):
             asn1.encode_der(
-                Example(algorithm=x509.ObjectIdentifier("1.2.3.4"))  # type: ignore[arg-type]
+                Example(
+                    algorithm=typing.cast(
+                        typing.Any, x509.ObjectIdentifier("1.2.3.4")
+                    )
+                )
             )
 
 

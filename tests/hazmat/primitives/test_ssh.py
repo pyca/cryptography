@@ -6,6 +6,7 @@
 import base64
 import datetime
 import os
+import typing
 
 import pytest
 
@@ -631,7 +632,7 @@ class TestOpenSSHSerialization:
         # bad object type
         with pytest.raises(ValueError):
             ssh._serialize_ssh_private_key(
-                object(),  # type:ignore[arg-type]
+                typing.cast(typing.Any, object()),
                 b"",
                 NoEncryption(),
             )
@@ -1267,7 +1268,7 @@ class TestSSHCertificate:
     def test_not_bytes(self):
         with pytest.raises(TypeError):
             load_ssh_public_identity(
-                "these aren't bytes"  # type:ignore[arg-type]
+                typing.cast(typing.Any, "these aren't bytes")
             )
 
     def test_load_ssh_public_key(self):
@@ -1450,7 +1451,7 @@ class TestSSHCertificateBuilder:
         public_key = ec.generate_private_key(ec.SECP256R1()).public_key()
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
-            builder.public_key("not a key")  # type: ignore[arg-type]
+            builder.public_key(typing.cast(typing.Any, "not a key"))
         builder = builder.public_key(public_key)
         with pytest.raises(ValueError):
             builder.public_key(public_key)
@@ -1458,7 +1459,7 @@ class TestSSHCertificateBuilder:
     def test_serial_errors(self):
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
-            builder.serial("not a serial")  # type: ignore[arg-type]
+            builder.serial(typing.cast(typing.Any, "not a serial"))
         with pytest.raises(ValueError):
             builder.serial(-1)
         with pytest.raises(ValueError):
@@ -1470,7 +1471,7 @@ class TestSSHCertificateBuilder:
     def test_type_errors(self):
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
-            builder.type("not a type")  # type: ignore[arg-type]
+            builder.type(typing.cast(typing.Any, "not a type"))
         builder = builder.type(SSHCertificateType.USER)
         with pytest.raises(ValueError):
             builder.type(SSHCertificateType.USER)
@@ -1478,7 +1479,7 @@ class TestSSHCertificateBuilder:
     def test_key_id_errors(self):
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
-            builder.key_id("not bytes")  # type: ignore[arg-type]
+            builder.key_id(typing.cast(typing.Any, "not bytes"))
         builder = builder.key_id(b"test")
         with pytest.raises(ValueError):
             builder.key_id(b"test")
@@ -1486,7 +1487,7 @@ class TestSSHCertificateBuilder:
     def test_valid_principals_errors(self):
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
-            builder.valid_principals("not a list")  # type: ignore[arg-type]
+            builder.valid_principals(typing.cast(typing.Any, "not a list"))
         with pytest.raises(TypeError):
             builder.valid_principals(
                 [b"test", "not bytes"]  # type: ignore[list-item]
@@ -1514,7 +1515,7 @@ class TestSSHCertificateBuilder:
     def test_valid_before_errors(self):
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
-            builder.valid_before("not an int")  # type: ignore[arg-type]
+            builder.valid_before(typing.cast(typing.Any, "not an int"))
         with pytest.raises(ValueError):
             builder.valid_before(-1)
         with pytest.raises(ValueError):
@@ -1526,7 +1527,7 @@ class TestSSHCertificateBuilder:
     def test_valid_after_errors(self):
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
-            builder.valid_after("not an int")  # type: ignore[arg-type]
+            builder.valid_after(typing.cast(typing.Any, "not an int"))
         with pytest.raises(ValueError):
             builder.valid_after(-1)
         with pytest.raises(ValueError):
@@ -1539,13 +1540,13 @@ class TestSSHCertificateBuilder:
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
             builder.add_critical_option(
-                "not bytes",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "not bytes"),
                 b"test",
             )
         with pytest.raises(TypeError):
             builder.add_critical_option(
                 b"test",
-                object(),  # type: ignore[arg-type]
+                typing.cast(typing.Any, object()),
             )
         builder = builder.add_critical_option(b"test", b"test")
         with pytest.raises(ValueError):
@@ -1555,11 +1556,11 @@ class TestSSHCertificateBuilder:
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
             builder.add_extension(
-                "not bytes",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "not bytes"),
                 b"test",
             )
         with pytest.raises(TypeError):
-            builder.add_extension(b"test", object())  # type: ignore[arg-type]
+            builder.add_extension(b"test", typing.cast(typing.Any, object()))
         builder = builder.add_extension(b"test", b"test")
         with pytest.raises(ValueError):
             builder.add_extension(b"test", b"test")
@@ -1971,8 +1972,12 @@ class TestSSHKeyFingerprint:
         )
         public_key = load_ssh_public_key(ssh_key)
         with pytest.raises(TypeError):
-            ssh_key_fingerprint(public_key, hashes.SM3())  # type: ignore[arg-type]
+            ssh_key_fingerprint(
+                public_key, typing.cast(typing.Any, hashes.SM3())
+            )
 
     def test_ssh_key_fingerprint_unsupported_key(self):
         with pytest.raises(ValueError):
-            ssh_key_fingerprint(object(), hashes.SHA256())  # type: ignore[arg-type]
+            ssh_key_fingerprint(
+                typing.cast(typing.Any, object()), hashes.SHA256()
+            )

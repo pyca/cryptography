@@ -144,7 +144,7 @@ class TestPKCS12Loading:
         with pytest.raises(TypeError):
             load_key_and_certificates(
                 b"irrelevant",
-                object(),  # type: ignore[arg-type]
+                typing.cast(typing.Any, object()),
                 backend,
             )
 
@@ -997,14 +997,14 @@ def test_pkcs12_ordering():
 class TestPKCS12Objects:
     def test_certificate_constructor(self, backend):
         with pytest.raises(TypeError):
-            PKCS12Certificate(None, None)  # type:ignore[arg-type]
+            PKCS12Certificate(typing.cast(typing.Any, None), None)
         with pytest.raises(TypeError):
-            PKCS12Certificate("hello", None)  # type:ignore[arg-type]
+            PKCS12Certificate(typing.cast(typing.Any, "hello"), None)
         cert = _load_cert(backend, os.path.join("x509", "cryptography.io.pem"))
         with pytest.raises(TypeError):
-            PKCS12Certificate(cert, "hello")  # type:ignore[arg-type]
+            PKCS12Certificate(cert, typing.cast(typing.Any, "hello"))
         with pytest.raises(TypeError):
-            PKCS12Certificate(cert, 42)  # type:ignore[arg-type]
+            PKCS12Certificate(cert, typing.cast(typing.Any, 42))
 
     def test_certificate_equality(self, backend):
         cert2 = _load_cert(
@@ -1060,14 +1060,14 @@ class TestPKCS12Objects:
     def test_key_and_certificates_constructor(self, backend):
         with pytest.raises(TypeError):
             PKCS12KeyAndCertificates(
-                "hello",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "hello"),
                 None,
                 [],
             )
         with pytest.raises(TypeError):
             PKCS12KeyAndCertificates(
                 None,
-                "hello",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "hello"),
                 [],
             )
         with pytest.raises(TypeError):

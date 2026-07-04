@@ -3,6 +3,8 @@
 # for complete details.
 
 
+import typing
+
 import pytest
 
 from cryptography.hazmat.primitives import hashes
@@ -148,4 +150,4 @@ class TestTOTP:
         totp = TOTP(key, 8, hashes.SHA1(), 30, backend)
 
         with pytest.raises(TypeError):
-            totp.generate("test")  # type: ignore[arg-type]
+            totp.generate(typing.cast(typing.Any, "test"))

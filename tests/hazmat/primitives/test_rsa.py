@@ -7,6 +7,7 @@ import binascii
 import copy
 import itertools
 import os
+import typing
 
 import pytest
 
@@ -732,7 +733,7 @@ class TestRSASignature:
         with pytest.raises(TypeError):
             private_key.sign(
                 b"msg",
-                "notpadding",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "notpadding"),
                 hashes.SHA256(),
             )
 
@@ -933,7 +934,7 @@ class TestRSASignature:
             public_key.recover_data_from_signature(
                 signature,
                 padding.PKCS1v15(),
-                prehashed_alg,  # type: ignore[arg-type]
+                typing.cast(typing.Any, prehashed_alg),
             )
 
     def test_corrupted_private_key(self, backend):
@@ -1300,7 +1301,7 @@ class TestRSAVerification:
             public_key.verify(
                 b"sig",
                 b"msg",
-                "notpadding",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "notpadding"),
                 hashes.SHA256(),
             )
 
@@ -1705,7 +1706,7 @@ class TestPSS:
     def test_calculate_max_pss_salt_length(self):
         with pytest.raises(TypeError):
             padding.calculate_max_pss_salt_length(
-                object(),  # type:ignore[arg-type]
+                typing.cast(typing.Any, object()),
                 hashes.SHA256(),
             )
 
@@ -1713,7 +1714,7 @@ class TestPSS:
         with pytest.raises(TypeError):
             padding.PSS(
                 mgf=padding.MGF1(hashes.SHA256()),
-                salt_length=b"not_a_length",  # type:ignore[arg-type]
+                salt_length=typing.cast(typing.Any, b"not_a_length"),
             )
 
     def test_invalid_salt_length_negative_integer(self):
@@ -1746,7 +1747,7 @@ class TestPSS:
 class TestMGF1:
     def test_invalid_hash_algorithm(self):
         with pytest.raises(TypeError):
-            padding.MGF1(b"not_a_hash")  # type:ignore[arg-type]
+            padding.MGF1(typing.cast(typing.Any, b"not_a_hash"))
 
     def test_valid_mgf1_parameters(self):
         algorithm = hashes.SHA256()
@@ -1760,7 +1761,7 @@ class TestOAEP:
         with pytest.raises(TypeError):
             padding.OAEP(
                 mgf=mgf,
-                algorithm=b"",  # type:ignore[arg-type]
+                algorithm=typing.cast(typing.Any, b""),
                 label=None,
             )
 
@@ -2233,7 +2234,7 @@ class TestRSAEncryption:
         with pytest.raises(TypeError):
             public_key.encrypt(
                 b"somedata",
-                padding=object(),  # type: ignore[arg-type]
+                padding=typing.cast(typing.Any, object()),
             )
 
     def test_unsupported_oaep_mgf(
@@ -2294,10 +2295,10 @@ class TestRSANumbers:
 
     def test_public_numbers_invalid_types(self):
         with pytest.raises(TypeError):
-            rsa.RSAPublicNumbers(e=None, n=15)  # type: ignore[arg-type]
+            rsa.RSAPublicNumbers(e=typing.cast(typing.Any, None), n=15)
 
         with pytest.raises(TypeError):
-            rsa.RSAPublicNumbers(e=1, n=None)  # type: ignore[arg-type]
+            rsa.RSAPublicNumbers(e=1, n=typing.cast(typing.Any, None))
 
     @pytest.mark.parametrize(
         ("p", "q", "d", "dmp1", "dmq1", "iqmp", "public_numbers"),
@@ -2709,7 +2710,7 @@ class TestRSAPrivateKeySerialization:
         key = rsa_key_2048
         with pytest.raises(TypeError):
             key.private_bytes(
-                "notencoding",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "notencoding"),
                 serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption(),
             )
@@ -2721,7 +2722,7 @@ class TestRSAPrivateKeySerialization:
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
-                "invalidformat",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "invalidformat"),
                 serialization.NoEncryption(),
             )
 
@@ -2733,7 +2734,7 @@ class TestRSAPrivateKeySerialization:
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
-                "notanencalg",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "notanencalg"),
             )
 
     def test_private_bytes_unsupported_encryption_type(
@@ -2835,7 +2836,7 @@ class TestRSAPEMPublicKeySerialization:
         key = rsa_key_2048.public_key()
         with pytest.raises(TypeError):
             key.public_bytes(
-                "notencoding",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "notencoding"),
                 serialization.PublicFormat.PKCS1,
             )
 
@@ -2846,7 +2847,7 @@ class TestRSAPEMPublicKeySerialization:
         with pytest.raises(TypeError):
             key.public_bytes(
                 serialization.Encoding.PEM,
-                "invalidformat",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "invalidformat"),
             )
 
     @pytest.mark.parametrize(

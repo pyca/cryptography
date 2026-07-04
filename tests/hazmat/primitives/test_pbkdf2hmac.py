@@ -3,6 +3,8 @@
 # for complete details.
 
 
+import typing
+
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized, InvalidKey, _Reasons
@@ -47,7 +49,7 @@ class TestPBKDF2HMAC:
             PBKDF2HMAC(
                 hashes.SHA1(),
                 20,
-                "salt",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "salt"),
                 10,
                 backend,
             )
@@ -55,7 +57,7 @@ class TestPBKDF2HMAC:
     def test_unicode_error_with_key_material(self, backend):
         kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10, backend)
         with pytest.raises(TypeError):
-            kdf.derive("unicode here")  # type: ignore[arg-type]
+            kdf.derive(typing.cast(typing.Any, "unicode here"))
 
     def test_buffer_protocol(self, backend):
         kdf = PBKDF2HMAC(hashes.SHA1(), 10, b"salt", 10, backend)

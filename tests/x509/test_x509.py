@@ -564,7 +564,7 @@ class TestCertificateRevocationList:
         )
 
         with pytest.raises(TypeError):
-            crl.public_bytes("NotAnEncoding")  # type: ignore[arg-type]
+            crl.public_bytes(typing.cast(typing.Any, "NotAnEncoding"))
 
     def test_verify_bad(self, backend):
         crl = _load_cert(
@@ -610,12 +610,10 @@ class TestCertificateRevocationList:
         )
 
         with pytest.raises(TypeError):
-            crl.is_signature_valid(
-                "not a public key"  # type: ignore[arg-type]
-            )
+            crl.is_signature_valid(typing.cast(typing.Any, "not a public key"))
 
         with pytest.raises(TypeError):
-            crl.is_signature_valid(object)  # type: ignore[arg-type]
+            crl.is_signature_valid(typing.cast(typing.Any, object))
 
     def test_crl_issuer_invalid_printable_string(self):
         data = _load_cert(
@@ -1707,7 +1705,7 @@ class TestRSACertificate:
         )
 
         with pytest.raises(TypeError):
-            cert.public_bytes("NotAnEncoding")  # type: ignore[arg-type]
+            cert.public_bytes(typing.cast(typing.Any, "NotAnEncoding"))
 
     @pytest.mark.parametrize(
         ("cert_path", "loader_func", "encoding"),
@@ -2319,7 +2317,7 @@ class TestRSACertificateRequest:
         )
 
         with pytest.raises(TypeError):
-            request.public_bytes("NotAnEncoding")  # type: ignore[arg-type]
+            request.public_bytes(typing.cast(typing.Any, "NotAnEncoding"))
 
     def test_signature_invalid(self, backend):
         request = _load_cert(
@@ -2970,7 +2968,7 @@ class TestCertificateBuilder:
             builder.sign(
                 rsa_key_2048,
                 hashes.SHA256(),
-                rsa_padding=b"notapadding",  # type: ignore[arg-type]
+                rsa_padding=typing.cast(typing.Any, b"notapadding"),
             )
         eckey = ec.generate_private_key(ec.SECP256R1())
         with pytest.raises(TypeError):
@@ -3104,10 +3102,10 @@ class TestCertificateBuilder:
         builder = x509.CertificateBuilder()
 
         with pytest.raises(TypeError):
-            builder.issuer_name("subject")  # type:ignore[arg-type]
+            builder.issuer_name(typing.cast(typing.Any, "subject"))
 
         with pytest.raises(TypeError):
-            builder.issuer_name(object)  # type:ignore[arg-type]
+            builder.issuer_name(typing.cast(typing.Any, object))
 
     def test_issuer_name_may_only_be_set_once(self):
         name = x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
@@ -3120,10 +3118,10 @@ class TestCertificateBuilder:
         builder = x509.CertificateBuilder()
 
         with pytest.raises(TypeError):
-            builder.subject_name("subject")  # type:ignore[arg-type]
+            builder.subject_name(typing.cast(typing.Any, "subject"))
 
         with pytest.raises(TypeError):
-            builder.subject_name(object)  # type:ignore[arg-type]
+            builder.subject_name(typing.cast(typing.Any, object))
 
     def test_subject_name_may_only_be_set_once(self):
         name = x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
@@ -3155,7 +3153,7 @@ class TestCertificateBuilder:
         builder = x509.CertificateBuilder()
 
         with pytest.raises(TypeError):
-            builder.public_key(private_key)  # type: ignore[arg-type]
+            builder.public_key(typing.cast(typing.Any, private_key))
 
     def test_public_key_may_only_be_set_once(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
@@ -3214,16 +3212,19 @@ class TestCertificateBuilder:
         with pytest.raises(TypeError):
             x509.CertificateBuilder().public_key(
                 rsa_key_2048.public_key(),
-                rsa_padding=padding.PSS(  # type: ignore[arg-type]
-                    mgf=padding.MGF1(hashes.SHA256()),
-                    salt_length=padding.PSS.DIGEST_LENGTH,
+                rsa_padding=typing.cast(
+                    typing.Any,
+                    padding.PSS(
+                        mgf=padding.MGF1(hashes.SHA256()),
+                        salt_length=padding.PSS.DIGEST_LENGTH,
+                    ),
                 ),
             )
 
         with pytest.raises(TypeError):
             x509.CertificateBuilder().public_key(
                 rsa_key_2048.public_key(),
-                rsa_padding=padding.PKCS1v15,  # type: ignore[arg-type]
+                rsa_padding=typing.cast(typing.Any, padding.PKCS1v15),
             )
 
     def test_public_key_rsa_padding_requires_rsa_key(self, backend):
@@ -3237,7 +3238,7 @@ class TestCertificateBuilder:
     def test_serial_number_must_be_an_integer_type(self):
         with pytest.raises(TypeError):
             x509.CertificateBuilder().serial_number(
-                10.0  # type:ignore[arg-type]
+                typing.cast(typing.Any, 10.0)
             )
 
     def test_serial_number_must_be_non_negative(self):
@@ -3351,12 +3352,12 @@ class TestCertificateBuilder:
     def test_invalid_not_valid_after(self):
         with pytest.raises(TypeError):
             x509.CertificateBuilder().not_valid_after(
-                104204304504  # type:ignore[arg-type]
+                typing.cast(typing.Any, 104204304504)
             )
 
         with pytest.raises(TypeError):
             x509.CertificateBuilder().not_valid_after(
-                datetime.time()  # type:ignore[arg-type]
+                typing.cast(typing.Any, datetime.time())
             )
 
         with pytest.raises(ValueError):
@@ -3400,12 +3401,12 @@ class TestCertificateBuilder:
     def test_invalid_not_valid_before(self):
         with pytest.raises(TypeError):
             x509.CertificateBuilder().not_valid_before(
-                104204304504  # type:ignore[arg-type]
+                typing.cast(typing.Any, 104204304504)
             )
 
         with pytest.raises(TypeError):
             x509.CertificateBuilder().not_valid_before(
-                datetime.time()  # type:ignore[arg-type]
+                typing.cast(typing.Any, datetime.time())
             )
 
         with pytest.raises(ValueError):
@@ -3438,7 +3439,7 @@ class TestCertificateBuilder:
 
         with pytest.raises(TypeError):
             builder.add_extension(
-                object(),  # type:ignore[arg-type]
+                typing.cast(typing.Any, object()),
                 False,
             )
 
@@ -3596,7 +3597,7 @@ class TestCertificateBuilder:
         with pytest.raises(UnsupportedAlgorithm):
             builder.sign(
                 private_key,
-                hashes.MD5(),  # type: ignore[arg-type]
+                typing.cast(typing.Any, hashes.MD5()),
                 backend,
             )
 
@@ -4841,7 +4842,7 @@ class TestCertificateSigningRequestBuilder:
         with pytest.raises(TypeError):
             builder.sign(
                 private_key,
-                "NotAHash",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "NotAHash"),
                 backend,
             )
 
@@ -5333,14 +5334,14 @@ class TestCertificateSigningRequestBuilder:
     def test_set_invalid_subject(self):
         builder = x509.CertificateSigningRequestBuilder()
         with pytest.raises(TypeError):
-            builder.subject_name("NotAName")  # type:ignore[arg-type]
+            builder.subject_name(typing.cast(typing.Any, "NotAName"))
 
     def test_add_invalid_extension_type(self):
         builder = x509.CertificateSigningRequestBuilder()
 
         with pytest.raises(TypeError):
             builder.add_extension(
-                object(),  # type:ignore[arg-type]
+                typing.cast(typing.Any, object()),
                 False,
             )
 
@@ -5472,14 +5473,14 @@ class TestCertificateSigningRequestBuilder:
         request = x509.CertificateSigningRequestBuilder()
         with pytest.raises(TypeError):
             request.add_attribute(
-                b"not an oid",  # type:ignore[arg-type]
+                typing.cast(typing.Any, b"not an oid"),
                 b"val",
             )
 
         with pytest.raises(TypeError):
             request.add_attribute(
                 x509.oid.AttributeOID.CHALLENGE_PASSWORD,
-                383,  # type:ignore[arg-type]
+                typing.cast(typing.Any, 383),
             )
 
     def test_duplicate_attribute(self, backend):
@@ -5518,7 +5519,7 @@ class TestCertificateSigningRequestBuilder:
             builder.add_attribute(
                 x509.ObjectIdentifier("1.2.3.4"),
                 b"",
-                _tag=object(),  # type:ignore[arg-type]
+                _tag=typing.cast(typing.Any, object()),
             )
 
     def test_set_subject_twice(self):
@@ -5763,7 +5764,7 @@ class TestCertificateSigningRequestBuilder:
             builder.sign(
                 rsa_key_2048,
                 hashes.SHA256(),
-                rsa_padding=b"notapadding",  # type: ignore[arg-type]
+                rsa_padding=typing.cast(typing.Any, b"notapadding"),
             )
         eckey = ec.generate_private_key(ec.SECP256R1())
         with pytest.raises(TypeError):
@@ -6361,7 +6362,7 @@ class TestNameAttribute:
     def test_init_bad_oid(self):
         with pytest.raises(TypeError):
             x509.NameAttribute(
-                None,  # type:ignore[arg-type]
+                typing.cast(typing.Any, None),
                 "value",
             )
 
@@ -6412,7 +6413,7 @@ class TestNameAttribute:
             x509.NameAttribute(
                 NameOID.COMMON_NAME,
                 "common",
-                "notanenum",  # type:ignore[arg-type]
+                typing.cast(typing.Any, "notanenum"),
             )
 
     def test_eq(self):
