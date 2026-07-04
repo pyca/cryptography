@@ -200,9 +200,37 @@ class TestMLKEM:
             variant.private_key_class.from_seed_bytes(b"a" * 10)
 
     @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    @pytest.mark.parametrize("delta", [-1, 1])
+    def test_invalid_length_from_public_bytes(self, variant, delta, backend):
+        with pytest.raises(ValueError):
+            variant.public_key_class.from_public_bytes(
+                b"a" * (variant.pub_key_size + delta)
+            )
+
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
     def test_invalid_type_seed(self, variant, backend):
         with pytest.raises(TypeError):
             variant.private_key_class.from_seed_bytes(object())
+
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    def test_invalid_type_public_bytes(self, variant, backend):
+        with pytest.raises(TypeError):
+            variant.public_key_class.from_public_bytes(object())
+
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    @pytest.mark.parametrize("delta", [-1, 1])
+    def test_invalid_decapsulate_ciphertext_length(
+        self, variant, delta, backend
+    ):
+        key = variant.private_key_class.generate()
+        with pytest.raises(ValueError):
+            key.decapsulate(b"a" * (variant.ciphertext_size + delta))
+
+    @pytest.mark.parametrize("variant", ML_KEM_VARIANTS)
+    def test_invalid_type_decapsulate_ciphertext(self, variant, backend):
+        key = variant.private_key_class.generate()
+        with pytest.raises(TypeError):
+            key.decapsulate(object())
 
     def test_kat_vectors_768(self, backend, subtests):
         vectors = load_vectors_from_file(
