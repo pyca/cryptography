@@ -154,7 +154,10 @@ fn check_dh_parameters<T: openssl::pkey::HasParams>(
             pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"),
         ));
     }
-    if !dh.check_key()? {
+    // AWS-LC's DH_check returns an error for parameters it considers
+    // fundamentally invalid (e.g. an even modulus), where OpenSSL reports
+    // success with check-result flags set. Treat both as invalid parameters.
+    if !dh.check_key().unwrap_or(false) {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"),
         ));
