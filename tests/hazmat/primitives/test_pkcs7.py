@@ -233,7 +233,7 @@ class TestPKCS7SignatureBuilder:
         with pytest.raises(ValueError):
             builder.sign(
                 serialization.Encoding.SMIME,
-                [b"invalid"],  # type: ignore[list-item]
+                [typing.cast(typing.Any, b"invalid")],
             )
 
     def test_sign_invalid_encoding(self, backend):
@@ -964,7 +964,7 @@ class TestPKCS7EnvelopeBuilder:
         with pytest.raises(ValueError):
             builder.encrypt(
                 serialization.Encoding.SMIME,
-                [b"invalid"],  # type: ignore[list-item]
+                [typing.cast(typing.Any, b"invalid")],
             )
 
     def test_encrypt_invalid_encoding(self, backend):

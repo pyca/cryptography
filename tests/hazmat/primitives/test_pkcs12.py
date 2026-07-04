@@ -1025,7 +1025,7 @@ class TestPKCS12Objects:
         assert c2a != c2b
         assert c2a != c3a
 
-        assert c2n != "test"  # type: ignore[comparison-overlap]
+        assert c2n != typing.cast(typing.Any, "test")
 
     def test_certificate_hash(self, backend):
         cert2 = _load_cert(
@@ -1074,7 +1074,7 @@ class TestPKCS12Objects:
             PKCS12KeyAndCertificates(
                 None,
                 None,
-                ["hello"],  # type:ignore[list-item]
+                [typing.cast(typing.Any, "hello")],
             )
 
     def test_key_and_certificates_equality(self, backend):

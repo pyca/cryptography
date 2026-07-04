@@ -145,7 +145,7 @@ class TestExtension:
 class TestTLSFeature:
     def test_not_enum_type(self):
         with pytest.raises(TypeError):
-            x509.TLSFeature([3])  # type:ignore[list-item]
+            x509.TLSFeature([typing.cast(typing.Any, 3)])
 
     def test_empty_list(self):
         with pytest.raises(TypeError):
@@ -470,7 +470,7 @@ class TestNoticeReference:
         with pytest.raises(TypeError):
             x509.NoticeReference(
                 "org",
-                [1, 2, "three"],  # type:ignore[list-item]
+                [1, 2, typing.cast(typing.Any, "three")],
             )
 
     def test_notice_numbers_none(self):
@@ -574,7 +574,7 @@ class TestPolicyInformation:
         with pytest.raises(TypeError):
             x509.PolicyInformation(
                 x509.ObjectIdentifier("1.2.3"),
-                [1, 2],  # type:ignore[list-item]
+                [typing.cast(typing.Any, 1), typing.cast(typing.Any, 2)],
             )
 
     def test_iter_input(self):
@@ -637,7 +637,7 @@ class TestCertificatePolicies:
         pq = ["string"]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
         with pytest.raises(TypeError):
-            x509.CertificatePolicies([1, pi])  # type:ignore[list-item]
+            x509.CertificatePolicies([typing.cast(typing.Any, 1), pi])
 
     def test_iter_len(self):
         pq = ["string"]
@@ -1245,7 +1245,7 @@ class TestAuthorityKeyIdentifier:
         with pytest.raises(TypeError):
             x509.AuthorityKeyIdentifier(
                 b"identifier",
-                ["notname"],  # type:ignore[list-item]
+                [typing.cast(typing.Any, "notname")],
                 3,
             )
 
@@ -1436,7 +1436,7 @@ class TestBasicConstraints:
 class TestExtendedKeyUsage:
     def test_not_all_oids(self):
         with pytest.raises(TypeError):
-            x509.ExtendedKeyUsage(["notoid"])  # type:ignore[list-item]
+            x509.ExtendedKeyUsage([typing.cast(typing.Any, "notoid")])
 
     def test_iter_len(self):
         eku = x509.ExtendedKeyUsage(
@@ -3130,7 +3130,7 @@ class TestAuthorityInformationAccess:
     def test_invalid_descriptions(self):
         with pytest.raises(TypeError):
             x509.AuthorityInformationAccess(
-                ["notanAccessDescription"]  # type:ignore[list-item]
+                [typing.cast(typing.Any, "notanAccessDescription")]
             )
 
     def test_iter_len(self):
@@ -3336,7 +3336,7 @@ class TestSubjectInformationAccess:
     def test_invalid_descriptions(self):
         with pytest.raises(TypeError):
             x509.SubjectInformationAccess(
-                ["notanAccessDescription"]  # type:ignore[list-item]
+                [typing.cast(typing.Any, "notanAccessDescription")]
             )
 
     def test_iter_len(self):
@@ -4156,7 +4156,7 @@ class TestDistributionPoint:
     def test_distribution_point_full_name_not_general_names(self):
         with pytest.raises(TypeError):
             x509.DistributionPoint(
-                ["notgn"],  # type:ignore[list-item]
+                [typing.cast(typing.Any, "notgn")],
                 None,
                 None,
                 None,
@@ -4192,7 +4192,7 @@ class TestDistributionPoint:
                 None,
                 None,
                 None,
-                ["notgn"],  # type:ignore[list-item]
+                [typing.cast(typing.Any, "notgn")],
             )
 
     def test_reason_not_reasonflags(self):
@@ -4200,7 +4200,7 @@ class TestDistributionPoint:
             x509.DistributionPoint(
                 [x509.UniformResourceIdentifier("http://crypt.og/crl")],
                 None,
-                frozenset(["notreasonflags"]),  # type:ignore[list-item]
+                frozenset([typing.cast(typing.Any, "notreasonflags")]),
                 None,
             )
 
@@ -4392,7 +4392,7 @@ class TestFreshestCRL:
     def test_invalid_distribution_points(self):
         with pytest.raises(TypeError):
             x509.FreshestCRL(
-                ["notadistributionpoint"]  # type:ignore[list-item]
+                [typing.cast(typing.Any, "notadistributionpoint")]
             )
 
     def test_iter_len(self):
@@ -4643,7 +4643,7 @@ class TestCRLDistributionPoints:
     def test_invalid_distribution_points(self):
         with pytest.raises(TypeError):
             x509.CRLDistributionPoints(
-                ["notadistributionpoint"],  # type:ignore[list-item]
+                [typing.cast(typing.Any, "notadistributionpoint")],
             )
 
     def test_iter_len(self):
@@ -6134,7 +6134,7 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
     def test_init(self):
         with pytest.raises(TypeError):
             x509.PrecertificateSignedCertificateTimestamps(
-                [object()]  # type:ignore[list-item]
+                [typing.cast(typing.Any, object())]
             )
 
     def test_repr(self):
@@ -6480,7 +6480,7 @@ class TestOCSPAcceptableResponses:
         with pytest.raises(TypeError):
             x509.OCSPAcceptableResponses(typing.cast(typing.Any, 38))
         with pytest.raises(TypeError):
-            x509.OCSPAcceptableResponses([38])  # type:ignore[list-item]
+            x509.OCSPAcceptableResponses([typing.cast(typing.Any, 38)])
 
     def test_eq(self):
         acceptable_responses1 = x509.OCSPAcceptableResponses(
@@ -6758,7 +6758,7 @@ class TestProfessionInfo:
         with pytest.raises(TypeError):
             x509.ProfessionInfo(
                 None,
-                [42],  # type:ignore[list-item]
+                [typing.cast(typing.Any, 42)],
                 [],
                 None,
                 None,
@@ -7014,7 +7014,7 @@ class TestAdmission:
             x509.Admission(
                 None,
                 None,
-                [42],  # type:ignore[list-item]
+                [typing.cast(typing.Any, 42)],
             )
 
     def test_eq(self):
@@ -7332,12 +7332,12 @@ class TestAdmissions:
         with pytest.raises(TypeError):
             x509.Admissions(
                 None,
-                [42],  # type:ignore[list-item]
+                [typing.cast(typing.Any, 42)],
             )
         with pytest.raises(TypeError):
             x509.Admissions(
                 None,
-                [None],  # type:ignore[list-item]
+                [typing.cast(typing.Any, None)],
             )
 
     def test_eq(self):

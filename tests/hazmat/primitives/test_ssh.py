@@ -1490,7 +1490,7 @@ class TestSSHCertificateBuilder:
             builder.valid_principals(typing.cast(typing.Any, "not a list"))
         with pytest.raises(TypeError):
             builder.valid_principals(
-                [b"test", "not bytes"]  # type: ignore[list-item]
+                [b"test", typing.cast(typing.Any, "not bytes")]
             )
         with pytest.raises(TypeError):
             builder.valid_principals([])

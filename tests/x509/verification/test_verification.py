@@ -129,7 +129,7 @@ class TestStore:
 
     def test_store_rejects_non_certificates(self):
         with pytest.raises(TypeError):
-            Store(["not a cert"])  # type: ignore[list-item]
+            Store([typing.cast(typing.Any, "not a cert")])
 
 
 class TestClientVerifier:
@@ -315,7 +315,7 @@ class TestCustomExtensionPolicies:
                 pass
 
             ext_policy.require_present(
-                _Extension,  # type: ignore[type-var]
+                typing.cast(typing.Any, _Extension),
                 Criticality.AGNOSTIC,
                 None,
             )

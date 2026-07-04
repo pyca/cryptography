@@ -512,7 +512,7 @@ class TestOCSPResponseBuilder:
         with pytest.raises(ValueError):
             builder.certificates([])
         with pytest.raises(TypeError):
-            builder.certificates(["notacert"])  # type: ignore[list-item]
+            builder.certificates([typing.cast(typing.Any, "notacert")])
         with pytest.raises(TypeError):
             builder.certificates(typing.cast(typing.Any, "invalid"))
 
@@ -1186,7 +1186,7 @@ class TestSignedCertificateTimestampsExtension:
     def test_init(self):
         with pytest.raises(TypeError):
             x509.SignedCertificateTimestamps(
-                [object()]  # type: ignore[list-item]
+                [typing.cast(typing.Any, object())]
             )
 
     def test_repr(self):

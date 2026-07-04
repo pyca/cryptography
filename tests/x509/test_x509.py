@@ -6390,7 +6390,7 @@ class TestNameAttribute:
         with pytest.raises(TypeError):
             x509.NameAttribute(
                 NameOID.ORGANIZATION_NAME,
-                None,  # type:ignore[type-var]
+                typing.cast(typing.Any, None),
             )
 
     def test_init_bad_length(self):
@@ -6492,7 +6492,7 @@ class TestRelativeDistinguishedName:
     def test_init_not_nameattribute(self):
         with pytest.raises(TypeError):
             x509.RelativeDistinguishedName(
-                ["not-a-NameAttribute"]  # type:ignore[list-item]
+                [typing.cast(typing.Any, "not-a-NameAttribute")]
             )
 
     def test_init_duplicate_attribute(self):
@@ -6766,7 +6766,7 @@ class TestName:
 
     def test_not_nameattribute(self):
         with pytest.raises(TypeError):
-            x509.Name(["not-a-NameAttribute"])  # type: ignore[list-item]
+            x509.Name([typing.cast(typing.Any, "not-a-NameAttribute")])
 
     def test_bytes(self, backend):
         name = x509.Name(
