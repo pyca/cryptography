@@ -1704,8 +1704,6 @@ class TestRSAPKCS1Verification:
 class TestPKCS1v15:
     def test_eq(self):
         assert padding.PKCS1v15() == padding.PKCS1v15()
-
-    def test_ne(self):
         assert padding.PKCS1v15() != padding.PSS(
             mgf=padding.MGF1(hashes.SHA256()), salt_length=32
         )
@@ -1823,8 +1821,6 @@ class TestMGF1:
 
     def test_eq(self):
         assert padding.MGF1(hashes.SHA256()) == padding.MGF1(hashes.SHA256())
-
-    def test_ne(self):
         assert padding.MGF1(hashes.SHA256()) != padding.MGF1(hashes.SHA512())
         assert padding.MGF1(hashes.SHA256()) != DummyMGF()
         assert DummyMGF() != padding.MGF1(hashes.SHA256())
