@@ -22,6 +22,8 @@ Changelog
   field.
 * :class:`~cryptography.hazmat.primitives.hashes.XOFHash` is now supported
   when building against AWS-LC.
+* HMAC (and therefore PBKDF2-HMAC) with SHA-3 hashes is now supported when
+  building against AWS-LC.
 * :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key` and
   :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key` now
   reject Diffie-Hellman public keys whose modulus is smaller than 512 bits,
