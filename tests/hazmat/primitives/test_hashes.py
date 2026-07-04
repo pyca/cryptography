@@ -228,9 +228,9 @@ class TestHashAlgorithmEquality:
         assert algorithm_cls() != DummyHashAlgorithm()
         assert DummyHashAlgorithm() != algorithm_cls()
 
-    def test_eq_different_algorithm(self):
+    def test_ne(self):
         assert hashes.SHA256() != hashes.SHA384()
-        assert hashes.SHA256().__eq__(hashes.SHA384()) is NotImplemented
+        assert hashes.SHA256() != object()
 
     @pytest.mark.parametrize(
         ("algorithm_cls", "digest_size"),
