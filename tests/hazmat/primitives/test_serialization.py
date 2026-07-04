@@ -358,6 +358,24 @@ class TestDERSerialization:
         numbers = key.public_numbers()
         assert numbers.e == 65537
 
+    @pytest.mark.parametrize(
+        "key_file",
+        [
+            "rsa_public_key_invalid_exponent.der",
+            "rsa_public_key_pkcs1_invalid_exponent.der",
+        ],
+    )
+    def test_load_der_rsa_public_key_rejects_invalid_exponent(
+        self, key_file, backend
+    ):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "DER_Serialization", key_file),
+            lambda derfile: derfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_der_public_key(data, backend)
+
     def test_load_der_invalid_public_key(self, backend):
         with pytest.raises(ValueError):
             load_der_public_key(b"invalid data", backend)
@@ -413,6 +431,76 @@ class TestDERSerialization:
         )
         assert key
         assert isinstance(key, dsa.DSAPublicKey)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
+    @pytest.mark.parametrize(
+        "key_file",
+        [
+            "dsa_public_key_y1.der",
+            "dsa_public_key_y_p_plus_1.der",
+            "dsa_public_key_y_p_minus_1.der",
+        ],
+    )
+    def test_load_der_dsa_public_key_rejects_invalid_y(
+        self, key_file, backend
+    ):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "DER_Serialization", key_file),
+            lambda derfile: derfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_der_public_key(data, backend)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
+    def test_load_der_dsa_private_key_rejects_invalid_public_key(
+        self, backend
+    ):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "DER_Serialization",
+                "dsa_private_key_invalid_public_key.der",
+            ),
+            lambda derfile: derfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_der_private_key(data, None, backend)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dh_supported(),
+        skip_message="DH not supported",
+    )
+    @pytest.mark.parametrize(
+        ("kind", "key_file"),
+        [
+            ("parameters", "dh_parameters_invalid_p.der"),
+            ("public", "dh_public_key_invalid_parameters.der"),
+            ("private", "dh_private_key_invalid_parameters.der"),
+        ],
+    )
+    def test_load_der_dh_rejects_invalid_parameters(
+        self, kind, key_file, backend
+    ):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "DER_Serialization", key_file),
+            lambda derfile: derfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            if kind == "parameters":
+                load_der_parameters(data, backend)
+            elif kind == "public":
+                load_der_public_key(data, backend)
+            else:
+                load_der_private_key(data, None, backend)
 
     def test_load_ec_public_key(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -765,6 +853,24 @@ class TestPEMSerialization:
         numbers = key.public_numbers()
         assert numbers.e == 65537
 
+    @pytest.mark.parametrize(
+        "key_file",
+        [
+            "rsa_public_key_invalid_exponent.pem",
+            "rsa_public_key_pkcs1_invalid_exponent.pem",
+        ],
+    )
+    def test_load_pem_rsa_public_key_rejects_invalid_exponent(
+        self, key_file, backend
+    ):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PEM_Serialization", key_file),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_public_key(data, backend)
+
     def test_load_pem_public_fails_with_ec_key_with_rsa_delimiter(self):
         with pytest.raises(ValueError):
             load_vectors_from_file(
@@ -814,6 +920,76 @@ class TestPEMSerialization:
         )
         assert key
         assert isinstance(key, dsa.DSAPublicKey)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
+    @pytest.mark.parametrize(
+        "key_file",
+        [
+            "dsa_public_key_y1.pem",
+            "dsa_public_key_y_p_plus_1.pem",
+            "dsa_public_key_y_p_minus_1.pem",
+        ],
+    )
+    def test_load_pem_dsa_public_key_rejects_invalid_y(
+        self, key_file, backend
+    ):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PEM_Serialization", key_file),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_public_key(data, backend)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_supported(),
+        skip_message="Does not support DSA.",
+    )
+    def test_load_pem_dsa_private_key_rejects_invalid_public_key(
+        self, backend
+    ):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "PEM_Serialization",
+                "dsa_private_key_invalid_public_key.pem",
+            ),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, None, backend)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dh_supported(),
+        skip_message="DH not supported",
+    )
+    @pytest.mark.parametrize(
+        ("kind", "key_file"),
+        [
+            ("parameters", "dh_parameters_invalid_p.pem"),
+            ("public", "dh_public_key_invalid_parameters.pem"),
+            ("private", "dh_private_key_invalid_parameters.pem"),
+        ],
+    )
+    def test_load_pem_dh_rejects_invalid_parameters(
+        self, kind, key_file, backend
+    ):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PEM_Serialization", key_file),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            if kind == "parameters":
+                load_pem_parameters(data, backend)
+            elif kind == "public":
+                load_pem_public_key(data, backend)
+            else:
+                load_pem_private_key(data, None, backend)
 
     def test_load_ec_public_key(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())

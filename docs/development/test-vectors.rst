@@ -95,6 +95,12 @@ Custom asymmetric vectors
 * ``asymmetric/PEM_Serialization/rsa_public_key.pem`` and
   ``asymmetric/DER_Serialization/rsa_public_key.der``- Contains an RSA 2048
   bit public generated using OpenSSL from ``rsa_private_key.pem``.
+* ``asymmetric/PEM_Serialization/rsa_public_key_invalid_exponent.pem`` and
+  ``asymmetric/DER_Serialization/rsa_public_key_invalid_exponent.der`` -
+  Contains an RSA SubjectPublicKeyInfo public key with public exponent 1.
+* ``asymmetric/PEM_Serialization/rsa_public_key_pkcs1_invalid_exponent.pem``
+  and ``asymmetric/DER_Serialization/rsa_public_key_pkcs1_invalid_exponent.der``
+  - Contains an RSA PKCS #1 public key with public exponent 1.
 * ``asymmetric/PEM_Serialization/rsa_wrong_delimiter_public_key.pem`` - Contains
   an RSA 2048 bit public key generated from ``rsa_private_key.pem``, but with
   the wrong PEM delimiter (``RSA PUBLIC KEY`` when it should be ``PUBLIC KEY``).
@@ -113,6 +119,19 @@ Custom asymmetric vectors
 * ``asymmetric/DER_Serialization/dsa_public_key_invalid_bit_string.der`` -
   Contains a DSA public key with the bit string padding value set to 2 rather
   than the required 0.
+* ``asymmetric/PEM_Serialization/dsa_public_key_y1.pem`` and
+  ``asymmetric/DER_Serialization/dsa_public_key_y1.der`` - Contains a DSA
+  public key with public value ``y = 1``.
+* ``asymmetric/PEM_Serialization/dsa_public_key_y_p_plus_1.pem`` and
+  ``asymmetric/DER_Serialization/dsa_public_key_y_p_plus_1.der`` - Contains a
+  DSA public key with public value ``y = p + 1``.
+* ``asymmetric/PEM_Serialization/dsa_public_key_y_p_minus_1.pem`` and
+  ``asymmetric/DER_Serialization/dsa_public_key_y_p_minus_1.der`` - Contains a
+  DSA public key with public value ``y = p - 1``.
+* ``asymmetric/PEM_Serialization/dsa_private_key_invalid_public_key.pem`` and
+  ``asymmetric/DER_Serialization/dsa_private_key_invalid_public_key.der`` -
+  Contains a DSA private key with a public value that does not match the
+  private value.
 * ``asymmetric/PKCS8/unenc-dsa-pkcs8.pem`` and
   ``asymmetric/DER_Serialization/unenc-dsa-pkcs8.der`` - Contains a DSA 1024
   bit key generated using OpenSSL.
@@ -370,6 +389,21 @@ Key exchange
 * ``vectors/cryptography_vectors/asymmetric/DH/dhpub_cryptography_old.pem``
   contains a Diffie-Hellman public key generated with a previous version of
   ``cryptography``.
+
+* ``vectors/cryptography_vectors/asymmetric/PEM_Serialization/dh_parameters_invalid_p.pem``
+  and
+  ``vectors/cryptography_vectors/asymmetric/DER_Serialization/dh_parameters_invalid_p.der``
+  contain Diffie-Hellman parameters with an invalid ``p`` value.
+
+* ``vectors/cryptography_vectors/asymmetric/PEM_Serialization/dh_public_key_invalid_parameters.pem``
+  and
+  ``vectors/cryptography_vectors/asymmetric/DER_Serialization/dh_public_key_invalid_parameters.der``
+  contain a Diffie-Hellman public key with invalid parameters.
+
+* ``vectors/cryptography_vectors/asymmetric/PEM_Serialization/dh_private_key_invalid_parameters.pem``
+  and
+  ``vectors/cryptography_vectors/asymmetric/DER_Serialization/dh_private_key_invalid_parameters.der``
+  contain a Diffie-Hellman private key with invalid parameters.
 
 X.509
 ~~~~~
