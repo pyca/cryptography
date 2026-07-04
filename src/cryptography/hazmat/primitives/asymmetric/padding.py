@@ -22,9 +22,6 @@ class PKCS1v15(AsymmetricPadding):
 
         return True
 
-    def __hash__(self) -> int:
-        return hash(PKCS1v15)
-
 
 class _MaxLength:
     "Sentinel value for `MAX_LENGTH`."
@@ -73,9 +70,6 @@ class PSS(AsymmetricPadding):
             self._mgf == other._mgf and self._salt_length == other._salt_length
         )
 
-    def __hash__(self) -> int:
-        return hash((PSS, self._mgf, self._salt_length))
-
     @property
     def mgf(self) -> MGF:
         return self._mgf
@@ -107,9 +101,6 @@ class OAEP(AsymmetricPadding):
             and self._label == other._label
         )
 
-    def __hash__(self) -> int:
-        return hash((OAEP, self._mgf, self._algorithm, self._label))
-
     @property
     def algorithm(self) -> hashes.HashAlgorithm:
         return self._algorithm
@@ -135,9 +126,6 @@ class MGF1(MGF):
             return NotImplemented
 
         return self._algorithm == other._algorithm
-
-    def __hash__(self) -> int:
-        return hash((MGF1, self._algorithm))
 
 
 def calculate_max_pss_salt_length(

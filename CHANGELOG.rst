@@ -30,7 +30,7 @@ Changelog
 * The builtin :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
   classes and the classes in
   :mod:`~cryptography.hazmat.primitives.asymmetric.padding` can now be
-  compared with ``==`` and hashed.
+  compared with ``==``.
 
 .. _v49-0-0:
 

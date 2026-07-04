@@ -225,7 +225,6 @@ class TestHashAlgorithmEquality:
     )
     def test_eq(self, algorithm_cls):
         assert algorithm_cls() == algorithm_cls()
-        assert hash(algorithm_cls()) == hash(algorithm_cls())
         assert algorithm_cls() != DummyHashAlgorithm()
         assert DummyHashAlgorithm() != algorithm_cls()
 
@@ -244,16 +243,12 @@ class TestHashAlgorithmEquality:
     )
     def test_eq_digest_size(self, algorithm_cls, digest_size):
         assert algorithm_cls(digest_size) == algorithm_cls(digest_size)
-        assert hash(algorithm_cls(digest_size)) == hash(
-            algorithm_cls(digest_size)
-        )
         assert algorithm_cls(digest_size) != DummyHashAlgorithm(digest_size)
         assert DummyHashAlgorithm(digest_size) != algorithm_cls(digest_size)
 
     @pytest.mark.parametrize("xof", [hashes.SHAKE128, hashes.SHAKE256])
     def test_eq_different_digest_size(self, xof):
         assert xof(digest_size=32) != xof(digest_size=64)
-        assert hash(xof(digest_size=32)) != hash(xof(digest_size=64))
 
 
 class TestSHAKE:

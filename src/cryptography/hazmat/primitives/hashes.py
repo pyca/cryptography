@@ -109,9 +109,6 @@ class SHA1(HashAlgorithm):
 
         return True
 
-    def __hash__(self) -> int:
-        return hash(SHA1)
-
 
 class SHA512_224(HashAlgorithm):  # noqa: N801
     name = "sha512-224"
@@ -123,9 +120,6 @@ class SHA512_224(HashAlgorithm):  # noqa: N801
             return NotImplemented
 
         return True
-
-    def __hash__(self) -> int:
-        return hash(SHA512_224)
 
 
 class SHA512_256(HashAlgorithm):  # noqa: N801
@@ -139,9 +133,6 @@ class SHA512_256(HashAlgorithm):  # noqa: N801
 
         return True
 
-    def __hash__(self) -> int:
-        return hash(SHA512_256)
-
 
 class SHA224(HashAlgorithm):
     name = "sha224"
@@ -153,9 +144,6 @@ class SHA224(HashAlgorithm):
             return NotImplemented
 
         return True
-
-    def __hash__(self) -> int:
-        return hash(SHA224)
 
 
 class SHA256(HashAlgorithm):
@@ -169,9 +157,6 @@ class SHA256(HashAlgorithm):
 
         return True
 
-    def __hash__(self) -> int:
-        return hash(SHA256)
-
 
 class SHA384(HashAlgorithm):
     name = "sha384"
@@ -183,9 +168,6 @@ class SHA384(HashAlgorithm):
             return NotImplemented
 
         return True
-
-    def __hash__(self) -> int:
-        return hash(SHA384)
 
 
 class SHA512(HashAlgorithm):
@@ -199,9 +181,6 @@ class SHA512(HashAlgorithm):
 
         return True
 
-    def __hash__(self) -> int:
-        return hash(SHA512)
-
 
 class SHA3_224(HashAlgorithm):  # noqa: N801
     name = "sha3-224"
@@ -213,9 +192,6 @@ class SHA3_224(HashAlgorithm):  # noqa: N801
             return NotImplemented
 
         return True
-
-    def __hash__(self) -> int:
-        return hash(SHA3_224)
 
 
 class SHA3_256(HashAlgorithm):  # noqa: N801
@@ -229,9 +205,6 @@ class SHA3_256(HashAlgorithm):  # noqa: N801
 
         return True
 
-    def __hash__(self) -> int:
-        return hash(SHA3_256)
-
 
 class SHA3_384(HashAlgorithm):  # noqa: N801
     name = "sha3-384"
@@ -244,9 +217,6 @@ class SHA3_384(HashAlgorithm):  # noqa: N801
 
         return True
 
-    def __hash__(self) -> int:
-        return hash(SHA3_384)
-
 
 class SHA3_512(HashAlgorithm):  # noqa: N801
     name = "sha3-512"
@@ -258,9 +228,6 @@ class SHA3_512(HashAlgorithm):  # noqa: N801
             return NotImplemented
 
         return True
-
-    def __hash__(self) -> int:
-        return hash(SHA3_512)
 
 
 class SHAKE128(HashAlgorithm, ExtendableOutputFunction):
@@ -281,9 +248,6 @@ class SHAKE128(HashAlgorithm, ExtendableOutputFunction):
             return NotImplemented
 
         return self._digest_size == other._digest_size
-
-    def __hash__(self) -> int:
-        return hash((SHAKE128, self._digest_size))
 
     @property
     def digest_size(self) -> int:
@@ -309,9 +273,6 @@ class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
 
         return self._digest_size == other._digest_size
 
-    def __hash__(self) -> int:
-        return hash((SHAKE256, self._digest_size))
-
     @property
     def digest_size(self) -> int:
         return self._digest_size
@@ -327,9 +288,6 @@ class MD5(HashAlgorithm):
             return NotImplemented
 
         return True
-
-    def __hash__(self) -> int:
-        return hash(MD5)
 
 
 class BLAKE2b(HashAlgorithm):
@@ -349,9 +307,6 @@ class BLAKE2b(HashAlgorithm):
             return NotImplemented
 
         return self._digest_size == other._digest_size
-
-    def __hash__(self) -> int:
-        return hash((BLAKE2b, self._digest_size))
 
     @property
     def digest_size(self) -> int:
@@ -376,9 +331,6 @@ class BLAKE2s(HashAlgorithm):
 
         return self._digest_size == other._digest_size
 
-    def __hash__(self) -> int:
-        return hash((BLAKE2s, self._digest_size))
-
     @property
     def digest_size(self) -> int:
         return self._digest_size
@@ -394,6 +346,3 @@ class SM3(HashAlgorithm):
             return NotImplemented
 
         return True
-
-    def __hash__(self) -> int:
-        return hash(SM3)

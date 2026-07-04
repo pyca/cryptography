@@ -1704,7 +1704,6 @@ class TestRSAPKCS1Verification:
 class TestPKCS1v15:
     def test_eq(self):
         assert padding.PKCS1v15() == padding.PKCS1v15()
-        assert hash(padding.PKCS1v15()) == hash(padding.PKCS1v15())
         assert padding.PKCS1v15() != padding.PSS(
             mgf=padding.MGF1(hashes.SHA256()), salt_length=32
         )
@@ -1769,7 +1768,6 @@ class TestPSS:
             mgf=padding.MGF1(hashes.SHA256()), salt_length=salt_length
         )
         assert pss1 == pss2
-        assert hash(pss1) == hash(pss2)
 
     @pytest.mark.parametrize(
         "salt_length",
@@ -1821,9 +1819,6 @@ class TestMGF1:
 
     def test_eq(self):
         assert padding.MGF1(hashes.SHA256()) == padding.MGF1(hashes.SHA256())
-        assert hash(padding.MGF1(hashes.SHA256())) == hash(
-            padding.MGF1(hashes.SHA256())
-        )
         assert padding.MGF1(hashes.SHA256()) != padding.MGF1(hashes.SHA512())
         assert padding.MGF1(hashes.SHA256()) != DummyMGF()
         assert DummyMGF() != padding.MGF1(hashes.SHA256())
@@ -1866,7 +1861,6 @@ class TestOAEP:
             label=label,
         )
         assert oaep1 == oaep2
-        assert hash(oaep1) == hash(oaep2)
 
     def test_eq_different_mgf(self):
         assert padding.OAEP(
