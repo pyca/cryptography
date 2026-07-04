@@ -204,6 +204,54 @@ class TestHashHash:
         )
 
 
+class TestHashAlgorithmEquality:
+    @pytest.mark.parametrize(
+        "algorithm_cls",
+        [
+            hashes.SHA1,
+            hashes.SHA512_224,
+            hashes.SHA512_256,
+            hashes.SHA224,
+            hashes.SHA256,
+            hashes.SHA384,
+            hashes.SHA512,
+            hashes.SHA3_224,
+            hashes.SHA3_256,
+            hashes.SHA3_384,
+            hashes.SHA3_512,
+            hashes.MD5,
+            hashes.SM3,
+        ],
+    )
+    def test_eq(self, algorithm_cls):
+        assert algorithm_cls() == algorithm_cls()
+        assert algorithm_cls() != DummyHashAlgorithm()
+        assert DummyHashAlgorithm() != algorithm_cls()
+        assert algorithm_cls() != object()
+
+    def test_ne_different_algorithm(self):
+        assert hashes.SHA256() != hashes.SHA384()
+
+    @pytest.mark.parametrize(
+        ("algorithm_cls", "digest_size"),
+        [
+            (hashes.SHAKE128, 32),
+            (hashes.SHAKE256, 32),
+            (hashes.BLAKE2b, 64),
+            (hashes.BLAKE2s, 32),
+        ],
+    )
+    def test_eq_digest_size(self, algorithm_cls, digest_size):
+        assert algorithm_cls(digest_size) == algorithm_cls(digest_size)
+        assert algorithm_cls(digest_size) != DummyHashAlgorithm(digest_size)
+        assert DummyHashAlgorithm(digest_size) != algorithm_cls(digest_size)
+        assert algorithm_cls(digest_size) != object()
+
+    @pytest.mark.parametrize("xof", [hashes.SHAKE128, hashes.SHAKE256])
+    def test_ne_different_digest_size(self, xof):
+        assert xof(digest_size=32) != xof(digest_size=64)
+
+
 class TestSHAKE:
     @pytest.mark.parametrize("xof", [hashes.SHAKE128, hashes.SHAKE256])
     def test_invalid_digest_type(self, xof):

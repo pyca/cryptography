@@ -33,6 +33,10 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSAMuHasher` for
   incrementally computing the ML-DSA ``mu`` (message representative) used by
   the external-mu signing and verification APIs.
+* The builtin :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+  classes and the classes in
+  :mod:`~cryptography.hazmat.primitives.asymmetric.padding` can now be
+  compared with ``==``.
 
 .. _v49-0-0:
 
