@@ -44,6 +44,18 @@ def load_pyproject_toml() -> dict:
         return tomllib.load(f)
 
 
+def install_cryptography(session: nox.Session, *args: str) -> None:
+    # Install the build requirements into the session's environment and
+    # then build without PEP 517 build isolation. Build isolation uses a
+    # temporary virtualenv with a randomized path, so PYO3_PYTHON differs
+    # on every build, which defeats cargo's caching of anything whose
+    # build script depends on it.
+    # See https://github.com/PyO3/pyo3/issues/6113
+    pyproject_data = load_pyproject_toml()
+    install(session, *pyproject_data["build-system"]["requires"])
+    install(session, "--no-build-isolation", *args)
+
+
 @nox.session
 @nox.session(name="tests-ssh")
 @nox.session(name="tests-randomorder")
@@ -73,13 +85,13 @@ def tests(session: nox.Session) -> None:
     install_spec = f".[{','.join(extras)}]"
     install(session, "-e", "./vectors")
     if session.name == "tests-rust-debug":
-        install(
+        install_cryptography(
             session,
             "--config-settings-package=cryptography:build-args=--profile=dev",
             install_spec,
         )
     else:
-        install(session, install_spec)
+        install_cryptography(session, install_spec)
 
     install(
         session,
@@ -121,7 +133,7 @@ def tests(session: nox.Session) -> None:
 
 @nox.session
 def docs(session: nox.Session) -> None:
-    install(session, ".[ssh]")
+    install_cryptography(session, ".[ssh]")
     install(
         session,
         "--group",
@@ -192,7 +204,7 @@ def docs(session: nox.Session) -> None:
 
 @nox.session(name="docs-linkcheck")
 def docs_linkcheck(session: nox.Session) -> None:
-    install(session, ".", "--group", "docs")
+    install_cryptography(session, ".", "--group", "docs")
 
     session.run(
         "sphinx-build", "-W", "-b", "linkcheck", "docs", "docs/_build/html"

@@ -19,7 +19,7 @@ runs:
         KEY: "${{ inputs.key }}"
     - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
       with:
-        key: ${{ steps.normalized-key.outputs.key }}-5
+        key: ${{ steps.normalized-key.outputs.key }}-6
     # Prebuilt sccache binaries are only published for these architectures;
     # everywhere else (e.g. ppc64le) the job proceeds without sccache.
     - uses: mozilla-actions/sccache-action@9e7fa8a12102821edf02ca5dbea1acd0f89a2696  # v0.0.10
@@ -44,7 +44,7 @@ runs:
         path: ${{ runner.temp }}/sccache
         # sccache verifies its own inputs (compiler digest, args, env), so
         # the key only affects hit rate, never correctness. restore-keys
-        # keeps the cache useful across Cargo.lock changes, which is
-        # exactly when rust-cache goes fully cold.
+        # keeps the cache useful across Cargo.lock changes and rust-cache
+        # key rolls.
         key: sccache-${{ steps.sccache.outputs.rustc-id }}-${{ steps.normalized-key.outputs.key }}-${{ hashFiles('Cargo.lock') }}
         restore-keys: sccache-${{ steps.sccache.outputs.rustc-id }}-${{ steps.normalized-key.outputs.key }}-
