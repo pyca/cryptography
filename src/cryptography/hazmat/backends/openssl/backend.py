@@ -256,10 +256,7 @@ class Backend:
         )
 
     def dh_supported(self) -> bool:
-        return (
-            not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
-            and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
-        )
+        return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
 
     def dh_x942_serialization_supported(self) -> bool:
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
