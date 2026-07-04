@@ -16,6 +16,10 @@ Changelog
 * Loading a public key or an EC private key now rejects DER where the
   ``subjectPublicKey`` (or EC ``publicKey``) ``BIT STRING`` declares a non-zero
   number of unused bits, instead of silently ignoring it.
+* Parsing a CRL entry's ``InvalidityDate`` extension now rejects a
+  ``GeneralizedTime`` that carries fractional seconds or another non-DER form,
+  matching the strict encoding already required for every other X.509 time
+  field.
 * :class:`~cryptography.hazmat.primitives.hashes.XOFHash` is now supported
   when building against AWS-LC.
 * :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key` and

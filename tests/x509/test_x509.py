@@ -763,6 +763,20 @@ class TestRevokedCertificate:
         with pytest.raises(ValueError):
             crl[0].extensions
 
+    def test_invalidity_date_fractional_seconds(self, backend):
+        # The InvalidityDate GeneralizedTime must be encoded as DER, so a
+        # value carrying fractional seconds is rejected, in line with the
+        # other X.509 time fields and this extension's own encoder.
+        crl = _load_cert(
+            os.path.join(
+                "x509", "custom", "crl_inval_date_fractional_seconds.der"
+            ),
+            x509.load_der_x509_crl,
+        )
+
+        with pytest.raises(ValueError):
+            crl[0].extensions
+
     def test_indexing(self, backend):
         crl = _load_cert(
             os.path.join("x509", "custom", "crl_all_reasons.pem"),
