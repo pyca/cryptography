@@ -830,6 +830,9 @@ Custom X.509 Certificate Revocation List Vectors
   outer signature algorithm. The signature on this CRL is invalid.
 * ``crl_issuer_invalid_printable_string.der`` - A CRL where the ``issuer``
   field contains an invalid ``PRINTABLE STRING`` value.
+* ``crl_inval_date_fractional_seconds.der`` - A CRL with one revocation whose
+  ``InvalidityDate`` entry extension carries a ``GeneralizedTime`` with
+  fractional seconds, which is not valid DER.
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
