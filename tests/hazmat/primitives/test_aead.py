@@ -7,6 +7,7 @@ import binascii
 import mmap
 import os
 import sys
+import typing
 
 import pytest
 
@@ -81,7 +82,7 @@ class TestChaCha20Poly1305:
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
-            ChaCha20Poly1305(object())  # type:ignore[arg-type]
+            ChaCha20Poly1305(typing.cast(typing.Any, object()))
 
         with pytest.raises(ValueError):
             ChaCha20Poly1305(b"0" * 31)
@@ -308,7 +309,7 @@ class TestAESCCM:
             AESCCM(key, tag_length=2)
 
         with pytest.raises(TypeError):
-            AESCCM(key, tag_length="notanint")  # type:ignore[arg-type]
+            AESCCM(key, tag_length=typing.cast(typing.Any, "notanint"))
 
     def test_invalid_nonce_length(self, backend):
         key = AESCCM.generate_key(128)
@@ -402,14 +403,14 @@ class TestAESCCM:
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
-            AESCCM(object())  # type:ignore[arg-type]
+            AESCCM(typing.cast(typing.Any, object()))
 
         with pytest.raises(ValueError):
             AESCCM(b"0" * 31)
 
     def test_bad_generate_key(self, backend):
         with pytest.raises(TypeError):
-            AESCCM.generate_key(object())  # type:ignore[arg-type]
+            AESCCM.generate_key(typing.cast(typing.Any, object()))
 
         with pytest.raises(ValueError):
             AESCCM.generate_key(129)
@@ -642,14 +643,14 @@ class TestAESGCM:
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
-            AESGCM(object())  # type:ignore[arg-type]
+            AESGCM(typing.cast(typing.Any, object()))
 
         with pytest.raises(ValueError):
             AESGCM(b"0" * 31)
 
     def test_bad_generate_key(self, backend):
         with pytest.raises(TypeError):
-            AESGCM.generate_key(object())  # type:ignore[arg-type]
+            AESGCM.generate_key(typing.cast(typing.Any, object()))
 
         with pytest.raises(ValueError):
             AESGCM.generate_key(129)
@@ -915,14 +916,14 @@ class TestAESOCB3:
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
-            AESOCB3(object())  # type:ignore[arg-type]
+            AESOCB3(typing.cast(typing.Any, object()))
 
         with pytest.raises(ValueError):
             AESOCB3(b"0" * 31)
 
     def test_bad_generate_key(self, backend):
         with pytest.raises(TypeError):
-            AESOCB3.generate_key(object())  # type:ignore[arg-type]
+            AESOCB3.generate_key(typing.cast(typing.Any, object()))
 
         with pytest.raises(ValueError):
             AESOCB3.generate_key(129)
@@ -1144,14 +1145,14 @@ class TestAESSIV:
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
-            AESSIV(object())  # type:ignore[arg-type]
+            AESSIV(typing.cast(typing.Any, object()))
 
         with pytest.raises(ValueError):
             AESSIV(b"0" * 31)
 
     def test_bad_generate_key(self, backend):
         with pytest.raises(TypeError):
-            AESSIV.generate_key(object())  # type:ignore[arg-type]
+            AESSIV.generate_key(typing.cast(typing.Any, object()))
 
         with pytest.raises(ValueError):
             AESSIV.generate_key(128)
@@ -1404,7 +1405,7 @@ class TestAESGCMSIV:
 
     def test_bad_key(self, backend):
         with pytest.raises(TypeError):
-            AESGCMSIV(object())  # type:ignore[arg-type]
+            AESGCMSIV(typing.cast(typing.Any, object()))
 
         with pytest.raises(ValueError):
             AESGCMSIV(b"0" * 31)
@@ -1418,7 +1419,7 @@ class TestAESGCMSIV:
 
     def test_bad_generate_key(self, backend):
         with pytest.raises(TypeError):
-            AESGCMSIV.generate_key(object())  # type:ignore[arg-type]
+            AESGCMSIV.generate_key(typing.cast(typing.Any, object()))
 
         with pytest.raises(ValueError):
             AESGCMSIV.generate_key(129)

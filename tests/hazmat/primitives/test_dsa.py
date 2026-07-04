@@ -631,13 +631,13 @@ class TestDSANumbers:
 
     def test_dsa_parameter_numbers_invalid_types(self):
         with pytest.raises(TypeError):
-            dsa.DSAParameterNumbers(p=None, q=2, g=3)  # type: ignore[arg-type]
+            dsa.DSAParameterNumbers(p=typing.cast(typing.Any, None), q=2, g=3)
 
         with pytest.raises(TypeError):
-            dsa.DSAParameterNumbers(p=1, q=None, g=3)  # type: ignore[arg-type]
+            dsa.DSAParameterNumbers(p=1, q=typing.cast(typing.Any, None), g=3)
 
         with pytest.raises(TypeError):
-            dsa.DSAParameterNumbers(p=1, q=2, g=None)  # type: ignore[arg-type]
+            dsa.DSAParameterNumbers(p=1, q=2, g=typing.cast(typing.Any, None))
 
     def test_dsa_public_numbers(self):
         parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
@@ -651,13 +651,13 @@ class TestDSANumbers:
         with pytest.raises(TypeError):
             dsa.DSAPublicNumbers(
                 y=4,
-                parameter_numbers=None,  # type: ignore[arg-type]
+                parameter_numbers=typing.cast(typing.Any, None),
             )
 
         with pytest.raises(TypeError):
             parameter_numbers = dsa.DSAParameterNumbers(p=1, q=2, g=3)
             dsa.DSAPublicNumbers(
-                y=None,  # type: ignore[arg-type]
+                y=typing.cast(typing.Any, None),
                 parameter_numbers=parameter_numbers,
             )
 
@@ -680,12 +680,12 @@ class TestDSANumbers:
         with pytest.raises(TypeError):
             dsa.DSAPrivateNumbers(
                 x=4,
-                public_numbers=None,  # type: ignore[arg-type]
+                public_numbers=typing.cast(typing.Any, None),
             )
 
         with pytest.raises(TypeError):
             dsa.DSAPrivateNumbers(
-                x=None,  # type: ignore[arg-type]
+                x=typing.cast(typing.Any, None),
                 public_numbers=public_numbers,
             )
 
@@ -950,7 +950,7 @@ class TestDSASerialization:
         )
         with pytest.raises(TypeError):
             key.private_bytes(
-                "notencoding",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "notencoding"),
                 serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption(),
             )
@@ -965,7 +965,7 @@ class TestDSASerialization:
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.PEM,
-                "invalidformat",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "invalidformat"),
                 serialization.NoEncryption(),
             )
 
@@ -980,7 +980,7 @@ class TestDSASerialization:
             key.private_bytes(
                 serialization.Encoding.PEM,
                 serialization.PrivateFormat.TraditionalOpenSSL,
-                "notanencalg",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "notanencalg"),
             )
 
     def test_private_bytes_unsupported_encryption_type(self, backend):
@@ -1065,7 +1065,7 @@ class TestDSAPEMPublicKeySerialization:
         key = DSA_KEY_2048.private_key(backend).public_key()
         with pytest.raises(TypeError):
             key.public_bytes(
-                "notencoding",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "notencoding"),
                 serialization.PublicFormat.SubjectPublicKeyInfo,
             )
 
@@ -1074,7 +1074,7 @@ class TestDSAPEMPublicKeySerialization:
         with pytest.raises(TypeError):
             key.public_bytes(
                 serialization.Encoding.PEM,
-                "invalidformat",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "invalidformat"),
             )
 
     def test_public_bytes_pkcs1_unsupported(self, backend):

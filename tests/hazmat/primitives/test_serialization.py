@@ -8,6 +8,7 @@ import itertools
 import os
 import sys
 import textwrap
+import typing
 
 import pytest
 
@@ -184,7 +185,7 @@ class TestDERSerialization:
                 key_file,
                 lambda derfile: load_der_private_key(
                     derfile.read(),
-                    password,  # type:ignore[arg-type]
+                    typing.cast(typing.Any, password),
                     backend,
                 ),
                 mode="rb",
@@ -959,7 +960,7 @@ class TestPEMSerialization:
                 key_file,
                 lambda pemfile: load_pem_private_key(
                     pemfile.read().encode(),
-                    password,  # type:ignore[arg-type]
+                    typing.cast(typing.Any, password),
                     backend,
                 ),
             )
@@ -1420,7 +1421,7 @@ class TestPEMSerialization:
 class TestKeySerializationEncryptionTypes:
     def test_non_bytes_password(self):
         with pytest.raises(ValueError):
-            BestAvailableEncryption(object())  # type:ignore[arg-type]
+            BestAvailableEncryption(typing.cast(typing.Any, object()))
 
     def test_encryption_with_zero_length_password(self):
         with pytest.raises(ValueError):
@@ -1874,12 +1875,12 @@ class TestEncryptionBuilder:
         with pytest.raises(ValueError):
             b.kdf_rounds(-1)
         with pytest.raises(TypeError):
-            b.kdf_rounds("string")  # type: ignore[arg-type]
+            b.kdf_rounds(typing.cast(typing.Any, "string"))
 
     def test_invalid_password(self):
         b = PrivateFormat.OpenSSH.encryption_builder()
         with pytest.raises(ValueError):
-            b.build(12)  # type: ignore[arg-type]
+            b.build(typing.cast(typing.Any, 12))
         with pytest.raises(ValueError):
             b.build(b"")
 

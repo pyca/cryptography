@@ -7,6 +7,7 @@ import binascii
 import os
 import random
 import sys
+import typing
 
 import pytest
 
@@ -42,15 +43,15 @@ class TestXOFHash:
     def test_hash_reject_unicode(self, backend):
         m = hashes.XOFHash(hashes.SHAKE128(sys.maxsize))
         with pytest.raises(TypeError):
-            m.update("\u00fc")  # type: ignore[arg-type]
+            m.update(typing.cast(typing.Any, "\u00fc"))
 
     def test_incorrect_hash_algorithm_type(self, backend):
         with pytest.raises(TypeError):
             # Instance required
-            hashes.XOFHash(hashes.SHAKE128)  # type: ignore[arg-type]
+            hashes.XOFHash(typing.cast(typing.Any, hashes.SHAKE128))
 
         with pytest.raises(TypeError):
-            hashes.XOFHash(hashes.SHA256())  # type: ignore[arg-type]
+            hashes.XOFHash(typing.cast(typing.Any, hashes.SHA256()))
 
     def test_raises_update_after_squeeze(self, backend):
         h = hashes.XOFHash(hashes.SHAKE128(digest_size=256))

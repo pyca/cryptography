@@ -4,6 +4,7 @@
 
 
 import binascii
+import typing
 
 import pytest
 
@@ -142,7 +143,7 @@ class TestCMAC:
     def test_invalid_algorithm(self, backend):
         key = b"0102030405"
         with pytest.raises(TypeError):
-            CMAC(ARC4(key), backend)  # type: ignore[arg-type]
+            CMAC(typing.cast(typing.Any, ARC4(key)), backend)
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             CMAC(DummyBlockCipherAlgorithm(b"bad"), backend)
@@ -181,10 +182,10 @@ class TestCMAC:
         cmac = CMAC(AES(key), backend)
 
         with pytest.raises(TypeError):
-            cmac.update("")  # type: ignore[arg-type]
+            cmac.update(typing.cast(typing.Any, ""))
 
         with pytest.raises(TypeError):
-            cmac.verify("")  # type: ignore[arg-type]
+            cmac.verify(typing.cast(typing.Any, ""))
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.cmac_algorithm_supported(

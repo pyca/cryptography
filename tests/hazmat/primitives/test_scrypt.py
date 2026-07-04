@@ -5,6 +5,7 @@
 
 import binascii
 import os
+import typing
 
 import pytest
 
@@ -88,7 +89,7 @@ class TestScrypt:
 
         with pytest.raises(TypeError):
             Scrypt(
-                salt,  # type: ignore[arg-type]
+                typing.cast(typing.Any, salt),
                 length,
                 work_factor,
                 block_size,
@@ -135,7 +136,7 @@ class TestScrypt:
         )
 
         with pytest.raises(TypeError):
-            scrypt.derive(password)  # type: ignore[arg-type]
+            scrypt.derive(typing.cast(typing.Any, password))
 
     def test_buffer_protocol(self, backend):
         password = bytearray(b"password")

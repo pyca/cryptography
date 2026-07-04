@@ -4,6 +4,7 @@
 
 
 import binascii
+import typing
 
 import pytest
 
@@ -45,7 +46,7 @@ class TestCipher:
         algorithm = object()
         with pytest.raises(TypeError):
             Cipher(
-                algorithm,  # type: ignore[arg-type]
+                typing.cast(typing.Any, algorithm),
                 mode=None,
                 backend=backend,
             )
@@ -194,28 +195,28 @@ class TestModeValidation:
 class TestModesRequireBytes:
     def test_cbc(self):
         with pytest.raises(TypeError):
-            modes.CBC([1] * 16)  # type:ignore[arg-type]
+            modes.CBC(typing.cast(typing.Any, [1] * 16))
 
     def test_cfb(self):
         with pytest.raises(TypeError):
-            CFB([1] * 16)  # type:ignore[arg-type]
+            CFB(typing.cast(typing.Any, [1] * 16))
 
     def test_cfb8(self):
         with pytest.raises(TypeError):
-            CFB8([1] * 16)  # type:ignore[arg-type]
+            CFB8(typing.cast(typing.Any, [1] * 16))
 
     def test_ofb(self):
         with pytest.raises(TypeError):
-            OFB([1] * 16)  # type:ignore[arg-type]
+            OFB(typing.cast(typing.Any, [1] * 16))
 
     def test_ctr(self):
         with pytest.raises(TypeError):
-            modes.CTR([1] * 16)  # type:ignore[arg-type]
+            modes.CTR(typing.cast(typing.Any, [1] * 16))
 
     def test_gcm_iv(self):
         with pytest.raises(TypeError):
-            modes.GCM([1] * 16)  # type:ignore[arg-type]
+            modes.GCM(typing.cast(typing.Any, [1] * 16))
 
     def test_gcm_tag(self):
         with pytest.raises(TypeError):
-            modes.GCM(b"\x00" * 16, [1] * 16)  # type:ignore[arg-type]
+            modes.GCM(b"\x00" * 16, typing.cast(typing.Any, [1] * 16))

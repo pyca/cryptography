@@ -6,6 +6,7 @@
 import binascii
 import os
 import struct
+import typing
 
 import pytest
 
@@ -129,11 +130,11 @@ class TestChaCha20:
             algorithms.ChaCha20(b"0" * 32, b"0")
 
         with pytest.raises(TypeError):
-            algorithms.ChaCha20(b"0" * 32, object())  # type:ignore[arg-type]
+            algorithms.ChaCha20(b"0" * 32, typing.cast(typing.Any, object()))
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            algorithms.ChaCha20("0" * 32, b"0" * 16)  # type:ignore[arg-type]
+            algorithms.ChaCha20(typing.cast(typing.Any, "0" * 32), b"0" * 16)
 
     def test_partial_blocks(self, backend):
         # Test that partial blocks and counter increments are handled

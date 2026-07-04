@@ -5,6 +5,7 @@
 
 import binascii
 import os
+import typing
 
 import pytest
 
@@ -49,7 +50,7 @@ class TestARC4:
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            ARC4("0" * 10)  # type: ignore[arg-type]
+            ARC4(typing.cast(typing.Any, "0" * 10))
 
 
 def test_invalid_mode_algorithm():
@@ -83,7 +84,7 @@ class TestTripleDES:
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            TripleDES("0" * 16)  # type: ignore[arg-type]
+            TripleDES(typing.cast(typing.Any, "0" * 16))
 
     def test_single_key_deprecated(self):
         with pytest.warns(utils.DeprecatedIn47):
@@ -111,7 +112,7 @@ class TestBlowfish:
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            Blowfish("0" * 8)  # type: ignore[arg-type]
+            Blowfish(typing.cast(typing.Any, "0" * 8))
 
 
 @pytest.mark.supported(
@@ -193,7 +194,7 @@ class TestCAST5:
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            CAST5("0" * 10)  # type: ignore[arg-type]
+            CAST5(typing.cast(typing.Any, "0" * 10))
 
 
 @pytest.mark.supported(
@@ -271,7 +272,7 @@ class TestIDEA:
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            IDEA("0" * 16)  # type: ignore[arg-type]
+            IDEA(typing.cast(typing.Any, "0" * 16))
 
 
 @pytest.mark.supported(
@@ -349,7 +350,7 @@ class TestSEED:
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            SEED("0" * 16)  # type: ignore[arg-type]
+            SEED(typing.cast(typing.Any, "0" * 16))
 
 
 @pytest.mark.supported(

@@ -4,6 +4,7 @@
 
 
 import datetime
+import typing
 
 import pytest
 
@@ -14,7 +15,7 @@ class TestRevokedCertificateBuilder:
     def test_serial_number_must_be_integer(self):
         with pytest.raises(TypeError):
             x509.RevokedCertificateBuilder().serial_number(
-                "notanx509name"  # type: ignore[arg-type]
+                typing.cast(typing.Any, "notanx509name")
             )
 
     def test_serial_number_must_be_non_negative(self):
@@ -77,7 +78,7 @@ class TestRevokedCertificateBuilder:
     def test_revocation_date_invalid(self):
         with pytest.raises(TypeError):
             x509.RevokedCertificateBuilder().revocation_date(
-                "notadatetime"  # type: ignore[arg-type]
+                typing.cast(typing.Any, "notadatetime")
             )
 
     def test_revocation_date_before_1950(self):
@@ -106,7 +107,7 @@ class TestRevokedCertificateBuilder:
     def test_add_invalid_extension(self):
         with pytest.raises(TypeError):
             x509.RevokedCertificateBuilder().add_extension(
-                "notanextension",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "notanextension"),
                 False,
             )
 

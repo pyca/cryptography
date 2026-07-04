@@ -8,6 +8,7 @@ import datetime
 import json
 import os
 import time
+import typing
 
 import pretend
 import pytest
@@ -116,9 +117,9 @@ class TestFernet:
     def test_invalid_types(self, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
         with pytest.raises(TypeError):
-            f.encrypt("")  # type: ignore[arg-type]
+            f.encrypt(typing.cast(typing.Any, ""))
         with pytest.raises(TypeError):
-            f.decrypt(12345)  # type: ignore[arg-type]
+            f.decrypt(typing.cast(typing.Any, 12345))
 
     def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
         f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
@@ -134,7 +135,7 @@ class TestFernet:
         with pytest.raises(ValueError):
             f.decrypt_at_time(
                 token,
-                ttl=None,  # type: ignore[arg-type]
+                ttl=typing.cast(typing.Any, None),
                 current_time=int(time.time()),
             )
 
@@ -199,7 +200,7 @@ class TestMultiFernet:
         with pytest.raises(ValueError):
             f.decrypt_at_time(
                 token,
-                ttl=None,  # type: ignore[arg-type]
+                ttl=typing.cast(typing.Any, None),
                 current_time=100,
             )
 
@@ -209,7 +210,7 @@ class TestMultiFernet:
 
     def test_non_iterable_argument(self, backend):
         with pytest.raises(TypeError):
-            MultiFernet(None)  # type: ignore[arg-type]
+            MultiFernet(typing.cast(typing.Any, None))
 
     def test_rotate_bytes(self, backend):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)

@@ -6,6 +6,7 @@
 import binascii
 import os
 import sys
+import typing
 
 import pytest
 
@@ -72,7 +73,7 @@ class TestHKDF:
             HKDF(
                 hashes.SHA256(),
                 16,
-                salt="foo",  # type: ignore[arg-type]
+                salt=typing.cast(typing.Any, "foo"),
                 info=None,
                 backend=backend,
             )
@@ -82,7 +83,7 @@ class TestHKDF:
                 hashes.SHA256(),
                 16,
                 salt=None,
-                info="foo",  # type: ignore[arg-type]
+                info=typing.cast(typing.Any, "foo"),
                 backend=backend,
             )
 
@@ -91,21 +92,21 @@ class TestHKDF:
                 hashes.SHA256(), 16, salt=None, info=None, backend=backend
             )
 
-            hkdf.derive("foo")  # type: ignore[arg-type]
+            hkdf.derive(typing.cast(typing.Any, "foo"))
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
                 hashes.SHA256(), 16, salt=None, info=None, backend=backend
             )
 
-            hkdf.verify("foo", b"bar")  # type: ignore[arg-type]
+            hkdf.verify(typing.cast(typing.Any, "foo"), b"bar")
 
         with pytest.raises(TypeError):
             hkdf = HKDF(
                 hashes.SHA256(), 16, salt=None, info=None, backend=backend
             )
 
-            hkdf.verify(b"foo", "bar")  # type: ignore[arg-type]
+            hkdf.verify(b"foo", typing.cast(typing.Any, "bar"))
 
     def test_derive_short_output(self, backend):
         hkdf = HKDF(hashes.SHA256(), 4, salt=None, info=None, backend=backend)
@@ -247,7 +248,7 @@ class TestHKDFExpand:
         hkdf = HKDFExpand(hashes.SHA256(), 42, info, backend)
 
         with pytest.raises(TypeError):
-            hkdf.derive("first")  # type: ignore[arg-type]
+            hkdf.derive(typing.cast(typing.Any, "first"))
 
     def test_overflow_protection_enormous_digest_size(self):
         enormous_digest_size = sys.maxsize >> 3

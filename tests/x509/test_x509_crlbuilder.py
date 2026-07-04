@@ -4,6 +4,7 @@
 
 
 import datetime
+import typing
 
 import pytest
 
@@ -42,7 +43,7 @@ class TestCertificateRevocationListBuilder:
     def test_issuer_name_invalid(self):
         builder = x509.CertificateRevocationListBuilder()
         with pytest.raises(TypeError):
-            builder.issuer_name("notanx509name")  # type:ignore[arg-type]
+            builder.issuer_name(typing.cast(typing.Any, "notanx509name"))
 
     def test_set_issuer_name_twice(self):
         builder = x509.CertificateRevocationListBuilder().issuer_name(
@@ -84,7 +85,7 @@ class TestCertificateRevocationListBuilder:
     def test_last_update_invalid(self):
         builder = x509.CertificateRevocationListBuilder()
         with pytest.raises(TypeError):
-            builder.last_update("notadatetime")  # type:ignore[arg-type]
+            builder.last_update(typing.cast(typing.Any, "notadatetime"))
 
     def test_last_update_before_1950(self):
         builder = x509.CertificateRevocationListBuilder()
@@ -129,7 +130,7 @@ class TestCertificateRevocationListBuilder:
     def test_next_update_invalid(self):
         builder = x509.CertificateRevocationListBuilder()
         with pytest.raises(TypeError):
-            builder.next_update("notadatetime")  # type:ignore[arg-type]
+            builder.next_update(typing.cast(typing.Any, "notadatetime"))
 
     def test_next_update_before_1950(self):
         builder = x509.CertificateRevocationListBuilder()
@@ -169,13 +170,13 @@ class TestCertificateRevocationListBuilder:
         builder = x509.CertificateRevocationListBuilder()
 
         with pytest.raises(TypeError):
-            builder.add_extension(object(), False)  # type:ignore[arg-type]
+            builder.add_extension(typing.cast(typing.Any, object()), False)
 
     def test_add_invalid_revoked_certificate(self):
         builder = x509.CertificateRevocationListBuilder()
 
         with pytest.raises(TypeError):
-            builder.add_revoked_certificate(object())  # type:ignore[arg-type]
+            builder.add_revoked_certificate(typing.cast(typing.Any, object()))
 
     def test_no_issuer_name(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
         private_key = rsa_key_2048
@@ -238,7 +239,7 @@ class TestCertificateRevocationListBuilder:
             builder.sign(
                 rsa_key_2048,
                 hashes.SHA256(),
-                rsa_padding=b"notapadding",  # type: ignore[arg-type]
+                rsa_padding=typing.cast(typing.Any, b"notapadding"),
             )
         eckey = ec.generate_private_key(ec.SECP256R1())
         with pytest.raises(TypeError):
@@ -536,7 +537,7 @@ class TestCertificateRevocationListBuilder:
         with pytest.raises(TypeError):
             builder.sign(
                 private_key,
-                object(),  # type: ignore[arg-type]
+                typing.cast(typing.Any, object()),
                 backend,
             )
 
@@ -562,7 +563,7 @@ class TestCertificateRevocationListBuilder:
         with pytest.raises(TypeError):
             builder.sign(
                 private_key,
-                object(),  # type:ignore[arg-type]
+                typing.cast(typing.Any, object()),
                 backend,
             )
         with pytest.raises(ValueError):
@@ -594,7 +595,7 @@ class TestCertificateRevocationListBuilder:
         with pytest.raises(TypeError):
             builder.sign(
                 private_key,
-                object(),  # type:ignore[arg-type]
+                typing.cast(typing.Any, object()),
                 backend,
             )
         with pytest.raises(ValueError):
@@ -893,7 +894,7 @@ class TestCertificateRevocationListBuilder:
         with pytest.raises(UnsupportedAlgorithm):
             builder.sign(
                 private_key,
-                hashes.MD5(),  # type: ignore[arg-type]
+                typing.cast(typing.Any, hashes.MD5()),
                 backend,
             )
 
@@ -920,7 +921,7 @@ class TestCertificateRevocationListBuilder:
         with pytest.raises(UnsupportedAlgorithm):
             builder.sign(
                 private_key,
-                hashes.MD5(),  # type: ignore[arg-type]
+                typing.cast(typing.Any, hashes.MD5()),
                 backend,
             )
 

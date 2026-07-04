@@ -6,6 +6,7 @@
 import binascii
 import os
 import sys
+import typing
 
 import pytest
 
@@ -51,7 +52,7 @@ class TestAES:
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            AES("0" * 32)  # type: ignore[arg-type]
+            AES(typing.cast(typing.Any, "0" * 32))
 
 
 class TestAESXTS:
@@ -62,7 +63,7 @@ class TestAESXTS:
 
     def test_xts_tweak_not_bytes(self):
         with pytest.raises(TypeError):
-            modes.XTS(32)  # type: ignore[arg-type]
+            modes.XTS(typing.cast(typing.Any, 32))
 
     def test_xts_tweak_too_small(self):
         with pytest.raises(ValueError):
@@ -102,7 +103,7 @@ class TestCamellia:
 
     def test_invalid_key_type(self):
         with pytest.raises(TypeError, match="key must be bytes"):
-            Camellia("0" * 32)  # type: ignore[arg-type]
+            Camellia(typing.cast(typing.Any, "0" * 32))
 
 
 @pytest.mark.supported(
@@ -247,9 +248,9 @@ class TestCipherUpdateInto:
         c = ciphers.Cipher(AES(key), modes.GCM(b"\x00" * 12), backend)
         encryptor = c.encryptor()
         with pytest.raises(TypeError, match=r"bytestring instead\?"):
-            encryptor.update("hello")  # type: ignore[arg-type]
+            encryptor.update(typing.cast(typing.Any, "hello"))
         with pytest.raises(TypeError, match="instance to a buffer"):
-            encryptor.update(object)  # type: ignore[arg-type]
+            encryptor.update(typing.cast(typing.Any, object))
 
 
 @pytest.mark.skipif(

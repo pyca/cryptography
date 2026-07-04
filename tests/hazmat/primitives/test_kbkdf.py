@@ -5,6 +5,7 @@
 
 import re
 import sys
+import typing
 
 import pytest
 
@@ -218,7 +219,7 @@ class TestKBKDFHMAC:
                 hashes.SHA1(),
                 Mode.CounterMode,
                 32,
-                b"r",  # type: ignore[arg-type]
+                typing.cast(typing.Any, b"r"),
                 4,
                 CounterLocation.BeforeFixed,
                 b"label",
@@ -249,7 +250,7 @@ class TestKBKDFHMAC:
                 Mode.CounterMode,
                 32,
                 4,
-                b"l",  # type: ignore[arg-type]
+                typing.cast(typing.Any, b"l"),
                 CounterLocation.BeforeFixed,
                 b"label",
                 b"context",
@@ -276,7 +277,7 @@ class TestKBKDFHMAC:
         with pytest.raises(TypeError):
             KBKDFHMAC(
                 hashes.SHA256(),
-                None,  # type: ignore[arg-type]
+                typing.cast(typing.Any, None),
                 32,
                 4,
                 4,
@@ -295,7 +296,7 @@ class TestKBKDFHMAC:
                 32,
                 4,
                 4,
-                None,  # type: ignore[arg-type]
+                typing.cast(typing.Any, None),
                 b"label",
                 b"context",
                 None,
@@ -486,7 +487,7 @@ class TestKBKDFHMAC:
                 4,
                 4,
                 CounterLocation.BeforeFixed,
-                "label",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "label"),
                 b"context",
                 None,
                 backend=backend,
@@ -502,7 +503,7 @@ class TestKBKDFHMAC:
                 4,
                 CounterLocation.BeforeFixed,
                 b"label",
-                "context",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "context"),
                 None,
                 backend=backend,
             )
@@ -521,7 +522,7 @@ class TestKBKDFHMAC:
                 None,
                 backend=backend,
             )
-            kdf.derive("material")  # type: ignore[arg-type]
+            kdf.derive(typing.cast(typing.Any, "material"))
 
     def test_buffer_protocol(self, backend):
         kdf = KBKDFHMAC(
@@ -668,7 +669,7 @@ class TestKBKDFCMAC:
                 algorithms.AES,
                 Mode.CounterMode,
                 32,
-                b"r",  # type: ignore[arg-type]
+                typing.cast(typing.Any, b"r"),
                 4,
                 CounterLocation.BeforeFixed,
                 b"label",
@@ -699,7 +700,7 @@ class TestKBKDFCMAC:
                 Mode.CounterMode,
                 32,
                 4,
-                b"l",  # type: ignore[arg-type]
+                typing.cast(typing.Any, b"l"),
                 CounterLocation.BeforeFixed,
                 b"label",
                 b"context",
@@ -726,7 +727,7 @@ class TestKBKDFCMAC:
         with pytest.raises(TypeError):
             KBKDFCMAC(
                 algorithms.AES,
-                None,  # type: ignore[arg-type]
+                typing.cast(typing.Any, None),
                 32,
                 4,
                 4,
@@ -745,7 +746,7 @@ class TestKBKDFCMAC:
                 32,
                 4,
                 4,
-                None,  # type: ignore[arg-type]
+                typing.cast(typing.Any, None),
                 b"label",
                 b"context",
                 None,
@@ -935,7 +936,7 @@ class TestKBKDFCMAC:
                 4,
                 4,
                 CounterLocation.BeforeFixed,
-                "label",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "label"),
                 b"context",
                 None,
                 backend=backend,
@@ -951,7 +952,7 @@ class TestKBKDFCMAC:
                 4,
                 CounterLocation.BeforeFixed,
                 b"label",
-                "context",  # type: ignore[arg-type]
+                typing.cast(typing.Any, "context"),
                 None,
                 backend=backend,
             )
@@ -986,7 +987,7 @@ class TestKBKDFCMAC:
             backend=backend,
         )
         with pytest.raises(TypeError):
-            kdf.derive("material")  # type: ignore[arg-type]
+            kdf.derive(typing.cast(typing.Any, "material"))
 
     def test_wrong_key_material_length(self, backend):
         kdf = KBKDFCMAC(
