@@ -2,8 +2,27 @@
 
 This directory documents an experiment that modified PyO3 v0.29.0 to reduce the
 amount of code its attribute macros generate, and quantifies the effect on
-`cryptography-rust`'s build time. The PyO3 changes live in
-`pyo3-codegen-slim.patch` (applies on top of the `v0.29.0` tag).
+`cryptography-rust`'s build time. The PyO3 changes are provided in two forms:
+
+- `pyo3-codegen-slim.patch` — plain diff against the `v0.29.0` tag (what the
+  measurements below were taken with).
+- `0001-Reduce-macro-generated-code-size.patch` — the same change rebased onto
+  PyO3 `main` (commit `90d63e8c`, 2026-07-04) as a `git am`-able mailbox patch.
+  The rebase was conflict-free and the reduction is unchanged (probe crate:
+  351 → 238 expanded lines on both v0.29.0 and main). To put it on a branch:
+
+  ```sh
+  git clone https://github.com/PyO3/pyo3.git && cd pyo3
+  git checkout -b codegen-slim origin/main
+  git am /path/to/0001-Reduce-macro-generated-code-size.patch
+  ```
+
+  On main + patch, PyO3's own test suite status is identical to the v0.29.0
+  validation described below: all lib and integration tests pass except 3
+  pre-existing `OsStr`/`Path` failures caused by this container's ASCII
+  filesystem encoding (they fail identically on pristine checkouts), and the
+  UI-test diagnostic snapshots need re-blessing (the `ui_test` harness also
+  wants inline annotation updates, which are best done by hand upstream).
 
 ## Headline results
 
