@@ -411,6 +411,22 @@ def process_rust_coverage(
             external=True,
         )
         assert isinstance(lcov_data, str)
+        # session.run captures stderr into the returned string, so
+        # llvm-cov warnings (e.g. "N functions have mismatched data")
+        # would otherwise end up in the .lcov file.
+        warnings = [
+            line
+            for line in lcov_data.splitlines()
+            if line.startswith("warning")
+        ]
+        if warnings:
+            for line in warnings:
+                session.log(line)
+            lcov_data = "\n".join(
+                line
+                for line in lcov_data.splitlines()
+                if not line.startswith("warning")
+            )
         lcov_data = LCOV_SOURCEFILE_RE.sub(
             lambda m: "SF:src/rust/" + m.group(1).replace("\\", "/"),
             lcov_data.replace("\r\n", "\n"),
