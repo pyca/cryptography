@@ -1704,9 +1704,12 @@ class TestRSAPKCS1Verification:
 class TestPKCS1v15:
     def test_eq(self):
         assert padding.PKCS1v15() == padding.PKCS1v15()
+
+    def test_ne(self):
         assert padding.PKCS1v15() != padding.PSS(
             mgf=padding.MGF1(hashes.SHA256()), salt_length=32
         )
+        assert padding.PKCS1v15() != object()
 
 
 class TestPSS:
@@ -1778,19 +1781,19 @@ class TestPSS:
             padding.PSS.DIGEST_LENGTH,
         ],
     )
-    def test_eq_different_salt_length(self, salt_length):
+    def test_ne_different_salt_length(self, salt_length):
         mgf = padding.MGF1(hashes.SHA256())
         assert padding.PSS(mgf=mgf, salt_length=salt_length) != padding.PSS(
             mgf=mgf, salt_length=32
         )
 
-    def test_eq_different_sentinel_salt_lengths(self):
+    def test_ne_different_sentinel_salt_lengths(self):
         mgf = padding.MGF1(hashes.SHA256())
         assert padding.PSS(
             mgf=mgf, salt_length=padding.PSS.AUTO
         ) != padding.PSS(mgf=mgf, salt_length=padding.PSS.DIGEST_LENGTH)
 
-    def test_eq_different_mgf(self):
+    def test_ne_different_mgf(self):
         assert padding.PSS(
             mgf=padding.MGF1(hashes.SHA256()),
             salt_length=padding.PSS.AUTO,
@@ -1799,12 +1802,13 @@ class TestPSS:
             salt_length=padding.PSS.AUTO,
         )
 
-    def test_eq_different_type(self):
+    def test_ne(self):
         pss = padding.PSS(
             mgf=padding.MGF1(hashes.SHA256()),
             salt_length=padding.PSS.AUTO,
         )
         assert pss != padding.MGF1(hashes.SHA256())
+        assert pss != object()
 
 
 class TestMGF1:
@@ -1819,9 +1823,12 @@ class TestMGF1:
 
     def test_eq(self):
         assert padding.MGF1(hashes.SHA256()) == padding.MGF1(hashes.SHA256())
+
+    def test_ne(self):
         assert padding.MGF1(hashes.SHA256()) != padding.MGF1(hashes.SHA512())
         assert padding.MGF1(hashes.SHA256()) != DummyMGF()
         assert DummyMGF() != padding.MGF1(hashes.SHA256())
+        assert padding.MGF1(hashes.SHA256()) != object()
 
 
 class TestOAEP:
@@ -1862,7 +1869,7 @@ class TestOAEP:
         )
         assert oaep1 == oaep2
 
-    def test_eq_different_mgf(self):
+    def test_ne_different_mgf(self):
         assert padding.OAEP(
             mgf=padding.MGF1(hashes.SHA256()),
             algorithm=hashes.SHA256(),
@@ -1873,7 +1880,7 @@ class TestOAEP:
             label=None,
         )
 
-    def test_eq_different_algorithm(self):
+    def test_ne_different_algorithm(self):
         assert padding.OAEP(
             mgf=padding.MGF1(hashes.SHA256()),
             algorithm=hashes.SHA256(),
@@ -1884,7 +1891,7 @@ class TestOAEP:
             label=None,
         )
 
-    def test_eq_different_label(self):
+    def test_ne_different_label(self):
         assert padding.OAEP(
             mgf=padding.MGF1(hashes.SHA256()),
             algorithm=hashes.SHA256(),
@@ -1895,13 +1902,14 @@ class TestOAEP:
             label=b"",
         )
 
-    def test_eq_different_type(self):
+    def test_ne(self):
         oaep = padding.OAEP(
             mgf=padding.MGF1(hashes.SHA256()),
             algorithm=hashes.SHA256(),
             label=None,
         )
         assert oaep != padding.PKCS1v15()
+        assert oaep != object()
 
 
 class TestRSADecryption:
