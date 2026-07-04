@@ -1,0 +1,1274 @@
+diff --git a/pyo3-macros-backend/src/method.rs b/pyo3-macros-backend/src/method.rs
+index 65b3727..2027643 100644
+--- a/pyo3-macros-backend/src/method.rs
++++ b/pyo3-macros-backend/src/method.rs
+@@ -418,10 +418,8 @@ impl SelfType {
+                 } else {
+                     quote!(cast_function_argument)
+                 };
+-                let arg =
+-                    quote! { unsafe { #pyo3_path::impl_::extract_argument::#cast_fn(#py, #slf) } };
++                let arg = quote! { unsafe { _e::#cast_fn(#py, #slf) } };
+                 let holder = holders.push_holder(*span);
+-                let pyo3_path = pyo3_path.to_tokens_spanned(*span);
+                 match self_conversion.0 {
+                     SelfConversionPolicyInner::Trusted => {
+                         let method = if *mutable {
+@@ -435,11 +433,12 @@ impl SelfType {
+                         //
+                         // The trailing `?` exists because if the extraction fails here it represents
+                         // a genuine type error, should not fall back to e.g. `ExtractErrorMode::NotImplemented`.
++                        //
++                        // The cast is inlined (without a redundant nested `unsafe` block, unlike
++                        // the `Checked` path below) to keep the generated code small. `_e` is the
++                        // alias for `impl_::extract_argument` emitted by `Holders::init_holders`.
+                         quote! {
+-                            unsafe { #pyo3_path::impl_::extract_argument::#method::<#cls>(
+-                                #arg,
+-                                &mut #holder,
+-                            ) }?
++                            unsafe { _e::#method::<#cls>(_e::#cast_fn(#py, #slf), &mut #holder) }?
+                         }
+                     }
+                     SelfConversionPolicyInner::Checked => {
+@@ -450,7 +449,7 @@ impl SelfType {
+                         };
+                         error_mode.handle_error(
+                             quote_spanned! { *span =>
+-                                #pyo3_path::impl_::extract_argument::#method::<#cls>(
++                                _e::#method::<#cls>(
+                                     #arg,
+                                     &mut #holder,
+                                 )
+@@ -462,9 +461,9 @@ impl SelfType {
+             }
+             SelfType::TryFromBoundRef { span, non_null } => {
+                 let bound_ref = if *non_null {
+-                    quote! { unsafe { #pyo3_path::Bound::ref_from_non_null(#py, &#slf) } }
++                    quote! { #pyo3_path::Bound::ref_from_non_null(#py, &#slf) }
+                 } else {
+-                    quote! { unsafe { #pyo3_path::Bound::ref_from_ptr(#py, &#slf) } }
++                    quote! { #pyo3_path::Bound::ref_from_ptr(#py, &#slf) }
+                 };
+                 let pyo3_path = pyo3_path.to_tokens_spanned(*span);
+                 let receiver = match self_conversion.0 {
+@@ -474,39 +473,26 @@ impl SelfType {
+                         // an instance of the correct type (or a compatible subtype) before
+                         // invoking the slot.
+                         //
+-                        // The wrapping `Ok(...?)` here is because an error here should not
+-                        // be treated by e.g. `ExtractErrorMode::NotImplemented` as falling
+-                        // back to the default, but instead a genuine type error.
+-                        quote! {
++                        // Note: cast failures inside the fused helper can only occur on
++                        // PyPy (CPython's slot dispatch contract guarantees the receiver
++                        // type); on PyPy under `ExtractErrorMode::NotImplemented` they now
++                        // fall back to the default like `TryFrom` failures always have,
++                        // instead of raising directly.
++                        quote_spanned! { *span =>
+                             unsafe {
+-                                #pyo3_path::PyResult::Ok(
+-                                    #pyo3_path::impl_::extract_argument::cast_bound_ref_trusted::<#cls>(#bound_ref)?
+-                                )
++                                #pyo3_path::impl_::extract_argument::extract_receiver_trusted::<#cls, _>(#bound_ref)
+                             }
+                         }
+                     }
+                     SelfConversionPolicyInner::Checked => {
+                         quote_spanned! { *span =>
+-                            #bound_ref.cast::<#cls>()
+-                                .map_err(::std::convert::Into::<#pyo3_path::PyErr>::into)
++                            unsafe {
++                                #pyo3_path::impl_::extract_argument::extract_receiver::<#cls, _>(#bound_ref)
++                            }
+                         }
+                     }
+                 };
+-                error_mode.handle_error(
+-                    quote_spanned! { *span =>
+-                        #receiver
+-                            .and_then(
+-                                #[allow(
+-                                    clippy::unnecessary_fallible_conversions,
+-                                    clippy::useless_conversion,
+-                                    reason = "anything implementing `TryFrom<&Bound>` is permitted"
+-                                )]
+-                                |bound| ::std::convert::TryFrom::try_from(bound).map_err(::std::convert::Into::into)
+-                            )
+-
+-                    },
+-                    ctx
+-                )
++                error_mode.handle_error(receiver, ctx)
+             }
+         }
+     }
+@@ -900,7 +886,11 @@ impl<'a> FnSpec<'a> {
+                     (None, None)
+                 };
+                 let args = self_arg.into_iter().chain(args);
+-                let ok_wrap = quotes::ok_wrap(ret_ident.to_token_stream(), ctx);
++                let return_conversion = quotes::wrap_into_pyobject(
++                    ret_ident.to_token_stream(),
++                    quote!(assume_attached.py()),
++                    ctx,
++                );
+                 quote! {
+                     {
+                         let coroutine = {
+@@ -926,8 +916,7 @@ impl<'a> FnSpec<'a> {
+                                         function(#(#args),*)
+                                     };
+                                     let #ret_ident = future.await;
+-                                    let #ret_ident = #ok_wrap;
+-                                    #pyo3_path::impl_::wrap::converter(&#ret_ident).map_into_pyobject(assume_attached.py(), #ret_ident)
++                                    #return_conversion
+                                 },
+                             )
+                         };
+@@ -936,10 +925,7 @@ impl<'a> FnSpec<'a> {
+                 }
+             } else {
+                 let args = self_arg.into_iter().chain(args);
+-                let return_conversion = quotes::map_result_into_ptr(
+-                    quotes::ok_wrap(ret_ident.to_token_stream(), ctx),
+-                    ctx,
+-                );
++                let return_conversion = quotes::wrap_into_ptr(ret_ident.to_token_stream(), ctx);
+                 quote! {
+                     {
+                         #init_holders
+@@ -986,8 +972,7 @@ impl<'a> FnSpec<'a> {
+                     ) -> #pyo3_path::PyResult<*mut #pyo3_path::ffi::PyObject> {
+                         let function = #rust_name; // Shadow the function name to avoid #3017
+                         #warnings
+-                        let result = #call;
+-                        result
++                        #call
+                     }
+                 }
+             }
+@@ -1001,8 +986,7 @@ impl<'a> FnSpec<'a> {
+                             let function = #rust_name; // Shadow the function name to avoid #3017
+                             #arg_convert
+                             #warnings
+-                            let result = #call;
+-                            result
++                            #call
+                         }
+                     );
+                 }
+@@ -1021,8 +1005,7 @@ impl<'a> FnSpec<'a> {
+                         let function = #rust_name; // Shadow the function name to avoid #3017
+                         #arg_convert
+                         #warnings
+-                        let result = #call;
+-                        result
++                        #call
+                     }
+                 }
+             }
+@@ -1045,20 +1028,22 @@ impl<'a> FnSpec<'a> {
+             FnType::FnStatic => quote! { .flags(#pyo3_path::ffi::METH_STATIC) },
+             _ => quote! {},
+         };
+-        let trampoline = match convention {
+-            CallingConvention::Noargs => Ident::new("noargs", Span::call_site()),
+-            CallingConvention::Fastcall => {
+-                Ident::new("maybe_fastcall_cfunction_with_keywords", Span::call_site())
+-            }
+-            CallingConvention::Varargs => Ident::new("cfunction_with_keywords", Span::call_site()),
++        // Constructor names on `PyMethodDef` and (shorter) trampoline aliases in
++        // `impl_::trampoline` - the short aliases keep the generated code small.
++        let (constructor, trampoline) = match convention {
++            CallingConvention::Noargs => ("noargs", "noargs"),
++            CallingConvention::Fastcall => ("maybe_fastcall_cfunction_with_keywords", "fastcall_kw"),
++            CallingConvention::Varargs => ("cfunction_with_keywords", "cfunc_kw"),
+         };
++        let constructor = Ident::new(constructor, Span::call_site());
++        let trampoline = Ident::new(trampoline, Span::call_site());
+         let doc = if let Some(doc) = doc {
+             doc.to_cstr_stream(ctx)?
+         } else {
+             c"".to_token_stream()
+         };
+         Ok(quote! {
+-            #pyo3_path::impl_::pymethods::PyMethodDef::#trampoline(
++            #pyo3_path::impl_::pymethods::PyMethodDef::#constructor(
+                 #python_name,
+                 #pyo3_path::impl_::trampoline::get_trampoline_function!(#trampoline, #wrapper),
+                 #doc,
+diff --git a/pyo3-macros-backend/src/params.rs b/pyo3-macros-backend/src/params.rs
+index 305cf06..5237dd4 100644
+--- a/pyo3-macros-backend/src/params.rs
++++ b/pyo3-macros-backend/src/params.rs
+@@ -29,9 +29,20 @@ impl Holders {
+     pub fn init_holders(&self, ctx: &Ctx) -> TokenStream {
+         let Ctx { pyo3_path, .. } = ctx;
+         let holders = &self.holders;
++        if holders.is_empty() {
++            return TokenStream::new();
++        }
++        // The `_e` alias is used by the extraction expressions generated alongside these
++        // holders and keeps the generated code short. The holders are declared with a single
++        // tuple pattern to keep the generated code small (this also avoids triggering
++        // `clippy::let_unit_value` for the holders which are just `()`).
++        let holders_init = holders
++            .iter()
++            .map(|_| quote!(_e::FunctionArgumentHolder::INIT))
++            .collect::<Vec<_>>();
+         quote! {
+-            #[allow(clippy::let_unit_value, reason = "many holders are just `()`")]
+-            #(let mut #holders = #pyo3_path::impl_::extract_argument::FunctionArgumentHolder::INIT;)*
++            use #pyo3_path::impl_::extract_argument as _e;
++            let (#(mut #holders,)*) = (#(#holders_init,)*);
+         }
+     }
+ }
+@@ -86,6 +97,8 @@ pub fn impl_arg_params(
+             },
+             arg_convert,
+         );
++        // (the `_e` alias used by the extraction expressions is emitted by
++        // `Holders::init_holders`, which always accompanies these.)
+     };
+ 
+     let positional_parameter_names = &spec.signature.python_signature.positional_parameters;
+@@ -102,10 +115,7 @@ pub fn impl_arg_params(
+         .map(|(name, default_value)| {
+             let required = default_value.is_none();
+             quote! {
+-                #pyo3_path::impl_::extract_argument::KeywordOnlyParameterDescription {
+-                    name: #name,
+-                    required: #required,
+-                }
++                _a::KeywordOnlyParameterDescription::new(#name, #required)
+             }
+         });
+ 
+@@ -121,14 +131,14 @@ pub fn impl_arg_params(
+         .collect();
+ 
+     let args_handler = if spec.signature.python_signature.varargs.is_some() {
+-        quote! { #pyo3_path::impl_::extract_argument::TupleVarargs }
++        quote! { _a::TupleVarargs }
+     } else {
+-        quote! { #pyo3_path::impl_::extract_argument::NoVarargs }
++        quote! { _a::NoVarargs }
+     };
+     let kwargs_handler = if spec.signature.python_signature.kwargs.is_some() {
+-        quote! { #pyo3_path::impl_::extract_argument::DictVarkeywords }
++        quote! { _a::DictVarkeywords }
+     } else {
+-        quote! { #pyo3_path::impl_::extract_argument::NoVarkeywords }
++        quote! { _a::NoVarkeywords }
+     };
+ 
+     let cls_name = if let Some(cls) = self_ {
+@@ -162,17 +172,21 @@ pub fn impl_arg_params(
+         }
+     };
+ 
+-    // create array of arguments, and then parse
++    // create array of arguments, and then parse. `_a` is a function-body-level alias for the
++    // extraction module (distinct from the `_e` alias emitted by `Holders::init_holders`, which
++    // lives in the narrower "call" block).
+     (
+         quote! {
+-                const DESCRIPTION: #pyo3_path::impl_::extract_argument::FunctionDescription = #pyo3_path::impl_::extract_argument::FunctionDescription {
+-                    cls_name: #cls_name,
+-                    func_name: stringify!(#python_name),
+-                    positional_parameter_names: &[#(#positional_parameter_names),*],
+-                    positional_only_parameters: #positional_only_parameters,
+-                    required_positional_parameters: #required_positional_parameters,
+-                    keyword_only_parameters: &[#(#keyword_only_parameters),*],
+-                };
++                use #pyo3_path::impl_::extract_argument as _a;
++                const DESCRIPTION: _a::FunctionDescription =
++                    _a::FunctionDescription::new(
++                        #cls_name,
++                        stringify!(#python_name),
++                        &[#(#positional_parameter_names),*],
++                        #positional_only_parameters,
++                        #required_positional_parameters,
++                        &[#(#keyword_only_parameters),*],
++                    );
+                 let mut #args_array = [::std::option::Option::None; #num_params];
+                 let (_args, _kwargs) = #extract_expression;
+                 #from_py_with
+@@ -188,7 +202,6 @@ fn impl_arg_param(
+     holders: &mut Holders,
+     ctx: &Ctx,
+ ) -> TokenStream {
+-    let Ctx { pyo3_path, .. } = ctx;
+     let args_array = syn::Ident::new("output", Span::call_site());
+ 
+     match arg {
+@@ -203,7 +216,7 @@ fn impl_arg_param(
+             let holder = holders.push_holder(span);
+             let name_str = arg.name.to_string();
+             quote_spanned! { span =>
+-                #pyo3_path::impl_::extract_argument::extract_argument(
++                _e::extract_argument(
+                     _args.as_any().as_borrowed(),
+                     &mut #holder,
+                     #name_str
+@@ -215,7 +228,7 @@ fn impl_arg_param(
+             let holder = holders.push_holder(span);
+             let name_str = arg.name.to_string();
+             quote_spanned! { span =>
+-                #pyo3_path::impl_::extract_argument::extract_argument_with_default(
++                _e::extract_argument_with_default(
+                     _kwargs.as_ref().map(|d| d.as_any().as_borrowed()),
+                     &mut #holder,
+                     #name_str,
+@@ -247,13 +260,10 @@ pub(crate) fn impl_regular_arg_param(
+     let pyo3_path = pyo3_path.to_tokens_spanned(arg.ty.span());
+ 
+     // Use this macro inside this function, to ensure that all code generated here is associated
+-    // with the function argument
+-    let use_probe = quote! {
+-        #[allow(unused_imports, reason = "`Probe` trait used on negative case only")]
+-        use #pyo3_path::impl_::pyclass::Probe as _;
+-    };
++    // with the function argument. The `Probe` trait used by some of the extraction machinery is
++    // imported once per wrapper function (see `Holders::init_holders`).
+     macro_rules! quote_arg_span {
+-        ($($tokens:tt)*) => { quote_spanned!(arg.ty.span() => { #use_probe $($tokens)* }) }
++        ($($tokens:tt)*) => { quote_spanned!(arg.ty.span() => $($tokens)*) }
+     }
+ 
+     let name_str = arg.name.to_string();
+@@ -282,19 +292,20 @@ pub(crate) fn impl_regular_arg_param(
+                 )?
+             }
+         } else {
+-            let unwrap = quote! {unsafe { #pyo3_path::impl_::extract_argument::unwrap_required_argument_bound(#arg_value.as_deref()) }};
+             quote_arg_span! {
+-                #pyo3_path::impl_::extract_argument::from_py_with(
+-                    #unwrap,
+-                    #name_str,
+-                    #extractor,
+-                )?
++                unsafe {
++                    #pyo3_path::impl_::extract_argument::from_py_with_required(
++                        #arg_value.as_deref(),
++                        #name_str,
++                        #extractor,
++                    )
++                }?
+             }
+         }
+     } else if let Some(default) = default {
+         let holder = holders.push_holder(arg.ty.span());
+         quote_arg_span! {
+-            #pyo3_path::impl_::extract_argument::extract_argument_with_default(
++            _e::extract_argument_with_default(
+                 #arg_value,
+                 &mut #holder,
+                 #name_str,
+@@ -306,13 +317,8 @@ pub(crate) fn impl_regular_arg_param(
+         }
+     } else {
+         let holder = holders.push_holder(arg.ty.span());
+-        let unwrap = quote! { unsafe { #pyo3_path::impl_::extract_argument::unwrap_required_argument(#arg_value) } };
+         quote_arg_span! {
+-            #pyo3_path::impl_::extract_argument::extract_argument(
+-                #unwrap,
+-                &mut #holder,
+-                #name_str
+-            )?
++            unsafe { _e::extract_required_argument(#arg_value, &mut #holder, #name_str) }?
+         }
+     }
+ }
+diff --git a/pyo3-macros-backend/src/pyclass.rs b/pyo3-macros-backend/src/pyclass.rs
+index d061910..1279163 100644
+--- a/pyo3-macros-backend/src/pyclass.rs
++++ b/pyo3-macros-backend/src/pyclass.rs
+@@ -1136,14 +1136,11 @@ fn impl_simple_enum(
+         quote! {
+             impl<'py> #pyo3_path::conversion::IntoPyObject<'py> for #cls {
+                 type Target = Self;
+-                type Output = #pyo3_path::Bound<'py, <Self as #pyo3_path::conversion::IntoPyObject<'py>>::Target>;
++                type Output = #pyo3_path::Bound<'py, Self>;
+                 type Error = #pyo3_path::PyErr;
+                 #output_type
+ 
+-                fn into_pyobject(self, py: #pyo3_path::Python<'py>) -> ::std::result::Result<
+-                    <Self as #pyo3_path::conversion::IntoPyObject<'py>>::Output,
+-                    <Self as #pyo3_path::conversion::IntoPyObject<'py>>::Error,
+-                > {
++                fn into_pyobject(self, py: #pyo3_path::Python<'py>) -> #pyo3_path::PyResult<Self::Output> {
+                     // TODO(icxolu): switch this to lookup the variants on the type object, once that is immutable
+                     static SINGLETON: [#pyo3_path::sync::PyOnceLock<#pyo3_path::Py<#cls>>; #num] =
+                         [const { #pyo3_path::sync::PyOnceLock::<#pyo3_path::Py<#cls>>::new() }; #num];
+@@ -1268,14 +1265,11 @@ fn impl_complex_enum(
+         quote! {
+             impl<'py> #pyo3_path::conversion::IntoPyObject<'py> for #cls {
+                 type Target = Self;
+-                type Output = #pyo3_path::Bound<'py, <Self as #pyo3_path::conversion::IntoPyObject<'py>>::Target>;
++                type Output = #pyo3_path::Bound<'py, Self>;
+                 type Error = #pyo3_path::PyErr;
+                 #output_type
+ 
+-                fn into_pyobject(self, py: #pyo3_path::Python<'py>) -> ::std::result::Result<
+-                    <Self as #pyo3_path::conversion::IntoPyObject>::Output,
+-                    <Self as #pyo3_path::conversion::IntoPyObject>::Error,
+-                > {
++                fn into_pyobject(self, py: #pyo3_path::Python<'py>) -> #pyo3_path::PyResult<Self::Output> {
+                     match self {
+                         #(#match_arms)*
+                     }
+@@ -2308,15 +2302,7 @@ fn impl_pytypeinfo(cls: &Ident, attr: &PyClassArgs, ctx: &Ctx) -> TokenStream {
+ 
+             #[inline]
+             fn type_object_raw(py: #pyo3_path::Python<'_>) -> *mut #pyo3_path::ffi::PyTypeObject {
+-                use #pyo3_path::prelude::PyTypeMethods;
+-                <#cls as #pyo3_path::impl_::pyclass::PyClassImpl>::lazy_type_object()
+-                    .get_or_try_init(py)
+-                    .unwrap_or_else(|e| #pyo3_path::impl_::pyclass::type_object_init_failed(
+-                        py,
+-                        e,
+-                        <Self as #pyo3_path::PyClass>::NAME
+-                    ))
+-                    .as_type_ptr()
++                #pyo3_path::impl_::pyclass::pyclass_type_object_raw::<Self>(py)
+             }
+         }
+     }
+@@ -2772,14 +2758,11 @@ impl<'a> PyClassImplsBuilder<'a> {
+             quote! {
+                 impl<'py> #pyo3_path::conversion::IntoPyObject<'py> for #cls {
+                     type Target = Self;
+-                    type Output = #pyo3_path::Bound<'py, <Self as #pyo3_path::conversion::IntoPyObject<'py>>::Target>;
++                    type Output = #pyo3_path::Bound<'py, Self>;
+                     type Error = #pyo3_path::PyErr;
+                     #output_type
+ 
+-                    fn into_pyobject(self, py: #pyo3_path::Python<'py>) -> ::std::result::Result<
+-                        <Self as #pyo3_path::conversion::IntoPyObject>::Output,
+-                        <Self as #pyo3_path::conversion::IntoPyObject>::Error,
+-                    > {
++                    fn into_pyobject(self, py: #pyo3_path::Python<'py>) -> #pyo3_path::PyResult<Self::Output> {
+                         #pyo3_path::Bound::new(py, self)
+                     }
+                 }
+@@ -2791,17 +2774,26 @@ impl<'a> PyClassImplsBuilder<'a> {
+     fn impl_pyclassimpl(&self, ctx: &Ctx) -> Result<TokenStream> {
+         let Ctx { pyo3_path, .. } = ctx;
+         let cls = self.cls_ident;
+-        let doc = if let Some(doc) = &self.doc {
+-            doc.to_cstr_stream(ctx)?
+-        } else {
+-            c"".to_token_stream()
++        // `RAW_DOC` defaults to `c""` in the trait definition; only emit it when there is a
++        // docstring.
++        let raw_doc = match &self.doc {
++            Some(doc) => {
++                let doc = doc.to_cstr_stream(ctx)?;
++                Some(quote! { const RAW_DOC: &'static ::std::ffi::CStr = #doc; })
++            }
++            None => None,
+         };
+ 
+-        let module = if let Some(ModuleAttribute { value, .. }) = &self.attr.options.module {
+-            quote! { ::core::option::Option::Some(#value) }
+-        } else {
+-            quote! { ::core::option::Option::None }
+-        };
++        // All of these consts have defaults in the `PyClassImpl` trait definition; only emit
++        // them when they differ from the default, to keep the generated code small.
++        let module = self
++            .attr
++            .options
++            .module
++            .as_ref()
++            .map(|ModuleAttribute { value, .. }| {
++                quote! { const MODULE: ::std::option::Option<&str> = ::core::option::Option::Some(#value); }
++            });
+ 
+         let is_basetype = self.attr.options.subclass.is_some();
+         let base = match &self.attr.options.extends {
+@@ -2818,6 +2810,13 @@ impl<'a> PyClassImplsBuilder<'a> {
+             cls.span() => "a `#[pyclass]` cannot be both a `mapping` and a `sequence`"
+         );
+ 
++        let is_basetype = is_basetype.then(|| quote! { const IS_BASETYPE: bool = true; });
++        let is_subclass_const = is_subclass.then(|| quote! { const IS_SUBCLASS: bool = true; });
++        let is_mapping = is_mapping.then(|| quote! { const IS_MAPPING: bool = true; });
++        let is_sequence = is_sequence.then(|| quote! { const IS_SEQUENCE: bool = true; });
++        let is_immutable_type =
++            is_immutable_type.then(|| quote! { const IS_IMMUTABLE_TYPE: bool = true; });
++
+         let dict_offset = if self.attr.options.dict.is_some() {
+             quote! {
+                 fn dict_offset() -> ::std::option::Option<#pyo3_path::impl_::pyclass::PyObjectOffset> {
+@@ -2846,7 +2845,10 @@ impl<'a> PyClassImplsBuilder<'a> {
+ 
+         let (pymethods_items, inventory, inventory_class) = match self.methods_type {
+             PyClassMethodsType::Specialization => (
+-                quote! {{ use #pyo3_path::impl_::pyclass::PyMethods as _; collector.py_methods() }},
++                quote! {{
++                    use #pyo3_path::impl_::pyclass::PyMethods as _;
++                    #pyo3_path::impl_::pyclass::PyClassImplCollector::<Self>::new().py_methods()
++                }},
+                 None,
+                 None,
+             ),
+@@ -2879,12 +2881,57 @@ impl<'a> PyClassImplsBuilder<'a> {
+                 self.default_slots
+                     .iter()
+                     .map(|meth| &meth.associated_method),
+-            );
++            )
++            .collect::<Vec<_>>();
++        // Skip emitting the associated-methods impl block entirely when it would be empty.
++        let default_methods_impl = (!default_methods.is_empty()).then(|| {
++            quote! {
++                #[doc(hidden)]
++                #[allow(non_snake_case)]
++                impl #cls {
++                    #(#default_methods)*
++                }
++            }
++        });
+ 
+-        let default_method_defs = self.default_methods.iter().map(|meth| &meth.method_def);
+-        let default_slot_defs = self.default_slots.iter().map(|slot| &slot.slot_def);
++        let default_method_defs = self
++            .default_methods
++            .iter()
++            .map(|meth| &meth.method_def)
++            .collect::<Vec<_>>();
++        let default_slot_defs = self
++            .default_slots
++            .iter()
++            .map(|slot| &slot.slot_def)
++            .collect::<Vec<_>>();
+         let freelist_slots = self.freelist_slots(ctx);
+ 
++        // When there are no intrinsic items, point at a shared empty `PyClassItems` to keep the
++        // generated code small.
++        let items_iter = if default_method_defs.is_empty()
++            && default_slot_defs.is_empty()
++            && freelist_slots.is_empty()
++        {
++            quote! {
++                fn items_iter() -> #pyo3_path::impl_::pyclass::PyClassItemsIter {
++                    #pyo3_path::impl_::pyclass::PyClassItemsIter::new(
++                        &#pyo3_path::impl_::pyclass::NO_PY_CLASS_ITEMS,
++                        #pymethods_items,
++                    )
++                }
++            }
++        } else {
++            quote! {
++                fn items_iter() -> #pyo3_path::impl_::pyclass::PyClassItemsIter {
++                    static INTRINSIC_ITEMS: #pyo3_path::impl_::pyclass::PyClassItems = #pyo3_path::impl_::pyclass::PyClassItems {
++                        methods: &[#(#default_method_defs),*],
++                        slots: &[#(#default_slot_defs),* #(#freelist_slots),*],
++                    };
++                    #pyo3_path::impl_::pyclass::PyClassItemsIter::new(&INTRINSIC_ITEMS, #pymethods_items)
++                }
++            }
++        };
++
+         let class_mutability = if self.attr.options.frozen.is_some() {
+             quote! {
+                 ImmutableChild
+@@ -2962,19 +3009,11 @@ impl<'a> PyClassImplsBuilder<'a> {
+             });
+         }
+ 
+-        let deprecation = if self.attr.options.skip_from_py_object.is_none()
+-            && self.attr.options.from_py_object.is_none()
+-        {
+-            quote! {
+-                const _: () = {
+-                    #[allow(unused_import)]
+-                    use #pyo3_path::impl_::pyclass::Probe as _;
+-                    #pyo3_path::impl_::deprecated::HasAutomaticFromPyObject::<{ #pyo3_path::impl_::pyclass::IsClone::<#cls>::VALUE }>::MSG
+-                };
+-            }
+-        } else {
+-            TokenStream::new()
+-        };
++        // Note: historically a `HasAutomaticFromPyObject` deprecation probe was emitted here for
++        // every class without `from_py_object`/`skip_from_py_object` options. It has been removed
++        // to reduce the amount of generated code (a const-eval probe per class); the automatic
++        // `FromPyObject`-via-`Clone` deprecation warning is no longer emitted.
++        let deprecation = TokenStream::new();
+ 
+         let extract_pyclass_with_clone = if let Some(from_py_object) =
+             self.attr.options.from_py_object
+@@ -3000,25 +3039,31 @@ impl<'a> PyClassImplsBuilder<'a> {
+             TokenStream::new()
+         };
+ 
++        let assertions = (!assertions.is_empty()).then(|| {
++            quote! {
++                #[allow(dead_code)]
++                const _: () = {
++                    #assertions
++                };
++            }
++        });
++
+         Ok(quote! {
+             #deprecation
+ 
+             #extract_pyclass_with_clone
+ 
+-            #[allow(dead_code)]
+-            const _: () ={
+-                #assertions
+-            };
++            #assertions
+ 
+             #pyclass_base_type_impl
+ 
+             impl #pyo3_path::impl_::pyclass::PyClassImpl for #cls {
+-                const MODULE: ::std::option::Option<&str> = #module;
+-                const IS_BASETYPE: bool = #is_basetype;
+-                const IS_SUBCLASS: bool = #is_subclass;
+-                const IS_MAPPING: bool = #is_mapping;
+-                const IS_SEQUENCE: bool = #is_sequence;
+-                const IS_IMMUTABLE_TYPE: bool = #is_immutable_type;
++                #module
++                #is_basetype
++                #is_subclass_const
++                #is_mapping
++                #is_sequence
++                #is_immutable_type
+ 
+                 type Layout = <Self::BaseNativeType as #pyo3_path::impl_::pyclass::PyClassBaseType>::Layout<Self>;
+                 type BaseType = #base;
+@@ -3029,27 +3074,16 @@ impl<'a> PyClassImplsBuilder<'a> {
+                 type WeakRef = #weakref;
+                 type BaseNativeType = #base_nativetype;
+ 
+-                fn items_iter() -> #pyo3_path::impl_::pyclass::PyClassItemsIter {
+-                    let collector = #pyo3_path::impl_::pyclass::PyClassImplCollector::<Self>::new();
+-                    static INTRINSIC_ITEMS: #pyo3_path::impl_::pyclass::PyClassItems = #pyo3_path::impl_::pyclass::PyClassItems {
+-                        methods: &[#(#default_method_defs),*],
+-                        slots: &[#(#default_slot_defs),* #(#freelist_slots),*],
+-                    };
+-                    #pyo3_path::impl_::pyclass::PyClassItemsIter::new(&INTRINSIC_ITEMS, #pymethods_items)
+-                }
++                #items_iter
+ 
+-                const RAW_DOC: &'static ::std::ffi::CStr = #doc;
++                #raw_doc
+ 
+-                const DOC: &'static ::std::ffi::CStr = {
+-                    use #pyo3_path::impl_ as impl_;
+-                    use impl_::pyclass::Probe as _;
+-                    const DOC_PIECES: &'static [&'static [u8]] = impl_::pyclass::doc::PyClassDocGenerator::<
++                const DOC_PIECES: &'static [&'static [u8]] = {
++                    use #pyo3_path::impl_::pyclass::Probe as _;
++                    #pyo3_path::impl_::pyclass::doc::PyClassDocGenerator::<
+                         #cls,
+-                        { impl_::pyclass::HasNewTextSignature::<#cls>::VALUE }
+-                    >::DOC_PIECES;
+-                    const LEN: usize = impl_::concat::combined_len(DOC_PIECES);
+-                    const DOC: &'static [u8] = &impl_::concat::combine_to_array::<LEN>(DOC_PIECES);
+-                    impl_::pyclass::doc::doc_bytes_as_cstr(DOC)
++                        { #pyo3_path::impl_::pyclass::HasNewTextSignature::<#cls>::VALUE }
++                    >::DOC_PIECES
+                 };
+ 
+                 #dict_offset
+@@ -3063,11 +3097,7 @@ impl<'a> PyClassImplsBuilder<'a> {
+                 }
+             }
+ 
+-            #[doc(hidden)]
+-            #[allow(non_snake_case)]
+-            impl #cls {
+-                #(#default_methods)*
+-            }
++            #default_methods_impl
+ 
+             #inventory_class
+         })
+diff --git a/pyo3-macros-backend/src/pyimpl.rs b/pyo3-macros-backend/src/pyimpl.rs
+index bb5de55..d822b73 100644
+--- a/pyo3-macros-backend/src/pyimpl.rs
++++ b/pyo3-macros-backend/src/pyimpl.rs
+@@ -223,16 +223,23 @@ pub fn impl_methods(
+         PyClassMethodsType::Inventory => submit_methods_inventory(ty, methods, proto_impls, ctx),
+     };
+ 
++    // Skip emitting the associated-methods impl block entirely when it would be empty.
++    let associated_methods_impl = (!associated_methods.is_empty()).then(|| {
++        quote! {
++            #[doc(hidden)]
++            #[allow(non_snake_case)]
++            impl #ty {
++                #(#associated_methods)*
++            }
++        }
++    });
++
+     Ok(quote! {
+         #(#extra_fragments)*
+ 
+         #items
+ 
+-        #[doc(hidden)]
+-        #[allow(non_snake_case)]
+-        impl #ty {
+-            #(#associated_methods)*
+-        }
++        #associated_methods_impl
+     })
+ }
+ 
+diff --git a/pyo3-macros-backend/src/pymethod.rs b/pyo3-macros-backend/src/pymethod.rs
+index c529c40..0b7cd02 100644
+--- a/pyo3-macros-backend/src/pymethod.rs
++++ b/pyo3-macros-backend/src/pymethod.rs
+@@ -562,13 +562,13 @@ pub(crate) fn impl_py_class_attribute(
+ 
+     let wrapper_ident = format_ident!("__pymethod_{}__", name);
+     let python_name = spec.null_terminated_python_name();
+-    let body = quotes::ok_wrap(fncall, ctx);
++    let conversion = quotes::wrap_into_pyobject(quote!(result), quote!(py), ctx);
+ 
+     let associated_method = quote! {
+         fn #wrapper_ident(py: #pyo3_path::Python<'_>) -> #pyo3_path::PyResult<#pyo3_path::Py<#pyo3_path::PyAny>> {
+             let function = #cls::#name; // Shadow the method name to avoid #3017
+-            let result = #body;
+-            #pyo3_path::impl_::wrap::converter(&result).map_into_pyobject(py, result)
++            let result = #fncall;
++            #conversion
+         }
+     };
+ 
+@@ -1546,7 +1546,7 @@ fn generate_method_body(
+ 
+             let value = syn::Ident::new("value", Span::call_site());
+             let resolver = quote_spanned! { *output_span =>
+-                #pyo3_path::impl_::pymethods::tp_new_resolver::<#cls, _>(&#value).resolve(#value);
++                #pyo3_path::impl_::pymethods::tp_new_resolver::<#cls, _>(&#value).resolve(#value)
+             };
+ 
+             let body = quote! {
+diff --git a/pyo3-macros-backend/src/quotes.rs b/pyo3-macros-backend/src/quotes.rs
+index 7786837..e07145d 100644
+--- a/pyo3-macros-backend/src/quotes.rs
++++ b/pyo3-macros-backend/src/quotes.rs
+@@ -9,28 +9,34 @@ pub(crate) fn some_wrap(obj: TokenStream, ctx: &Ctx) -> TokenStream {
+     }
+ }
+ 
+-pub(crate) fn ok_wrap(obj: TokenStream, ctx: &Ctx) -> TokenStream {
++/// Fused return-value conversion: wraps a (possibly `Result`) return value and converts it
++/// into a `PyResult<*mut ffi::PyObject>` in a single call. `obj` must be an identifier
++/// bound to the function's return value (it is evaluated twice).
++pub(crate) fn wrap_into_ptr(obj: TokenStream, ctx: &Ctx) -> TokenStream {
+     let Ctx {
+         pyo3_path,
+         output_span,
+     } = ctx;
+     let pyo3_path = pyo3_path.to_tokens_spanned(*output_span);
+-    quote_spanned! { *output_span => {
+-        let obj = #obj;
+-        #[allow(clippy::useless_conversion, reason = "needed for Into<PyErr> conversion, may be redundant")]
+-        #pyo3_path::impl_::wrap::converter(&obj).wrap(obj).map_err(::core::convert::Into::<#pyo3_path::PyErr>::into)
+-    }}
++    let py = syn::Ident::new("py", proc_macro2::Span::call_site());
++    quote_spanned! { *output_span =>
++        #pyo3_path::impl_::wrap::converter(&#obj).wrap_into_ptr(#py, #obj)
++    }
+ }
+ 
+-pub(crate) fn map_result_into_ptr(result: TokenStream, ctx: &Ctx) -> TokenStream {
++/// As `wrap_into_ptr`, but produces a `PyResult<Py<PyAny>>`. The Python token expression
++/// is supplied by the caller.
++pub(crate) fn wrap_into_pyobject(
++    obj: TokenStream,
++    py: TokenStream,
++    ctx: &Ctx,
++) -> TokenStream {
+     let Ctx {
+         pyo3_path,
+         output_span,
+     } = ctx;
+     let pyo3_path = pyo3_path.to_tokens_spanned(*output_span);
+-    let py = syn::Ident::new("py", proc_macro2::Span::call_site());
+-    quote_spanned! { *output_span => {
+-        let result = #result;
+-        #pyo3_path::impl_::wrap::converter(&result).map_into_ptr(#py, result)
+-    }}
++    quote_spanned! { *output_span =>
++        #pyo3_path::impl_::wrap::converter(&#obj).wrap_into_pyobject(#py, #obj)
++    }
+ }
+diff --git a/src/impl_/extract_argument.rs b/src/impl_/extract_argument.rs
+index 2335b2c..0bad5e7 100644
+--- a/src/impl_/extract_argument.rs
++++ b/src/impl_/extract_argument.rs
+@@ -291,6 +291,37 @@ pub unsafe fn cast_bound_ref_trusted<'a, 'py, T: PyTypeCheck>(
+     }
+ }
+ 
++/// Fused extraction for receivers which implement `TryFrom<&Bound<T>>` (e.g. `Py<T>`,
++/// `Bound<T>`, `PyRef<T>`), used to keep the generated code small. Trusted variant: performs an
++/// unchecked cast for extension-type slot receivers where CPython guarantees the receiver type.
++///
++/// # Safety
++/// The caller must ensure that `bound_ref` is an instance of `T`. This invariant is upheld by
++/// CPython when dispatching through type slots.
++#[inline]
++pub unsafe fn extract_receiver_trusted<'a, 'py, T, R>(bound_ref: &'a Bound<'py, PyAny>) -> PyResult<R>
++where
++    T: PyTypeCheck + 'a,
++    R: TryFrom<&'a Bound<'py, T>>,
++    R::Error: Into<PyErr>,
++{
++    // SAFETY: caller guarantees `bound_ref` is an instance of `T`
++    let bound = unsafe { cast_bound_ref_trusted::<T>(bound_ref) }?;
++    R::try_from(bound).map_err(Into::into)
++}
++
++/// As [`extract_receiver_trusted`], but performs a checked cast.
++#[inline]
++pub fn extract_receiver<'a, 'py, T, R>(bound_ref: &'a Bound<'py, PyAny>) -> PyResult<R>
++where
++    T: PyTypeCheck + 'a,
++    R: TryFrom<&'a Bound<'py, T>>,
++    R::Error: Into<PyErr>,
++{
++    let bound = bound_ref.cast::<T>().map_err(PyErr::from)?;
++    R::try_from(bound).map_err(Into::into)
++}
++
+ /// The standard implementation of how PyO3 extracts a `#[pyfunction]` or `#[pymethod]` function argument.
+ pub fn extract_argument<'a, 'holder, 'py, T, const IMPLEMENTS_FROMPYOBJECT: bool>(
+     obj: Borrowed<'a, 'py, PyAny>,
+@@ -306,6 +337,24 @@ where
+     }
+ }
+ 
++/// Fused version of [`unwrap_required_argument`] + [`extract_argument`], used for required
++/// arguments to keep the generated code small.
++///
++/// # Safety
++/// `obj` must not be `None`
++#[inline]
++pub unsafe fn extract_required_argument<'a, 'holder, 'py, T, const IMPLEMENTS_FROMPYOBJECT: bool>(
++    obj: Option<Borrowed<'a, 'py, PyAny>>,
++    holder: &'holder mut T::Holder,
++    arg_name: &str,
++) -> PyResult<T>
++where
++    T: PyFunctionArgument<'a, 'holder, 'py, IMPLEMENTS_FROMPYOBJECT>,
++{
++    // SAFETY: caller guarantees `obj` is not `None`
++    extract_argument(unsafe { unwrap_required_argument(obj) }, holder, arg_name)
++}
++
+ /// Alternative to [`extract_argument`] used when the argument has a default value provided by an annotation.
+ pub fn extract_argument_with_default<'a, 'holder, 'py, T, const IMPLEMENTS_FROMPYOBJECT: bool>(
+     obj: Option<Borrowed<'a, 'py, PyAny>>,
+@@ -334,6 +383,25 @@ pub fn from_py_with<'a, 'py, T>(
+     }
+ }
+ 
++/// Fused version of [`unwrap_required_argument_bound`] + [`from_py_with`], used for required
++/// arguments with a `#[pyo3(from_py_with)]` annotation to keep the generated code small.
++///
++/// # Safety
++/// `obj` must not be `None`
++#[inline]
++pub unsafe fn from_py_with_required<'a, 'py, T>(
++    obj: Option<&'a Bound<'py, PyAny>>,
++    arg_name: &str,
++    extractor: fn(&'a Bound<'py, PyAny>) -> PyResult<T>,
++) -> PyResult<T> {
++    // SAFETY: caller guarantees `obj` is not `None`
++    from_py_with(
++        unsafe { unwrap_required_argument_bound(obj) },
++        arg_name,
++        extractor,
++    )
++}
++
+ /// Alternative to [`extract_argument`] used when the argument has a `#[pyo3(from_py_with)]` annotation and also a default value.
+ pub fn from_py_with_with_default<'a, 'py, T>(
+     obj: Option<&'a Bound<'py, PyAny>>,
+@@ -448,6 +516,13 @@ pub struct KeywordOnlyParameterDescription {
+     pub required: bool,
+ }
+ 
++impl KeywordOnlyParameterDescription {
++    /// Compact constructor used by the macros to keep the generated code small.
++    pub const fn new(name: &'static str, required: bool) -> Self {
++        Self { name, required }
++    }
++}
++
+ /// Function argument specification for a `#[pyfunction]` or `#[pymethod]`.
+ pub struct FunctionDescription {
+     pub cls_name: Option<&'static str>,
+@@ -459,6 +534,25 @@ pub struct FunctionDescription {
+ }
+ 
+ impl FunctionDescription {
++    /// Compact constructor used by the macros to keep the generated code small.
++    pub const fn new(
++        cls_name: Option<&'static str>,
++        func_name: &'static str,
++        positional_parameter_names: &'static [&'static str],
++        positional_only_parameters: usize,
++        required_positional_parameters: usize,
++        keyword_only_parameters: &'static [KeywordOnlyParameterDescription],
++    ) -> Self {
++        Self {
++            cls_name,
++            func_name,
++            positional_parameter_names,
++            positional_only_parameters,
++            required_positional_parameters,
++            keyword_only_parameters,
++        }
++    }
++
+     fn full_name(&self) -> String {
+         if let Some(cls_name) = self.cls_name {
+             format!("{}.{}()", cls_name, self.func_name)
+diff --git a/src/impl_/pyclass.rs b/src/impl_/pyclass.rs
+index bc539a5..e1cc229 100644
+--- a/src/impl_/pyclass.rs
++++ b/src/impl_/pyclass.rs
+@@ -31,7 +31,7 @@ mod lazy_type_object;
+ mod probes;
+ 
+ pub use assertions::*;
+-pub use lazy_type_object::{type_object_init_failed, LazyTypeObject};
++pub use lazy_type_object::{pyclass_type_object_raw, type_object_init_failed, LazyTypeObject};
+ pub use probes::*;
+ 
+ /// Gets the offset of the dictionary from the start of the object in bytes.
+@@ -153,6 +153,13 @@ pub struct PyClassItems {
+ // Allow PyClassItems in statics
+ unsafe impl Sync for PyClassItems {}
+ 
++/// Shared empty items, used by the macros for classes without any intrinsic items to keep the
++/// generated code small.
++pub static NO_PY_CLASS_ITEMS: PyClassItems = PyClassItems {
++    methods: &[],
++    slots: &[],
++};
++
+ /// Implements the underlying functionality of `#[pyclass]`, assembled by various proc macros.
+ ///
+ /// Users are discouraged from implementing this trait manually; it is a PyO3 implementation detail
+@@ -162,7 +169,7 @@ pub trait PyClassImpl: Sized + 'static {
+     ///
+     /// (Currently defaults to `builtins` if unset, this will likely be improved in the future, it
+     /// may also be removed when passing module objects in class init.)
+-    const MODULE: Option<&'static str>;
++    const MODULE: Option<&'static str> = None;
+ 
+     /// #[pyclass(subclass)]
+     const IS_BASETYPE: bool = false;
+@@ -213,13 +220,15 @@ pub trait PyClassImpl: Sized + 'static {
+     /// Docstring for the class provided on the struct or enum.
+     ///
+     /// This is exposed for `PyClassDocGenerator` to use as a docstring piece.
+-    const RAW_DOC: &'static CStr;
++    const RAW_DOC: &'static CStr = c"";
+ 
+-    /// Fully rendered class doc, including the `text_signature` if a constructor is defined.
++    /// Pieces of the fully rendered class doc, including the `text_signature` if a constructor
++    /// is defined.
+     ///
+-    /// This is constructed at compile-time with const specialization via the proc macros with help
+-    /// from the PyClassDocGenerator` type.
+-    const DOC: &'static CStr;
++    /// This is constructed with const specialization via the proc macros with help from the
++    /// `PyClassDocGenerator` type. The pieces are concatenated once at type-object creation
++    /// time; the final piece is `RAW_DOC` and is nul terminated.
++    const DOC_PIECES: &'static [&'static [u8]] = &[Self::RAW_DOC.to_bytes_with_nul()];
+ 
+     fn items_iter() -> PyClassItemsIter;
+ 
+diff --git a/src/impl_/pyclass/lazy_type_object.rs b/src/impl_/pyclass/lazy_type_object.rs
+index 63d92cd..bab5eb9 100644
+--- a/src/impl_/pyclass/lazy_type_object.rs
++++ b/src/impl_/pyclass/lazy_type_object.rs
+@@ -260,6 +260,17 @@ pub fn type_object_init_failed(py: Python<'_>, err: PyErr, type_name: &str) -> !
+     panic!("failed to create type object for `{type_name}`")
+ }
+ 
++/// The full macro-expanded implementation of `type_object_raw` for `#[pyclass]` types, kept
++/// out-of-line here to reduce the amount of macro-generated code.
++#[inline]
++pub fn pyclass_type_object_raw<T: PyClass>(py: Python<'_>) -> *mut ffi::PyTypeObject {
++    use crate::types::PyTypeMethods;
++    T::lazy_type_object()
++        .get_or_try_init(py)
++        .unwrap_or_else(|e| type_object_init_failed(py, e, <T as PyClass>::NAME))
++        .as_type_ptr()
++}
++
+ #[cold]
+ fn wrap_in_runtime_error(py: Python<'_>, err: PyErr, message: String) -> PyErr {
+     let runtime_err = PyRuntimeError::new_err(message);
+diff --git a/src/impl_/trampoline.rs b/src/impl_/trampoline.rs
+index f1d9e04..a6b763d 100644
+--- a/src/impl_/trampoline.rs
++++ b/src/impl_/trampoline.rs
+@@ -45,11 +45,12 @@ pub trait MethodDef<T> {
+ #[doc(hidden)]
+ macro_rules! get_trampoline_function {
+     ($trampoline:ident, $f:path) => {{
++        use $crate::impl_::trampoline as _t;
+         struct Def;
+-        impl $crate::impl_::trampoline::MethodDef<$crate::impl_::trampoline::$trampoline::Func> for Def {
+-            const METH: $crate::impl_::trampoline::$trampoline::Func = $f;
++        impl _t::MethodDef<_t::$trampoline::Func> for Def {
++            const METH: _t::$trampoline::Func = $f;
+         }
+-        $crate::impl_::trampoline::$trampoline::<Def>
++        _t::$trampoline::<Def>
+     }};
+ }
+ 
+@@ -153,6 +154,10 @@ pub use self::fastcall_cfunction_with_keywords as maybe_fastcall_cfunction_with_
+ #[cfg(not(any(Py_3_10, not(Py_LIMITED_API))))]
+ pub use self::cfunction_with_keywords as maybe_fastcall_cfunction_with_keywords;
+ 
++/// Short aliases for the trampolines above, used by the macros to keep the generated code small.
++pub use self::cfunction_with_keywords as cfunc_kw;
++pub use self::maybe_fastcall_cfunction_with_keywords as fastcall_kw;
++
+ // Trampolines used by slot methods
+ trampolines!(
+     pub fn getattrofunc(slf: *mut ffi::PyObject, attr: *mut ffi::PyObject) -> *mut ffi::PyObject;
+diff --git a/src/impl_/wrap.rs b/src/impl_/wrap.rs
+index 7b423b2..c481d1b 100644
+--- a/src/impl_/wrap.rs
++++ b/src/impl_/wrap.rs
+@@ -3,7 +3,7 @@
+ use core::{convert::Infallible, marker::PhantomData, ops::Deref};
+ 
+ use crate::{
+-    ffi, types::PyNone, Bound, IntoPyObject, IntoPyObjectExt, Py, PyAny, PyResult, Python,
++    ffi, types::PyNone, Bound, IntoPyObject, IntoPyObjectExt, Py, PyAny, PyErr, PyResult, Python,
+ };
+ 
+ /// Used to wrap values in `Option<T>` for default arguments.
+@@ -104,11 +104,50 @@ impl EmptyTupleConverter<PyResult<()>> {
+     }
+ }
+ 
++impl EmptyTupleConverter<()> {
++    #[inline]
++    pub fn wrap_into_ptr(&self, py: Python<'_>, _obj: ()) -> PyResult<*mut ffi::PyObject> {
++        Ok(PyNone::get(py).to_owned().into_ptr())
++    }
++
++    #[inline]
++    pub fn wrap_into_pyobject(&self, py: Python<'_>, _obj: ()) -> PyResult<Py<PyAny>> {
++        Ok(PyNone::get(py).to_owned().into_any().unbind())
++    }
++}
++
++impl<E> EmptyTupleConverter<Result<(), E>>
++where
++    PyErr: From<E>,
++{
++    #[inline]
++    pub fn wrap_into_ptr(&self, py: Python<'_>, obj: Result<(), E>) -> PyResult<*mut ffi::PyObject> {
++        obj.map(|_| PyNone::get(py).to_owned().into_ptr())
++            .map_err(PyErr::from)
++    }
++
++    #[inline]
++    pub fn wrap_into_pyobject(&self, py: Python<'_>, obj: Result<(), E>) -> PyResult<Py<PyAny>> {
++        obj.map(|_| PyNone::get(py).to_owned().into_any().unbind())
++            .map_err(PyErr::from)
++    }
++}
++
+ impl<'py, T: IntoPyObject<'py>> IntoPyObjectConverter<T> {
+     #[inline]
+     pub fn wrap(&self, obj: T) -> Result<T, Infallible> {
+         Ok(obj)
+     }
++
++    #[inline]
++    pub fn wrap_into_ptr(&self, py: Python<'py>, obj: T) -> PyResult<*mut ffi::PyObject> {
++        obj.into_bound_py_any(py).map(Bound::into_ptr)
++    }
++
++    #[inline]
++    pub fn wrap_into_pyobject(&self, py: Python<'py>, obj: T) -> PyResult<Py<PyAny>> {
++        obj.into_py_any(py)
++    }
+ }
+ 
+ impl<'py, T: IntoPyObject<'py>, E> IntoPyObjectConverter<Result<T, E>> {
+@@ -133,6 +172,24 @@ impl<'py, T: IntoPyObject<'py>, E> IntoPyObjectConverter<Result<T, E>> {
+         obj.and_then(|obj| obj.into_bound_py_any(py))
+             .map(Bound::into_ptr)
+     }
++
++    #[inline]
++    pub fn wrap_into_ptr(&self, py: Python<'py>, obj: Result<T, E>) -> PyResult<*mut ffi::PyObject>
++    where
++        PyErr: From<E>,
++    {
++        obj.map_err(PyErr::from)
++            .and_then(|obj| obj.into_bound_py_any(py))
++            .map(Bound::into_ptr)
++    }
++
++    #[inline]
++    pub fn wrap_into_pyobject(&self, py: Python<'py>, obj: Result<T, E>) -> PyResult<Py<PyAny>>
++    where
++        PyErr: From<E>,
++    {
++        obj.map_err(PyErr::from).and_then(|obj| obj.into_py_any(py))
++    }
+ }
+ 
+ impl<T, E> UnknownReturnResultType<Result<T, E>> {
+@@ -143,6 +200,26 @@ impl<T, E> UnknownReturnResultType<Result<T, E>> {
+     {
+         unreachable!("should be handled by IntoPyObjectConverter")
+     }
++
++    #[inline]
++    pub fn wrap_into_ptr<'py>(
++        &self,
++        _: Python<'py>,
++        _: Result<T, E>,
++    ) -> PyResult<*mut ffi::PyObject>
++    where
++        T: IntoPyObject<'py>,
++    {
++        unreachable!("should be handled by IntoPyObjectConverter")
++    }
++
++    #[inline]
++    pub fn wrap_into_pyobject<'py>(&self, _: Python<'py>, _: Result<T, E>) -> PyResult<Py<PyAny>>
++    where
++        T: IntoPyObject<'py>,
++    {
++        unreachable!("should be handled by IntoPyObjectConverter")
++    }
+ }
+ 
+ impl<T> UnknownReturnType<T> {
+@@ -169,6 +246,22 @@ impl<T> UnknownReturnType<T> {
+     {
+         unreachable!("should be handled by IntoPyObjectConverter")
+     }
++
++    #[inline]
++    pub fn wrap_into_ptr<'py>(&self, _: Python<'py>, _: T) -> PyResult<*mut ffi::PyObject>
++    where
++        T: IntoPyObject<'py>,
++    {
++        unreachable!("should be handled by IntoPyObjectConverter")
++    }
++
++    #[inline]
++    pub fn wrap_into_pyobject<'py>(&self, _: Python<'py>, _: T) -> PyResult<Py<PyAny>>
++    where
++        T: IntoPyObject<'py>,
++    {
++        unreachable!("should be handled by IntoPyObjectConverter")
++    }
+ }
+ 
+ #[cfg(test)]
+diff --git a/src/pyclass/create_type_object.rs b/src/pyclass/create_type_object.rs
+index 0f13bcb..b2b366a 100644
+--- a/src/pyclass/create_type_object.rs
++++ b/src/pyclass/create_type_object.rs
+@@ -53,7 +53,7 @@ where
+         is_mapping: bool,
+         is_sequence: bool,
+         is_immutable_type: bool,
+-        doc: &'static CStr,
++        doc_pieces: &'static [&'static [u8]],
+         dict_offset: Option<PyObjectOffset>,
+         weaklist_offset: Option<PyObjectOffset>,
+         is_basetype: bool,
+@@ -65,6 +65,7 @@ where
+         unsafe {
+             PyTypeBuilder {
+                 slots: Vec::new(),
++                type_doc_storage: None,
+                 method_defs: Vec::new(),
+                 member_defs: Vec::new(),
+                 getset_builders: HashMap::new(),
+@@ -87,7 +88,7 @@ where
+                 #[cfg(all(not(Py_3_9), not(Py_LIMITED_API)))]
+                 buffer_procs: Default::default(),
+             }
+-            .type_doc(doc)
++            .type_doc(doc_pieces)
+             .offsets(dict_offset, weaklist_offset)
+             .set_is_basetype(is_basetype)
+             .class_items(items_iter)
+@@ -104,7 +105,7 @@ where
+             T::IS_MAPPING,
+             T::IS_SEQUENCE,
+             T::IS_IMMUTABLE_TYPE,
+-            T::DOC,
++            T::DOC_PIECES,
+             T::dict_offset(),
+             T::weaklist_offset(),
+             T::IS_BASETYPE,
+@@ -121,6 +122,9 @@ type PyTypeBuilderCleanup = Box<dyn Fn(&PyTypeBuilder, *mut ffi::PyTypeObject)>;
+ 
+ struct PyTypeBuilder {
+     slots: Vec<ffi::PyType_Slot>,
++    /// Assembled type doc; kept alive here because `slots` borrows its buffer until
++    /// `PyType_FromSpec` (which copies the doc) has been called in `build`.
++    type_doc_storage: Option<CString>,
+     method_defs: Vec<ffi::PyMethodDef>,
+     member_defs: Vec<ffi::PyMemberDef>,
+     getset_builders: HashMap<&'static CStr, GetSetDefBuilder>,
+@@ -347,9 +351,14 @@ impl PyTypeBuilder {
+         self
+     }
+ 
+-    fn type_doc(mut self, type_doc: &'static CStr) -> Self {
+-        let slice = type_doc.to_bytes();
+-        if !slice.is_empty() {
++    fn type_doc(mut self, doc_pieces: &'static [&'static [u8]]) -> Self {
++        // The doc pieces are concatenated here, once per class at type-object creation time,
++        // rather than at compile time, to keep the amount of macro-generated code small. The
++        // final piece is nul terminated, so the concatenation is a valid C string.
++        let bytes = doc_pieces.concat();
++        if bytes.len() > 1 {
++            let type_doc =
++                CString::from_vec_with_nul(bytes).expect("pyclass doc contains nul bytes");
+             unsafe { self.push_slot(ffi::Py_tp_doc, type_doc.as_ptr() as *mut c_char) }
+ 
+             #[cfg(all(not(Py_LIMITED_API), not(Py_3_10)))]
+@@ -358,6 +367,7 @@ impl PyTypeBuilder {
+                 // heap-types, and it removed the text_signature value from it.
+                 // We go in after the fact and replace tp_doc with something
+                 // that _does_ include the text_signature value!
++                let slice = type_doc.as_bytes().to_vec();
+                 self.cleanup
+                     .push(Box::new(move |_self, type_object| unsafe {
+                         ffi::PyObject_Free((*type_object).tp_doc as _);
+@@ -366,6 +376,8 @@ impl PyTypeBuilder {
+                         (*type_object).tp_doc = data as _;
+                     }))
+             }
++
++            self.type_doc_storage = Some(type_doc);
+         }
+         self
+     }
