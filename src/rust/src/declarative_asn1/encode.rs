@@ -348,11 +348,12 @@ impl asn1::Asn1Writable for AnnotatedTypeObject<'_> {
 
 #[cfg(test)]
 mod tests {
+    use asn1::Asn1Writable;
+    use pyo3::PyTypeInfo;
+
     use crate::declarative_asn1::types::{
         AnnotatedType, AnnotatedTypeObject, Annotation, Encoding, Tlv, Type, Variant,
     };
-    use asn1::Asn1Writable;
-    use pyo3::PyTypeInfo;
 
     #[test]
     // Needed for coverage of the `Encoding::Implicit` arm of the
