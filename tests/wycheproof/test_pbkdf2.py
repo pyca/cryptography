@@ -19,7 +19,7 @@ _HASH_ALGORITHMS = {
 
 
 @wycheproof_tests(
-    "pbkdf2_hmacsha1_test.json",
+    ("pbkdf2_hmacsha1_test.json", 8),
     "pbkdf2_hmacsha224_test.json",
     "pbkdf2_hmacsha256_test.json",
     "pbkdf2_hmacsha384_test.json",
