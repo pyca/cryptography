@@ -12,7 +12,7 @@ use crate::{types, x509};
 
 fn warn_ffdh_deprecated(py: pyo3::Python<'_>) -> pyo3::PyResult<()> {
     let warning_cls = types::DEPRECATED_IN_50.get(py)?;
-    let message = c"Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use X25519 or ECDH instead.";
+    let message = c"Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm, such as ML-KEM, instead.";
     pyo3::PyErr::warn(py, &warning_cls, message, 1)
 }
 
@@ -85,11 +85,7 @@ pub(crate) fn public_key_from_pkey(
 // `x942` is true the optional trailing INTEGER is the X9.42 subprime `q`;
 // otherwise the structure is PKCS#3 and the optional trailing INTEGER is
 // `privateValueLength`, which we ignore.
-fn load_dh_parameters(
-    py: pyo3::Python<'_>,
-    data: &[u8],
-    x942: bool,
-) -> CryptographyResult<DHParameters> {
+fn load_dh_parameters(data: &[u8], x942: bool) -> CryptographyResult<DHParameters> {
     let (p, q, g) = if x942 {
         let asn1_params = asn1::parse_single::<common::DHParams<'_>>(data)?;
         let p = openssl::bn::BigNum::from_slice(asn1_params.p.as_bytes())?;
@@ -108,27 +104,24 @@ fn load_dh_parameters(
 
     let dh = openssl::dh::Dh::from_pqg(p, q, g)?;
     check_dh_parameters(&dh)?;
-    warn_ffdh_deprecated(py)?;
     Ok(DHParameters { dh })
 }
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
 fn from_der_parameters(
-    py: pyo3::Python<'_>,
     data: &[u8],
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<DHParameters> {
     let _ = backend;
     // DER carries no tag distinguishing PKCS#3 from X9.42, so we permissively
     // accept an optional trailing `q` for backwards compatibility.
-    load_dh_parameters(py, data, true)
+    load_dh_parameters(data, true)
 }
 
 #[pyo3::pyfunction]
 #[pyo3(signature = (data, backend=None))]
 fn from_pem_parameters(
-    py: pyo3::Python<'_>,
     data: &[u8],
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<DHParameters> {
@@ -139,7 +132,7 @@ fn from_pem_parameters(
         "Valid PEM but no BEGIN DH PARAMETERS/END DH PARAMETERS delimiters. Are you sure this is a DH parameters?",
     )?;
 
-    load_dh_parameters(py, parsed.contents(), parsed.tag() == "X9.42 DH PARAMETERS")
+    load_dh_parameters(parsed.contents(), parsed.tag() == "X9.42 DH PARAMETERS")
 }
 
 fn dh_parameters_from_numbers(

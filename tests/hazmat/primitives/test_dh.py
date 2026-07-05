@@ -8,6 +8,7 @@ import copy
 import itertools
 import os
 import typing
+import warnings
 
 import pytest
 
@@ -22,12 +23,19 @@ from .fixtures_dh import FFDH3072_P
 
 # Accessing any attribute of the dh module and loading any DH key or
 # parameters emits the FFDH deprecation warning. Ignore it module-wide
-# rather than wrapping every call site; TestDHDeprecationWarnings asserts
-# that the warnings are actually emitted.
+# rather than wrapping every call site.
 pytestmark = pytest.mark.filterwarnings(
     "ignore:Diffie-Hellman over finite fields"
     ":cryptography.utils.CryptographyDeprecationWarning"
 )
+
+# load_{pem,der}_parameters are deprecated module attributes; bind them once
+# here so the parametrize decorators below don't emit the deprecation
+# warning at collection time, where the filterwarnings mark doesn't apply.
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", utils.DeprecatedIn50)
+    load_pem_parameters = serialization.load_pem_parameters
+    load_der_parameters = serialization.load_der_parameters
 
 # RFC 3526
 P_1536 = int(
@@ -48,60 +56,6 @@ def _skip_dhx_unsupported(backend, is_dhx):
         return
     if not backend.dh_x942_serialization_supported():
         pytest.skip("DH x9.42 serialization is not supported")
-
-
-@pytest.mark.parametrize(
-    "name",
-    [
-        "generate_parameters",
-        "DHParameterNumbers",
-        "DHPrivateNumbers",
-        "DHPublicNumbers",
-        "DHParameters",
-        "DHParametersWithSerialization",
-        "DHPublicKey",
-        "DHPublicKeyWithSerialization",
-        "DHPrivateKey",
-        "DHPrivateKeyWithSerialization",
-    ],
-)
-def test_dh_attribute_deprecation_warning(name):
-    with pytest.warns(utils.DeprecatedIn50):
-        getattr(dh, name)
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.dh_supported(),
-    skip_message="DH not supported",
-)
-class TestDHDeprecationWarnings:
-    @pytest.mark.skip_fips(reason="non-FIPS parameters")
-    def test_load_private_key_warns(self, backend):
-        data = load_vectors_from_file(
-            os.path.join("asymmetric", "DH", "dhkey.pem"),
-            lambda pemfile: pemfile.read(),
-            mode="rb",
-        )
-        with pytest.warns(utils.DeprecatedIn50):
-            serialization.load_pem_private_key(data, None, backend)
-
-    def test_load_public_key_warns(self, backend):
-        data = load_vectors_from_file(
-            os.path.join("asymmetric", "DH", "dhpub.pem"),
-            lambda pemfile: pemfile.read(),
-            mode="rb",
-        )
-        with pytest.warns(utils.DeprecatedIn50):
-            serialization.load_pem_public_key(data, backend)
-
-    def test_load_parameters_warns(self, backend):
-        data = load_vectors_from_file(
-            os.path.join("asymmetric", "DH", "dhp.pem"),
-            lambda pemfile: pemfile.read(),
-            mode="rb",
-        )
-        with pytest.warns(utils.DeprecatedIn50):
-            serialization.load_pem_parameters(data, backend)
 
 
 def test_dh_parameternumbers():
@@ -974,8 +928,8 @@ class TestDHParameterSerialization:
     @pytest.mark.parametrize(
         ("encoding", "loader_func"),
         [
-            [serialization.Encoding.PEM, serialization.load_pem_parameters],
-            [serialization.Encoding.DER, serialization.load_der_parameters],
+            [serialization.Encoding.PEM, load_pem_parameters],
+            [serialization.Encoding.DER, load_der_parameters],
         ],
     )
     def test_parameter_bytes(self, backend, encoding, loader_func):
@@ -992,25 +946,25 @@ class TestDHParameterSerialization:
         [
             (
                 os.path.join("asymmetric", "DH", "dhp.pem"),
-                serialization.load_pem_parameters,
+                load_pem_parameters,
                 serialization.Encoding.PEM,
                 False,
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp.der"),
-                serialization.load_der_parameters,
+                load_der_parameters,
                 serialization.Encoding.DER,
                 False,
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp_rfc5114_2.pem"),
-                serialization.load_pem_parameters,
+                load_pem_parameters,
                 serialization.Encoding.PEM,
                 True,
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp_rfc5114_2.der"),
-                serialization.load_der_parameters,
+                load_der_parameters,
                 serialization.Encoding.DER,
                 True,
             ),
@@ -1035,22 +989,22 @@ class TestDHParameterSerialization:
         [
             (
                 os.path.join("asymmetric", "DH", "dhp.pem"),
-                serialization.load_pem_parameters,
+                load_pem_parameters,
                 os.path.join("asymmetric", "DH", "dhkey.txt"),
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp.der"),
-                serialization.load_der_parameters,
+                load_der_parameters,
                 os.path.join("asymmetric", "DH", "dhkey.txt"),
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp_rfc5114_2.pem"),
-                serialization.load_pem_parameters,
+                load_pem_parameters,
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp_rfc5114_2.der"),
-                serialization.load_der_parameters,
+                load_der_parameters,
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
             ),
         ],

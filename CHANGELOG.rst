@@ -8,20 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
-* Deprecated Diffie-Hellman key exchange over finite fields (FFDH). The
-  classes and functions in ``cryptography.hazmat.primitives.asymmetric.dh``
-  now emit a ``CryptographyDeprecationWarning`` when used, as does loading a
-  DH key or DH parameters with
-  :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`,
-  :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`,
-  :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key`,
-  :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key`,
-  :func:`~cryptography.hazmat.primitives.serialization.load_pem_parameters`,
-  or
-  :func:`~cryptography.hazmat.primitives.serialization.load_der_parameters`.
-  Users should migrate to :doc:`/hazmat/primitives/asymmetric/x25519` or
-  elliptic curve Diffie-Hellman
-  (:class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH`).
+* Deprecated Diffie-Hellman key exchange over finite fields (FFDH).
+  Everything FFDH is deprecated, including the types in
+  ``cryptography.hazmat.primitives.asymmetric.dh`` and loading FFDH keys or
+  parameters with the key loading APIs. Users should migrate to a more
+  modern key exchange algorithm, such as ML-KEM.
 * Parsing a Signed Certificate Timestamp list now rejects encodings that
   carry trailing bytes after the list or after an individual SCT, instead of
   silently ignoring them.
