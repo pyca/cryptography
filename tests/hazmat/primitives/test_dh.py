@@ -185,8 +185,7 @@ class TestDH:
             or rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
         ) and p.bit_length() >= 3072:
             pytest.skip(
-                "DH_check is very slow for large moduli on AWS-LC and "
-                "LibreSSL"
+                "DH_check is very slow for large moduli on AWS-LC and LibreSSL"
             )
 
         params = dh.DHParameterNumbers(p, int(vector["g"]))
