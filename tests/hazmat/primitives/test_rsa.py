@@ -168,9 +168,11 @@ def test_modular_inverse():
 class TestRSA:
     @pytest.mark.parametrize(
         ("public_exponent", "key_size"),
-        itertools.product(
-            (3, 65537),
-            (1024, 1536, 2048),
+        list(
+            itertools.product(
+                (3, 65537),
+                (1024, 1536, 2048),
+            )
         ),
     )
     def test_generate_rsa_keys(self, backend, public_exponent, key_size):
@@ -2194,26 +2196,28 @@ class TestRSAEncryption:
     )
     @pytest.mark.parametrize(
         ("key_data", "pad"),
-        itertools.product(
-            (
-                RSA_KEY_1024,
-                RSA_KEY_1025,
-                RSA_KEY_1026,
-                RSA_KEY_1027,
-                RSA_KEY_1028,
-                RSA_KEY_1029,
-                RSA_KEY_1030,
-                RSA_KEY_1031,
-                RSA_KEY_1536,
-                RSA_KEY_2048,
-            ),
-            [
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                    algorithm=hashes.SHA256(),
-                    label=None,
-                )
-            ],
+        list(
+            itertools.product(
+                (
+                    RSA_KEY_1024,
+                    RSA_KEY_1025,
+                    RSA_KEY_1026,
+                    RSA_KEY_1027,
+                    RSA_KEY_1028,
+                    RSA_KEY_1029,
+                    RSA_KEY_1030,
+                    RSA_KEY_1031,
+                    RSA_KEY_1536,
+                    RSA_KEY_2048,
+                ),
+                [
+                    padding.OAEP(
+                        mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                        algorithm=hashes.SHA256(),
+                        label=None,
+                    )
+                ],
+            )
         ),
     )
     def test_rsa_encrypt_oaep(self, key_data, pad, backend):
@@ -2229,21 +2233,23 @@ class TestRSAEncryption:
 
     @pytest.mark.parametrize(
         ("mgf1hash", "oaephash"),
-        itertools.product(
-            [
-                hashes.SHA1(),
-                hashes.SHA224(),
-                hashes.SHA256(),
-                hashes.SHA384(),
-                hashes.SHA512(),
-            ],
-            [
-                hashes.SHA1(),
-                hashes.SHA224(),
-                hashes.SHA256(),
-                hashes.SHA384(),
-                hashes.SHA512(),
-            ],
+        list(
+            itertools.product(
+                [
+                    hashes.SHA1(),
+                    hashes.SHA224(),
+                    hashes.SHA256(),
+                    hashes.SHA384(),
+                    hashes.SHA512(),
+                ],
+                [
+                    hashes.SHA1(),
+                    hashes.SHA224(),
+                    hashes.SHA256(),
+                    hashes.SHA384(),
+                    hashes.SHA512(),
+                ],
+            )
         ),
     )
     def test_rsa_encrypt_oaep_sha2(
@@ -2276,20 +2282,22 @@ class TestRSAEncryption:
     )
     @pytest.mark.parametrize(
         ("key_data", "pad"),
-        itertools.product(
-            (
-                RSA_KEY_1024,
-                RSA_KEY_1025,
-                RSA_KEY_1026,
-                RSA_KEY_1027,
-                RSA_KEY_1028,
-                RSA_KEY_1029,
-                RSA_KEY_1030,
-                RSA_KEY_1031,
-                RSA_KEY_1536,
-                RSA_KEY_2048,
-            ),
-            [padding.PKCS1v15()],
+        list(
+            itertools.product(
+                (
+                    RSA_KEY_1024,
+                    RSA_KEY_1025,
+                    RSA_KEY_1026,
+                    RSA_KEY_1027,
+                    RSA_KEY_1028,
+                    RSA_KEY_1029,
+                    RSA_KEY_1030,
+                    RSA_KEY_1031,
+                    RSA_KEY_1536,
+                    RSA_KEY_2048,
+                ),
+                [padding.PKCS1v15()],
+            )
         ),
     )
     def test_rsa_encrypt_pkcs1v15(self, key_data, pad, backend):
@@ -2305,27 +2313,29 @@ class TestRSAEncryption:
 
     @pytest.mark.parametrize(
         ("key_data", "pad"),
-        itertools.product(
-            (
-                RSA_KEY_1024,
-                RSA_KEY_1025,
-                RSA_KEY_1026,
-                RSA_KEY_1027,
-                RSA_KEY_1028,
-                RSA_KEY_1029,
-                RSA_KEY_1030,
-                RSA_KEY_1031,
-                RSA_KEY_1536,
-                RSA_KEY_2048,
-            ),
-            (
-                padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                    algorithm=hashes.SHA256(),
-                    label=None,
+        list(
+            itertools.product(
+                (
+                    RSA_KEY_1024,
+                    RSA_KEY_1025,
+                    RSA_KEY_1026,
+                    RSA_KEY_1027,
+                    RSA_KEY_1028,
+                    RSA_KEY_1029,
+                    RSA_KEY_1030,
+                    RSA_KEY_1031,
+                    RSA_KEY_1536,
+                    RSA_KEY_2048,
                 ),
-                padding.PKCS1v15(),
-            ),
+                (
+                    padding.OAEP(
+                        mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                        algorithm=hashes.SHA256(),
+                        label=None,
+                    ),
+                    padding.PKCS1v15(),
+                ),
+            )
         ),
     )
     def test_rsa_encrypt_key_too_small(self, key_data, pad, backend):
@@ -2652,17 +2662,19 @@ class TestRSAPartial:
 class TestRSAPrivateKeySerialization:
     @pytest.mark.parametrize(
         ("fmt", "password"),
-        itertools.product(
-            [
-                serialization.PrivateFormat.TraditionalOpenSSL,
-                serialization.PrivateFormat.PKCS8,
-            ],
-            [
-                b"s",
-                b"longerpassword",
-                b"!*$&(@#$*&($T@%_somesymbols",
-                b"\x01" * 1000,
-            ],
+        list(
+            itertools.product(
+                [
+                    serialization.PrivateFormat.TraditionalOpenSSL,
+                    serialization.PrivateFormat.PKCS8,
+                ],
+                [
+                    b"s",
+                    b"longerpassword",
+                    b"!*$&(@#$*&($T@%_somesymbols",
+                    b"\x01" * 1000,
+                ],
+            )
         ),
     )
     def test_private_bytes_encrypted_pem(

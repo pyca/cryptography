@@ -51,7 +51,8 @@ def test_unsupported_backend(backend):
 )
 class TestArgon2:
     @pytest.fixture(scope="class", params=variants)
-    def clazz(self, request) -> type:
+    @staticmethod
+    def clazz(request) -> type:
         return request.param
 
     @pytest.mark.parametrize(

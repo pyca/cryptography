@@ -247,8 +247,10 @@ class TestDERSerialization:
 
     @pytest.mark.parametrize(
         ("key_path", "password"),
-        itertools.product(
-            [["DER_Serialization", "enc-rsa-pkcs8.der"]], [b"", None]
+        list(
+            itertools.product(
+                [["DER_Serialization", "enc-rsa-pkcs8.der"]], [b"", None]
+            )
         ),
     )
     def test_missing_password(self, key_path, password, backend):
@@ -986,12 +988,17 @@ class TestPEMSerialization:
 
     @pytest.mark.parametrize(
         ("key_path", "password"),
-        itertools.product(
-            [
-                ["Traditional_OpenSSL_Serialization", "testrsa-encrypted.pem"],
-                ["PKCS8", "enc-rsa-pkcs8.pem"],
-            ],
-            [b"", None],
+        list(
+            itertools.product(
+                [
+                    [
+                        "Traditional_OpenSSL_Serialization",
+                        "testrsa-encrypted.pem",
+                    ],
+                    ["PKCS8", "enc-rsa-pkcs8.pem"],
+                ],
+                [b"", None],
+            )
         ),
     )
     def test_missing_password(self, key_path, password, backend):
