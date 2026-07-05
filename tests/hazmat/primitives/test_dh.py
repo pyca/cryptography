@@ -177,13 +177,16 @@ class TestDH:
         p = int.from_bytes(binascii.unhexlify(vector["p"]), "big")
         if backend._fips_enabled and p < backend._fips_dh_min_modulus:
             pytest.skip("modulus too small for FIPS mode")
+        # DH_check is very slow for large moduli on AWS-LC and LibreSSL.
+        # For AWS-LC this is tracked in
+        # https://github.com/aws/aws-lc/issues/3335
         if (
             rust_openssl.CRYPTOGRAPHY_IS_AWSLC
             or rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
         ) and p.bit_length() >= 3072:
             pytest.skip(
-                "Key generation for large moduli is very slow on AWS-LC "
-                "and LibreSSL"
+                "DH_check is very slow for large moduli on AWS-LC and "
+                "LibreSSL"
             )
 
         params = dh.DHParameterNumbers(p, int(vector["g"]))
