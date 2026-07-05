@@ -39,14 +39,6 @@ Changelog
   classes and the classes in
   :mod:`~cryptography.hazmat.primitives.asymmetric.padding` can now be
   compared with ``==``.
-* The GIL is now released during key derivation with
-  :class:`~cryptography.hazmat.primitives.kdf.pbkdf2.PBKDF2HMAC`,
-  :class:`~cryptography.hazmat.primitives.kdf.scrypt.Scrypt`,
-  :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2d`,
-  :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2i`, and
-  :class:`~cryptography.hazmat.primitives.kdf.argon2.Argon2id`, allowing
-  other threads to run while these deliberately expensive computations
-  execute.
 
 .. _v49-0-0:
 

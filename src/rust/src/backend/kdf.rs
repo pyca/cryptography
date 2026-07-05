@@ -171,7 +171,9 @@ impl Scrypt {
         }
 
         let salt = self.salt.as_bytes(py);
-        let (n, r, p) = (self.n, self.r, self.p);
+        let n = self.n;
+        let r = self.r;
+        let p = self.p;
         py.detach(|| {
             openssl::pkcs5::scrypt(
                 key_material,
@@ -368,7 +370,9 @@ impl BaseArgon2 {
         let salt = self.salt.as_bytes(py);
         let ad = self.ad.as_ref().map(|ad| ad.as_bytes(py));
         let secret = self.secret.as_ref().map(|secret| secret.as_bytes(py));
-        let (iterations, lanes, memory_cost) = (self.iterations, self.lanes, self.memory_cost);
+        let iterations = self.iterations;
+        let lanes = self.lanes;
+        let memory_cost = self.memory_cost;
         py.detach(|| {
             (derive_fn)(
                 None,
