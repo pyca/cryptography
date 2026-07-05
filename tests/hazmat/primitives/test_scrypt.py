@@ -17,9 +17,15 @@ from tests.utils import (
     raises_unsupported_algorithm,
 )
 
-vectors = load_vectors_from_file(
-    os.path.join("KDF", "scrypt.txt"), load_nist_vectors
-)
+# remove the N=2**20 vector since it has low testing value
+# but is very expensive
+vectors = [
+    vector
+    for vector in load_vectors_from_file(
+        os.path.join("KDF", "scrypt.txt"), load_nist_vectors
+    )
+    if int(vector["n"]) <= 16384
+]
 
 
 def _skip_if_memory_limited(memory_limit, params):
