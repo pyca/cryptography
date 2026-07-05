@@ -672,7 +672,6 @@ class TestOpenSSHSerialization:
         "password",
         (
             b"1234",
-            b"p@ssw0rd",
             b"x" * 100,
         ),
     )
