@@ -76,13 +76,19 @@ impl DsaPrivateKey {
 
         let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         signer.sign_init()?;
-        let mut sig = vec![];
-        signer.sign_to_vec(data.as_bytes(), &mut sig).map_err(|e| {
-            pyo3::exceptions::PyValueError::new_err((
-                "DSA signing failed. This generally indicates an invalid key.",
-                error::list_from_openssl_error(py, &e).unbind(),
-            ))
-        })?;
+        let data_bytes = data.as_bytes();
+        let sig = py
+            .detach(|| {
+                let mut sig = vec![];
+                signer.sign_to_vec(data_bytes, &mut sig)?;
+                Ok::<_, openssl::error::ErrorStack>(sig)
+            })
+            .map_err(|e| {
+                pyo3::exceptions::PyValueError::new_err((
+                    "DSA signing failed. This generally indicates an invalid key.",
+                    error::list_from_openssl_error(py, &e).unbind(),
+                ))
+            })?;
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
@@ -178,9 +184,9 @@ impl DsaPublicKey {
 
         let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
         verifier.verify_init()?;
-        let valid = verifier
-            .verify(data.as_bytes(), signature.as_bytes())
-            .unwrap_or(false);
+        let data_bytes = data.as_bytes();
+        let sig_bytes = signature.as_bytes();
+        let valid = py.detach(|| verifier.verify(data_bytes, sig_bytes).unwrap_or(false));
         if !valid {
             return Err(CryptographyError::from(
                 exceptions::InvalidSignature::new_err(()),
