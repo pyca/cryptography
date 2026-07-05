@@ -216,6 +216,11 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 .. function:: load_pem_parameters(data)
     .. versionadded:: 2.0
 
+    .. deprecated:: 50.0.0
+        Diffie-Hellman over finite fields (FFDH) is deprecated and support
+        will be removed in a future release. Loading DH parameters emits a
+        ``CryptographyDeprecationWarning``.
+
     Deserialize parameters from PEM encoded data to one of the supported
     asymmetric parameters types.
 
@@ -343,6 +348,11 @@ the rest.
 .. function:: load_der_parameters(data)
 
     .. versionadded:: 2.0
+
+    .. deprecated:: 50.0.0
+        Diffie-Hellman over finite fields (FFDH) is deprecated and support
+        will be removed in a future release. Loading DH parameters emits a
+        ``CryptographyDeprecationWarning``.
 
     Deserialize parameters from DER encoded data to one of the supported
     asymmetric parameters types.
