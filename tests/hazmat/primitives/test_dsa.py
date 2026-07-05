@@ -763,17 +763,19 @@ class TestDSANumberEquality:
 class TestDSASerialization:
     @pytest.mark.parametrize(
         ("fmt", "password"),
-        itertools.product(
-            [
-                serialization.PrivateFormat.TraditionalOpenSSL,
-                serialization.PrivateFormat.PKCS8,
-            ],
-            [
-                b"s",
-                b"longerpassword",
-                b"!*$&(@#$*&($T@%_somesymbols",
-                b"\x01" * 1000,
-            ],
+        list(
+            itertools.product(
+                [
+                    serialization.PrivateFormat.TraditionalOpenSSL,
+                    serialization.PrivateFormat.PKCS8,
+                ],
+                [
+                    b"s",
+                    b"longerpassword",
+                    b"!*$&(@#$*&($T@%_somesymbols",
+                    b"\x01" * 1000,
+                ],
+            )
         ),
     )
     def test_private_bytes_encrypted_pem(self, backend, fmt, password):
