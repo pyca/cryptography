@@ -12,7 +12,7 @@ use crate::{types, x509};
 
 fn warn_ffdh_deprecated(py: pyo3::Python<'_>) -> pyo3::PyResult<()> {
     let warning_cls = types::DEPRECATED_IN_50.get(py)?;
-    let message = c"Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm, such as ML-KEM, instead.";
+    let message = c"Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.";
     pyo3::PyErr::warn(py, &warning_cls, message, 1)
 }
 

@@ -12,7 +12,7 @@ Changelog
   Everything FFDH is deprecated, including the types in
   ``cryptography.hazmat.primitives.asymmetric.dh`` and loading FFDH keys or
   parameters with the key loading APIs. Users should migrate to a more
-  modern key exchange algorithm, such as ML-KEM.
+  modern key exchange algorithm.
 * Added ``xof()`` class methods to
   :class:`~cryptography.hazmat.primitives.hashes.SHAKE128` and
   :class:`~cryptography.hazmat.primitives.hashes.SHAKE256` for constructing
