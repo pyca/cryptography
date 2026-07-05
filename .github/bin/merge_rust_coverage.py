@@ -39,11 +39,8 @@ class RustCoverageFileReporter(coverage.FileReporter):
 
 def get_excluded_lines(filename: str) -> list[int]:
     """
-    Parse source file for lines that are excluded from coverage: lines
-    within NO-COVERAGE-START/END pairs and attribute lines (e.g.
-    ``#[derive(...)]``, ``#[pyo3::pyclass]``). rustc >= 1.84 emits
-    zero-count coverage records for the attribute line of proc-macro
-    expansions, but never attributes execution to it.
+    Parse source file for NO-COVERAGE-START/END pairs and return excluded
+    lines.
     """
     excluded = []
     with open(filename) as f:
@@ -54,7 +51,7 @@ def get_excluded_lines(filename: str) -> list[int]:
                 in_excluded_block = True
             elif stripped == "// NO-COVERAGE-END":
                 in_excluded_block = False
-            elif in_excluded_block or stripped.startswith("#["):
+            elif in_excluded_block:
                 excluded.append(line_num)
     return excluded
 
