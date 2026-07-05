@@ -95,9 +95,6 @@ long X509_get_version(X509 *);
 ASN1_TIME *X509_getm_notBefore(const X509 *);
 ASN1_TIME *X509_getm_notAfter(const X509 *);
 
-long X509_REQ_get_version(X509_REQ *);
-X509_NAME *X509_REQ_get_subject_name(X509_REQ *);
-
 Cryptography_STACK_OF_X509 *sk_X509_new_null(void);
 void sk_X509_free(Cryptography_STACK_OF_X509 *);
 int sk_X509_num(Cryptography_STACK_OF_X509 *);
