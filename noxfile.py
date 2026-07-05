@@ -24,18 +24,30 @@ nox.options.reuse_existing_virtualenvs = True
 nox.options.default_venv_backend = "uv"
 
 
+# ``uv pip install -v`` emits per-file lines ("No cache entry for",
+# "Skipping file for") that drown out the build output we actually want.
+# RUST_LOG overrides uv's default ``-v`` filter, so silence just those
+# modules while keeping the rest of the debug output.
+UV_RUST_LOG = (
+    "uv=debug,uv_client::cached_client=warn,uv_client::registry_client=error"
+)
+
+
 def install(
     session: nox.Session,
     *args: str,
     verbose: bool = True,
 ) -> None:
+    env = {}
     if verbose:
         args += ("-v",)
+        env["RUST_LOG"] = UV_RUST_LOG
     session.install(
         "-c",
         "ci-constraints-requirements.txt",
         *args,
         silent=False,
+        env=env,
     )
 
 

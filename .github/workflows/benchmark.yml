@@ -51,11 +51,17 @@ jobs:
           uv venv .venv-base
           . .venv-base/bin/activate
           uv pip install -v -c ./cryptography-base/ci-constraints-requirements.txt ./cryptography-base ./cryptography-base/vectors/ --group ./cryptography-base/pyproject.toml:test
+        env:
+          # Suppress uv's per-file cache/index log lines while keeping
+          # the rest of the -v output.
+          RUST_LOG: uv=debug,uv_client::cached_client=warn,uv_client::registry_client=error
       - name: Create virtualenv (PR)
         run: |
           uv venv .venv-pr
           . .venv-pr/bin/activate
           uv pip install -v -c ./cryptography-pr/ci-constraints-requirements.txt ./cryptography-pr ./cryptography-pr/vectors/ --group ./cryptography-pr/pyproject.toml:test
+        env:
+          RUST_LOG: uv=debug,uv_client::cached_client=warn,uv_client::registry_client=error
 
       - name: Run benchmarks (base)
         run: .venv-base/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-base.json --x509-limbo-root=x509-limbo/

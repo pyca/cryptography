@@ -467,6 +467,10 @@ jobs:
       - run: uv venv
       - run: source .venv/bin/activate && ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
       - run: uv pip install -v .
+        env:
+          # Suppress uv's per-file cache/index log lines while keeping
+          # the rest of the -v output.
+          RUST_LOG: uv=debug,uv_client::cached_client=warn,uv_client::registry_client=error
       # cryptography main has a version of "(X+1).0.0.dev1" where X is the
       # most recently released major version. A package used by a downstream
       # may depend on cryptography <=X. If you use entrypoints stuff, this can
