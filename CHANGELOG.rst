@@ -8,6 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Deprecated Diffie-Hellman key exchange over finite fields (FFDH).
+  Everything FFDH is deprecated, including the types in
+  ``cryptography.hazmat.primitives.asymmetric.dh`` and loading FFDH keys or
+  parameters with the key loading APIs. Users should migrate to a more
+  modern key exchange algorithm.
 * Parsing a Signed Certificate Timestamp list now rejects encodings that
   carry trailing bytes after the list or after an individual SCT, instead of
   silently ignoring them.

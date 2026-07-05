@@ -12,9 +12,11 @@ import typing
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.decrepit.ciphers.algorithms import _DES, ARC4, RC2
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
@@ -32,10 +34,8 @@ from cryptography.hazmat.primitives.serialization import (
     NoEncryption,
     PrivateFormat,
     PublicFormat,
-    load_der_parameters,
     load_der_private_key,
     load_der_public_key,
-    load_pem_parameters,
     load_pem_private_key,
     load_pem_public_key,
 )
@@ -438,8 +438,8 @@ class TestDERSerialization:
     def test_wrong_parameters_format(self, backend):
         param_data = b"---- NOT A KEY ----\n"
 
-        with pytest.raises(ValueError):
-            load_der_parameters(param_data, backend)
+        with pytest.raises(ValueError), pytest.warns(utils.DeprecatedIn50):
+            serialization.load_der_parameters(param_data, backend)
 
     def test_load_pkcs8_private_key_invalid_version(self):
         data = load_vectors_from_file(
@@ -1036,8 +1036,8 @@ class TestPEMSerialization:
     def test_wrong_parameters_format(self, backend):
         param_data = b"---- NOT A KEY ----\n"
 
-        with pytest.raises(ValueError):
-            load_pem_parameters(param_data, backend)
+        with pytest.raises(ValueError), pytest.warns(utils.DeprecatedIn50):
+            serialization.load_pem_parameters(param_data, backend)
 
     def test_corrupt_traditional_format(self, backend):
         # privkey.pem with a bunch of data missing.
@@ -1809,7 +1809,9 @@ class TestDHSerialization:
             lambda pemfile: pemfile.read(),
             mode="rb",
         )
-        public_key = load_pem_private_key(data, None, backend).public_key()
+        with pytest.warns(utils.DeprecatedIn50):
+            private_key = load_pem_private_key(data, None, backend)
+        public_key = private_key.public_key()
         for enc in (
             Encoding.PEM,
             Encoding.DER,
@@ -1841,7 +1843,8 @@ class TestDHSerialization:
             lambda pemfile: pemfile.read(),
             mode="rb",
         )
-        private_key = load_pem_private_key(data, None, backend)
+        with pytest.warns(utils.DeprecatedIn50):
+            private_key = load_pem_private_key(data, None, backend)
         for enc in (
             Encoding.PEM,
             Encoding.DER,

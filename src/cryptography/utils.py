@@ -27,6 +27,7 @@ DeprecatedIn41 = CryptographyDeprecationWarning
 DeprecatedIn42 = CryptographyDeprecationWarning
 DeprecatedIn43 = CryptographyDeprecationWarning
 DeprecatedIn47 = CryptographyDeprecationWarning
+DeprecatedIn50 = CryptographyDeprecationWarning
 
 
 # If you're wondering why we don't use `Buffer`, it's because `Buffer` would

@@ -8,7 +8,13 @@ use pyo3::types::PyAnyMethods;
 use crate::asn1::encode_der_data;
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::x509;
+use crate::{types, x509};
+
+fn warn_ffdh_deprecated(py: pyo3::Python<'_>) -> pyo3::PyResult<()> {
+    let warning_cls = types::DEPRECATED_IN_50.get(py)?;
+    let message = c"Diffie-Hellman over finite fields (FFDH) is deprecated and support will be removed in a future release. Use a more modern key exchange algorithm.";
+    pyo3::PyErr::warn(py, &warning_cls, message, 1)
+}
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
 pub(crate) struct DHPrivateKey {
@@ -54,18 +60,22 @@ fn generate_parameters(
 }
 
 pub(crate) fn private_key_from_pkey(
+    py: pyo3::Python<'_>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
 ) -> CryptographyResult<DHPrivateKey> {
     check_dh_parameters(&pkey.dh()?)?;
+    warn_ffdh_deprecated(py)?;
     Ok(DHPrivateKey {
         pkey: pkey.to_owned(),
     })
 }
 
 pub(crate) fn public_key_from_pkey(
+    py: pyo3::Python<'_>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
 ) -> CryptographyResult<DHPublicKey> {
     check_dh_parameters(&pkey.dh()?)?;
+    warn_ffdh_deprecated(py)?;
     Ok(DHPublicKey {
         pkey: pkey.to_owned(),
     })
