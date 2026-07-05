@@ -8,7 +8,6 @@ import copy
 import itertools
 import os
 import typing
-import warnings
 
 import pytest
 
@@ -28,14 +27,6 @@ pytestmark = pytest.mark.filterwarnings(
     "ignore:Diffie-Hellman over finite fields"
     ":cryptography.utils.CryptographyDeprecationWarning"
 )
-
-# load_{pem,der}_parameters are deprecated module attributes; bind them once
-# here so the parametrize decorators below don't emit the deprecation
-# warning at collection time, where the filterwarnings mark doesn't apply.
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", utils.DeprecatedIn50)
-    load_pem_parameters = serialization.load_pem_parameters
-    load_der_parameters = serialization.load_der_parameters
 
 # RFC 3526
 P_1536 = int(
@@ -926,58 +917,69 @@ class TestDHPublicKeySerialization:
 )
 class TestDHParameterSerialization:
     @pytest.mark.parametrize(
-        ("encoding", "loader_func"),
-        [
-            [serialization.Encoding.PEM, load_pem_parameters],
-            [serialization.Encoding.DER, load_der_parameters],
-        ],
+        "encoding",
+        [serialization.Encoding.PEM, serialization.Encoding.DER],
     )
-    def test_parameter_bytes(self, backend, encoding, loader_func):
+    def test_parameter_bytes(self, backend, encoding):
         parameters = FFDH3072_P.parameters(backend)
         serialized = parameters.parameter_bytes(
             encoding, serialization.ParameterFormat.PKCS3
         )
-        loaded_key = loader_func(serialized, backend)
+        if encoding is serialization.Encoding.PEM:
+            with pytest.warns(utils.DeprecatedIn50):
+                loaded_key = serialization.load_pem_parameters(
+                    serialized, backend
+                )
+        else:
+            with pytest.warns(utils.DeprecatedIn50):
+                loaded_key = serialization.load_der_parameters(
+                    serialized, backend
+                )
         loaded_param_num = loaded_key.parameter_numbers()
         assert loaded_param_num == parameters.parameter_numbers()
 
     @pytest.mark.parametrize(
-        ("param_path", "loader_func", "encoding", "is_dhx"),
+        ("param_path", "encoding", "is_dhx"),
         [
             (
                 os.path.join("asymmetric", "DH", "dhp.pem"),
-                load_pem_parameters,
                 serialization.Encoding.PEM,
                 False,
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp.der"),
-                load_der_parameters,
                 serialization.Encoding.DER,
                 False,
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp_rfc5114_2.pem"),
-                load_pem_parameters,
                 serialization.Encoding.PEM,
                 True,
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp_rfc5114_2.der"),
-                load_der_parameters,
                 serialization.Encoding.DER,
                 True,
             ),
         ],
     )
     def test_parameter_bytes_match(
-        self, param_path, loader_func, encoding, backend, is_dhx
+        self, param_path, encoding, backend, is_dhx
     ):
         _skip_dhx_unsupported(backend, is_dhx)
         param_bytes = load_vectors_from_file(
             param_path, lambda pemfile: pemfile.read(), mode="rb"
         )
-        parameters = loader_func(param_bytes, backend)
+        if encoding is serialization.Encoding.PEM:
+            with pytest.warns(utils.DeprecatedIn50):
+                parameters = serialization.load_pem_parameters(
+                    param_bytes, backend
+                )
+        else:
+            with pytest.warns(utils.DeprecatedIn50):
+                parameters = serialization.load_der_parameters(
+                    param_bytes, backend
+                )
         serialized = parameters.parameter_bytes(
             encoding,
             serialization.ParameterFormat.PKCS3,
@@ -985,38 +987,47 @@ class TestDHParameterSerialization:
         assert serialized == param_bytes
 
     @pytest.mark.parametrize(
-        ("param_path", "loader_func", "vec_path"),
+        ("param_path", "encoding", "vec_path"),
         [
             (
                 os.path.join("asymmetric", "DH", "dhp.pem"),
-                load_pem_parameters,
+                serialization.Encoding.PEM,
                 os.path.join("asymmetric", "DH", "dhkey.txt"),
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp.der"),
-                load_der_parameters,
+                serialization.Encoding.DER,
                 os.path.join("asymmetric", "DH", "dhkey.txt"),
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp_rfc5114_2.pem"),
-                load_pem_parameters,
+                serialization.Encoding.PEM,
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
             ),
             (
                 os.path.join("asymmetric", "DH", "dhp_rfc5114_2.der"),
-                load_der_parameters,
+                serialization.Encoding.DER,
                 os.path.join("asymmetric", "DH", "dhkey_rfc5114_2.txt"),
             ),
         ],
     )
     def test_public_bytes_values(
-        self, param_path, loader_func, vec_path, backend
+        self, param_path, encoding, vec_path, backend
     ):
         key_bytes = load_vectors_from_file(
             param_path, lambda pemfile: pemfile.read(), mode="rb"
         )
         vec = load_vectors_from_file(vec_path, load_nist_vectors)[0]
-        parameters = loader_func(key_bytes, backend)
+        if encoding is serialization.Encoding.PEM:
+            with pytest.warns(utils.DeprecatedIn50):
+                parameters = serialization.load_pem_parameters(
+                    key_bytes, backend
+                )
+        else:
+            with pytest.warns(utils.DeprecatedIn50):
+                parameters = serialization.load_der_parameters(
+                    key_bytes, backend
+                )
         parameter_numbers = parameters.parameter_numbers()
         assert parameter_numbers.g == int(vec["g"], 16)
         assert parameter_numbers.p == int(vec["p"], 16)
@@ -1034,7 +1045,8 @@ class TestDHParameterSerialization:
             lambda pemfile: pemfile.read(),
             mode="rb",
         )
-        parameters = serialization.load_pem_parameters(param_bytes)
+        with pytest.warns(utils.DeprecatedIn50):
+            parameters = serialization.load_pem_parameters(param_bytes)
         parameter_numbers = parameters.parameter_numbers()
         assert parameter_numbers.g == 2
         assert parameter_numbers.q is None

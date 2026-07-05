@@ -12,7 +12,7 @@ Changelog
   Everything FFDH is deprecated, including the types in
   ``cryptography.hazmat.primitives.asymmetric.dh`` and loading FFDH keys or
   parameters with the key loading APIs. Users should migrate to a more
-  modern key exchange algorithm, such as ML-KEM.
+  modern key exchange algorithm.
 * Parsing a Signed Certificate Timestamp list now rejects encodings that
   carry trailing bytes after the list or after an individual SCT, instead of
   silently ignoring them.

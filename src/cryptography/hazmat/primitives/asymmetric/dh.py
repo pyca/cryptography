@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives import _serialization
 _FFDH_DEPRECATION_MSG = (
     "Diffie-Hellman over finite fields (FFDH) is deprecated and support "
     "will be removed in a future release. Use a more modern key exchange "
-    "algorithm, such as ML-KEM, instead."
+    "algorithm."
 )
 
 generate_parameters = rust_openssl.dh.generate_parameters

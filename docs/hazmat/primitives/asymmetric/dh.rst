@@ -8,8 +8,7 @@ Diffie-Hellman key exchange
 .. deprecated:: 50.0.0
     Diffie-Hellman over finite fields (FFDH) is deprecated and support will
     be removed in a future release. Users should migrate to a more modern
-    key exchange algorithm, such as
-    :doc:`ML-KEM </hazmat/primitives/asymmetric/mlkem>`.
+    key exchange algorithm.
 
 .. note::
     For security and performance reasons we suggest using
