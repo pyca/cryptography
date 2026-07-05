@@ -192,12 +192,19 @@ class TestOpenSSHSerialization:
         password = None
         if "-psw" in key_file:
             password = b"password"
-        for data in [
-            priv_data,
-            bytearray(priv_data),
-            memoryview(priv_data),
-            memoryview(bytearray(priv_data)),
-        ]:
+        if password is None:
+            datas = [
+                priv_data,
+                bytearray(priv_data),
+                memoryview(priv_data),
+                memoryview(bytearray(priv_data)),
+            ]
+        else:
+            # Each load of an encrypted key runs the (intentionally slow)
+            # bcrypt KDF; bytes-like handling of encrypted keys is covered
+            # by test_bcrypt_encryption.
+            datas = [priv_data]
+        for data in datas:
             if key_file.startswith("dsa"):
                 with pytest.warns(utils.DeprecatedIn40):
                     private_key = load_ssh_private_key(data, password, backend)
@@ -323,10 +330,15 @@ class TestOpenSSHSerialization:
             b"1234" * 4,
             b"x" * 72,
         ):
-            # BestAvailableEncryption does not handle bytes-like?
-            best = BestAvailableEncryption(psw)
+            # Minimal KDF rounds: this test is about password and
+            # bytes-like handling, not KDF strength.
+            encryption = (
+                PrivateFormat.OpenSSH.encryption_builder()
+                .kdf_rounds(1)
+                .build(psw)
+            )
             encdata = private_key.private_bytes(
-                Encoding.PEM, PrivateFormat.OpenSSH, best
+                Encoding.PEM, PrivateFormat.OpenSSH, encryption
             )
             decoded_key = load_ssh_private_key(encdata, psw, backend)
             pub2 = decoded_key.public_key().public_bytes(
@@ -669,7 +681,8 @@ class TestOpenSSHSerialization:
         [
             1,
             10,
-            30,
+            # Greater than the default of 16
+            18,
         ],
     )
     def test_serialize_ssh_private_key_with_password(
