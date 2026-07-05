@@ -11,6 +11,7 @@ import typing
 
 import pytest
 
+from cryptography import utils
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import dh
@@ -18,6 +19,15 @@ from cryptography.hazmat.primitives.asymmetric import dh
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_nist_vectors, load_vectors_from_file
 from .fixtures_dh import FFDH3072_P
+
+# Accessing any attribute of the dh module and loading any DH key or
+# parameters emits the FFDH deprecation warning. Ignore it module-wide
+# rather than wrapping every call site; TestDHDeprecationWarnings asserts
+# that the warnings are actually emitted.
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:Diffie-Hellman over finite fields"
+    ":cryptography.utils.CryptographyDeprecationWarning"
+)
 
 # RFC 3526
 P_1536 = int(
@@ -38,6 +48,60 @@ def _skip_dhx_unsupported(backend, is_dhx):
         return
     if not backend.dh_x942_serialization_supported():
         pytest.skip("DH x9.42 serialization is not supported")
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "generate_parameters",
+        "DHParameterNumbers",
+        "DHPrivateNumbers",
+        "DHPublicNumbers",
+        "DHParameters",
+        "DHParametersWithSerialization",
+        "DHPublicKey",
+        "DHPublicKeyWithSerialization",
+        "DHPrivateKey",
+        "DHPrivateKeyWithSerialization",
+    ],
+)
+def test_dh_attribute_deprecation_warning(name):
+    with pytest.warns(utils.DeprecatedIn50):
+        getattr(dh, name)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dh_supported(),
+    skip_message="DH not supported",
+)
+class TestDHDeprecationWarnings:
+    @pytest.mark.skip_fips(reason="non-FIPS parameters")
+    def test_load_private_key_warns(self, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhkey.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.warns(utils.DeprecatedIn50):
+            serialization.load_pem_private_key(data, None, backend)
+
+    def test_load_public_key_warns(self, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhpub.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.warns(utils.DeprecatedIn50):
+            serialization.load_pem_public_key(data, backend)
+
+    def test_load_parameters_warns(self, backend):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "DH", "dhp.pem"),
+            lambda pemfile: pemfile.read(),
+            mode="rb",
+        )
+        with pytest.warns(utils.DeprecatedIn50):
+            serialization.load_pem_parameters(data, backend)
 
 
 def test_dh_parameternumbers():

@@ -7014,7 +7014,8 @@ class TestSignatureRejection:
             load_nist_vectors,
         )[1]
         p = int.from_bytes(binascii.unhexlify(vector["p"]), "big")
-        params = dh.DHParameterNumbers(p, int(vector["g"]))
+        with pytest.warns(utils.DeprecatedIn50):
+            params = dh.DHParameterNumbers(p, int(vector["g"]))
         param = params.parameters(backend)
         return param.generate_private_key()
 

@@ -12,6 +12,7 @@ import typing
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.decrepit.ciphers.algorithms import _DES, ARC4, RC2
@@ -1809,7 +1810,9 @@ class TestDHSerialization:
             lambda pemfile: pemfile.read(),
             mode="rb",
         )
-        public_key = load_pem_private_key(data, None, backend).public_key()
+        with pytest.warns(utils.DeprecatedIn50):
+            private_key = load_pem_private_key(data, None, backend)
+        public_key = private_key.public_key()
         for enc in (
             Encoding.PEM,
             Encoding.DER,
@@ -1841,7 +1844,8 @@ class TestDHSerialization:
             lambda pemfile: pemfile.read(),
             mode="rb",
         )
-        private_key = load_pem_private_key(data, None, backend)
+        with pytest.warns(utils.DeprecatedIn50):
+            private_key = load_pem_private_key(data, None, backend)
         for enc in (
             Encoding.PEM,
             Encoding.DER,

@@ -6,8 +6,14 @@ from __future__ import annotations
 
 import abc
 
+from cryptography import utils
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization
+
+_FFDH_DEPRECATION_MSG = (
+    "Diffie-Hellman over finite fields (FFDH) is deprecated and support "
+    "will be removed in a future release. Use X25519 or ECDH instead."
+)
 
 generate_parameters = rust_openssl.dh.generate_parameters
 
@@ -157,3 +163,90 @@ class DHPrivateKey(metaclass=abc.ABCMeta):
 
 DHPrivateKeyWithSerialization = DHPrivateKey
 DHPrivateKey.register(rust_openssl.dh.DHPrivateKey)
+
+# Aliases that do not emit the deprecation warning on attribute access, for
+# internal use (e.g. the unions in
+# cryptography.hazmat.primitives.asymmetric.types, which are evaluated at
+# import time).
+_DHPublicKey = DHPublicKey
+_DHPrivateKey = DHPrivateKey
+
+utils.deprecated(
+    generate_parameters,
+    __name__,
+    _FFDH_DEPRECATION_MSG,
+    utils.DeprecatedIn50,
+    name="generate_parameters",
+)
+
+utils.deprecated(
+    DHPrivateNumbers,
+    __name__,
+    _FFDH_DEPRECATION_MSG,
+    utils.DeprecatedIn50,
+    name="DHPrivateNumbers",
+)
+
+utils.deprecated(
+    DHPublicNumbers,
+    __name__,
+    _FFDH_DEPRECATION_MSG,
+    utils.DeprecatedIn50,
+    name="DHPublicNumbers",
+)
+
+utils.deprecated(
+    DHParameterNumbers,
+    __name__,
+    _FFDH_DEPRECATION_MSG,
+    utils.DeprecatedIn50,
+    name="DHParameterNumbers",
+)
+
+utils.deprecated(
+    DHParameters,
+    __name__,
+    _FFDH_DEPRECATION_MSG,
+    utils.DeprecatedIn50,
+    name="DHParameters",
+)
+
+utils.deprecated(
+    DHParameters,
+    __name__,
+    _FFDH_DEPRECATION_MSG,
+    utils.DeprecatedIn50,
+    name="DHParametersWithSerialization",
+)
+
+utils.deprecated(
+    DHPublicKey,
+    __name__,
+    _FFDH_DEPRECATION_MSG,
+    utils.DeprecatedIn50,
+    name="DHPublicKey",
+)
+
+utils.deprecated(
+    DHPublicKey,
+    __name__,
+    _FFDH_DEPRECATION_MSG,
+    utils.DeprecatedIn50,
+    name="DHPublicKeyWithSerialization",
+)
+
+utils.deprecated(
+    DHPrivateKey,
+    __name__,
+    _FFDH_DEPRECATION_MSG,
+    utils.DeprecatedIn50,
+    name="DHPrivateKey",
+)
+
+utils.deprecated(
+    DHPrivateKey,
+    __name__,
+    _FFDH_DEPRECATION_MSG,
+    utils.DeprecatedIn50,
+    name="DHPrivateKeyWithSerialization",
+)
