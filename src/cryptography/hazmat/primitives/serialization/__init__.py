@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from cryptography import utils
 from cryptography.hazmat.primitives._serialization import (
     BestAvailableEncryption,
     Encoding,
@@ -14,6 +15,7 @@ from cryptography.hazmat.primitives._serialization import (
     PublicFormat,
     _KeySerializationEncryption,
 )
+from cryptography.hazmat.primitives.asymmetric.dh import _FFDH_DEPRECATION_MSG
 from cryptography.hazmat.primitives.serialization.base import (
     load_der_parameters,
     load_der_private_key,
@@ -63,3 +65,21 @@ __all__ = [
     "load_ssh_public_key",
     "ssh_key_fingerprint",
 ]
+
+# These can only load FFDH parameters, so the functions themselves are
+# deprecated alongside the rest of FFDH.
+utils.deprecated(
+    load_pem_parameters,
+    __name__,
+    _FFDH_DEPRECATION_MSG,
+    utils.DeprecatedIn50,
+    name="load_pem_parameters",
+)
+
+utils.deprecated(
+    load_der_parameters,
+    __name__,
+    _FFDH_DEPRECATION_MSG,
+    utils.DeprecatedIn50,
+    name="load_der_parameters",
+)
