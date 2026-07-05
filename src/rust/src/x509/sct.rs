@@ -127,7 +127,9 @@ impl TryFrom<u8> for SignatureAlgorithm {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.x509")]
+// NO-COVERAGE-END
 pub(crate) struct Sct {
     log_id: [u8; 32],
     timestamp: u64,

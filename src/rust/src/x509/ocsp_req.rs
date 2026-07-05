@@ -68,7 +68,9 @@ impl OCSPRequest {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl OCSPRequest {
     #[getter]
     fn issuer_name_hash(&self) -> &[u8] {

@@ -101,7 +101,9 @@ impl PolicyBuilder {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl PolicyBuilder {
     #[new]
     fn new() -> PolicyBuilder {

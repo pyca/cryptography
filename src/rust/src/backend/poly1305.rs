@@ -105,7 +105,9 @@ impl Poly1305Open {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.poly1305")]
+// NO-COVERAGE-END
 struct Poly1305 {
     #[cfg(any(
         CRYPTOGRAPHY_IS_BORINGSSL,
@@ -121,7 +123,9 @@ struct Poly1305 {
     inner: Option<Poly1305Open>,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl Poly1305 {
     #[new]
     fn new(key: CffiBuf<'_>) -> CryptographyResult<Poly1305> {

@@ -76,7 +76,9 @@ fn from_mldsa44_public_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa44PublicK
     Ok(MlDsa44PublicKey { pkey })
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl MlDsa44PrivateKey {
     #[pyo3(signature = (data, context=None))]
     fn sign<'p>(
@@ -323,7 +325,9 @@ fn from_mldsa65_public_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa65PublicK
     Ok(MlDsa65PublicKey { pkey })
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl MlDsa65PrivateKey {
     #[pyo3(signature = (data, context=None))]
     fn sign<'p>(
@@ -573,7 +577,9 @@ fn from_mldsa87_public_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa87PublicK
     Ok(MlDsa87PublicKey { pkey })
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl MlDsa87PrivateKey {
     #[pyo3(signature = (data, context=None))]
     fn sign<'p>(
@@ -817,7 +823,9 @@ impl MlDsaMuHasher {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl MlDsaMuHasher {
     #[new]
     #[pyo3(signature = (public_key, context=None))]

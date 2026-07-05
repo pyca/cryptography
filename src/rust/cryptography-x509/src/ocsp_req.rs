@@ -4,7 +4,9 @@
 
 use crate::{common, extensions, name};
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct TBSRequest<'a> {
     #[explicit(0)]
     #[default(0)]
@@ -19,14 +21,18 @@ pub struct TBSRequest<'a> {
     pub raw_request_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct Request<'a> {
     pub req_cert: CertID<'a>,
     #[explicit(0)]
     pub single_request_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct CertID<'a> {
     pub hash_algorithm: common::AlgorithmIdentifier<'a>,
     pub issuer_name_hash: &'a [u8],
@@ -34,7 +40,9 @@ pub struct CertID<'a> {
     pub serial_number: asn1::BigInt<'a>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct OCSPRequest<'a> {
     pub tbs_request: TBSRequest<'a>,
     // Parsing out the full structure, which includes the entirety of a

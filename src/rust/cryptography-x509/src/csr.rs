@@ -11,7 +11,9 @@ pub struct Csr<'a> {
     pub signature: asn1::BitString<'a>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct CertificationRequestInfo<'a> {
     pub version: u8,
     pub subject: name::Name<'a>,

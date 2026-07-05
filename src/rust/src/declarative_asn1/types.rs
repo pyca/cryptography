@@ -123,7 +123,9 @@ pub struct Annotation {
     pub(crate) size: Option<pyo3::Py<Size>>,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl Annotation {
     #[new]
     #[pyo3(signature = (default = None, encoding = None, size = None))]
@@ -198,7 +200,9 @@ impl Variant {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+// NO-COVERAGE-END
 pub struct Tlv {
     #[pyo3(get)]
     pub tag_bytes: pyo3::Py<pyo3::types::PyBytes>,
@@ -209,7 +213,9 @@ pub struct Tlv {
     pub full_data: pyo3::Py<pyo3::types::PyBytes>,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl Tlv {
     pub fn parse<'p>(
         &'p self,
@@ -239,7 +245,9 @@ impl Tlv {
 // from a PyString requires calling `to_cow()`, which creates an intermediate
 // `Cow` object with a different lifetime from the PyString.
 #[derive(pyo3::FromPyObject)]
+// NO-COVERAGE-START
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+// NO-COVERAGE-END
 pub struct PrintableString {
     pub(crate) inner: pyo3::Py<pyo3::types::PyString>,
 }
@@ -290,7 +298,9 @@ impl PrintableString {
 // from a PyString requires calling `to_cow()`, which creates an intermediate
 // `Cow` object with a different lifetime from the PyString.
 #[derive(pyo3::FromPyObject)]
+// NO-COVERAGE-START
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+// NO-COVERAGE-END
 pub struct IA5String {
     pub(crate) inner: pyo3::Py<pyo3::types::PyString>,
 }
@@ -396,7 +406,9 @@ impl UtcTime {
 }
 
 #[derive(pyo3::FromPyObject)]
+// NO-COVERAGE-START
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+// NO-COVERAGE-END
 pub struct GeneralizedTime {
     pub(crate) inner: pyo3::Py<pyo3::types::PyDateTime>,
 }
@@ -445,7 +457,9 @@ impl GeneralizedTime {
 }
 
 #[derive(pyo3::FromPyObject)]
+// NO-COVERAGE-START
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.asn1")]
+// NO-COVERAGE-END
 pub struct BitString {
     pub(crate) data: pyo3::Py<pyo3::types::PyBytes>,
     pub(crate) padding_bits: u8,
@@ -502,11 +516,15 @@ impl BitString {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(frozen, eq, module = "cryptography.hazmat.bindings._rust.asn1")]
+// NO-COVERAGE-END
 #[derive(PartialEq)]
 pub struct Null;
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl Null {
     #[new]
     fn new() -> Self {

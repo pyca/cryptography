@@ -78,7 +78,9 @@ impl Hash {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl Hash {
     #[new]
     #[pyo3(signature = (algorithm, backend=None))]
@@ -180,7 +182,9 @@ impl XOFHash {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl XOFHash {
     #[new]
     #[pyo3(signature = (algorithm))]

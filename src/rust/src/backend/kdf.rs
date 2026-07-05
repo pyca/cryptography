@@ -131,7 +131,9 @@ impl Pbkdf2Hmac {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.scrypt")]
+// NO-COVERAGE-END
 struct Scrypt {
     #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
     salt: pyo3::Py<pyo3::types::PyBytes>,
@@ -669,17 +671,23 @@ impl BaseArgon2 {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.argon2")]
+// NO-COVERAGE-END
 struct Argon2d {
     _base: BaseArgon2,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.argon2")]
+// NO-COVERAGE-END
 struct Argon2i {
     _base: BaseArgon2,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.argon2")]
+// NO-COVERAGE-END
 struct Argon2id {
     _base: BaseArgon2,
 }
@@ -971,7 +979,9 @@ impl Argon2id {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(module = "cryptography.hazmat.primitives.kdf.hkdf", name = "HKDF")]
+// NO-COVERAGE-END
 struct Hkdf {
     algorithm: pyo3::Py<pyo3::PyAny>,
     salt: Option<pyo3::Py<pyo3::types::PyBytes>>,

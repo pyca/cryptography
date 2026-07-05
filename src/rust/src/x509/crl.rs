@@ -551,7 +551,9 @@ fn try_map_arc_data_mut_crl_iterator<E>(
     })
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl CRLIterator {
     fn __len__(&self) -> usize {
         self.contents
@@ -600,7 +602,9 @@ pub(crate) struct RevokedCertificate {
     cached_extensions: pyo3::sync::PyOnceLock<pyo3::Py<pyo3::PyAny>>,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl RevokedCertificate {
     #[getter]
     fn serial_number<'p>(

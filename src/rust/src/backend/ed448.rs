@@ -59,7 +59,9 @@ fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<Ed448PublicKey> {
     Ok(Ed448PublicKey { pkey })
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl Ed448PrivateKey {
     fn sign<'p>(
         &self,

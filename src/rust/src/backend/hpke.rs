@@ -617,7 +617,9 @@ impl KEM {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl KEM {
     fn enc_length(&self) -> usize {
         match self {
@@ -740,7 +742,9 @@ impl AEAD {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.hpke")]
+// NO-COVERAGE-END
 pub(crate) struct Suite {
     aead: AEAD,
     kem: KEM,
@@ -1162,7 +1166,9 @@ impl MlKem768X25519PrivateKey {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl MlKem768X25519PrivateKey {
     #[new]
     fn new(
@@ -1368,7 +1374,9 @@ impl MlKem1024P384PrivateKey {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl MlKem1024P384PrivateKey {
     #[new]
     fn new(

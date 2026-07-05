@@ -345,7 +345,9 @@ impl EvpAead {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.aead")]
+// NO-COVERAGE-END
 pub(crate) struct ChaCha20Poly1305 {
     #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
     ctx: EvpAead,

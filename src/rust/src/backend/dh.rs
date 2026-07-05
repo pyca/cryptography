@@ -171,7 +171,9 @@ fn clone_dh<T: openssl::pkey::HasParams>(
     Ok(openssl::dh::Dh::from_pqg(p, q, g)?)
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl DHPrivateKey {
     #[getter]
     fn key_size(&self) -> i32 {
@@ -362,7 +364,9 @@ impl DHPublicKey {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl DHParameters {
     #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     fn generate_private_key(&self) -> CryptographyResult<DHPrivateKey> {

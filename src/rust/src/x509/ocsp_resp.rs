@@ -89,7 +89,9 @@ const TRY_LATER_RESPONSE: u32 = 3;
 const SIG_REQUIRED_RESPONSE: u32 = 5;
 const UNAUTHORIZED_RESPONSE: u32 = 6;
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl OCSPResponse {
     #[getter]
     fn responses(&self) -> Result<OCSPResponseIterator, CryptographyError> {
@@ -895,7 +897,9 @@ struct OCSPResponseIterator {
     contents: OwnedOCSPResponseIteratorData,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl OCSPResponseIterator {
     fn __iter__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
         slf
@@ -933,7 +937,9 @@ impl OCSPSingleResponse {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl OCSPSingleResponse {
     #[getter]
     fn serial_number<'p>(

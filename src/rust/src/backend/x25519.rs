@@ -60,7 +60,9 @@ pub(crate) fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<X25519PublicKey> 
     Ok(X25519PublicKey { pkey })
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl X25519PrivateKey {
     fn exchange<'p>(
         &self,

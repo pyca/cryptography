@@ -277,12 +277,16 @@ pub(crate) fn raise_openssl_error() -> crate::error::CryptographyResult<()> {
     Err(openssl::error::ErrorStack::get().into())
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl")]
+// NO-COVERAGE-END
 pub(crate) struct OpenSSLError {
     e: openssl::error::Error,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl OpenSSLError {
     #[getter]
     fn lib(&self) -> i32 {

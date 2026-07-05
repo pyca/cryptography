@@ -312,7 +312,9 @@ fn get_mut_ctx(ctx: Option<&mut CipherContext>) -> CryptographyResult<&mut Ciphe
     ctx.ok_or_else(exceptions::already_finalized_error)
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl PyCipherContext {
     fn update<'p>(
         &mut self,
@@ -356,7 +358,9 @@ impl PyCipherContext {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl PyAEADEncryptionContext {
     fn update<'p>(
         &mut self,
@@ -447,7 +451,9 @@ impl PyAEADEncryptionContext {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl PyAEADDecryptionContext {
     fn update<'p>(
         &mut self,

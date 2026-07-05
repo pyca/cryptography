@@ -79,7 +79,9 @@ impl<'a> Extension<'a> {
     }
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct PolicyConstraints {
     #[implicit(0)]
     pub require_explicit_policy: Option<u64>,
@@ -100,31 +102,41 @@ pub type SequenceOfAccessDescriptions<'a, Op> =
 type SequenceOfPolicyQualifiers<'a, Op> =
     <Op as Asn1Operation>::SequenceOfVec<'a, PolicyQualifierInfo<'a, Op>>;
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct PolicyInformation<'a, Op: Asn1Operation + 'a> {
     pub policy_identifier: asn1::ObjectIdentifier,
     pub policy_qualifiers: Option<SequenceOfPolicyQualifiers<'a, Op>>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct PolicyQualifierInfo<'a, Op: Asn1Operation> {
     pub policy_qualifier_id: asn1::ObjectIdentifier,
     pub qualifier: Qualifier<'a, Op>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub enum Qualifier<'a, Op: Asn1Operation> {
     CpsUri(asn1::IA5String<'a>),
     UserNotice(UserNotice<'a, Op>),
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct UserNotice<'a, Op: Asn1Operation> {
     pub notice_ref: Option<NoticeReference<'a, Op>>,
     pub explicit_text: Option<DisplayText<'a>>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct NoticeReference<'a, Op: Asn1Operation> {
     pub organization: DisplayText<'a>,
     pub notice_numbers: Op::SequenceOfVec<'a, asn1::BigUint<'a>>,
@@ -132,7 +144,9 @@ pub struct NoticeReference<'a, Op: Asn1Operation> {
 
 // DisplayText also allows BMPString, which we currently do not support.
 #[allow(clippy::enum_variant_names)]
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub enum DisplayText<'a> {
     IA5String(asn1::IA5String<'a>),
     Utf8String(asn1::Utf8String<'a>),
@@ -143,7 +157,9 @@ pub enum DisplayText<'a> {
 
 pub type SequenceOfSubtrees<'a, Op> = <Op as Asn1Operation>::SequenceOfVec<'a, GeneralSubtree<'a>>;
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct NameConstraints<'a, Op: Asn1Operation> {
     #[implicit(0)]
     pub permitted_subtrees: Option<SequenceOfSubtrees<'a, Op>>,
@@ -164,14 +180,18 @@ pub struct GeneralSubtree<'a> {
     pub maximum: Option<u64>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct MSCertificateTemplate {
     pub template_id: asn1::ObjectIdentifier,
     pub major_version: Option<u32>,
     pub minor_version: Option<u32>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct DistributionPoint<'a, Op: Asn1Operation> {
     #[explicit(0)]
     pub distribution_point: Option<DistributionPointName<'a, Op>>,
@@ -192,7 +212,9 @@ pub enum DistributionPointName<'a, Op: Asn1Operation> {
     NameRelativeToCRLIssuer(Op::SetOfVec<'a, common::AttributeTypeValue<'a>>),
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct AuthorityKeyIdentifier<'a, Op: Asn1Operation> {
     #[implicit(0)]
     pub key_identifier: Option<&'a [u8]>,
@@ -202,7 +224,9 @@ pub struct AuthorityKeyIdentifier<'a, Op: Asn1Operation> {
     pub authority_cert_serial_number: Option<SerialNumber<'a>>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct BasicConstraints {
     #[default(false)]
     pub ca: bool,
@@ -265,7 +289,9 @@ impl KeyUsage<'_> {
     }
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct NamingAuthority<'a> {
     pub id: Option<asn1::ObjectIdentifier>,
     pub url: Option<asn1::IA5String<'a>>,
@@ -277,7 +303,9 @@ type SequenceOfDisplayTexts<'a, Op> = <Op as Asn1Operation>::SequenceOfVec<'a, D
 type SequenceOfObjectIdentifiers<'a, Op> =
     <Op as Asn1Operation>::SequenceOfVec<'a, asn1::ObjectIdentifier>;
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct ProfessionInfo<'a, Op: Asn1Operation> {
     #[explicit(0)]
     pub naming_authority: Option<NamingAuthority<'a>>,
@@ -287,7 +315,9 @@ pub struct ProfessionInfo<'a, Op: Asn1Operation> {
     pub add_profession_info: Option<&'a [u8]>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct Admission<'a, Op: Asn1Operation + 'a> {
     #[explicit(0)]
     pub admission_authority: Option<name::GeneralName<'a>>,
@@ -296,13 +326,17 @@ pub struct Admission<'a, Op: Asn1Operation + 'a> {
     pub profession_infos: Op::SequenceOfVec<'a, ProfessionInfo<'a, Op>>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct Admissions<'a, Op: Asn1Operation> {
     pub admission_authority: Option<name::GeneralName<'a>>,
     pub contents_of_admissions: Op::SequenceOfVec<'a, Admission<'a, Op>>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct PrivateKeyUsagePeriod {
     #[implicit(0)]
     pub not_before: Option<asn1::X509GeneralizedTime>,

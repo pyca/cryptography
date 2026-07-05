@@ -32,7 +32,9 @@ pub type OCSPCerts<'a> = Option<
     >,
 >;
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct BasicOCSPResponse<'a> {
     pub tbs_response_data: ResponseData<'a>,
     pub signature_algorithm: common::AlgorithmIdentifier<'a>,
@@ -41,7 +43,9 @@ pub struct BasicOCSPResponse<'a> {
     pub certs: OCSPCerts<'a>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct ResponseData<'a> {
     #[explicit(0)]
     #[default(0)]
@@ -56,7 +60,9 @@ pub struct ResponseData<'a> {
     pub raw_response_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub enum ResponderId<'a> {
     #[explicit(1)]
     ByName(name::Name<'a>),
@@ -64,7 +70,9 @@ pub enum ResponderId<'a> {
     ByKey(&'a [u8]),
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct SingleResponse<'a> {
     pub cert_id: ocsp_req::CertID<'a>,
     pub cert_status: CertStatus,
@@ -75,7 +83,9 @@ pub struct SingleResponse<'a> {
     pub raw_single_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub enum CertStatus {
     #[implicit(0)]
     Good(()),
@@ -85,7 +95,9 @@ pub enum CertStatus {
     Unknown(()),
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct RevokedInfo {
     pub revocation_time: asn1::X509GeneralizedTime,
     #[explicit(0)]

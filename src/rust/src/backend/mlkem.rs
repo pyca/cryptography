@@ -95,7 +95,9 @@ fn from_mlkem768_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlKem768Private
     Ok(MlKem768PrivateKey { pkey })
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl MlKem768PrivateKey {
     fn decapsulate<'p>(
         &self,
@@ -245,7 +247,9 @@ fn from_mlkem1024_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlKem1024Priva
     Ok(MlKem1024PrivateKey { pkey })
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl MlKem1024PrivateKey {
     fn decapsulate<'p>(
         &self,

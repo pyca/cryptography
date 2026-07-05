@@ -23,7 +23,9 @@ pub struct ContentInfo<'a> {
 }
 
 #[allow(clippy::large_enum_variant)]
+// NO-COVERAGE-START
 #[derive(asn1::Asn1DefinedByWrite, asn1::Asn1DefinedByRead)]
+// NO-COVERAGE-END
 pub enum Content<'a> {
     #[defined_by(PKCS7_ENVELOPED_DATA_OID)]
     EnvelopedData(asn1::Explicit<Box<EnvelopedData<'a>>, 0>),
@@ -85,7 +87,9 @@ pub struct SignedData<'a> {
 //   digestEncryptionAlgorithm DigestEncryptionAlgorithmIdentifier,
 //   encryptedDigest EncryptedDigest,
 //   unauthenticatedAttributes [1] IMPLICIT Attributes OPTIONAL }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
+// NO-COVERAGE-END
 pub struct SignerInfo<'a> {
     pub version: u8,
     pub issuer_and_serial_number: IssuerAndSerialNumber<'a>,
@@ -106,7 +110,9 @@ pub struct SignerInfo<'a> {
 //   version Version,
 //   recipientInfos RecipientInfos,
 //   encryptedContentInfo EncryptedContentInfo }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
+// NO-COVERAGE-END
 pub struct EnvelopedData<'a> {
     pub version: u8,
     pub recipient_infos: common::Asn1ReadableOrWritable<
@@ -123,7 +129,9 @@ pub struct EnvelopedData<'a> {
 //   issuerAndSerialNumber IssuerAndSerialNumber,
 //   keyEncryptionAlgorithm KeyEncryptionAlgorithmIdentifier,
 //   encryptedKey EncryptedKey }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
+// NO-COVERAGE-END
 pub struct RecipientInfo<'a> {
     pub version: u8,
     pub issuer_and_serial_number: IssuerAndSerialNumber<'a>,
@@ -136,7 +144,9 @@ pub struct RecipientInfo<'a> {
 // IssuerAndSerialNumber ::= SEQUENCE {
 //   issuer Name,
 //   serialNumber CertificateSerialNumber }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
+// NO-COVERAGE-END
 pub struct IssuerAndSerialNumber<'a> {
     pub issuer: name::Name<'a>,
     pub serial_number: asn1::BigInt<'a>,
@@ -147,7 +157,9 @@ pub struct IssuerAndSerialNumber<'a> {
 // EncryptedData ::= SEQUENCE {
 //   version Version,
 //   encryptedContentInfo EncryptedContentInfo }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
+// NO-COVERAGE-END
 pub struct EncryptedData<'a> {
     pub version: u8,
     pub encrypted_content_info: EncryptedContentInfo<'a>,
@@ -159,7 +171,9 @@ pub struct EncryptedData<'a> {
 //   contentType ContentType,
 //   contentEncryptionAlgorithm ContentEncryptionAlgorithmIdentifier,
 //   encryptedContent [0] IMPLICIT EncryptedContent OPTIONAL }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
+// NO-COVERAGE-END
 pub struct EncryptedContentInfo<'a> {
     pub content_type: asn1::ObjectIdentifier,
     pub content_encryption_algorithm: common::AlgorithmIdentifier<'a>,
@@ -172,7 +186,9 @@ pub struct EncryptedContentInfo<'a> {
 // DigestInfo ::= SEQUENCE {
 //   digestAlgorithm DigestAlgorithmIdentifier,
 //   digest Digest }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Write, asn1::Asn1Read)]
+// NO-COVERAGE-END
 pub struct DigestInfo<'a> {
     pub algorithm: common::AlgorithmIdentifier<'a>,
     pub digest: &'a [u8],

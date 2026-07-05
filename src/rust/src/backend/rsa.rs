@@ -290,7 +290,9 @@ fn setup_signature_ctx(
     Ok(())
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl RsaPrivateKey {
     fn sign<'p>(
         &self,

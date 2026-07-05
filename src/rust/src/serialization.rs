@@ -71,7 +71,9 @@ pub enum ParameterFormat {
     PKCS3,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl PrivateFormat {
     fn encryption_builder<'p>(
         &self,

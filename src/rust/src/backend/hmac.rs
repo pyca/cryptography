@@ -67,7 +67,9 @@ impl Hmac {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl Hmac {
     #[new]
     #[pyo3(signature = (key, algorithm, backend=None))]

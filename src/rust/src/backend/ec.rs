@@ -187,7 +187,9 @@ pub(crate) fn from_public_bytes(
     ECPublicKey::new(pkey, py_curve.into())
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl ECPrivateKey {
     #[getter]
     fn key_size<'p>(

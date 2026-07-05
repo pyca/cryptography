@@ -82,7 +82,9 @@ impl Cmac {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl Cmac {
     #[new]
     #[pyo3(signature = (algorithm, backend=None))]

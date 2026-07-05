@@ -32,7 +32,9 @@ pub struct MacData<'a> {
     pub iterations: u64,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct SafeBag<'a> {
     pub _bag_id: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
     #[defined_by(_bag_id)]
@@ -40,14 +42,18 @@ pub struct SafeBag<'a> {
     pub attributes: Option<asn1::SetOfWriter<'a, Attribute<'a>, Vec<Attribute<'a>>>>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct Attribute<'a> {
     pub _attr_id: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
     #[defined_by(_attr_id)]
     pub attr_values: AttributeSet<'a>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1DefinedByWrite)]
+// NO-COVERAGE-END
 pub enum AttributeSet<'a> {
     #[defined_by(FRIENDLY_NAME_OID)]
     FriendlyName(asn1::SetOfWriter<'a, Utf8StoredBMPString<'a>, [Utf8StoredBMPString<'a>; 1]>),
@@ -59,7 +65,9 @@ pub enum AttributeSet<'a> {
     JDKTruststoreUsage(asn1::SetOfWriter<'a, ObjectIdentifier, [ObjectIdentifier; 1]>),
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1DefinedByWrite)]
+// NO-COVERAGE-END
 pub enum BagValue<'a> {
     #[defined_by(CERT_BAG_OID)]
     CertBag(Box<CertBag<'a>>),

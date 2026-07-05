@@ -3,13 +3,17 @@ use crate::asn1::oid_to_py_oid;
 use crate::x509::datetime_to_py;
 
 /// Python-accessible wrapper for a cryptography_x509_verification::policy::Policy.
+// NO-COVERAGE-START
 #[pyo3::pyclass(module = "cryptography.x509.verification", name = "Policy", frozen)]
+// NO-COVERAGE-END
 pub(crate) struct PyPolicy {
     pub(super) policy_definition: OwnedPolicyDefinition,
     pub(super) subject: pyo3::Py<pyo3::PyAny>,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl PyPolicy {
     #[getter]
     pub(super) fn max_chain_depth(&self) -> u8 {

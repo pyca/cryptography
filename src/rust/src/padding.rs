@@ -65,13 +65,17 @@ fn check_ansix923_padding(data: &[u8]) -> bool {
     (mismatch & 1) == 0
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass]
+// NO-COVERAGE-END
 pub(crate) struct PKCS7PaddingContext {
     block_size: usize,
     length_seen: Option<usize>,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl PKCS7PaddingContext {
     #[new]
     pub(crate) fn new(block_size: usize) -> PKCS7PaddingContext {
@@ -109,13 +113,17 @@ impl PKCS7PaddingContext {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass]
+// NO-COVERAGE-END
 pub(crate) struct ANSIX923PaddingContext {
     block_size: usize,
     length_seen: Option<usize>,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl ANSIX923PaddingContext {
     #[new]
     pub(crate) fn new(block_size: usize) -> ANSIX923PaddingContext {
@@ -155,13 +163,17 @@ impl ANSIX923PaddingContext {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass]
+// NO-COVERAGE-END
 pub(crate) struct PKCS7UnpaddingContext {
     block_size: usize,
     buffer: Option<Vec<u8>>,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl PKCS7UnpaddingContext {
     #[new]
     pub(crate) fn new(block_size: usize) -> PKCS7UnpaddingContext {
@@ -214,13 +226,17 @@ impl PKCS7UnpaddingContext {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pyclass]
+// NO-COVERAGE-END
 pub(crate) struct ANSIX923UnpaddingContext {
     block_size: usize,
     buffer: Option<Vec<u8>>,
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl ANSIX923UnpaddingContext {
     #[new]
     pub(crate) fn new(block_size: usize) -> ANSIX923UnpaddingContext {

@@ -34,14 +34,18 @@ pub struct TBSCertList<'a> {
     pub raw_crl_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone)]
+// NO-COVERAGE-END
 pub struct RevokedCertificate<'a> {
     pub user_certificate: SerialNumber<'a>,
     pub revocation_date: common::Time,
     pub raw_crl_entry_extensions: Option<extensions::RawExtensions<'a>>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct IssuingDistributionPoint<'a, Op: Asn1Operation> {
     #[explicit(0)]
     pub distribution_point: Option<extensions::DistributionPointName<'a, Op>>,

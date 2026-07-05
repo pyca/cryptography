@@ -64,7 +64,9 @@ fn clone_dsa_params<T: openssl::pkey::HasParams>(
     openssl::dsa::Dsa::from_pqg(d.p().to_owned()?, d.q().to_owned()?, d.g().to_owned()?)
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl DsaPrivateKey {
     fn sign<'p>(
         &self,
@@ -251,7 +253,9 @@ impl DsaPublicKey {
     }
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl DsaParameters {
     fn generate_private_key(&self) -> CryptographyResult<DsaPrivateKey> {
         let dsa = clone_dsa_params(&self.dsa)?.generate_key()?;

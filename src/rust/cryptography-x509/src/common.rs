@@ -382,13 +382,17 @@ impl Asn1Operation for Asn1Write {
     type OwnedBitString<'a> = asn1::OwnedBitString;
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct DssSignature<'a> {
     pub r: asn1::BigUint<'a>,
     pub s: asn1::BigUint<'a>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+// NO-COVERAGE-END
 pub struct DHParams<'a> {
     pub p: asn1::BigUint<'a>,
     pub g: asn1::BigUint<'a>,
@@ -401,7 +405,9 @@ pub struct DHParams<'a> {
 //     base INTEGER, -- g
 //     privateValueLength INTEGER OPTIONAL
 // }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Clone, PartialEq, Eq, Debug, Hash)]
+// NO-COVERAGE-END
 pub struct BasicDHParams<'a> {
     pub p: asn1::BigUint<'a>,
     pub g: asn1::BigUint<'a>,
@@ -416,7 +422,9 @@ pub struct BasicDHParams<'a> {
 //     j       INTEGER OPTIONAL, -- subgroup factor
 //     validationParms  ValidationParms OPTIONAL
 // }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Clone, PartialEq, Eq, Debug, Hash)]
+// NO-COVERAGE-END
 pub struct DHXParams<'a> {
     pub p: asn1::BigUint<'a>,
     pub g: asn1::BigUint<'a>,
@@ -451,7 +459,9 @@ pub const PSS_SHA512_HASH_ALG: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 // This is defined as an AlgorithmIdentifier in RFC 4055,
 // but the mask generation algorithm **must** contain an AlgorithmIdentifier
 // in its params, so we define it this way.
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq, Debug)]
+// NO-COVERAGE-END
 pub struct MaskGenAlgorithm<'a> {
     pub oid: asn1::ObjectIdentifier,
     pub params: AlgorithmIdentifier<'a>,
@@ -518,14 +528,18 @@ pub struct SpecifiedECDomain<'a> {
 //   fieldType   FIELD-TYPE.&id({SupportedFieldTypes}),
 //   parameters  FIELD-TYPE.&Type({SupportedFieldTypes}{@fieldType})
 // }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq, Debug)]
+// NO-COVERAGE-END
 pub struct FieldID<'a> {
     pub field_type: asn1::DefinedByMarker<asn1::ObjectIdentifier>,
     #[defined_by(field_type)]
     pub parameters: FieldParameters<'a>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1DefinedByRead, asn1::Asn1DefinedByWrite, Hash, Clone, PartialEq, Eq, Debug)]
+// NO-COVERAGE-END
 pub enum FieldParameters<'a> {
     #[defined_by(oid::PRIME_FIELD_OID)]
     PrimeField(asn1::BigUint<'a>),
@@ -539,7 +553,9 @@ pub enum FieldParameters<'a> {
 //   b         FieldElement,
 //   seed      BIT STRING OPTIONAL
 // }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq, Debug)]
+// NO-COVERAGE-END
 pub struct Curve<'a> {
     pub a: &'a [u8], // FieldElement
     pub b: &'a [u8], // FieldElement
@@ -554,7 +570,9 @@ pub struct Curve<'a> {
 //                               mgf1SHA1Identifier,
 //     saltLength         [2] INTEGER DEFAULT 20,
 //     trailerField       [3] INTEGER DEFAULT 1  }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq, Debug)]
+// NO-COVERAGE-END
 pub struct RsaPssParameters<'a> {
     #[explicit(0)]
     #[default(PSS_SHA1_HASH_ALG)]
@@ -586,14 +604,18 @@ pub struct RsaPssParameters<'a> {
 //     q  INTEGER,
 //     g  INTEGER
 // }
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, Hash, Clone, PartialEq, Eq, Debug)]
+// NO-COVERAGE-END
 pub struct DssParams<'a> {
     pub p: asn1::BigUint<'a>,
     pub q: asn1::BigUint<'a>,
     pub g: asn1::BigUint<'a>,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+// NO-COVERAGE-END
 pub struct PBES2Params<'a> {
     pub key_derivation_func: Box<AlgorithmIdentifier<'a>>,
     pub encryption_scheme: Box<AlgorithmIdentifier<'a>>,
@@ -604,7 +626,9 @@ const HMAC_SHA1_ALG: AlgorithmIdentifier<'static> = AlgorithmIdentifier {
     params: AlgorithmParameters::HmacWithSha1(Some(())),
 };
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+// NO-COVERAGE-END
 pub struct PBKDF2Params<'a> {
     // This is technically a CHOICE that can be an otherSource. We don't
     // support that.
@@ -616,7 +640,9 @@ pub struct PBKDF2Params<'a> {
 }
 
 // RFC 7914 Section 7
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+// NO-COVERAGE-END
 pub struct ScryptParams<'a> {
     pub salt: &'a [u8],
     pub cost_parameter: u64,
@@ -626,20 +652,26 @@ pub struct ScryptParams<'a> {
 }
 
 // RFC 8018 Appendix A.3
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+// NO-COVERAGE-END
 pub struct PbeParams {
     pub salt: [u8; 8],
     pub iterations: u64,
 }
 
 // From RFC 7202 Appendix C
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+// NO-COVERAGE-END
 pub struct Pkcs12PbeParams<'a> {
     pub salt: &'a [u8],
     pub iterations: u64,
 }
 
+// NO-COVERAGE-START
 #[derive(asn1::Asn1Read, asn1::Asn1Write, PartialEq, Eq, Hash, Clone, Debug)]
+// NO-COVERAGE-END
 pub struct Rc2CbcParams {
     pub version: Option<u32>,
     pub iv: [u8; 8],

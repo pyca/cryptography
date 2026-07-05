@@ -10,7 +10,9 @@ use pyo3::types::PyAnyMethods;
 use crate::error::CryptographyResult;
 use crate::types;
 
+// NO-COVERAGE-START
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust")]
+// NO-COVERAGE-END
 pub(crate) struct ObjectIdentifier {
     pub(crate) oid: asn1::ObjectIdentifier,
 }

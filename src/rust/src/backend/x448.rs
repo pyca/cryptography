@@ -59,7 +59,9 @@ fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<X448PublicKey> {
     Ok(X448PublicKey { pkey })
 }
 
+// NO-COVERAGE-START
 #[pyo3::pymethods]
+// NO-COVERAGE-END
 impl X448PrivateKey {
     fn exchange<'p>(
         &self,
