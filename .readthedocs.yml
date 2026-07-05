@@ -16,10 +16,9 @@ build:
   tools:
     python: "3.14"
     rust: "latest"
-
-python:
-  install:
-    - method: uv
-      command: sync
-      groups:
-        - docs
+  jobs:
+    install:
+      - pip install uv
+      # uv needs to be told the target environment explicitly: RTD's venv
+      # isn't activated (no VIRTUAL_ENV) when these commands run.
+      - uv pip install --python "$READTHEDOCS_VIRTUALENV_PATH/bin/python" . --group docs
