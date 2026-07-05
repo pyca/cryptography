@@ -96,11 +96,6 @@ def tests(session: nox.Session) -> None:
     else:
         cov_args = []
 
-    if session.posargs:
-        tests = session.posargs
-    else:
-        tests = ["tests/"]
-
     session.run(
         "pytest",
         "-n",
@@ -108,7 +103,7 @@ def tests(session: nox.Session) -> None:
         "--dist=worksteal",
         *cov_args,
         "--durations=10",
-        *tests,
+        *session.posargs,
     )
 
     if session.name != "tests-nocoverage":
@@ -334,18 +329,13 @@ def local(session: nox.Session):
         "--uv",
     )
 
-    if session.posargs:
-        tests = session.posargs
-    else:
-        tests = ["tests/"]
-
     session.run(
         "pytest",
         "-n",
         "auto",
         "--dist=worksteal",
         "--durations=10",
-        *tests,
+        *session.posargs,
     )
 
     session.run("cargo", "test", "--all", external=True)

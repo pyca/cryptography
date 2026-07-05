@@ -140,6 +140,7 @@ exclude = [
 
 [tool.pytest.ini_options]
 addopts = "-r s --capture=no --strict-markers --benchmark-disable"
+testpaths = ["tests"]
 console_output_style = "progress-even-when-capture-no"
 markers = [
     "skip_fips: this test is not executed in FIPS mode",
