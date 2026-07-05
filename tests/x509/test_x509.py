@@ -6192,13 +6192,10 @@ class TestECDSACertificate:
 
     def test_load_ecdsa_no_named_curve(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
-        # This vector has a serial number of 0, which triggers a
-        # deprecation warning on load.
-        with pytest.warns(utils.DeprecatedIn36):
-            cert = _load_cert(
-                os.path.join("x509", "custom", "ec_no_named_curve.pem"),
-                x509.load_pem_x509_certificate,
-            )
+        cert = _load_cert(
+            os.path.join("x509", "custom", "ec_no_named_curve.pem"),
+            x509.load_pem_x509_certificate,
+        )
         # We map explicit parameters to known curves and this cert
         # contains explicit params for P256, so it should load.
         pk = cert.public_key()
