@@ -2,9 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::{KeyParsingError, KeyParsingResult, KeySerializationResult};
-
 use cryptography_x509::common::Pkcs1RsaPublicKey;
+
+use crate::{KeyParsingError, KeyParsingResult, KeySerializationResult};
 
 // RFC 8017, Section A.1.2
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]

@@ -5,10 +5,9 @@
 use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
 use crate::backend::aead::{AesGcm, ChaCha20Poly1305};
-use crate::backend::ec;
 use crate::backend::hashes::Hash;
 use crate::backend::kdf::{hkdf_extract, HkdfExpand};
-use crate::backend::x25519;
+use crate::backend::{ec, x25519};
 use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
@@ -1522,8 +1521,7 @@ pub(crate) mod hpke {
 
 #[cfg(test)]
 mod tests {
-    use super::{kdf_params, kem_params};
-    use super::{KDF, KEM};
+    use super::{kdf_params, kem_params, KDF, KEM};
 
     #[test]
     fn test_mlkem768_secret_length() {
