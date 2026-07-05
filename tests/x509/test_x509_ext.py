@@ -11,7 +11,7 @@ import typing
 
 import pytest
 
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.hazmat._oid import _OID_NAMES
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import hashes
@@ -2719,10 +2719,13 @@ class TestRSASubjectAlternativeNameExtension:
             cert.extensions
 
     def test_registered_id(self, backend):
-        cert = _load_cert(
-            os.path.join("x509", "custom", "san_registered_id.pem"),
-            x509.load_pem_x509_certificate,
-        )
+        # This vector has a serial number of 0, which triggers a
+        # deprecation warning on load.
+        with pytest.warns(utils.DeprecatedIn36):
+            cert = _load_cert(
+                os.path.join("x509", "custom", "san_registered_id.pem"),
+                x509.load_pem_x509_certificate,
+            )
         ext = cert.extensions.get_extension_for_class(
             x509.SubjectAlternativeName
         )
