@@ -110,7 +110,7 @@ available<installation:Rust>`.
 
     .. warning::
 
-        The Rust available by default in Alpine < 3.21 is older than the
+        The Rust available by default in Alpine < 3.22 is older than the
         minimum supported version. See the :ref:`Rust installation instructions
         <installation:Rust>` for information about installing a newer Rust.
 
@@ -137,7 +137,7 @@ available<installation:Rust>`.
 
     .. warning::
 
-        For RHEL and CentOS you must be on version 9.6 or newer for the command
+        For RHEL and CentOS you must be on version 9.7 or newer for the command
         below to install a sufficiently new Rust. If your Rust is less than
         1.85.0 please see the :ref:`Rust installation instructions
         <installation:Rust>` for information about installing a newer Rust.
