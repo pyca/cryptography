@@ -47,9 +47,9 @@ def _load_all_params(path, file_names, param_loader):
     return all_params
 
 
-def compute_rsa_hash_digest_sha256(backend, msg):
+def compute_rsa_hash_digest_sha256(msg):
     oid = binascii.unhexlify(b"3031300d060960864801650304020105000420")
-    h = hashes.Hash(hashes.SHA256(), backend=backend)
+    h = hashes.Hash(hashes.SHA256())
     h.update(binascii.unhexlify(msg))
     return binascii.hexlify(oid) + binascii.hexlify(h.finalize())
 
@@ -164,19 +164,19 @@ def aead_test(backend, cipher_factory, mode_factory, params):
 def generate_stream_encryption_test(
     param_loader, path, file_names, cipher_factory
 ):
-    def test_stream_encryption(self, backend, subtests):
+    def test_stream_encryption(self, subtests):
         for params in _load_all_params(path, file_names, param_loader):
             with subtests.test():
-                stream_encryption_test(backend, cipher_factory, params)
+                stream_encryption_test(cipher_factory, params)
 
     return test_stream_encryption
 
 
-def stream_encryption_test(backend, cipher_factory, params):
+def stream_encryption_test(cipher_factory, params):
     plaintext = params["plaintext"]
     ciphertext = params["ciphertext"]
     offset = params["offset"]
-    cipher = Cipher(cipher_factory(**params), None, backend=backend)
+    cipher = Cipher(cipher_factory(**params), None)
     encryptor = cipher.encryptor()
     # throw away offset bytes
     encryptor.update(b"\x00" * int(offset))
@@ -191,31 +191,31 @@ def stream_encryption_test(backend, cipher_factory, params):
 
 
 def generate_hash_test(param_loader, path, file_names, hash_cls):
-    def test_hash(self, backend, subtests):
+    def test_hash(self, subtests):
         for params in _load_all_params(path, file_names, param_loader):
             with subtests.test():
-                hash_test(backend, hash_cls, params)
+                hash_test(hash_cls, params)
 
     return test_hash
 
 
-def hash_test(backend, algorithm, params):
+def hash_test(algorithm, params):
     msg, md = params
-    m = hashes.Hash(algorithm, backend=backend)
+    m = hashes.Hash(algorithm)
     m.update(binascii.unhexlify(msg))
     expected_md = md.replace(" ", "").lower().encode("ascii")
     assert m.finalize() == binascii.unhexlify(expected_md)
 
 
 def generate_base_hash_test(algorithm, digest_size):
-    def test_base_hash(self, backend):
-        base_hash_test(backend, algorithm, digest_size)
+    def test_base_hash(self):
+        base_hash_test(algorithm, digest_size)
 
     return test_base_hash
 
 
-def base_hash_test(backend, algorithm, digest_size):
-    m = hashes.Hash(algorithm, backend=backend)
+def base_hash_test(algorithm, digest_size):
+    m = hashes.Hash(algorithm)
     assert m.algorithm.digest_size == digest_size
     m_copy = m.copy()
     assert m != m_copy
@@ -228,50 +228,46 @@ def base_hash_test(backend, algorithm, digest_size):
 
 
 def generate_base_hmac_test(hash_cls):
-    def test_base_hmac(self, backend):
-        base_hmac_test(backend, hash_cls)
+    def test_base_hmac(self):
+        base_hmac_test(hash_cls)
 
     return test_base_hmac
 
 
-def base_hmac_test(backend, algorithm):
+def base_hmac_test(algorithm):
     key = b"ab"
-    h = hmac.HMAC(binascii.unhexlify(key), algorithm, backend=backend)
+    h = hmac.HMAC(binascii.unhexlify(key), algorithm)
     h_copy = h.copy()
     assert h != h_copy
 
 
 def generate_hmac_test(param_loader, path, file_names, algorithm):
-    def test_hmac(self, backend, subtests):
+    def test_hmac(self, subtests):
         for params in _load_all_params(path, file_names, param_loader):
             with subtests.test():
-                hmac_test(backend, algorithm, params)
+                hmac_test(algorithm, params)
 
     return test_hmac
 
 
-def hmac_test(backend, algorithm, params):
+def hmac_test(algorithm, params):
     msg, md, key = params
-    h = hmac.HMAC(binascii.unhexlify(key), algorithm, backend=backend)
+    h = hmac.HMAC(binascii.unhexlify(key), algorithm)
     h.update(binascii.unhexlify(msg))
     assert h.finalize() == binascii.unhexlify(md.encode("ascii"))
 
 
 def generate_aead_exception_test(cipher_factory, mode_factory):
-    def test_aead_exception(self, backend):
-        aead_exception_test(backend, cipher_factory, mode_factory)
+    def test_aead_exception(self):
+        aead_exception_test(cipher_factory, mode_factory)
 
     return test_aead_exception
 
 
-def aead_exception_test(backend, cipher_factory, mode_factory):
+def aead_exception_test(cipher_factory, mode_factory):
     mode = mode_factory(binascii.unhexlify(b"0" * 24))
     assert isinstance(mode, GCM)
-    cipher = Cipher(
-        cipher_factory(binascii.unhexlify(b"0" * 32)),
-        mode,
-        backend,
-    )
+    cipher = Cipher(cipher_factory(binascii.unhexlify(b"0" * 32)), mode)
     encryptor = cipher.encryptor()
     encryptor.update(b"a" * 16)
     with pytest.raises(NotYetFinalized):
@@ -288,11 +284,7 @@ def aead_exception_test(backend, cipher_factory, mode_factory):
 
     mode2 = mode_factory(binascii.unhexlify(b"0" * 24), b"0" * 16)
     assert isinstance(mode2, GCM)
-    cipher = Cipher(
-        cipher_factory(binascii.unhexlify(b"0" * 32)),
-        mode2,
-        backend,
-    )
+    cipher = Cipher(cipher_factory(binascii.unhexlify(b"0" * 32)), mode2)
     decryptor = cipher.decryptor()
     decryptor.update(b"a" * 16)
     with pytest.raises(AlreadyUpdated):
@@ -302,17 +294,16 @@ def aead_exception_test(backend, cipher_factory, mode_factory):
 
 
 def generate_aead_tag_exception_test(cipher_factory, mode_factory):
-    def test_aead_tag_exception(self, backend):
-        aead_tag_exception_test(backend, cipher_factory, mode_factory)
+    def test_aead_tag_exception(self):
+        aead_tag_exception_test(cipher_factory, mode_factory)
 
     return test_aead_tag_exception
 
 
-def aead_tag_exception_test(backend, cipher_factory, mode_factory):
+def aead_tag_exception_test(cipher_factory, mode_factory):
     cipher = Cipher(
         cipher_factory(binascii.unhexlify(b"0" * 32)),
         mode_factory(binascii.unhexlify(b"0" * 24)),
-        backend,
     )
 
     with pytest.raises(ValueError):
@@ -322,7 +313,6 @@ def aead_tag_exception_test(backend, cipher_factory, mode_factory):
         Cipher(
             cipher_factory(binascii.unhexlify(b"0" * 32)),
             mode_factory(binascii.unhexlify(b"0" * 24), b"toolong" * 12),
-            backend,
         )
 
     with pytest.raises(ValueError):
@@ -331,19 +321,17 @@ def aead_tag_exception_test(backend, cipher_factory, mode_factory):
     cipher = Cipher(
         cipher_factory(binascii.unhexlify(b"0" * 32)),
         mode_factory(binascii.unhexlify(b"0" * 24), b"0" * 16),
-        backend,
     )
     with pytest.raises(ValueError):
         cipher.encryptor()
 
 
-def hkdf_derive_test(backend, algorithm, params):
+def hkdf_derive_test(algorithm, params):
     hkdf = HKDF(
         algorithm,
         int(params["l"]),
         salt=binascii.unhexlify(params["salt"]) or None,
         info=binascii.unhexlify(params["info"]) or None,
-        backend=backend,
     )
 
     prk = HKDF.extract(
@@ -357,12 +345,11 @@ def hkdf_derive_test(backend, algorithm, params):
     assert okm == binascii.unhexlify(params["okm"])
 
 
-def hkdf_expand_test(backend, algorithm, params):
+def hkdf_expand_test(algorithm, params):
     hkdf = HKDFExpand(
         algorithm,
         int(params["l"]),
         info=binascii.unhexlify(params["info"]) or None,
-        backend=backend,
     )
 
     okm = hkdf.derive(binascii.unhexlify(params["prk"]))
@@ -371,12 +358,12 @@ def hkdf_expand_test(backend, algorithm, params):
 
 
 def generate_hkdf_test(param_loader, path, file_names, algorithm):
-    def test_hkdf(self, backend, subtests):
+    def test_hkdf(self, subtests):
         for params in _load_all_params(path, file_names, param_loader):
             with subtests.test():
-                hkdf_expand_test(backend, algorithm, params)
+                hkdf_expand_test(algorithm, params)
             with subtests.test():
-                hkdf_derive_test(backend, algorithm, params)
+                hkdf_derive_test(algorithm, params)
 
     return test_hkdf
 
@@ -492,14 +479,14 @@ def kbkdf_counter_mode_test(backend, params):
 def generate_rsa_verification_test(
     param_loader, path, file_names, hash_alg, pad_factory
 ):
-    def test_rsa_verification(self, backend, subtests):
+    def test_rsa_verification(self, subtests):
         all_params = _load_all_params(path, file_names, param_loader)
         all_params = [
             i for i in all_params if i["algorithm"] == hash_alg.name.upper()
         ]
         for params in all_params:
             with subtests.test():
-                rsa_verification_test(backend, params, hash_alg, pad_factory)
+                rsa_verification_test(params, hash_alg, pad_factory)
 
     return test_rsa_verification
 
@@ -507,28 +494,26 @@ def generate_rsa_verification_test(
 def generate_rsa_verification_without_digest_test(
     param_loader, path, file_names, hash_alg, pad_factory
 ):
-    def test_rsa_verification(self, backend, subtests):
+    def test_rsa_verification(self, subtests):
         all_params = _load_all_params(path, file_names, param_loader)
         all_params = [
             i for i in all_params if i["algorithm"] == hash_alg.name.upper()
         ]
         for params in all_params:
             with subtests.test():
-                params["msg"] = compute_rsa_hash_digest_sha256(
-                    backend, params["msg"]
-                )
+                params["msg"] = compute_rsa_hash_digest_sha256(params["msg"])
                 rsa_verification_test(
-                    backend, params, asym_utils.NoDigestInfo(), pad_factory
+                    params, asym_utils.NoDigestInfo(), pad_factory
                 )
 
     return test_rsa_verification
 
 
-def rsa_verification_test(backend, params, hash_alg, pad_factory):
+def rsa_verification_test(params, hash_alg, pad_factory):
     public_numbers = rsa.RSAPublicNumbers(
         e=params["public_exponent"], n=params["modulus"]
     )
-    public_key = public_numbers.public_key(backend)
+    public_key = public_numbers.public_key()
     pad = pad_factory(params, hash_alg)
     signature = binascii.unhexlify(params["s"])
     msg = binascii.unhexlify(params["msg"])
