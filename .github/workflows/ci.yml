@@ -15,6 +15,12 @@ concurrency:
 
 env:
   CARGO_INCREMENTAL: 0
+  # Value for RUST_LOG on steps that run `uv pip install -v` directly:
+  # suppress uv's per-file cache/index log lines while keeping the rest
+  # of the -v output. Must be scoped to those steps (not set globally as
+  # RUST_LOG) because uv honors RUST_LOG even without -v. Keep in sync
+  # with UV_RUST_LOG in noxfile.py, which covers all nox-run installs.
+  UV_VERBOSE_RUST_LOG: uv=debug,uv_client::cached_client=warn,uv_client::registry_client=error
 
 jobs:
   linux:
@@ -468,9 +474,7 @@ jobs:
       - run: source .venv/bin/activate && ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
       - run: uv pip install -v .
         env:
-          # Suppress uv's per-file cache/index log lines while keeping
-          # the rest of the -v output.
-          RUST_LOG: uv=debug,uv_client::cached_client=warn,uv_client::registry_client=error
+          RUST_LOG: ${{ env.UV_VERBOSE_RUST_LOG }}
       # cryptography main has a version of "(X+1).0.0.dev1" where X is the
       # most recently released major version. A package used by a downstream
       # may depend on cryptography <=X. If you use entrypoints stuff, this can
