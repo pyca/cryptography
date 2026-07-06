@@ -161,9 +161,6 @@ class Backend:
 
         return rust_openssl.ciphers.cipher_supported(cipher, mode)
 
-    def pbkdf2_hmac_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
-        return self.hmac_supported(algorithm)
-
     def _consume_errors(self) -> list[rust_openssl.OpenSSLError]:
         return rust_openssl.capture_error_stack()
 

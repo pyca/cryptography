@@ -55,10 +55,6 @@ class TestSHA1:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA224()),
-    skip_message="Does not support SHA224",
-)
 class TestSHA224:
     test_sha224 = generate_base_hash_test(
         hashes.SHA224(),
@@ -66,10 +62,6 @@ class TestSHA224:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA256()),
-    skip_message="Does not support SHA256",
-)
 class TestSHA256:
     test_sha256 = generate_base_hash_test(
         hashes.SHA256(),
@@ -77,10 +69,6 @@ class TestSHA256:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA384()),
-    skip_message="Does not support SHA384",
-)
 class TestSHA384:
     test_sha384 = generate_base_hash_test(
         hashes.SHA384(),
@@ -88,10 +76,6 @@ class TestSHA384:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
-    skip_message="Does not support SHA512",
-)
 class TestSHA512:
     test_sha512 = generate_base_hash_test(
         hashes.SHA512(),

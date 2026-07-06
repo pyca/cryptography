@@ -26,10 +26,6 @@ class TestHMACMD5:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
-    skip_message="Does not support SHA1",
-)
 class TestHMACSHA1:
     test_hmac_sha1 = generate_hmac_test(
         load_hash_vectors,
@@ -39,10 +35,6 @@ class TestHMACSHA1:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA224()),
-    skip_message="Does not support SHA224",
-)
 class TestHMACSHA224:
     test_hmac_sha224 = generate_hmac_test(
         load_hash_vectors,
@@ -52,10 +44,6 @@ class TestHMACSHA224:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
-    skip_message="Does not support SHA256",
-)
 class TestHMACSHA256:
     test_hmac_sha256 = generate_hmac_test(
         load_hash_vectors,
@@ -65,10 +53,6 @@ class TestHMACSHA256:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA384()),
-    skip_message="Does not support SHA384",
-)
 class TestHMACSHA384:
     test_hmac_sha384 = generate_hmac_test(
         load_hash_vectors,
@@ -78,10 +62,6 @@ class TestHMACSHA384:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA512()),
-    skip_message="Does not support SHA512",
-)
 class TestHMACSHA512:
     test_hmac_sha512 = generate_hmac_test(
         load_hash_vectors,

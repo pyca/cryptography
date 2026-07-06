@@ -17,10 +17,6 @@ vectors = load_vectors_from_file("twofactor/rfc-6238.txt", load_nist_vectors)
 
 
 class TestTOTP:
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
-        skip_message="Does not support HMAC-SHA1.",
-    )
     @pytest.mark.parametrize(
         "params", [i for i in vectors if i["mode"] == b"SHA1"]
     )
@@ -32,10 +28,6 @@ class TestTOTP:
         totp = TOTP(secret, 8, hashes.SHA1(), 30, backend)
         assert totp.generate(time) == totp_value
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
-        skip_message="Does not support HMAC-SHA256.",
-    )
     @pytest.mark.parametrize(
         "params", [i for i in vectors if i["mode"] == b"SHA256"]
     )
@@ -47,10 +39,6 @@ class TestTOTP:
         totp = TOTP(secret, 8, hashes.SHA256(), 30, backend)
         assert totp.generate(time) == totp_value
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.SHA512()),
-        skip_message="Does not support HMAC-SHA512.",
-    )
     @pytest.mark.parametrize(
         "params", [i for i in vectors if i["mode"] == b"SHA512"]
     )
@@ -62,10 +50,6 @@ class TestTOTP:
         totp = TOTP(secret, 8, hashes.SHA512(), 30, backend)
         assert totp.generate(time) == totp_value
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
-        skip_message="Does not support HMAC-SHA1.",
-    )
     @pytest.mark.parametrize(
         "params", [i for i in vectors if i["mode"] == b"SHA1"]
     )
@@ -77,10 +61,6 @@ class TestTOTP:
         totp = TOTP(secret, 8, hashes.SHA1(), 30, backend)
         totp.verify(totp_value, time)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
-        skip_message="Does not support HMAC-SHA256.",
-    )
     @pytest.mark.parametrize(
         "params", [i for i in vectors if i["mode"] == b"SHA256"]
     )
@@ -92,10 +72,6 @@ class TestTOTP:
         totp = TOTP(secret, 8, hashes.SHA256(), 30, backend)
         totp.verify(totp_value, time)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.SHA512()),
-        skip_message="Does not support HMAC-SHA512.",
-    )
     @pytest.mark.parametrize(
         "params", [i for i in vectors if i["mode"] == b"SHA512"]
     )
