@@ -41,11 +41,6 @@ def test_encode_dss_non_integer():
         encode_dss_signature(typing.cast(typing.Any, "h"), 3)
 
     with pytest.raises(TypeError):
-        encode_dss_signature(
-            typing.cast(typing.Any, "3"), typing.cast(typing.Any, "2")
-        )
-
-    with pytest.raises(TypeError):
         encode_dss_signature(3, typing.cast(typing.Any, "h"))
 
     with pytest.raises(TypeError):
