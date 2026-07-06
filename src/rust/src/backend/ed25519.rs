@@ -70,9 +70,10 @@ impl Ed25519PrivateKey {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut signer = openssl::sign::Signer::new_without_digest(&self.pkey)?;
         let len = signer.len()?;
+        let data_bytes = data.as_bytes();
         Ok(pyo3::types::PyBytes::new_with(py, len, |b| {
-            let n = signer
-                .sign_oneshot(b, data.as_bytes())
+            let n = py
+                .detach(|| signer.sign_oneshot(b, data_bytes))
                 .map_err(CryptographyError::from)?;
             assert_eq!(n, b.len());
             Ok(())
@@ -130,9 +131,17 @@ impl Ed25519PrivateKey {
 
 #[pyo3::pymethods]
 impl Ed25519PublicKey {
-    fn verify(&self, signature: CffiBuf<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        let valid = openssl::sign::Verifier::new_without_digest(&self.pkey)?
-            .verify_oneshot(signature.as_bytes(), data.as_bytes())
+    fn verify(
+        &self,
+        py: pyo3::Python<'_>,
+        signature: CffiBuf<'_>,
+        data: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
+        let mut verifier = openssl::sign::Verifier::new_without_digest(&self.pkey)?;
+        let sig_bytes = signature.as_bytes();
+        let data_bytes = data.as_bytes();
+        let valid = py
+            .detach(|| verifier.verify_oneshot(sig_bytes, data_bytes))
             .unwrap_or(false);
 
         if !valid {

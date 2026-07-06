@@ -234,7 +234,17 @@ fn parse_name_attribute<'p>(
             "Long-form tags are not supported in NameAttribute values",
         ))
     })?;
-    let py_tag = types::ASN1_TYPE_TO_ENUM.get(py)?.get_item(tag_val)?;
+    // A value whose tag is not one of the recognised string types is not a
+    // valid AttributeValue; surface it as a parse error rather than letting the
+    // dict lookup raise a bare KeyError.
+    let py_tag = types::ASN1_TYPE_TO_ENUM
+        .get(py)?
+        .get_item(tag_val)
+        .map_err(|_| {
+            asn1::ParseError::new(asn1::ParseErrorKind::UnexpectedTag {
+                actual: attribute.value.tag(),
+            })
+        })?;
     let py_data = match attribute.value {
         AttributeValue::AnyString(s) => {
             if s.tag() == asn1::BitString::TAG {

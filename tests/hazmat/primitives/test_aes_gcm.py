@@ -16,12 +16,6 @@ from ...utils import load_nist_vectors, raises_unsupported_algorithm
 from .utils import generate_aead_test
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 16), modes.GCM(b"\x00" * 12)
-    ),
-    skip_message="Does not support AES GCM",
-)
 class TestAESModeGCM:
     test_gcm = generate_aead_test(
         load_nist_vectors,
@@ -38,40 +32,34 @@ class TestAESModeGCM:
         modes.GCM,
     )
 
-    def test_gcm_tag_with_only_aad(self, backend):
+    def test_gcm_tag_with_only_aad(self):
         key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
         iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
         aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
         tag = binascii.unhexlify(b"0f247e7f9c2505de374006738018493b")
 
-        cipher = base.Cipher(
-            algorithms.AES(key), modes.GCM(iv), backend=backend
-        )
+        cipher = base.Cipher(algorithms.AES(key), modes.GCM(iv))
         encryptor = cipher.encryptor()
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
         assert encryptor.tag == tag
 
-    def test_gcm_ciphertext_with_no_aad(self, backend):
+    def test_gcm_ciphertext_with_no_aad(self):
         key = binascii.unhexlify(b"e98b72a9881a84ca6b76e0f43e68647a")
         iv = binascii.unhexlify(b"8b23299fde174053f3d652ba")
         ct = binascii.unhexlify(b"5a3c1cf1985dbb8bed818036fdd5ab42")
         tag = binascii.unhexlify(b"23c7ab0f952b7091cd324835043b5eb5")
         pt = binascii.unhexlify(b"28286a321293253c3e0aa2704a278032")
 
-        cipher = base.Cipher(
-            algorithms.AES(key), modes.GCM(iv), backend=backend
-        )
+        cipher = base.Cipher(algorithms.AES(key), modes.GCM(iv))
         encryptor = cipher.encryptor()
         computed_ct = encryptor.update(pt) + encryptor.finalize()
         assert computed_ct == ct
         assert encryptor.tag == tag
 
-    def test_gcm_ciphertext_limit(self, backend):
+    def test_gcm_ciphertext_limit(self):
         cipher = base.Cipher(
-            algorithms.AES(b"\x00" * 16),
-            modes.GCM(b"\x01" * 16),
-            backend=backend,
+            algorithms.AES(b"\x00" * 16), modes.GCM(b"\x01" * 16)
         )
         encryptor = cipher.encryptor()
         rust_openssl.ciphers._advance(
@@ -93,11 +81,9 @@ class TestAESModeGCM:
         with pytest.raises(ValueError):
             decryptor.update_into(b"0", bytearray(1))
 
-    def test_gcm_aad_limit(self, backend):
+    def test_gcm_aad_limit(self):
         cipher = base.Cipher(
-            algorithms.AES(b"\x00" * 16),
-            modes.GCM(b"\x01" * 16),
-            backend=backend,
+            algorithms.AES(b"\x00" * 16), modes.GCM(b"\x01" * 16)
         )
         encryptor = cipher.encryptor()
         rust_openssl.ciphers._advance_aad(
@@ -115,75 +101,64 @@ class TestAESModeGCM:
         with pytest.raises(ValueError):
             decryptor.authenticate_additional_data(b"0")
 
-    def test_gcm_tag_decrypt_none(self, backend):
+    def test_gcm_tag_decrypt_none(self):
         key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
         iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
         aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
 
-        encryptor = base.Cipher(
-            algorithms.AES(key), modes.GCM(iv), backend=backend
-        ).encryptor()
+        encryptor = base.Cipher(algorithms.AES(key), modes.GCM(iv)).encryptor()
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
 
-        decryptor = base.Cipher(
-            algorithms.AES(key), modes.GCM(iv), backend=backend
-        ).decryptor()
+        decryptor = base.Cipher(algorithms.AES(key), modes.GCM(iv)).decryptor()
         decryptor.authenticate_additional_data(aad)
         with pytest.raises(ValueError):
             decryptor.finalize()
 
-    def test_gcm_tag_decrypt_mode(self, backend):
+    def test_gcm_tag_decrypt_mode(self):
         key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
         iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
         aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
 
-        encryptor = base.Cipher(
-            algorithms.AES(key), modes.GCM(iv), backend=backend
-        ).encryptor()
+        encryptor = base.Cipher(algorithms.AES(key), modes.GCM(iv)).encryptor()
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
         tag = encryptor.tag
 
         decryptor = base.Cipher(
-            algorithms.AES(key), modes.GCM(iv, tag), backend=backend
+            algorithms.AES(key), modes.GCM(iv, tag)
         ).decryptor()
         decryptor.authenticate_additional_data(aad)
         decryptor.finalize()
 
-    def test_gcm_tag_decrypt_finalize(self, backend):
+    def test_gcm_tag_decrypt_finalize(self):
         key = binascii.unhexlify(b"5211242698bed4774a090620a6ca56f3")
         iv = binascii.unhexlify(b"b1e1349120b6e832ef976f5d")
         aad = binascii.unhexlify(b"b6d729aab8e6416d7002b9faa794c410d8d2f193")
 
-        encryptor = base.Cipher(
-            algorithms.AES(key), modes.GCM(iv), backend=backend
-        ).encryptor()
+        encryptor = base.Cipher(algorithms.AES(key), modes.GCM(iv)).encryptor()
         encryptor.authenticate_additional_data(aad)
         encryptor.finalize()
         tag = encryptor.tag
 
-        decryptor = base.Cipher(
-            algorithms.AES(key), modes.GCM(iv), backend=backend
-        ).decryptor()
+        decryptor = base.Cipher(algorithms.AES(key), modes.GCM(iv)).decryptor()
         decryptor.authenticate_additional_data(aad)
 
         decryptor.finalize_with_tag(tag)
 
     @pytest.mark.parametrize("tag", [b"tagtooshort", b"toolong" * 12])
-    def test_gcm_tag_decrypt_finalize_tag_length(self, tag, backend):
+    def test_gcm_tag_decrypt_finalize_tag_length(self, tag):
         decryptor = base.Cipher(
-            algorithms.AES(b"0" * 16), modes.GCM(b"0" * 12), backend=backend
+            algorithms.AES(b"0" * 16), modes.GCM(b"0" * 12)
         ).decryptor()
         with pytest.raises(ValueError):
             decryptor.finalize_with_tag(tag)
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         data = bytearray(b"helloworld")
         c = base.Cipher(
             algorithms.AES(bytearray(b"\x00" * 16)),
             modes.GCM(bytearray(b"\x00" * 12)),
-            backend,
         )
         enc = c.encryptor()
         enc.authenticate_additional_data(bytearray(b"foo"))
@@ -221,10 +196,10 @@ class TestAESModeGCM:
         assert pt == payload
 
     @pytest.mark.parametrize("alg", [algorithms.AES128, algorithms.AES256])
-    def test_alternate_aes_classes(self, alg, backend):
+    def test_alternate_aes_classes(self, alg):
         data = bytearray(b"sixteen_byte_msg")
         cipher = base.Cipher(
-            alg(b"0" * (alg.key_size // 8)), modes.GCM(b"\x00" * 12), backend
+            alg(b"0" * (alg.key_size // 8)), modes.GCM(b"\x00" * 12)
         )
         enc = cipher.encryptor()
         ct = enc.update(data) + enc.finalize()
@@ -232,7 +207,7 @@ class TestAESModeGCM:
         pt = dec.update(ct) + dec.finalize_with_tag(enc.tag)
         assert pt == data
 
-    def test_reset_nonce_invalid_mode(self, backend):
+    def test_reset_nonce_invalid_mode(self):
         nonce = b"\x00" * 12
         c = base.Cipher(
             algorithms.AES(b"\x00" * 16),

@@ -3,6 +3,8 @@
 # for complete details.
 
 
+import typing
+
 import pytest
 
 from cryptography.hazmat.primitives import hashes
@@ -15,116 +17,92 @@ vectors = load_vectors_from_file("twofactor/rfc-6238.txt", load_nist_vectors)
 
 
 class TestTOTP:
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
-        skip_message="Does not support HMAC-SHA1.",
-    )
     @pytest.mark.parametrize(
         "params", [i for i in vectors if i["mode"] == b"SHA1"]
     )
-    def test_generate_sha1(self, backend, params):
+    def test_generate_sha1(self, params):
         secret = params["secret"]
         time = int(params["time"])
         totp_value = params["totp"]
 
-        totp = TOTP(secret, 8, hashes.SHA1(), 30, backend)
+        totp = TOTP(secret, 8, hashes.SHA1(), 30)
         assert totp.generate(time) == totp_value
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
-        skip_message="Does not support HMAC-SHA256.",
-    )
     @pytest.mark.parametrize(
         "params", [i for i in vectors if i["mode"] == b"SHA256"]
     )
-    def test_generate_sha256(self, backend, params):
+    def test_generate_sha256(self, params):
         secret = params["secret"]
         time = int(params["time"])
         totp_value = params["totp"]
 
-        totp = TOTP(secret, 8, hashes.SHA256(), 30, backend)
+        totp = TOTP(secret, 8, hashes.SHA256(), 30)
         assert totp.generate(time) == totp_value
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.SHA512()),
-        skip_message="Does not support HMAC-SHA512.",
-    )
     @pytest.mark.parametrize(
         "params", [i for i in vectors if i["mode"] == b"SHA512"]
     )
-    def test_generate_sha512(self, backend, params):
+    def test_generate_sha512(self, params):
         secret = params["secret"]
         time = int(params["time"])
         totp_value = params["totp"]
 
-        totp = TOTP(secret, 8, hashes.SHA512(), 30, backend)
+        totp = TOTP(secret, 8, hashes.SHA512(), 30)
         assert totp.generate(time) == totp_value
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
-        skip_message="Does not support HMAC-SHA1.",
-    )
     @pytest.mark.parametrize(
         "params", [i for i in vectors if i["mode"] == b"SHA1"]
     )
-    def test_verify_sha1(self, backend, params):
+    def test_verify_sha1(self, params):
         secret = params["secret"]
         time = int(params["time"])
         totp_value = params["totp"]
 
-        totp = TOTP(secret, 8, hashes.SHA1(), 30, backend)
+        totp = TOTP(secret, 8, hashes.SHA1(), 30)
         totp.verify(totp_value, time)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
-        skip_message="Does not support HMAC-SHA256.",
-    )
     @pytest.mark.parametrize(
         "params", [i for i in vectors if i["mode"] == b"SHA256"]
     )
-    def test_verify_sha256(self, backend, params):
+    def test_verify_sha256(self, params):
         secret = params["secret"]
         time = int(params["time"])
         totp_value = params["totp"]
 
-        totp = TOTP(secret, 8, hashes.SHA256(), 30, backend)
+        totp = TOTP(secret, 8, hashes.SHA256(), 30)
         totp.verify(totp_value, time)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hmac_supported(hashes.SHA512()),
-        skip_message="Does not support HMAC-SHA512.",
-    )
     @pytest.mark.parametrize(
         "params", [i for i in vectors if i["mode"] == b"SHA512"]
     )
-    def test_verify_sha512(self, backend, params):
+    def test_verify_sha512(self, params):
         secret = params["secret"]
         time = int(params["time"])
         totp_value = params["totp"]
 
-        totp = TOTP(secret, 8, hashes.SHA512(), 30, backend)
+        totp = TOTP(secret, 8, hashes.SHA512(), 30)
         totp.verify(totp_value, time)
 
-    def test_invalid_verify(self, backend):
+    def test_invalid_verify(self):
         secret = b"12345678901234567890"
         time = 59
 
-        totp = TOTP(secret, 8, hashes.SHA1(), 30, backend)
+        totp = TOTP(secret, 8, hashes.SHA1(), 30)
 
         with pytest.raises(InvalidToken):
             totp.verify(b"12345678", time)
 
-    def test_floating_point_time_generate(self, backend):
+    def test_floating_point_time_generate(self):
         secret = b"12345678901234567890"
         time = 59.1
 
-        totp = TOTP(secret, 8, hashes.SHA1(), 30, backend)
+        totp = TOTP(secret, 8, hashes.SHA1(), 30)
 
         assert totp.generate(time) == b"94287082"
 
-    def test_get_provisioning_uri(self, backend):
+    def test_get_provisioning_uri(self):
         secret = b"12345678901234567890"
-        totp = TOTP(secret, 6, hashes.SHA1(), 30, backend=backend)
+        totp = TOTP(secret, 6, hashes.SHA1(), 30)
 
         assert totp.get_provisioning_uri("Alice Smith", None) == (
             "otpauth://totp/Alice%20Smith?digits=6&secret=GEZDGNBVG"
@@ -137,15 +115,15 @@ class TestTOTP:
             "&period=30"
         )
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         key = bytearray(b"a long key with lots of entropy goes here")
-        totp = TOTP(key, 8, hashes.SHA512(), 30, backend)
+        totp = TOTP(key, 8, hashes.SHA512(), 30)
         time = 60
         assert totp.generate(time) == b"53049576"
 
-    def test_invalid_time(self, backend):
+    def test_invalid_time(self):
         key = b"12345678901234567890"
-        totp = TOTP(key, 8, hashes.SHA1(), 30, backend)
+        totp = TOTP(key, 8, hashes.SHA1(), 30)
 
         with pytest.raises(TypeError):
-            totp.generate("test")  # type: ignore[arg-type]
+            totp.generate(typing.cast(typing.Any, "test"))

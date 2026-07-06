@@ -2,6 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
+use std::os::raw::c_int;
+
 #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))]
 use foreign_types_shared::ForeignType;
 #[cfg(any(
@@ -16,8 +19,6 @@ use foreign_types_shared::ForeignTypeRef;
     CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
 ))]
 use openssl_sys as ffi;
-#[cfg(CRYPTOGRAPHY_IS_AWSLC)]
-use std::os::raw::c_int;
 
 #[cfg(any(
     CRYPTOGRAPHY_IS_BORINGSSL,

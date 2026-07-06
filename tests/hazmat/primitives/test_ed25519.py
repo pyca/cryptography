@@ -7,6 +7,7 @@ import binascii
 import copy
 import os
 import textwrap
+import typing
 
 import pytest
 
@@ -50,7 +51,7 @@ def test_ed25519_always_supported(backend):
 
 
 class TestEd25519Signing:
-    def test_sign_verify_input(self, backend, subtests):
+    def test_sign_verify_input(self, subtests):
         vectors = load_vectors_from_file(
             os.path.join("asymmetric", "Ed25519", "sign.input"),
             load_ed25519_vectors,
@@ -74,7 +75,7 @@ class TestEd25519Signing:
                 )
                 public_key.verify(signature, message)
 
-    def test_pub_priv_bytes_raw(self, backend, subtests):
+    def test_pub_priv_bytes_raw(self, subtests):
         vectors = load_vectors_from_file(
             os.path.join("asymmetric", "Ed25519", "sign.input"),
             load_ed25519_vectors,
@@ -88,7 +89,7 @@ class TestEd25519Signing:
                 public_key = Ed25519PublicKey.from_public_bytes(pk)
                 assert public_key.public_bytes_raw() == pk
 
-    def test_invalid_signature(self, backend):
+    def test_invalid_signature(self):
         key = Ed25519PrivateKey.generate()
         signature = key.sign(b"test data")
         with pytest.raises(InvalidSignature):
@@ -97,18 +98,18 @@ class TestEd25519Signing:
         with pytest.raises(InvalidSignature):
             key.public_key().verify(b"0" * 64, b"test data")
 
-    def test_sign_verify_buffer(self, backend):
+    def test_sign_verify_buffer(self):
         key = Ed25519PrivateKey.generate()
         data = bytearray(b"test data")
         signature = key.sign(data)
         key.public_key().verify(bytearray(signature), data)
 
-    def test_generate(self, backend):
+    def test_generate(self):
         key = Ed25519PrivateKey.generate()
         assert key
         assert key.public_key()
 
-    def test_load_public_bytes(self, backend):
+    def test_load_public_bytes(self):
         public_key = Ed25519PrivateKey.generate().public_key()
         public_bytes = public_key.public_bytes(
             serialization.Encoding.Raw, serialization.PublicFormat.Raw
@@ -118,37 +119,37 @@ class TestEd25519Signing:
             serialization.Encoding.Raw, serialization.PublicFormat.Raw
         )
 
-    def test_invalid_type_public_bytes(self, backend):
+    def test_invalid_type_public_bytes(self):
         with pytest.raises(TypeError):
             Ed25519PublicKey.from_public_bytes(
-                object()  # type: ignore[arg-type]
+                typing.cast(typing.Any, object())
             )
 
-    def test_invalid_type_private_bytes(self, backend):
+    def test_invalid_type_private_bytes(self):
         with pytest.raises(TypeError):
             Ed25519PrivateKey.from_private_bytes(
-                object()  # type: ignore[arg-type]
+                typing.cast(typing.Any, object())
             )
 
-    def test_invalid_length_from_public_bytes(self, backend):
+    def test_invalid_length_from_public_bytes(self):
         with pytest.raises(ValueError):
             Ed25519PublicKey.from_public_bytes(b"a" * 31)
         with pytest.raises(ValueError):
             Ed25519PublicKey.from_public_bytes(b"a" * 33)
 
-    def test_invalid_length_from_private_bytes(self, backend):
+    def test_invalid_length_from_private_bytes(self):
         with pytest.raises(ValueError):
             Ed25519PrivateKey.from_private_bytes(b"a" * 31)
         with pytest.raises(ValueError):
             Ed25519PrivateKey.from_private_bytes(b"a" * 33)
 
-    def test_invalid_private_bytes(self, backend):
+    def test_invalid_private_bytes(self):
         key = Ed25519PrivateKey.generate()
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.Raw,
-                None,  # type: ignore[arg-type]
+                typing.cast(typing.Any, None),
             )
         with pytest.raises(ValueError):
             key.private_bytes(
@@ -178,7 +179,7 @@ class TestEd25519Signing:
                 serialization.NoEncryption(),
             )
 
-    def test_invalid_public_bytes(self, backend):
+    def test_invalid_public_bytes(self):
         key = Ed25519PrivateKey.generate().public_key()
         with pytest.raises(ValueError):
             key.public_bytes(
@@ -242,11 +243,11 @@ class TestEd25519Signing:
         ],
     )
     def test_round_trip_private_serialization(
-        self, encoding, fmt, encryption, passwd, load_func, backend
+        self, encoding, fmt, encryption, passwd, load_func
     ):
         key = Ed25519PrivateKey.generate()
         serialized = key.private_bytes(encoding, fmt, encryption)
-        loaded_key = load_func(serialized, passwd, backend)
+        loaded_key = load_func(serialized, passwd)
         assert isinstance(loaded_key, Ed25519PrivateKey)
 
     def test_invalid_public_key_pem(self):
@@ -258,7 +259,7 @@ class TestEd25519Signing:
             -----END PUBLIC KEY-----""").encode()
             )
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         private_bytes = os.urandom(32)
         key = Ed25519PrivateKey.from_private_bytes(bytearray(private_bytes))
         assert (
@@ -271,7 +272,7 @@ class TestEd25519Signing:
         )
 
 
-def test_public_key_equality(backend):
+def test_public_key_equality():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -288,7 +289,7 @@ def test_public_key_equality(backend):
         key1 < key2  # type: ignore[operator]
 
 
-def test_public_key_copy(backend):
+def test_public_key_copy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -300,7 +301,7 @@ def test_public_key_copy(backend):
     assert key1 == key2
 
 
-def test_public_key_deepcopy(backend):
+def test_public_key_deepcopy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -312,7 +313,7 @@ def test_public_key_deepcopy(backend):
     assert key1 == key2
 
 
-def test_private_key_copy(backend):
+def test_private_key_copy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -324,7 +325,7 @@ def test_private_key_copy(backend):
     assert key1 == key2
 
 
-def test_private_key_deepcopy(backend):
+def test_private_key_deepcopy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8.der"),
         lambda derfile: derfile.read(),

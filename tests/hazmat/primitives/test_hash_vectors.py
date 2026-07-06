@@ -27,10 +27,6 @@ class TestSHA1:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA224()),
-    skip_message="Does not support SHA224",
-)
 class TestSHA224:
     test_sha224 = generate_hash_test(
         load_hash_vectors,
@@ -40,10 +36,6 @@ class TestSHA224:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA256()),
-    skip_message="Does not support SHA256",
-)
 class TestSHA256:
     test_sha256 = generate_hash_test(
         load_hash_vectors,
@@ -53,10 +45,6 @@ class TestSHA256:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA384()),
-    skip_message="Does not support SHA384",
-)
 class TestSHA384:
     test_sha384 = generate_hash_test(
         load_hash_vectors,
@@ -66,10 +54,6 @@ class TestSHA384:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
-    skip_message="Does not support SHA512",
-)
 class TestSHA512:
     test_sha512 = generate_hash_test(
         load_hash_vectors,
@@ -214,7 +198,7 @@ class TestSHAKE128:
         hashes.SHAKE128(digest_size=16),
     )
 
-    def test_shake128_variable(self, backend, subtests):
+    def test_shake128_variable(self, subtests):
         vectors = _load_all_params(
             os.path.join("hashes", "SHAKE"),
             ["SHAKE128VariableOut.rsp"],
@@ -225,7 +209,7 @@ class TestSHAKE128:
                 output_length = int(vector["outputlen"]) // 8
                 msg = binascii.unhexlify(vector["msg"])
                 shake = hashes.SHAKE128(digest_size=output_length)
-                m = hashes.Hash(shake, backend=backend)
+                m = hashes.Hash(shake)
                 m.update(msg)
                 assert m.finalize() == binascii.unhexlify(vector["output"])
 
@@ -244,7 +228,7 @@ class TestSHAKE256:
         hashes.SHAKE256(digest_size=32),
     )
 
-    def test_shake256_variable(self, backend, subtests):
+    def test_shake256_variable(self, subtests):
         vectors = _load_all_params(
             os.path.join("hashes", "SHAKE"),
             ["SHAKE256VariableOut.rsp"],
@@ -255,7 +239,7 @@ class TestSHAKE256:
                 output_length = int(vector["outputlen"]) // 8
                 msg = binascii.unhexlify(vector["msg"])
                 shake = hashes.SHAKE256(digest_size=output_length)
-                m = hashes.Hash(shake, backend=backend)
+                m = hashes.Hash(shake)
                 m.update(msg)
                 assert m.finalize() == binascii.unhexlify(vector["output"])
 

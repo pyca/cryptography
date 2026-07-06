@@ -155,6 +155,11 @@ pub fn parse_pkcs1_private_key(
     let private_number = openssl::bn::BigNum::from_slice(ec_private_key.private_key)?;
     let mut bn_ctx = openssl::bn::BigNumContext::new()?;
     let public_point = if let Some(point_bytes) = ec_private_key.public_key {
+        // The publicKey BIT STRING holds an octet-aligned EC point, so a
+        // non-zero unused-bits count is a malformed encoding.
+        if point_bytes.padding_bits() != 0 {
+            return Err(crate::KeyParsingError::InvalidKey);
+        }
         openssl::ec::EcPoint::from_bytes(&group, point_bytes.as_bytes(), &mut bn_ctx)
             .map_err(|_| crate::KeyParsingError::InvalidKey)?
     } else {

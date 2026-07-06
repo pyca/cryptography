@@ -8,11 +8,39 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* The :mod:`X.509 verification <cryptography.x509.verification>` APIs are now
+  considered stable and are subject to our API stability policy.
 * Parsing a Signed Certificate Timestamp list now rejects encodings that
   carry trailing bytes after the list or after an individual SCT, instead of
   silently ignoring them.
 * Added support for using :class:`~cryptography.x509.Name` as a field type in
   the :doc:`/hazmat/asn1/index` module.
+* Loading a public key or an EC private key now rejects DER where the
+  ``subjectPublicKey`` (or EC ``publicKey``) ``BIT STRING`` declares a non-zero
+  number of unused bits, instead of silently ignoring it.
+* Parsing a CRL entry's ``InvalidityDate`` extension now rejects a
+  ``GeneralizedTime`` that carries fractional seconds or another non-DER form,
+  matching the strict encoding already required for every other X.509 time
+  field.
+* :class:`~cryptography.hazmat.primitives.hashes.XOFHash` is now supported
+  when building against AWS-LC.
+* HMAC (and therefore PBKDF2-HMAC) with SHA-3 hashes is now supported when
+  building against AWS-LC.
+* Diffie-Hellman (:doc:`/hazmat/primitives/asymmetric/dh`) is now supported
+  when building against AWS-LC.
+* :func:`~cryptography.hazmat.primitives.serialization.load_der_public_key` and
+  :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key` now
+  reject Diffie-Hellman public keys whose modulus is smaller than 512 bits,
+  matching the minimum already enforced when loading DH private keys and when
+  constructing :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
+* Added
+  :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSAMuHasher` for
+  incrementally computing the ML-DSA ``mu`` (message representative) used by
+  the external-mu signing and verification APIs.
+* The builtin :class:`~cryptography.hazmat.primitives.hashes.HashAlgorithm`
+  classes and the classes in
+  :mod:`~cryptography.hazmat.primitives.asymmetric.padding` can now be
+  compared with ``==``.
 
 .. _v49-0-0:
 

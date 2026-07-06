@@ -26,10 +26,6 @@ class TestHMACMD5:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA1()),
-    skip_message="Does not support SHA1",
-)
 class TestHMACSHA1:
     test_hmac_sha1 = generate_hmac_test(
         load_hash_vectors,
@@ -39,10 +35,6 @@ class TestHMACSHA1:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA224()),
-    skip_message="Does not support SHA224",
-)
 class TestHMACSHA224:
     test_hmac_sha224 = generate_hmac_test(
         load_hash_vectors,
@@ -52,10 +44,6 @@ class TestHMACSHA224:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA256()),
-    skip_message="Does not support SHA256",
-)
 class TestHMACSHA256:
     test_hmac_sha256 = generate_hmac_test(
         load_hash_vectors,
@@ -65,10 +53,6 @@ class TestHMACSHA256:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA384()),
-    skip_message="Does not support SHA384",
-)
 class TestHMACSHA384:
     test_hmac_sha384 = generate_hmac_test(
         load_hash_vectors,
@@ -78,10 +62,6 @@ class TestHMACSHA384:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.hmac_supported(hashes.SHA512()),
-    skip_message="Does not support SHA512",
-)
 class TestHMACSHA512:
     test_hmac_sha512 = generate_hmac_test(
         load_hash_vectors,
@@ -98,8 +78,8 @@ class TestHMACSHA512:
     skip_message="Does not support BLAKE2",
 )
 class TestHMACBLAKE2:
-    def test_blake2b(self, backend):
-        h = hmac.HMAC(b"0" * 64, hashes.BLAKE2b(digest_size=64), backend)
+    def test_blake2b(self):
+        h = hmac.HMAC(b"0" * 64, hashes.BLAKE2b(digest_size=64))
         h.update(b"test")
         digest = h.finalize()
         assert digest == binascii.unhexlify(
@@ -107,8 +87,8 @@ class TestHMACBLAKE2:
             b"87dba4aeaa69e6bed7edc44f48d6b1be493a3ce583f9c737c53d6bacc09e2f32"
         )
 
-    def test_blake2s(self, backend):
-        h = hmac.HMAC(b"0" * 32, hashes.BLAKE2s(digest_size=32), backend)
+    def test_blake2s(self):
+        h = hmac.HMAC(b"0" * 32, hashes.BLAKE2s(digest_size=32))
         h.update(b"test")
         digest = h.finalize()
         assert digest == binascii.unhexlify(

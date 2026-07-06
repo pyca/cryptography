@@ -109,7 +109,7 @@ class TestSM4ModeGCM:
             load_nist_vectors,
         ),
     )
-    def test_encryption(self, vector, backend):
+    def test_encryption(self, vector):
         key = binascii.unhexlify(vector["key"])
         iv = binascii.unhexlify(vector["iv"])
         associated_data = binascii.unhexlify(vector["aad"])
@@ -131,7 +131,7 @@ class TestSM4ModeGCM:
             load_nist_vectors,
         ),
     )
-    def test_decryption(self, vector, backend):
+    def test_decryption(self, vector):
         key = binascii.unhexlify(vector["key"])
         iv = binascii.unhexlify(vector["iv"])
         associated_data = binascii.unhexlify(vector["aad"])
@@ -160,7 +160,7 @@ class TestSM4ModeGCM:
             load_nist_vectors,
         ),
     )
-    def test_invalid_tag(self, vector, backend):
+    def test_invalid_tag(self, vector):
         key = binascii.unhexlify(vector["key"])
         iv = binascii.unhexlify(vector["iv"])
         associated_data = binascii.unhexlify(vector["aad"])

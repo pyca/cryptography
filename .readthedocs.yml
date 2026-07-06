@@ -1,4 +1,4 @@
-# https://docs.readthedocs.io/en/stable/config-file/v2.html#supported-settings
+# https://docs.readthedocs.com/platform/stable/config-file/v2.html
 
 version: 2
 
@@ -12,11 +12,13 @@ formats:
   - pdf
 
 build:
-  os: "ubuntu-24.04"
+  os: "ubuntu-26.04"
   tools:
-    python: "3.13"
+    python: "3.14"
     rust: "latest"
   jobs:
     install:
-      - pip install -U pip
-      - pip install . --group docs
+      - pip install uv
+      # uv needs to be told the target environment explicitly: RTD's venv
+      # isn't activated (no VIRTUAL_ENV) when these commands run.
+      - uv pip install --python "$READTHEDOCS_VIRTUALENV_PATH/bin/python" . --group docs

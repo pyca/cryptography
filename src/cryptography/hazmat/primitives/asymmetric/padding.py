@@ -16,6 +16,12 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 class PKCS1v15(AsymmetricPadding):
     name = "EMSA-PKCS1-v1_5"
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, PKCS1v15):
+            return NotImplemented
+
+        return True
+
 
 class _MaxLength:
     "Sentinel value for `MAX_LENGTH`."
@@ -56,6 +62,14 @@ class PSS(AsymmetricPadding):
 
         self._salt_length = salt_length
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, PSS):
+            return NotImplemented
+
+        return (
+            self._mgf == other._mgf and self._salt_length == other._salt_length
+        )
+
     @property
     def mgf(self) -> MGF:
         return self._mgf
@@ -77,6 +91,16 @@ class OAEP(AsymmetricPadding):
         self._algorithm = algorithm
         self._label = label
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, OAEP):
+            return NotImplemented
+
+        return (
+            self._mgf == other._mgf
+            and self._algorithm == other._algorithm
+            and self._label == other._label
+        )
+
     @property
     def algorithm(self) -> hashes.HashAlgorithm:
         return self._algorithm
@@ -96,6 +120,12 @@ class MGF1(MGF):
             raise TypeError("Expected instance of hashes.HashAlgorithm.")
 
         self._algorithm = algorithm
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, MGF1):
+            return NotImplemented
+
+        return self._algorithm == other._algorithm
 
 
 def calculate_max_pss_salt_length(

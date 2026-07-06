@@ -24,18 +24,28 @@ nox.options.reuse_existing_virtualenvs = True
 nox.options.default_venv_backend = "uv"
 
 
+# See RUST_LOG in .github/workflows/ci.yml
+UV_RUST_LOG = (
+    "uv=debug,uv_client::cached_client=warn,"
+    "uv_client::registry_client=error,uv_resolver::resolver=warn"
+)
+
+
 def install(
     session: nox.Session,
     *args: str,
     verbose: bool = True,
 ) -> None:
+    env = {}
     if verbose:
         args += ("-v",)
+        env["RUST_LOG"] = UV_RUST_LOG
     session.install(
         "-c",
         "ci-constraints-requirements.txt",
         *args,
         silent=False,
+        env=env,
     )
 
 
@@ -96,11 +106,6 @@ def tests(session: nox.Session) -> None:
     else:
         cov_args = []
 
-    if session.posargs:
-        tests = session.posargs
-    else:
-        tests = ["tests/"]
-
     session.run(
         "pytest",
         "-n",
@@ -108,7 +113,7 @@ def tests(session: nox.Session) -> None:
         "--dist=worksteal",
         *cov_args,
         "--durations=10",
-        *tests,
+        *session.posargs,
     )
 
     if session.name != "tests-nocoverage":
@@ -334,18 +339,13 @@ def local(session: nox.Session):
         "--uv",
     )
 
-    if session.posargs:
-        tests = session.posargs
-    else:
-        tests = ["tests/"]
-
     session.run(
         "pytest",
         "-n",
         "auto",
         "--dist=worksteal",
         "--durations=10",
-        *tests,
+        *session.posargs,
     )
 
     session.run("cargo", "test", "--all", external=True)

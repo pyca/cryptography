@@ -145,7 +145,16 @@ fn dh_parameters_from_numbers(
 fn check_dh_parameters<T: openssl::pkey::HasParams>(
     dh: &openssl::dh::Dh<T>,
 ) -> CryptographyResult<()> {
-    if !dh.check_key()? {
+    // Enforce the modulus minimum ourselves rather than relying on OpenSSL's
+    // DH_check, so an undersized modulus is rejected consistently across every
+    // DH construction path and regardless of backend behaviour. This matches
+    // the minimum already enforced for DH private keys and DHParameterNumbers.
+    if dh.prime_p().num_bits() < cryptography_key_parsing::MIN_DH_MODULUS_SIZE as i32 {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"),
+        ));
+    }
+    if !dh.check_key().unwrap_or(false) {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"),
         ));
@@ -225,7 +234,7 @@ impl DHPrivateKey {
         })
     }
 
-    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     fn public_key(&self) -> CryptographyResult<DHPublicKey> {
         let orig_dh = self.pkey.dh().unwrap();
         let dh = clone_dh(&orig_dh)?;
@@ -355,7 +364,7 @@ impl DHPublicKey {
 
 #[pyo3::pymethods]
 impl DHParameters {
-    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     fn generate_private_key(&self) -> CryptographyResult<DHPrivateKey> {
         let dh = clone_dh(&self.dh)?.generate_key()?;
         Ok(DHPrivateKey {
@@ -449,7 +458,7 @@ impl DHPrivateNumbers {
         DHPrivateNumbers { x, public_numbers }
     }
 
-    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     #[pyo3(signature = (backend=None))]
     fn private_key(
         &self,
@@ -494,7 +503,7 @@ impl DHPublicNumbers {
         }
     }
 
-    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     #[pyo3(signature = (backend=None))]
     fn public_key(
         &self,

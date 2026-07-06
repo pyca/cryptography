@@ -5,6 +5,7 @@
 
 import binascii
 import os
+import typing
 
 import pytest
 
@@ -16,9 +17,15 @@ from tests.utils import (
     raises_unsupported_algorithm,
 )
 
-vectors = load_vectors_from_file(
-    os.path.join("KDF", "scrypt.txt"), load_nist_vectors
-)
+# remove the N=2**20 vector since it has low testing value
+# but is very expensive
+vectors = [
+    vector
+    for vector in load_vectors_from_file(
+        os.path.join("KDF", "scrypt.txt"), load_nist_vectors
+    )
+    if int(vector["n"]) <= 16384
+]
 
 
 def _skip_if_memory_limited(memory_limit, params):
@@ -46,7 +53,7 @@ def test_memory_limit_skip():
     only_if=lambda backend: not backend.scrypt_supported(),
     skip_message="Supports scrypt so can't test unsupported path",
 )
-def test_unsupported_backend(backend):
+def test_unsupported_backend():
     # This test is currently exercised by LibreSSL, which does
     # not support scrypt
     with raises_unsupported_algorithm(None):
@@ -59,7 +66,7 @@ def test_unsupported_backend(backend):
 )
 class TestScrypt:
     @pytest.mark.parametrize("params", vectors)
-    def test_derive(self, backend, params):
+    def test_derive(self, params):
         _skip_if_memory_limited(_MEM_LIMIT, params)
         password = params["password"]
         work_factor = int(params["n"])
@@ -70,16 +77,11 @@ class TestScrypt:
         derived_key = params["derived_key"]
 
         scrypt = Scrypt(
-            salt,
-            length,
-            work_factor,
-            block_size,
-            parallelization_factor,
-            backend,
+            salt, length, work_factor, block_size, parallelization_factor
         )
         assert binascii.hexlify(scrypt.derive(password)) == derived_key
 
-    def test_salt_not_bytes(self, backend):
+    def test_salt_not_bytes(self):
         work_factor = 1024
         block_size = 8
         parallelization_factor = 16
@@ -88,15 +90,15 @@ class TestScrypt:
 
         with pytest.raises(TypeError):
             Scrypt(
-                salt,  # type: ignore[arg-type]
+                typing.cast(typing.Any, salt),
                 length,
                 work_factor,
                 block_size,
                 parallelization_factor,
-                backend,
             )
 
-    def test_scrypt_malloc_failure(self, backend):
+    @pytest.mark.malloc_failure
+    def test_scrypt_malloc_failure(self):
         password = b"NaCl"
         work_factor = 1024**3
         block_size = 589824
@@ -105,18 +107,13 @@ class TestScrypt:
         salt = b"NaCl"
 
         scrypt = Scrypt(
-            salt,
-            length,
-            work_factor,
-            block_size,
-            parallelization_factor,
-            backend,
+            salt, length, work_factor, block_size, parallelization_factor
         )
 
         with pytest.raises(MemoryError):
             scrypt.derive(password)
 
-    def test_password_not_bytes(self, backend):
+    def test_password_not_bytes(self):
         password = 1
         work_factor = 1024
         block_size = 8
@@ -125,18 +122,13 @@ class TestScrypt:
         salt = b"NaCl"
 
         scrypt = Scrypt(
-            salt,
-            length,
-            work_factor,
-            block_size,
-            parallelization_factor,
-            backend,
+            salt, length, work_factor, block_size, parallelization_factor
         )
 
         with pytest.raises(TypeError):
-            scrypt.derive(password)  # type: ignore[arg-type]
+            scrypt.derive(typing.cast(typing.Any, password))
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         password = bytearray(b"password")
         work_factor = 256
         block_size = 8
@@ -145,18 +137,13 @@ class TestScrypt:
         salt = b"NaCl"
 
         scrypt = Scrypt(
-            salt,
-            length,
-            work_factor,
-            block_size,
-            parallelization_factor,
-            backend,
+            salt, length, work_factor, block_size, parallelization_factor
         )
 
         assert scrypt.derive(password) == b"\xf4\x92\x86\xb2\x06\x0c\x848W\x87"
 
     @pytest.mark.parametrize("params", vectors)
-    def test_verify(self, backend, params):
+    def test_verify(self, params):
         _skip_if_memory_limited(_MEM_LIMIT, params)
         password = params["password"]
         work_factor = int(params["n"])
@@ -167,16 +154,11 @@ class TestScrypt:
         derived_key = params["derived_key"]
 
         scrypt = Scrypt(
-            salt,
-            length,
-            work_factor,
-            block_size,
-            parallelization_factor,
-            backend,
+            salt, length, work_factor, block_size, parallelization_factor
         )
         scrypt.verify(password, binascii.unhexlify(derived_key))
 
-    def test_invalid_verify(self, backend):
+    def test_invalid_verify(self):
         password = b"password"
         work_factor = 1024
         block_size = 8
@@ -186,18 +168,13 @@ class TestScrypt:
         derived_key = b"fdbabe1c9d3472007856e7190d01e9fe7c6ad7cbc8237830e773"
 
         scrypt = Scrypt(
-            salt,
-            length,
-            work_factor,
-            block_size,
-            parallelization_factor,
-            backend,
+            salt, length, work_factor, block_size, parallelization_factor
         )
 
         with pytest.raises(InvalidKey):
             scrypt.verify(password, binascii.unhexlify(derived_key))
 
-    def test_already_finalized(self, backend):
+    def test_already_finalized(self):
         password = b"password"
         work_factor = 1024
         block_size = 8
@@ -206,55 +183,50 @@ class TestScrypt:
         salt = b"NaCl"
 
         scrypt = Scrypt(
-            salt,
-            length,
-            work_factor,
-            block_size,
-            parallelization_factor,
-            backend,
+            salt, length, work_factor, block_size, parallelization_factor
         )
         scrypt.derive(password)
         with pytest.raises(AlreadyFinalized):
             scrypt.derive(password)
 
-    def test_invalid_n(self, backend):
+    def test_invalid_n(self):
         # n is less than 2
         with pytest.raises(ValueError):
-            Scrypt(b"NaCl", 64, 1, 8, 16, backend)
+            Scrypt(b"NaCl", 64, 1, 8, 16)
 
         # n is not a power of 2
         with pytest.raises(ValueError):
-            Scrypt(b"NaCl", 64, 3, 8, 16, backend)
+            Scrypt(b"NaCl", 64, 3, 8, 16)
 
-    def test_invalid_r(self, backend):
+    def test_invalid_r(self):
         with pytest.raises(ValueError):
-            Scrypt(b"NaCl", 64, 2, 0, 16, backend)
+            Scrypt(b"NaCl", 64, 2, 0, 16)
 
-    def test_invalid_p(self, backend):
+    def test_invalid_p(self):
         with pytest.raises(ValueError):
-            Scrypt(b"NaCl", 64, 2, 8, 0, backend)
+            Scrypt(b"NaCl", 64, 2, 8, 0)
 
-    def test_derive_into(self, backend):
-        scrypt = Scrypt(b"NaCl", 64, 1024, 8, 16, backend)
+    def test_derive_into(self):
+        scrypt = Scrypt(b"NaCl", 64, 1024, 8, 16)
         buf = bytearray(64)
         n = scrypt.derive_into(b"password", buf)
         assert n == 64
         # Verify the output matches what derive would produce
-        scrypt2 = Scrypt(b"NaCl", 64, 1024, 8, 16, backend)
+        scrypt2 = Scrypt(b"NaCl", 64, 1024, 8, 16)
         expected = scrypt2.derive(b"password")
         assert buf == expected
 
     @pytest.mark.parametrize(
         ("buflen", "outlen"), [(63, 64), (65, 64), (32, 64), (128, 64)]
     )
-    def test_derive_into_buffer_incorrect_size(self, buflen, outlen, backend):
-        scrypt = Scrypt(b"NaCl", outlen, 1024, 8, 16, backend)
+    def test_derive_into_buffer_incorrect_size(self, buflen, outlen):
+        scrypt = Scrypt(b"NaCl", outlen, 1024, 8, 16)
         buf = bytearray(buflen)
         with pytest.raises(ValueError, match="buffer must be"):
             scrypt.derive_into(b"password", buf)
 
-    def test_derive_into_already_finalized(self, backend):
-        scrypt = Scrypt(b"NaCl", 64, 1024, 8, 16, backend)
+    def test_derive_into_already_finalized(self):
+        scrypt = Scrypt(b"NaCl", 64, 1024, 8, 16)
         buf = bytearray(64)
         scrypt.derive_into(b"password", buf)
         with pytest.raises(AlreadyFinalized):

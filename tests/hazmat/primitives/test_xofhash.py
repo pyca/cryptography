@@ -7,6 +7,7 @@ import binascii
 import os
 import random
 import sys
+import typing
 
 import pytest
 
@@ -18,39 +19,41 @@ from ...utils import load_nist_vectors
 from .utils import _load_all_params
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: (
-        not rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER
-        or rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
-        or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+def _xof_supported() -> bool:
+    return (
+        rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER
         or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
-    ),
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: not _xof_supported(),
     skip_message="Requires backend without XOF support",
 )
-def test_unsupported_boring_libre(backend):
+def test_unsupported_xof():
     with pytest.raises(UnsupportedAlgorithm):
         hashes.XOFHash(hashes.SHAKE128(digest_size=32))
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+    only_if=lambda backend: _xof_supported(),
     skip_message="Requires backend with XOF support",
 )
 class TestXOFHash:
-    def test_hash_reject_unicode(self, backend):
+    def test_hash_reject_unicode(self):
         m = hashes.XOFHash(hashes.SHAKE128(sys.maxsize))
         with pytest.raises(TypeError):
-            m.update("\u00fc")  # type: ignore[arg-type]
+            m.update(typing.cast(typing.Any, "\u00fc"))
 
-    def test_incorrect_hash_algorithm_type(self, backend):
+    def test_incorrect_hash_algorithm_type(self):
         with pytest.raises(TypeError):
             # Instance required
-            hashes.XOFHash(hashes.SHAKE128)  # type: ignore[arg-type]
+            hashes.XOFHash(typing.cast(typing.Any, hashes.SHAKE128))
 
         with pytest.raises(TypeError):
-            hashes.XOFHash(hashes.SHA256())  # type: ignore[arg-type]
+            hashes.XOFHash(typing.cast(typing.Any, hashes.SHA256()))
 
-    def test_raises_update_after_squeeze(self, backend):
+    def test_raises_update_after_squeeze(self):
         h = hashes.XOFHash(hashes.SHAKE128(digest_size=256))
         h.update(b"foo")
         h.squeeze(5)
@@ -58,14 +61,14 @@ class TestXOFHash:
         with pytest.raises(AlreadyFinalized):
             h.update(b"bar")
 
-    def test_copy(self, backend):
+    def test_copy(self):
         h = hashes.XOFHash(hashes.SHAKE128(digest_size=256))
         h.update(b"foo")
         h.update(b"bar")
         h2 = h.copy()
         assert h2.squeeze(10) == h.squeeze(10)
 
-    def test_exhaust_bytes(self, backend):
+    def test_exhaust_bytes(self):
         h = hashes.XOFHash(hashes.SHAKE128(digest_size=256))
         h.update(b"foo")
         with pytest.raises(ValueError):
@@ -77,11 +80,11 @@ class TestXOFHash:
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+    only_if=lambda backend: _xof_supported(),
     skip_message="Requires backend with XOF support",
 )
 class TestXOFSHAKE128:
-    def test_shake128_variable(self, backend, subtests):
+    def test_shake128_variable(self, subtests):
         vectors = _load_all_params(
             os.path.join("hashes", "SHAKE"),
             ["SHAKE128VariableOut.rsp"],
@@ -105,11 +108,11 @@ class TestXOFSHAKE128:
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+    only_if=lambda backend: _xof_supported(),
     skip_message="Requires backend with XOF support",
 )
 class TestXOFSHAKE256:
-    def test_shake256_variable(self, backend, subtests):
+    def test_shake256_variable(self, subtests):
         vectors = _load_all_params(
             os.path.join("hashes", "SHAKE"),
             ["SHAKE256VariableOut.rsp"],

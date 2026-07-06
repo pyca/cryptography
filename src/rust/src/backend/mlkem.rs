@@ -2,9 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use pyo3::types::PyAnyMethods;
-
 use cryptography_openssl::mlkem::MlKemVariant;
+use pyo3::types::PyAnyMethods;
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;

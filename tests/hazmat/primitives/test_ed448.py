@@ -7,6 +7,7 @@ import binascii
 import copy
 import os
 import textwrap
+import typing
 
 import pytest
 
@@ -29,7 +30,7 @@ from ...utils import (
     only_if=lambda backend: not backend.ed448_supported(),
     skip_message="Requires OpenSSL without Ed448 support",
 )
-def test_ed448_unsupported(backend):
+def test_ed448_unsupported():
     with raises_unsupported_algorithm(
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
     ):
@@ -58,7 +59,7 @@ class TestEd448Signing:
             load_nist_vectors,
         ),
     )
-    def test_sign_input(self, vector, backend):
+    def test_sign_input(self, vector):
         if vector.get("context") is not None:
             pytest.skip("ed448 contexts are not currently supported")
 
@@ -78,7 +79,7 @@ class TestEd448Signing:
         )
         public_key.verify(signature, message)
 
-    def test_invalid_signature(self, backend):
+    def test_invalid_signature(self):
         key = Ed448PrivateKey.generate()
         signature = key.sign(b"test data")
         with pytest.raises(InvalidSignature):
@@ -87,13 +88,13 @@ class TestEd448Signing:
         with pytest.raises(InvalidSignature):
             key.public_key().verify(b"0" * 64, b"test data")
 
-    def test_sign_verify_buffer(self, backend):
+    def test_sign_verify_buffer(self):
         key = Ed448PrivateKey.generate()
         data = bytearray(b"test data")
         signature = key.sign(data)
         key.public_key().verify(bytearray(signature), data)
 
-    def test_generate(self, backend):
+    def test_generate(self):
         key = Ed448PrivateKey.generate()
         assert key
         assert key.public_key()
@@ -105,7 +106,7 @@ class TestEd448Signing:
             load_nist_vectors,
         ),
     )
-    def test_pub_priv_bytes_raw(self, vector, backend):
+    def test_pub_priv_bytes_raw(self, vector):
         sk = binascii.unhexlify(vector["secret"])
         pk = binascii.unhexlify(vector["public"])
         private_key = Ed448PrivateKey.from_private_bytes(sk)
@@ -168,44 +169,42 @@ class TestEd448Signing:
         ],
     )
     def test_round_trip_private_serialization(
-        self, encoding, fmt, encryption, passwd, load_func, backend
+        self, encoding, fmt, encryption, passwd, load_func
     ):
         key = Ed448PrivateKey.generate()
         serialized = key.private_bytes(encoding, fmt, encryption)
-        loaded_key = load_func(serialized, passwd, backend)
+        loaded_key = load_func(serialized, passwd)
         assert isinstance(loaded_key, Ed448PrivateKey)
 
-    def test_invalid_type_public_bytes(self, backend):
+    def test_invalid_type_public_bytes(self):
         with pytest.raises(TypeError):
-            Ed448PublicKey.from_public_bytes(
-                object()  # type: ignore[arg-type]
-            )
+            Ed448PublicKey.from_public_bytes(typing.cast(typing.Any, object()))
 
-    def test_invalid_type_private_bytes(self, backend):
+    def test_invalid_type_private_bytes(self):
         with pytest.raises(TypeError):
             Ed448PrivateKey.from_private_bytes(
-                object()  # type: ignore[arg-type]
+                typing.cast(typing.Any, object())
             )
 
-    def test_invalid_length_from_public_bytes(self, backend):
+    def test_invalid_length_from_public_bytes(self):
         with pytest.raises(ValueError):
             Ed448PublicKey.from_public_bytes(b"a" * 56)
         with pytest.raises(ValueError):
             Ed448PublicKey.from_public_bytes(b"a" * 58)
 
-    def test_invalid_length_from_private_bytes(self, backend):
+    def test_invalid_length_from_private_bytes(self):
         with pytest.raises(ValueError):
             Ed448PrivateKey.from_private_bytes(b"a" * 56)
         with pytest.raises(ValueError):
             Ed448PrivateKey.from_private_bytes(b"a" * 58)
 
-    def test_invalid_private_bytes(self, backend):
+    def test_invalid_private_bytes(self):
         key = Ed448PrivateKey.generate()
         with pytest.raises(TypeError):
             key.private_bytes(
                 serialization.Encoding.Raw,
                 serialization.PrivateFormat.Raw,
-                None,  # type: ignore[arg-type]
+                typing.cast(typing.Any, None),
             )
         with pytest.raises(ValueError):
             key.private_bytes(
@@ -228,7 +227,7 @@ class TestEd448Signing:
                 serialization.NoEncryption(),
             )
 
-    def test_invalid_public_bytes(self, backend):
+    def test_invalid_public_bytes(self):
         key = Ed448PrivateKey.generate().public_key()
         with pytest.raises(ValueError):
             key.public_bytes(
@@ -255,7 +254,7 @@ class TestEd448Signing:
             -----END PUBLIC KEY-----""").encode()
             )
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         private_bytes = os.urandom(57)
         key = Ed448PrivateKey.from_private_bytes(bytearray(private_bytes))
         assert (
@@ -267,7 +266,7 @@ class TestEd448Signing:
             == private_bytes
         )
 
-    def test_malleability(self, backend):
+    def test_malleability(self):
         # This is a signature where r > the group order. It should be
         # rejected to prevent signature malleability issues. This test can
         # be removed when wycheproof grows ed448 vectors
@@ -290,7 +289,7 @@ class TestEd448Signing:
     only_if=lambda backend: backend.ed448_supported(),
     skip_message="Requires OpenSSL with Ed448 support",
 )
-def test_public_key_equality(backend):
+def test_public_key_equality():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "Ed448", "ed448-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -311,7 +310,7 @@ def test_public_key_equality(backend):
     only_if=lambda backend: backend.ed448_supported(),
     skip_message="Requires OpenSSL with Ed448 support",
 )
-def test_public_key_copy(backend):
+def test_public_key_copy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "Ed448", "ed448-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -327,7 +326,7 @@ def test_public_key_copy(backend):
     only_if=lambda backend: backend.ed448_supported(),
     skip_message="Requires OpenSSL with Ed448 support",
 )
-def test_public_key_deepcopy(backend):
+def test_public_key_deepcopy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "Ed448", "ed448-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -343,7 +342,7 @@ def test_public_key_deepcopy(backend):
     only_if=lambda backend: backend.ed448_supported(),
     skip_message="Requires OpenSSL with Ed448 support",
 )
-def test_private_key_copy(backend):
+def test_private_key_copy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "Ed448", "ed448-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -359,7 +358,7 @@ def test_private_key_copy(backend):
     only_if=lambda backend: backend.ed448_supported(),
     skip_message="Requires OpenSSL with Ed448 support",
 )
-def test_private_key_deepcopy(backend):
+def test_private_key_deepcopy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "Ed448", "ed448-pkcs8.der"),
         lambda derfile: derfile.read(),

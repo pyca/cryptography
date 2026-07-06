@@ -185,6 +185,9 @@ Custom asymmetric vectors
   ``sect233k1``.
 * ``asymmetric/EC/sect233r1-spki.pem`` - Contains an EC SPKI on the curve
   ``sect233r1``.
+* ``asymmetric/EC/ec_private_key_non_zero_unused_bits.der`` - Contains a
+  ``secp256r1`` private key whose ``publicKey`` bit string has the unused-bits
+  count set to 1 rather than the required 0.
 * ``asymmetric/X448/x448-pkcs8-enc.pem`` and
   ``asymmetric/X448/x448-pkcs8-enc.der`` contain an X448 key encrypted with
   AES 256 CBC with the password ``password``.
@@ -199,6 +202,9 @@ Custom asymmetric vectors
   ``asymmetric/Ed25519/ed25519-pkcs8.der`` contain an unencrypted Ed25519 key.
 * ``asymmetric/Ed25519/ed25519-pub.pem`` and
   ``asymmetric/Ed25519/ed25519-pub.der`` contain an Ed25519 public key.
+* ``asymmetric/Ed25519/ed25519-pub-non-zero-unused-bits.der`` contains an
+  Ed25519 SPKI whose ``subjectPublicKey`` bit string has the unused-bits count
+  set to 1 rather than the required 0.
 * ``asymmetric/X25519/x25519-pkcs8-enc.pem`` and
   ``asymmetric/X25519/x25519-pkcs8-enc.der`` contain an X25519 key encrypted
   with AES 256 CBC with the password ``password``.
@@ -474,6 +480,9 @@ Custom X.509 Vectors
   "We heart UTF8!™".
 * ``invalid_utf8_common_name.pem`` - A certificate that contains a
   ``UTF8String`` common name with an invalid UTF-8 byte sequence.
+* ``name_attribute_unsupported_tag.pem`` - A certificate whose subject and
+  issuer common name values carry an ASN.1 tag (``0x69``) that is not one of
+  the recognized string types. The signature on this certificate is invalid.
 * ``two_basic_constraints.pem`` - An RSA 2048 bit self-signed certificate
   containing two basic constraints extensions.
 * ``basic_constraints_not_critical.pem`` - An RSA 2048 bit self-signed
@@ -821,6 +830,9 @@ Custom X.509 Certificate Revocation List Vectors
   outer signature algorithm. The signature on this CRL is invalid.
 * ``crl_issuer_invalid_printable_string.der`` - A CRL where the ``issuer``
   field contains an invalid ``PRINTABLE STRING`` value.
+* ``crl_inval_date_fractional_seconds.der`` - A CRL with one revocation whose
+  ``InvalidityDate`` entry extension carries a ``GeneralizedTime`` with
+  fractional seconds, which is not valid DER.
 
 X.509 OCSP Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -1029,6 +1041,9 @@ Custom PKCS7 Test Vectors
 * ``pkcs7/non-ascii-san.pem`` - An invalid certificate adapted for S/MIME
   signature & verification. It has an non-ASCII subject alternative name stored
   as `rfc822Name`.
+* ``pkcs7/authenticode.der`` - A DER encoded PKCS7 file containing an
+  Authenticode signature (with a ``SpcIndirectDataContent`` inner content
+  type), extracted from `Fedora 44's grubx64.efi`_.
 
 Custom OpenSSH Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1157,6 +1172,7 @@ Recipes
 ~~~~~~~
 
 * Fernet from its `specification repository`_.
+* Chunked encryption from the `chunked reference implementation`_.
 
 Symmetric ciphers
 ~~~~~~~~~~~~~~~~~
@@ -1258,6 +1274,7 @@ header format (substituting the correct information):
 .. _`RIPEMD website`: https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
 .. _`draft RFC`: https://datatracker.ietf.org/doc/html/draft-josefsson-scrypt-kdf-01
 .. _`Specification repository`: https://github.com/fernet/spec
+.. _`chunked reference implementation`: https://github.com/FiloSottile/chunked
 .. _`errata`: https://www.rfc-editor.org/errata_search.php?rfc=6238
 .. _`enc-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/encpkcs8.pem
 .. _`enc2-rsa-pkcs8.pem`: https://gitlab.com/gnutls/gnutls/blob/f8d943b38bf74eaaa11d396112daf43cb8aa82ae/tests/pkcs8-decode/enc2pkcs8.pem
@@ -1282,6 +1299,7 @@ header format (substituting the correct information):
 .. _`DHKE`: https://sandilands.info/sgordon/diffie-hellman-secret-key-exchange-with-openssl
 .. _`Botan's key wrap vectors`: https://github.com/randombit/botan/blob/737f33c09a18500e044dca3e2ae13bd2c08bafdd/src/tests/data/keywrap/nist_key_wrap.vec
 .. _`root-ed25519.pem`: https://github.com/openssl/openssl/blob/2a1e2fe145c6eb8e75aa2e1b3a8c3a49384b2852/test/certs/root-ed25519.pem
+.. _`Fedora 44's grubx64.efi`: https://dl.fedoraproject.org/pub/fedora/linux/releases/44/Server/x86_64/os/EFI/BOOT/grubx64.efi
 .. _`server-ed25519-cert.pem`: https://github.com/openssl/openssl/blob/2a1e2fe145c6eb8e75aa2e1b3a8c3a49384b2852/test/certs/server-ed25519-cert.pem
 .. _`server-ed448-cert.pem`: https://github.com/openssl/openssl/blob/2a1e2fe145c6eb8e75aa2e1b3a8c3a49384b2852/test/certs/server-ed448-cert.pem
 .. _`evpciph_aes_gcm_siv.txt`: https://github.com/openssl/openssl/blob/a2b1ab6100d5f0fb50b61d241471eea087415632/test/recipes/30-test_evp_data/evpciph_aes_gcm_siv.txt

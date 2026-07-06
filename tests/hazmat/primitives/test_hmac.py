@@ -4,6 +4,7 @@
 
 
 import binascii
+import typing
 
 import pytest
 
@@ -30,21 +31,17 @@ class TestHMACCopy:
 
 
 class TestHMAC:
-    def test_hmac_reject_unicode(self, backend):
-        h = hmac.HMAC(b"mykey", hashes.SHA1(), backend=backend)
+    def test_hmac_reject_unicode(self):
+        h = hmac.HMAC(b"mykey", hashes.SHA1())
         with pytest.raises(TypeError):
-            h.update("\u00fc")  # type: ignore[arg-type]
+            h.update(typing.cast(typing.Any, "\u00fc"))
 
-    def test_hmac_algorithm_instance(self, backend):
+    def test_hmac_algorithm_instance(self):
         with pytest.raises(TypeError):
-            hmac.HMAC(
-                b"key",
-                hashes.SHA1,  # type: ignore[arg-type]
-                backend=backend,
-            )
+            hmac.HMAC(b"key", typing.cast(typing.Any, hashes.SHA1))
 
-    def test_raises_after_finalize(self, backend):
-        h = hmac.HMAC(b"key", hashes.SHA1(), backend=backend)
+    def test_raises_after_finalize(self):
+        h = hmac.HMAC(b"key", hashes.SHA1())
         h.finalize()
 
         with pytest.raises(AlreadyFinalized):
@@ -56,39 +53,39 @@ class TestHMAC:
         with pytest.raises(AlreadyFinalized):
             h.finalize()
 
-    def test_verify(self, backend):
-        h = hmac.HMAC(b"", hashes.SHA1(), backend=backend)
+    def test_verify(self):
+        h = hmac.HMAC(b"", hashes.SHA1())
         digest = h.finalize()
 
-        h = hmac.HMAC(b"", hashes.SHA1(), backend=backend)
+        h = hmac.HMAC(b"", hashes.SHA1())
         h.verify(digest)
 
         with pytest.raises(AlreadyFinalized):
             h.verify(b"")
 
-    def test_invalid_verify(self, backend):
-        h = hmac.HMAC(b"", hashes.SHA1(), backend=backend)
+    def test_invalid_verify(self):
+        h = hmac.HMAC(b"", hashes.SHA1())
         with pytest.raises(InvalidSignature):
             h.verify(b"")
 
         with pytest.raises(AlreadyFinalized):
             h.verify(b"")
 
-    def test_verify_reject_unicode(self, backend):
-        h = hmac.HMAC(b"", hashes.SHA1(), backend=backend)
+    def test_verify_reject_unicode(self):
+        h = hmac.HMAC(b"", hashes.SHA1())
         with pytest.raises(TypeError):
-            h.verify("")  # type: ignore[arg-type]
+            h.verify(typing.cast(typing.Any, ""))
 
-    def test_unsupported_hash(self, backend):
+    def test_unsupported_hash(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            hmac.HMAC(b"key", DummyHashAlgorithm(), backend)
+            hmac.HMAC(b"key", DummyHashAlgorithm())
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            hmac.HMAC(b"key", hashes.SHAKE256(digest_size=256), backend)
+            hmac.HMAC(b"key", hashes.SHAKE256(digest_size=256))
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         key = bytearray(b"2b7e151628aed2a6abf7158809cf4f3c")
-        h = hmac.HMAC(key, hashes.SHA256(), backend)
+        h = hmac.HMAC(key, hashes.SHA256())
         h.update(bytearray(b"6bc1bee22e409f96e93d7e117393172a"))
         assert h.finalize() == binascii.unhexlify(
             b"a1bf7169c56a501c6585190ff4f07cad6e492a3ee187c0372614fb444b9fc3f0"

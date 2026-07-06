@@ -4,6 +4,7 @@
 
 
 import binascii
+import typing
 
 import pytest
 
@@ -25,38 +26,31 @@ from .utils import (
 
 
 class TestCipher:
-    def test_creates_encryptor(self, backend):
+    def test_creates_encryptor(self):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            backend,
         )
         assert isinstance(cipher.encryptor(), base.CipherContext)
 
-    def test_creates_decryptor(self, backend):
+    def test_creates_decryptor(self):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            backend,
         )
         assert isinstance(cipher.decryptor(), base.CipherContext)
 
-    def test_instantiate_with_non_algorithm(self, backend):
+    def test_instantiate_with_non_algorithm(self):
         algorithm = object()
         with pytest.raises(TypeError):
-            Cipher(
-                algorithm,  # type: ignore[arg-type]
-                mode=None,
-                backend=backend,
-            )
+            Cipher(typing.cast(typing.Any, algorithm), mode=None)
 
 
 class TestCipherContext:
-    def test_use_after_finalize(self, backend):
+    def test_use_after_finalize(self):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            backend,
         )
         encryptor = cipher.encryptor()
         encryptor.update(b"a" * 16)
@@ -73,11 +67,10 @@ class TestCipherContext:
         with pytest.raises(AlreadyFinalized):
             decryptor.finalize()
 
-    def test_use_update_into_after_finalize(self, backend):
+    def test_use_update_into_after_finalize(self):
         cipher = Cipher(
             algorithms.AES(binascii.unhexlify(b"0" * 32)),
             modes.CBC(binascii.unhexlify(b"0" * 32)),
-            backend,
         )
         encryptor = cipher.encryptor()
         encryptor.update(b"a" * 16)
@@ -86,9 +79,9 @@ class TestCipherContext:
             buf = bytearray(31)
             encryptor.update_into(b"b" * 16, buf)
 
-    def test_unaligned_block_encryption(self, backend):
+    def test_unaligned_block_encryption(self):
         cipher = Cipher(
-            algorithms.AES(binascii.unhexlify(b"0" * 32)), modes.ECB(), backend
+            algorithms.AES(binascii.unhexlify(b"0" * 32)), modes.ECB()
         )
         encryptor = cipher.encryptor()
         ct = encryptor.update(b"a" * 15)
@@ -105,18 +98,16 @@ class TestCipherContext:
         decryptor.finalize()
 
     @pytest.mark.parametrize("mode", [DummyMode(), None])
-    def test_nonexistent_cipher(self, backend, mode):
-        cipher = Cipher(DummyCipherAlgorithm(), mode, backend)
+    def test_nonexistent_cipher(self, mode):
+        cipher = Cipher(DummyCipherAlgorithm(), mode)
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.encryptor()
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             cipher.decryptor()
 
-    def test_incorrectly_padded(self, backend):
-        cipher = Cipher(
-            algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16), backend
-        )
+    def test_incorrectly_padded(self):
+        cipher = Cipher(algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16))
         encryptor = cipher.encryptor()
         encryptor.update(b"1")
         with pytest.raises(ValueError):
@@ -128,12 +119,6 @@ class TestCipherContext:
             decryptor.finalize()
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 16), modes.GCM(b"\x00" * 12)
-    ),
-    skip_message="Does not support AES GCM",
-)
 class TestAEADCipherContext:
     test_aead_exceptions = generate_aead_exception_test(
         algorithms.AES,
@@ -146,45 +131,25 @@ class TestAEADCipherContext:
 
 
 class TestModeValidation:
-    def test_cbc(self, backend):
+    def test_cbc(self):
         with pytest.raises(ValueError):
-            Cipher(
-                algorithms.AES(b"\x00" * 16),
-                modes.CBC(b"abc"),
-                backend,
-            )
+            Cipher(algorithms.AES(b"\x00" * 16), modes.CBC(b"abc"))
 
-    def test_ofb(self, backend):
+    def test_ofb(self):
         with pytest.raises(ValueError):
-            Cipher(
-                algorithms.AES(b"\x00" * 16),
-                OFB(b"abc"),
-                backend,
-            )
+            Cipher(algorithms.AES(b"\x00" * 16), OFB(b"abc"))
 
-    def test_cfb(self, backend):
+    def test_cfb(self):
         with pytest.raises(ValueError):
-            Cipher(
-                algorithms.AES(b"\x00" * 16),
-                CFB(b"abc"),
-                backend,
-            )
+            Cipher(algorithms.AES(b"\x00" * 16), CFB(b"abc"))
 
-    def test_cfb8(self, backend):
+    def test_cfb8(self):
         with pytest.raises(ValueError):
-            Cipher(
-                algorithms.AES(b"\x00" * 16),
-                CFB8(b"abc"),
-                backend,
-            )
+            Cipher(algorithms.AES(b"\x00" * 16), CFB8(b"abc"))
 
-    def test_ctr(self, backend):
+    def test_ctr(self):
         with pytest.raises(ValueError):
-            Cipher(
-                algorithms.AES(b"\x00" * 16),
-                modes.CTR(b"abc"),
-                backend,
-            )
+            Cipher(algorithms.AES(b"\x00" * 16), modes.CTR(b"abc"))
 
     def test_gcm(self):
         with pytest.raises(ValueError):
@@ -194,28 +159,28 @@ class TestModeValidation:
 class TestModesRequireBytes:
     def test_cbc(self):
         with pytest.raises(TypeError):
-            modes.CBC([1] * 16)  # type:ignore[arg-type]
+            modes.CBC(typing.cast(typing.Any, [1] * 16))
 
     def test_cfb(self):
         with pytest.raises(TypeError):
-            CFB([1] * 16)  # type:ignore[arg-type]
+            CFB(typing.cast(typing.Any, [1] * 16))
 
     def test_cfb8(self):
         with pytest.raises(TypeError):
-            CFB8([1] * 16)  # type:ignore[arg-type]
+            CFB8(typing.cast(typing.Any, [1] * 16))
 
     def test_ofb(self):
         with pytest.raises(TypeError):
-            OFB([1] * 16)  # type:ignore[arg-type]
+            OFB(typing.cast(typing.Any, [1] * 16))
 
     def test_ctr(self):
         with pytest.raises(TypeError):
-            modes.CTR([1] * 16)  # type:ignore[arg-type]
+            modes.CTR(typing.cast(typing.Any, [1] * 16))
 
     def test_gcm_iv(self):
         with pytest.raises(TypeError):
-            modes.GCM([1] * 16)  # type:ignore[arg-type]
+            modes.GCM(typing.cast(typing.Any, [1] * 16))
 
     def test_gcm_tag(self):
         with pytest.raises(TypeError):
-            modes.GCM(b"\x00" * 16, [1] * 16)  # type:ignore[arg-type]
+            modes.GCM(b"\x00" * 16, typing.cast(typing.Any, [1] * 16))

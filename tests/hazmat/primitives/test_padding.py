@@ -3,6 +3,8 @@
 # for complete details.
 
 
+import typing
+
 import pytest
 
 from cryptography.exceptions import AlreadyFinalized
@@ -35,10 +37,10 @@ class TestPKCS7:
     def test_non_bytes(self):
         padder = padding.PKCS7(128).padder()
         with pytest.raises(TypeError):
-            padder.update("abc")  # type: ignore[arg-type]
+            padder.update(typing.cast(typing.Any, "abc"))
         unpadder = padding.PKCS7(128).unpadder()
         with pytest.raises(TypeError):
-            unpadder.update("abc")  # type: ignore[arg-type]
+            unpadder.update(typing.cast(typing.Any, "abc"))
 
     def test_zany_py2_bytes_subclass(self):
         class mybytes(bytes):  # noqa: N801
@@ -165,10 +167,10 @@ class TestANSIX923:
     def test_non_bytes(self):
         padder = padding.ANSIX923(128).padder()
         with pytest.raises(TypeError):
-            padder.update("abc")  # type: ignore[arg-type]
+            padder.update(typing.cast(typing.Any, "abc"))
         unpadder = padding.ANSIX923(128).unpadder()
         with pytest.raises(TypeError):
-            unpadder.update("abc")  # type: ignore[arg-type]
+            unpadder.update(typing.cast(typing.Any, "abc"))
 
     def test_zany_py2_bytes_subclass(self):
         class mybytes(bytes):  # noqa: N801

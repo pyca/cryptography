@@ -5,6 +5,7 @@ argon2
 argon2id
 Authenticator
 authenticator
+Authenticode
 AVX
 backend
 Backends
@@ -72,6 +73,7 @@ Gaynor
 GiB
 Google
 Graviola
+hasher
 hazmat
 Heartbleed
 Homebrew

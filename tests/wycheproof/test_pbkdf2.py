@@ -4,6 +4,8 @@
 
 import binascii
 
+import pytest
+
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
@@ -28,6 +30,9 @@ _HASH_ALGORITHMS = {
 )
 def test_pbkdf2(backend, wycheproof):
     assert wycheproof.valid
+
+    if wycheproof.has_flag("LargeIterationCount"):
+        pytest.skip("Skipped due to large iteration count")
 
     algorithm = _HASH_ALGORITHMS[wycheproof.testfiledata["algorithm"]]
 

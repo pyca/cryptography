@@ -6,7 +6,7 @@ use asn1::{
     IA5String as Asn1IA5String, PrintableString as Asn1PrintableString, SimpleAsn1Readable,
     UtcTime as Asn1UtcTime,
 };
-use pyo3::types::{PyAnyMethods, PySequenceMethods, PyTzInfoAccess};
+use pyo3::types::{PyAnyMethods, PyListMethods, PySequenceMethods, PyTzInfoAccess};
 use pyo3::{IntoPyObject, PyTypeInfo};
 
 use crate::error::CryptographyError;
@@ -635,6 +635,41 @@ pub(crate) fn python_class_to_annotated<'p>(
         // Handle builtin types
         pyo3::Bound::new(py, non_root_type_to_annotated(py, class)?)
     }
+}
+
+// Builds the `AnnotatedType` used to encode a top-level value passed to
+// `encode_der`.
+pub(crate) fn encode_value_to_annotated<'p>(
+    py: pyo3::Python<'p>,
+    value: &pyo3::Bound<'p, pyo3::types::PyAny>,
+) -> pyo3::PyResult<pyo3::Bound<'p, AnnotatedType>> {
+    if let Ok(setof) = value.cast::<SetOf>() {
+        // SET OF is homogeneous, so we infer the element type from the
+        // first element.
+        let inner = match setof.get().inner.bind(py).iter().next() {
+            Some(first) => {
+                let class = first.get_type();
+                python_class_to_annotated(py, &class)?
+            }
+            // An empty SET OF has no elements to encode, so the inner
+            // type is never used; any type works as a placeholder.
+            None => python_class_to_annotated(py, &Tlv::type_object(py))?,
+        };
+        return pyo3::Bound::new(
+            py,
+            AnnotatedType {
+                inner: pyo3::Py::new(py, Type::SetOf(inner.unbind()))?,
+                annotation: Annotation {
+                    default: None,
+                    encoding: None,
+                    size: None,
+                }
+                .into_pyobject(py)?
+                .unbind(),
+            },
+        );
+    }
+    python_class_to_annotated(py, &value.get_type())
 }
 
 // Checks if encoding `tag_without_encoding` using `encoding` results

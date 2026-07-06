@@ -51,13 +51,10 @@ impl Pbkdf2Hmac {
             ));
         }
 
-        openssl::pkcs5::pbkdf2_hmac(
-            key_material,
-            self.salt.as_bytes(py),
-            self.iterations,
-            self.md,
-            output,
-        )?;
+        let salt = self.salt.as_bytes(py);
+        let iterations = self.iterations;
+        let md = self.md;
+        py.detach(|| openssl::pkcs5::pbkdf2_hmac(key_material, salt, iterations, md, output))?;
 
         Ok(self.length)
     }
@@ -173,15 +170,21 @@ impl Scrypt {
             ));
         }
 
-        openssl::pkcs5::scrypt(
-            key_material,
-            self.salt.as_bytes(py),
-            self.n,
-            self.r,
-            self.p,
-            (usize::MAX / 2).try_into().unwrap(),
-            output,
-        )
+        let salt = self.salt.as_bytes(py);
+        let n = self.n;
+        let r = self.r;
+        let p = self.p;
+        py.detach(|| {
+            openssl::pkcs5::scrypt(
+                key_material,
+                salt,
+                n,
+                r,
+                p,
+                (usize::MAX / 2).try_into().unwrap(),
+                output,
+            )
+        })
         .map_err(|_| {
             // memory required formula explained here:
             // https://blog.filippo.io/the-scrypt-parameters/
@@ -364,17 +367,25 @@ impl BaseArgon2 {
             Argon2Variant::Argon2id => openssl::kdf::argon2id,
         };
 
-        (derive_fn)(
-            None,
-            key_material,
-            self.salt.as_bytes(py),
-            self.ad.as_ref().map(|ad| ad.as_bytes(py)),
-            self.secret.as_ref().map(|secret| secret.as_bytes(py)),
-            self.iterations,
-            self.lanes,
-            self.memory_cost,
-            output,
-        )
+        let salt = self.salt.as_bytes(py);
+        let ad = self.ad.as_ref().map(|ad| ad.as_bytes(py));
+        let secret = self.secret.as_ref().map(|secret| secret.as_bytes(py));
+        let iterations = self.iterations;
+        let lanes = self.lanes;
+        let memory_cost = self.memory_cost;
+        py.detach(|| {
+            (derive_fn)(
+                None,
+                key_material,
+                salt,
+                ad,
+                secret,
+                iterations,
+                lanes,
+                memory_cost,
+                output,
+            )
+        })
         .map_err(|_| {
             // In theory other init issues (e.g. PROV_R_INVALID_THREAD_POOL_SIZE
             // on builds without thread-pool support) can also occur here, but

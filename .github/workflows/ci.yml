@@ -15,6 +15,12 @@ concurrency:
 
 env:
   CARGO_INCREMENTAL: 0
+  # Enable uv's debug output everywhere, minus its per-file cache/index
+  # log lines. All directives must stay scoped to uv targets (no bare
+  # level like `debug`) so other Rust binaries that read RUST_LOG are
+  # unaffected. Keep in sync with UV_RUST_LOG in noxfile.py, which
+  # covers nox-run installs outside CI.
+  RUST_LOG: uv=debug,uv_client::cached_client=warn,uv_client::registry_client=error,uv_resolver::resolver=warn
 
 jobs:
   linux:
@@ -42,19 +48,19 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.3"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.1"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.3.2"}}
-          # Latest commit on the BoringSSL main branch, as of Jun 19, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "606d3a344dae49672ea567f6719e1fc092a4ae6a"}}
-          # Latest tag of AWS-LC main branch, as of May 30, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.0.0"}}
-          # Latest commit on the OpenSSL master branch, as of Jun 19, 2026.
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "695fef3ec31e360f0e407c3b3f283b9f18711eaa"}}
+          # Latest commit on the BoringSSL main branch, as of Jul 04, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "1c7d52ef3e3f373302cb957089fa783d1e5fd8cd"}}
+          # Latest tag of AWS-LC main branch, as of Jun 27, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.1.0"}}
+          # Latest commit on the OpenSSL master branch, as of Jul 06, 2026.
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "a89400969d49d42eb8699c6afaf2f613f917fc5b"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # - 1.85: 2024 edition
           # - 1.95: cfg_select
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0"}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.0.0"}}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "606d3a344dae49672ea567f6719e1fc092a4ae6a"}}
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.1.0"}}
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "1c7d52ef3e3f373302cb957089fa783d1e5fd8cd"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.14", NOXSESSION: "tests-rust-debug"}
@@ -63,13 +69,13 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.3"}}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         timeout-minutes: 3
         with:
           persist-credentials: false
       - name: Setup python
         id: setup-python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           cache: pip
@@ -103,7 +109,7 @@ jobs:
           CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
         if: matrix.PYTHON.OPENSSL
       - name: Load OpenSSL cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: ossl-cache
         timeout-minutes: 2
         with:
@@ -184,7 +190,7 @@ jobs:
     env:
       RUSTUP_HOME: /root/.rustup
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -246,7 +252,7 @@ jobs:
           sed -i "s:ID=alpine:ID=NotpineForGHA:" /etc/os-release
         if: matrix.IMAGE.IMAGE == 'alpine:aarch64'
 
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -292,7 +298,7 @@ jobs:
           - {VERSION: "3.15t-dev", NOXSESSION: "tests"}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -303,7 +309,7 @@ jobs:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}
 
       - name: Setup python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           cache: pip
@@ -361,7 +367,7 @@ jobs:
             PYTHON: {VERSION: "3.14", NOXSESSION: "tests-nocoverage"}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -394,8 +400,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Jun 13, 2026.
-            REF: a34aa1de7e2050d3a83cef74d8265662237f8ba1
+            # Latest commit on the pyopenssl main branch, as of Jun 30, 2026.
+            REF: 6f75fa59b6549f38254094fd42b3810135e8b694
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -404,48 +410,48 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Jun 12, 2026.
-            REF: 802f09462451be320db28b5c111f0c9c944cddbc
+            # Latest commit on the twisted trunk branch, as of Jul 06, 2026.
+            REF: d29981271b0f64d110c65b73a42e586247e2559d
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
-            # Latest commit on the aws-encryption-sdk-python master branch, as of May 29, 2026.
-            REF: 61040db041104dfd950d1541039ad996dbe895be
+            # Latest commit on the aws-encryption-sdk-python master branch, as of Jun 26, 2026.
+            REF: 81e6529872f07c149bcc85b43564d257c5447497
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Jun 18, 2026.
-            REF: 184091fa3ed4189f1585a47b53dd6a12b36bff2b
+            # Latest commit on the certbot main branch, as of Jun 25, 2026.
+            REF: f769e35e77f1fa21a75cd5418641502dad8a37c5
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
-            # Latest commit on the certbot-josepy main branch, as of Jun 05, 2026.
-            REF: 1a4a224db9504e8b74000e303935ba79929b9fd7
+            # Latest commit on the certbot-josepy main branch, as of Jun 23, 2026.
+            REF: 8dabf22ff934a8ba86ca80e5aafc1b92a8a7196c
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Jun 18, 2026.
-            REF: c4fa9fb8c8e292512dcc708459d1555fd876fd9e
+            # Latest commit on the mitmproxy main branch, as of Jul 03, 2026.
+            REF: a67fc64596c472cb468be6b3ac188511e8e9ff94
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Jun 17, 2026.
-            REF: 14cc7260f15034cee57cd4729011b78653b04225
+            # Latest commit on the scapy master branch, as of Jul 05, 2026.
+            REF: c1367fab4cb16dd083c0f43b9fb7eaa3b1c5baff
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Jun 15, 2026.
-            REF: 62a429395bf914b11058801cc28cb7ebc7359c2e
+            # Latest commit on the sigstore-python main branch, as of Jul 04, 2026.
+            REF: 7734e1f48befd52524cf3f879ed0772cdfafc5a6
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         timeout-minutes: 3
         with:
           persist-credentials: false
       - name: Checkout downstream repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         timeout-minutes: 3
         with:
           repository: ${{ matrix.REPO }}
@@ -456,7 +462,7 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
       - name: Setup python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: '3.13'
           cache: pip
@@ -495,7 +501,7 @@ jobs:
     if: ${{ always() }}
     timeout-minutes: 3
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         timeout-minutes: 3
         with:
           persist-credentials: false
@@ -503,14 +509,6 @@ jobs:
         uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # v1.2.2
         with:
           jobs: ${{ toJSON(needs) }}
-      - name: Setup python
-        if: ${{ always() }}
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: '3.14'
-          cache: pip
-          cache-dependency-path: ci-constraints-requirements.txt
-        timeout-minutes: 3
       - run: pip install -c ci-constraints-requirements.txt coverage[toml]
         if: ${{ always() }}
       - name: Download coverage data

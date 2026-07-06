@@ -8,11 +8,18 @@ import copy
 import dataclasses
 import hashlib
 import os
+import typing
 
 import pytest
 
-from cryptography.exceptions import InvalidSignature, _Reasons
-from cryptography.hazmat.primitives import serialization
+from cryptography.exceptions import (
+    AlreadyFinalized,
+    InvalidSignature,
+    UnsupportedAlgorithm,
+    _Reasons,
+)
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import ed25519, mldsa
 from cryptography.hazmat.primitives.asymmetric.mldsa import (
     MLDSA44PrivateKey,
     MLDSA44PublicKey,
@@ -81,7 +88,7 @@ ML_DSA_VARIANTS = [
     only_if=lambda backend: not backend.mldsa_supported(),
     skip_message="Requires a backend without ML-DSA support",
 )
-def test_mldsa_unsupported(backend):
+def test_mldsa_unsupported():
     with raises_unsupported_algorithm(
         _Reasons.UNSUPPORTED_PUBLIC_KEY_ALGORITHM
     ):
@@ -134,13 +141,13 @@ def test_mldsa_unsupported(backend):
 )
 class TestMLDSA:
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_sign_verify(self, variant, backend):
+    def test_sign_verify(self, variant):
         key = variant.private_key_class.generate()
         sig = key.sign(b"test data")
         key.public_key().verify(sig, b"test data")
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_sign_verify_empty_message(self, variant, backend):
+    def test_sign_verify_empty_message(self, variant):
         key = variant.private_key_class.generate()
         sig = key.sign(b"")
         key.public_key().verify(sig, b"")
@@ -153,13 +160,13 @@ class TestMLDSA:
             b"a" * 255,
         ],
     )
-    def test_sign_verify_with_context(self, variant, backend, ctx):
+    def test_sign_verify_with_context(self, variant, ctx):
         key = variant.private_key_class.generate()
         sig = key.sign(b"test data", ctx)
         key.public_key().verify(sig, b"test data", ctx)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_empty_context_equivalence(self, variant, backend):
+    def test_empty_context_equivalence(self, variant):
         key = variant.private_key_class.generate()
         pub = key.public_key()
         data = b"test data"
@@ -177,7 +184,7 @@ class TestMLDSA:
         return hashlib.shake_256(tr + m_prime).digest(64)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_sign_verify_mu(self, variant, backend):
+    def test_sign_verify_mu(self, variant):
         key = variant.private_key_class.generate()
         pub = key.public_key()
         data = b"test data"
@@ -193,7 +200,7 @@ class TestMLDSA:
         pub.verify_mu(sig2, mu)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_sign_verify_mu_with_context(self, variant, backend):
+    def test_sign_verify_mu_with_context(self, variant):
         key = variant.private_key_class.generate()
         pub = key.public_key()
         data = b"test data"
@@ -206,7 +213,7 @@ class TestMLDSA:
         pub.verify_mu(sig, mu)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_mu_wrong_length(self, variant, backend):
+    def test_mu_wrong_length(self, variant):
         key = variant.private_key_class.generate()
         pub = key.public_key()
         with pytest.raises(ValueError):
@@ -218,7 +225,7 @@ class TestMLDSA:
             pub.verify_mu(sig, b"0" * 63)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_verify_mu_invalid(self, variant, backend):
+    def test_verify_mu_invalid(self, variant):
         key = variant.private_key_class.generate()
         pub = key.public_key()
         mu = b"\x01" * 64
@@ -228,7 +235,7 @@ class TestMLDSA:
         with pytest.raises(InvalidSignature):
             pub.verify_mu(b"0" * variant.sig_size, mu)
 
-    def test_kat_vectors_44(self, backend, subtests):
+    def test_kat_vectors_44(self, subtests):
         vectors = load_vectors_from_file(
             os.path.join("asymmetric", "MLDSA", "kat_MLDSA_44_det_pure.rsp"),
             load_nist_vectors,
@@ -249,7 +256,7 @@ class TestMLDSA:
                 pub = MLDSA44PublicKey.from_public_bytes(pk)
                 pub.verify(expected_sig, msg, ctx)
 
-    def test_kat_vectors_65(self, backend, subtests):
+    def test_kat_vectors_65(self, subtests):
         vectors = load_vectors_from_file(
             os.path.join("asymmetric", "MLDSA", "kat_MLDSA_65_det_pure.rsp"),
             load_nist_vectors,
@@ -270,7 +277,7 @@ class TestMLDSA:
                 pub = MLDSA65PublicKey.from_public_bytes(pk)
                 pub.verify(expected_sig, msg, ctx)
 
-    def test_kat_vectors_87(self, backend, subtests):
+    def test_kat_vectors_87(self, subtests):
         vectors = load_vectors_from_file(
             os.path.join("asymmetric", "MLDSA", "kat_MLDSA_87_det_pure.rsp"),
             load_nist_vectors,
@@ -292,7 +299,7 @@ class TestMLDSA:
                 pub.verify(expected_sig, msg, ctx)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_kat_vectors_external_mu(self, variant, backend, subtests):
+    def test_kat_vectors_external_mu(self, variant, subtests):
         # The deterministic pure KAT signatures come from an independent
         # reference implementation. mu is fully determined by the public key,
         # context, and message (FIPS 204 Algorithm 2), so deriving it and
@@ -322,8 +329,154 @@ class TestMLDSA:
                 with pytest.raises(InvalidSignature):
                     pub.verify_mu(expected_sig, wrong_mu)
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE256(digest_size=64)
+        ),
+        skip_message="Requires SHAKE256 support for mu computation",
+    )
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_private_bytes_raw_round_trip(self, variant, backend):
+    @pytest.mark.parametrize("ctx", [b"", b"a context"])
+    def test_mu_hasher_matches_reference(self, variant, ctx):
+        key = variant.private_key_class.generate()
+        pub = key.public_key()
+        data = b"the quick brown fox jumps over the lazy dog"
+        expected = self._compute_mu(pub.public_bytes_raw(), data, ctx)
+
+        # One-shot update.
+        hasher = mldsa.MLDSAMuHasher(pub, ctx)
+        hasher.update(data)
+        mu = hasher.finalize()
+        assert mu == expected
+        assert len(mu) == 64
+
+        # Chunked updates produce the same mu.
+        chunked = mldsa.MLDSAMuHasher(pub, ctx)
+        for i in range(0, len(data), 7):
+            chunked.update(data[i : i + 7])
+        assert chunked.finalize() == expected
+
+        # The computed mu round-trips through the external-mu API.
+        sig = key.sign_mu(mu)
+        pub.verify_mu(sig, mu)
+        pub.verify(sig, data, ctx)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE256(digest_size=64)
+        ),
+        skip_message="Requires SHAKE256 support for mu computation",
+    )
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_mu_hasher_kat(self, variant, subtests):
+        vectors = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "MLDSA", f"kat_MLDSA_{variant.name}_det_pure.rsp"
+            ),
+            load_nist_vectors,
+        )
+        for vector in vectors:
+            with subtests.test():
+                pk = binascii.unhexlify(vector["pk"])
+                msg = binascii.unhexlify(vector["msg"])
+                ctx = binascii.unhexlify(vector["ctx"])
+                sm = binascii.unhexlify(vector["sm"])
+                expected_sig = sm[: variant.sig_size]
+
+                pub = variant.public_key_class.from_public_bytes(pk)
+                hasher = mldsa.MLDSAMuHasher(pub, ctx)
+                hasher.update(msg)
+                mu = hasher.finalize()
+
+                assert mu == self._compute_mu(pk, msg, ctx)
+                pub.verify_mu(expected_sig, mu)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE256(digest_size=64)
+        ),
+        skip_message="Requires SHAKE256 support for mu computation",
+    )
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_mu_hasher_context_too_long(self, variant):
+        pub = variant.private_key_class.generate().public_key()
+        mldsa.MLDSAMuHasher(pub, b"a" * 255)
+        with pytest.raises(ValueError):
+            mldsa.MLDSAMuHasher(pub, b"a" * 256)
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_mu_hasher_rejects_private_key(self, variant):
+        # mu computation is a public-key operation; private keys are rejected.
+        key = variant.private_key_class.generate()
+        with pytest.raises(TypeError):
+            mldsa.MLDSAMuHasher(key)
+
+    def test_mu_hasher_invalid_key_type(self):
+        with pytest.raises(TypeError):
+            mldsa.MLDSAMuHasher(
+                typing.cast(typing.Any, ed25519.Ed25519PrivateKey.generate())
+            )
+        with pytest.raises(TypeError):
+            mldsa.MLDSAMuHasher(typing.cast(typing.Any, b"not a key"))
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE256(digest_size=64)
+        ),
+        skip_message="Requires SHAKE256 support for mu computation",
+    )
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_mu_hasher_already_finalized(self, variant):
+        pub = variant.private_key_class.generate().public_key()
+        hasher = mldsa.MLDSAMuHasher(pub)
+        hasher.update(b"data")
+        hasher.finalize()
+        with pytest.raises(AlreadyFinalized):
+            hasher.update(b"more")
+        with pytest.raises(AlreadyFinalized):
+            hasher.finalize()
+        with pytest.raises(AlreadyFinalized):
+            hasher.copy()
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(
+            hashes.SHAKE256(digest_size=64)
+        ),
+        skip_message="Requires SHAKE256 support for mu computation",
+    )
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_mu_hasher_copy(self, variant):
+        pub = variant.private_key_class.generate().public_key()
+        hasher = mldsa.MLDSAMuHasher(pub)
+        hasher.update(b"common prefix")
+
+        forked = hasher.copy()
+        hasher.update(b"-a")
+        forked.update(b"-b")
+        mu_a = hasher.finalize()
+        mu_b = forked.finalize()
+        assert mu_a != mu_b
+
+        # The fork is independent and matches a from-scratch computation.
+        reference = mldsa.MLDSAMuHasher(pub)
+        reference.update(b"common prefix-b")
+        assert mu_b == reference.finalize()
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            not backend.hash_supported(hashes.SHAKE256(digest_size=64))
+        ),
+        skip_message="Requires a backend without SHAKE256 support",
+    )
+    def test_mu_hasher_unsupported(self):
+        # On backends with ML-DSA but no SHAKE256 through the EVP interface
+        # (BoringSSL), sign_mu/verify_mu work but mu cannot be computed.
+        pub = MLDSA65PrivateKey.generate().public_key()
+        with pytest.raises(UnsupportedAlgorithm):
+            mldsa.MLDSAMuHasher(pub)
+
+    @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
+    def test_private_bytes_raw_round_trip(self, variant):
         key = variant.private_key_class.generate()
         seed = key.private_bytes_raw()
         assert len(seed) == variant.seed_size
@@ -376,11 +529,11 @@ class TestMLDSA:
         ],
     )
     def test_round_trip_private_serialization(
-        self, variant, encoding, fmt, encryption, passwd, load_func, backend
+        self, variant, encoding, fmt, encryption, passwd, load_func
     ):
         key = variant.private_key_class.generate()
         serialized = key.private_bytes(encoding, fmt, encryption)
-        loaded_key = load_func(serialized, passwd, backend)
+        loaded_key = load_func(serialized, passwd)
         assert isinstance(loaded_key, variant.private_key_class)
         assert loaded_key.private_bytes_raw() == key.private_bytes_raw()
         sig = loaded_key.sign(b"test data")
@@ -403,17 +556,17 @@ class TestMLDSA:
         ],
     )
     def test_round_trip_public_serialization(
-        self, variant, encoding, fmt, load_func, backend
+        self, variant, encoding, fmt, load_func
     ):
         key = variant.private_key_class.generate()
         pub = key.public_key()
         serialized = pub.public_bytes(encoding, fmt)
-        loaded_pub = load_func(serialized, backend)
+        loaded_pub = load_func(serialized)
         assert isinstance(loaded_pub, variant.public_key_class)
         assert loaded_pub == pub
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_invalid_signature(self, variant, backend):
+    def test_invalid_signature(self, variant):
         key = variant.private_key_class.generate()
         sig = key.sign(b"test data")
         with pytest.raises(InvalidSignature):
@@ -423,14 +576,14 @@ class TestMLDSA:
             key.public_key().verify(b"0" * variant.sig_size, b"test data")
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_context_wrong_context(self, variant, backend):
+    def test_context_wrong_context(self, variant):
         key = variant.private_key_class.generate()
         sig = key.sign(b"test data", b"ctx-a")
         with pytest.raises(InvalidSignature):
             key.public_key().verify(sig, b"test data", b"ctx-b")
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_context_too_long(self, variant, backend):
+    def test_context_too_long(self, variant):
         key = variant.private_key_class.generate()
         with pytest.raises(ValueError):
             key.sign(b"data", b"x" * 256)
@@ -438,27 +591,27 @@ class TestMLDSA:
             key.public_key().verify(b"sig", b"data", b"x" * 256)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_invalid_length_from_public_bytes(self, variant, backend):
+    def test_invalid_length_from_public_bytes(self, variant):
         with pytest.raises(ValueError):
             variant.public_key_class.from_public_bytes(b"a" * 10)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_invalid_length_from_seed_bytes(self, variant, backend):
+    def test_invalid_length_from_seed_bytes(self, variant):
         with pytest.raises(ValueError):
             variant.private_key_class.from_seed_bytes(b"a" * 10)
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_invalid_type_public_bytes(self, variant, backend):
+    def test_invalid_type_public_bytes(self, variant):
         with pytest.raises(TypeError):
             variant.public_key_class.from_public_bytes(object())
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_invalid_type_seed_bytes(self, variant, backend):
+    def test_invalid_type_seed_bytes(self, variant):
         with pytest.raises(TypeError):
             variant.private_key_class.from_seed_bytes(object())
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_invalid_private_bytes(self, variant, backend):
+    def test_invalid_private_bytes(self, variant):
         key = variant.private_key_class.generate()
         with pytest.raises(TypeError):
             key.private_bytes(
@@ -488,7 +641,7 @@ class TestMLDSA:
             )
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_invalid_public_bytes(self, variant, backend):
+    def test_invalid_public_bytes(self, variant):
         key = variant.private_key_class.generate().public_key()
         with pytest.raises(ValueError):
             key.public_bytes(
@@ -509,7 +662,7 @@ class TestMLDSA:
             )
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_public_key_equality(self, variant, backend):
+    def test_public_key_equality(self, variant):
         key = variant.private_key_class.generate()
         pub1 = key.public_key()
         pub2 = key.public_key()
@@ -522,27 +675,27 @@ class TestMLDSA:
             pub1 < pub2
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_public_key_copy(self, variant, backend):
+    def test_public_key_copy(self, variant):
         key = variant.private_key_class.generate()
         pub1 = key.public_key()
         pub2 = copy.copy(pub1)
         assert pub1 == pub2
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_public_key_deepcopy(self, variant, backend):
+    def test_public_key_deepcopy(self, variant):
         key = variant.private_key_class.generate()
         pub1 = key.public_key()
         pub2 = copy.deepcopy(pub1)
         assert pub1 == pub2
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_private_key_copy(self, variant, backend):
+    def test_private_key_copy(self, variant):
         key1 = variant.private_key_class.generate()
         key2 = copy.copy(key1)
         assert key1.private_bytes_raw() == key2.private_bytes_raw()
 
     @pytest.mark.parametrize("variant", ML_DSA_VARIANTS)
-    def test_private_key_deepcopy(self, variant, backend):
+    def test_private_key_deepcopy(self, variant):
         key1 = variant.private_key_class.generate()
         key2 = copy.deepcopy(key1)
         assert key1.private_bytes_raw() == key2.private_bytes_raw()
@@ -552,13 +705,11 @@ class TestMLDSA:
     only_if=lambda backend: backend.mldsa_supported(),
     skip_message="Requires a backend with ML-DSA support",
 )
-def test_mldsa65_private_key_no_seed(backend):
+def test_mldsa65_private_key_no_seed():
     pkcs8_der = load_vectors_from_file(
         os.path.join("asymmetric", "MLDSA", "mldsa65_noseed_priv.der"),
         lambda derfile: derfile.read(),
         mode="rb",
     )
     with pytest.raises(ValueError):
-        serialization.load_der_private_key(
-            pkcs8_der, password=None, backend=backend
-        )
+        serialization.load_der_private_key(pkcs8_der, password=None)

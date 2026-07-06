@@ -33,6 +33,12 @@ pub enum Content<'a> {
     Data(Option<asn1::Explicit<&'a [u8], 0>>),
     #[defined_by(PKCS7_ENCRYPTED_DATA_OID)]
     EncryptedData(asn1::Explicit<EncryptedData<'a>, 0>),
+
+    #[default]
+    Unknown(
+        asn1::ObjectIdentifier,
+        Option<asn1::Explicit<asn1::Tlv<'a>, 0>>,
+    ),
 }
 
 // RFC 2315 section 9.1

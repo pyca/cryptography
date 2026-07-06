@@ -438,8 +438,8 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
     :param key: The public key to compute the fingerprint for.
     :type key: One of :data:`SSHPublicKeyTypes`
 
-    :param hash_algorithm: The hash algorithm to use, either ``MD5()`` or
-        ``SHA256()``.
+    :param hash_algorithm: The hash algorithm to use, either ``MD5()``,
+        ``SHA1()``, or ``SHA256()``.
 
     :return: The key fingerprint.
     :rtype: bytes

@@ -22,7 +22,6 @@ typedef ... Cryptography_STACK_OF_X509;
 
 typedef ... X509_ALGOR;
 typedef ... X509_EXTENSION;
-typedef ... X509_REQ;
 typedef ... X509_CRL;
 typedef ... X509;
 """
@@ -52,24 +51,12 @@ int X509_set_subject_name(X509 *, X509_NAME *);
 
 int X509_set_issuer_name(X509 *, X509_NAME *);
 
-int X509_REQ_set_version(X509_REQ *, long);
-X509_REQ *X509_REQ_new(void);
-void X509_REQ_free(X509_REQ *);
-int X509_REQ_set_pubkey(X509_REQ *, EVP_PKEY *);
-int X509_REQ_sign(X509_REQ *, EVP_PKEY *, const EVP_MD *);
-int X509_REQ_verify(X509_REQ *, EVP_PKEY *);
-EVP_PKEY *X509_REQ_get_pubkey(X509_REQ *);
-int X509_REQ_print_ex(BIO *, X509_REQ *, unsigned long, unsigned long);
-
 X509_CRL *d2i_X509_CRL_bio(BIO *, X509_CRL **);
 void X509_CRL_free(X509_CRL *);
 
 /*  ASN1 serialization */
 int i2d_X509_bio(BIO *, X509 *);
 X509 *d2i_X509_bio(BIO *, X509 **);
-
-int i2d_X509_REQ_bio(BIO *, X509_REQ *);
-X509_REQ *d2i_X509_REQ_bio(BIO *, X509_REQ **);
 
 int i2d_PrivateKey_bio(BIO *, EVP_PKEY *);
 EVP_PKEY *d2i_PrivateKey_bio(BIO *, EVP_PKEY **);
@@ -94,9 +81,6 @@ long X509_get_version(X509 *);
 
 ASN1_TIME *X509_getm_notBefore(const X509 *);
 ASN1_TIME *X509_getm_notAfter(const X509 *);
-
-long X509_REQ_get_version(X509_REQ *);
-X509_NAME *X509_REQ_get_subject_name(X509_REQ *);
 
 Cryptography_STACK_OF_X509 *sk_X509_new_null(void);
 void sk_X509_free(Cryptography_STACK_OF_X509 *);
