@@ -31,7 +31,7 @@ from ...utils import (
     only_if=lambda backend: not backend.x25519_supported(),
     skip_message="Requires OpenSSL without X25519 support",
 )
-def test_x25519_unsupported(backend):
+def test_x25519_unsupported():
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM):
         X25519PublicKey.from_public_bytes(b"0" * 32)
 
@@ -54,7 +54,7 @@ class TestX25519Exchange:
             load_nist_vectors,
         ),
     )
-    def test_rfc7748(self, vector, backend):
+    def test_rfc7748(self, vector):
         private = binascii.unhexlify(vector["input_scalar"])
         public = binascii.unhexlify(vector["input_u"])
         shared_key = binascii.unhexlify(vector["output_u"])
@@ -63,7 +63,7 @@ class TestX25519Exchange:
         computed_shared_key = private_key.exchange(public_key)
         assert computed_shared_key == shared_key
 
-    def test_rfc7748_1000_iteration(self, backend):
+    def test_rfc7748_1000_iteration(self):
         old_private = private = public = binascii.unhexlify(
             b"0900000000000000000000000000000000000000000000000000000000000000"
         )
@@ -82,7 +82,7 @@ class TestX25519Exchange:
 
         assert computed_shared_key == shared_key
 
-    def test_null_shared_key_raises_error(self, backend):
+    def test_null_shared_key_raises_error(self):
         """
         The vector used here is taken from wycheproof's x25519 test vectors
         """
@@ -97,7 +97,7 @@ class TestX25519Exchange:
         with pytest.raises(ValueError):
             private_key.exchange(public_key)
 
-    def test_public_bytes_bad_args(self, backend):
+    def test_public_bytes_bad_args(self):
         key = X25519PrivateKey.generate().public_key()
         with pytest.raises(TypeError):
             key.public_bytes(
@@ -146,7 +146,7 @@ class TestX25519Exchange:
             ),
         ],
     )
-    def test_pub_priv_bytes_raw(self, private_bytes, public_bytes, backend):
+    def test_pub_priv_bytes_raw(self, private_bytes, public_bytes):
         private_key = X25519PrivateKey.from_private_bytes(private_bytes)
         assert (
             private_key.private_bytes(
@@ -173,31 +173,31 @@ class TestX25519Exchange:
         )
         assert public_key.public_bytes_raw() == public_bytes
 
-    def test_generate(self, backend):
+    def test_generate(self):
         key = X25519PrivateKey.generate()
         assert key
         assert key.public_key()
 
-    def test_invalid_type_exchange(self, backend):
+    def test_invalid_type_exchange(self):
         key = X25519PrivateKey.generate()
         with pytest.raises(TypeError):
             key.exchange(typing.cast(typing.Any, object()))
 
-    def test_invalid_length_from_public_bytes(self, backend):
+    def test_invalid_length_from_public_bytes(self):
         with pytest.raises(ValueError):
             X25519PublicKey.from_public_bytes(b"a" * 31)
 
         with pytest.raises(ValueError):
             X25519PublicKey.from_public_bytes(b"a" * 33)
 
-    def test_invalid_length_from_private_bytes(self, backend):
+    def test_invalid_length_from_private_bytes(self):
         with pytest.raises(ValueError):
             X25519PrivateKey.from_private_bytes(b"a" * 31)
 
         with pytest.raises(ValueError):
             X25519PrivateKey.from_private_bytes(b"a" * 33)
 
-    def test_invalid_private_bytes(self, backend):
+    def test_invalid_private_bytes(self):
         key = X25519PrivateKey.generate()
         with pytest.raises(TypeError):
             key.private_bytes(
@@ -268,7 +268,7 @@ class TestX25519Exchange:
                 serialization.NoEncryption(),
             )
 
-    def test_invalid_public_bytes(self, backend):
+    def test_invalid_public_bytes(self):
         key = X25519PrivateKey.generate().public_key()
         with pytest.raises(ValueError):
             key.public_bytes(
@@ -320,11 +320,11 @@ class TestX25519Exchange:
         ],
     )
     def test_round_trip_private_serialization(
-        self, encoding, fmt, encryption, passwd, load_func, backend
+        self, encoding, fmt, encryption, passwd, load_func
     ):
         key = X25519PrivateKey.generate()
         serialized = key.private_bytes(encoding, fmt, encryption)
-        loaded_key = load_func(serialized, passwd, backend)
+        loaded_key = load_func(serialized, passwd)
         assert isinstance(loaded_key, X25519PrivateKey)
 
     def test_invalid_public_key_pem(self):
@@ -336,7 +336,7 @@ class TestX25519Exchange:
             -----END PUBLIC KEY-----""").encode()
             )
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         private_bytes = bytearray(os.urandom(32))
         key = X25519PrivateKey.from_private_bytes(private_bytes)
         assert (
@@ -353,7 +353,7 @@ class TestX25519Exchange:
     only_if=lambda backend: backend.x25519_supported(),
     skip_message="Requires OpenSSL with X25519 support",
 )
-def test_public_key_equality(backend):
+def test_public_key_equality():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "X25519", "x25519-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -373,7 +373,7 @@ def test_public_key_equality(backend):
     only_if=lambda backend: backend.x25519_supported(),
     skip_message="Requires OpenSSL with X25519 support",
 )
-def test_public_key_copy(backend):
+def test_public_key_copy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "X25519", "x25519-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -389,7 +389,7 @@ def test_public_key_copy(backend):
     only_if=lambda backend: backend.x25519_supported(),
     skip_message="Requires OpenSSL with X25519 support",
 )
-def test_public_key_deepcopy(backend):
+def test_public_key_deepcopy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "X25519", "x25519-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -408,7 +408,7 @@ def test_public_key_deepcopy(backend):
     only_if=lambda backend: backend.x25519_supported(),
     skip_message="Requires OpenSSL with X25519 support",
 )
-def test_private_key_copy(backend):
+def test_private_key_copy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "X25519", "x25519-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -424,7 +424,7 @@ def test_private_key_copy(backend):
     only_if=lambda backend: backend.x25519_supported(),
     skip_message="Requires OpenSSL with X25519 support",
 )
-def test_private_key_deepcopy(backend):
+def test_private_key_deepcopy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "X25519", "x25519-pkcs8.der"),
         lambda derfile: derfile.read(),
