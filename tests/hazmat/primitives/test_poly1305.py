@@ -27,7 +27,7 @@ from ...utils import (
     only_if=lambda backend: not backend.poly1305_supported(),
     skip_message="Requires OpenSSL without poly1305 support",
 )
-def test_poly1305_unsupported(backend):
+def test_poly1305_unsupported():
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_MAC):
         Poly1305(b"0" * 32)
 
@@ -43,7 +43,7 @@ class TestPoly1305:
             os.path.join("poly1305", "rfc7539.txt"), load_nist_vectors
         ),
     )
-    def test_vectors(self, vector, backend):
+    def test_vectors(self, vector):
         key = binascii.unhexlify(vector["key"])
         msg = binascii.unhexlify(vector["msg"])
         tag = binascii.unhexlify(vector["tag"])
@@ -54,11 +54,11 @@ class TestPoly1305:
         assert Poly1305.generate_tag(key, msg) == tag
         Poly1305.verify_tag(key, msg, tag)
 
-    def test_key_with_no_additional_references(self, backend):
+    def test_key_with_no_additional_references(self):
         poly = Poly1305(os.urandom(32))
         assert len(poly.finalize()) == 16
 
-    def test_raises_after_finalize(self, backend):
+    def test_raises_after_finalize(self):
         poly = Poly1305(b"0" * 32)
         poly.finalize()
 
@@ -68,7 +68,7 @@ class TestPoly1305:
         with pytest.raises(AlreadyFinalized):
             poly.finalize()
 
-    def test_reject_unicode(self, backend):
+    def test_reject_unicode(self):
         poly = Poly1305(b"0" * 32)
         with pytest.raises(TypeError):
             poly.update(typing.cast(typing.Any, ""))
@@ -76,7 +76,7 @@ class TestPoly1305:
         with pytest.raises(TypeError):
             Poly1305.generate_tag(b"0" * 32, typing.cast(typing.Any, ""))
 
-    def test_verify(self, backend):
+    def test_verify(self):
         poly = Poly1305(b"0" * 32)
         poly.update(b"msg")
         tag = poly.finalize()
@@ -90,7 +90,7 @@ class TestPoly1305:
 
         Poly1305.verify_tag(b"0" * 32, b"msg", tag)
 
-    def test_invalid_verify(self, backend):
+    def test_invalid_verify(self):
         poly = Poly1305(b"0" * 32)
         poly.update(b"msg")
         with pytest.raises(InvalidSignature):
@@ -104,7 +104,7 @@ class TestPoly1305:
         with pytest.raises(InvalidSignature):
             Poly1305.verify_tag(b"0" * 32, b"msg", b"\x00" * 16)
 
-    def test_verify_reject_unicode(self, backend):
+    def test_verify_reject_unicode(self):
         poly = Poly1305(b"0" * 32)
         with pytest.raises(TypeError):
             poly.verify(typing.cast(typing.Any, ""))
@@ -112,14 +112,14 @@ class TestPoly1305:
         with pytest.raises(TypeError):
             Poly1305.verify_tag(b"0" * 32, b"msg", typing.cast(typing.Any, ""))
 
-    def test_invalid_key_type(self, backend):
+    def test_invalid_key_type(self):
         with pytest.raises(TypeError):
             Poly1305(typing.cast(typing.Any, object()))
 
         with pytest.raises(TypeError):
             Poly1305.generate_tag(typing.cast(typing.Any, object()), b"msg")
 
-    def test_invalid_key_length(self, backend):
+    def test_invalid_key_length(self):
         with pytest.raises(ValueError):
             Poly1305(b"0" * 31)
 
@@ -132,7 +132,7 @@ class TestPoly1305:
         with pytest.raises(ValueError):
             Poly1305.generate_tag(b"0" * 33, b"msg")
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         key = binascii.unhexlify(
             b"1c9240a5eb55d38af333888604f6b5f0473917c1402b80099dca5cbc207075c0"
         )
