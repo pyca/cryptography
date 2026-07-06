@@ -18,75 +18,75 @@ vectors = load_vectors_from_file("twofactor/rfc-4226.txt", load_nist_vectors)
 
 
 class TestHOTP:
-    def test_invalid_key_length(self, backend):
+    def test_invalid_key_length(self):
         secret = os.urandom(10)
 
         with pytest.raises(ValueError):
-            HOTP(secret, 6, SHA1(), backend)
+            HOTP(secret, 6, SHA1())
 
-    def test_unenforced_invalid_kwy_length(self, backend):
+    def test_unenforced_invalid_kwy_length(self):
         secret = os.urandom(10)
-        HOTP(secret, 6, SHA1(), backend, enforce_key_length=False)
+        HOTP(secret, 6, SHA1(), enforce_key_length=False)
 
-    def test_invalid_hotp_length(self, backend):
+    def test_invalid_hotp_length(self):
         secret = os.urandom(16)
 
         with pytest.raises(ValueError):
-            HOTP(secret, 4, SHA1(), backend)
+            HOTP(secret, 4, SHA1())
 
-    def test_invalid_algorithm(self, backend):
+    def test_invalid_algorithm(self):
         secret = os.urandom(16)
 
         with pytest.raises(TypeError):
-            HOTP(secret, 6, typing.cast(typing.Any, MD5()), backend)
+            HOTP(secret, 6, typing.cast(typing.Any, MD5()))
 
     @pytest.mark.parametrize("params", vectors)
-    def test_truncate(self, backend, params):
+    def test_truncate(self, params):
         secret = params["secret"]
         counter = int(params["counter"])
         truncated = params["truncated"]
 
-        hotp = HOTP(secret, 6, SHA1(), backend)
+        hotp = HOTP(secret, 6, SHA1())
 
         assert hotp._dynamic_truncate(counter) == int(truncated.decode(), 16)
 
     @pytest.mark.parametrize("params", vectors)
-    def test_generate(self, backend, params):
+    def test_generate(self, params):
         secret = params["secret"]
         counter = int(params["counter"])
         hotp_value = params["hotp"]
 
-        hotp = HOTP(secret, 6, SHA1(), backend)
+        hotp = HOTP(secret, 6, SHA1())
 
         assert hotp.generate(counter) == hotp_value
 
     @pytest.mark.parametrize("params", vectors)
-    def test_verify(self, backend, params):
+    def test_verify(self, params):
         secret = params["secret"]
         counter = int(params["counter"])
         hotp_value = params["hotp"]
 
-        hotp = HOTP(secret, 6, SHA1(), backend)
+        hotp = HOTP(secret, 6, SHA1())
         hotp.verify(hotp_value, counter)
 
-    def test_invalid_verify(self, backend):
+    def test_invalid_verify(self):
         secret = b"12345678901234567890"
         counter = 0
 
-        hotp = HOTP(secret, 6, SHA1(), backend)
+        hotp = HOTP(secret, 6, SHA1())
 
         with pytest.raises(InvalidToken):
             hotp.verify(b"123456", counter)
 
-    def test_length_not_int(self, backend):
+    def test_length_not_int(self):
         secret = b"12345678901234567890"
 
         with pytest.raises(TypeError):
-            HOTP(secret, typing.cast(typing.Any, b"foo"), SHA1(), backend)
+            HOTP(secret, typing.cast(typing.Any, b"foo"), SHA1())
 
-    def test_get_provisioning_uri(self, backend):
+    def test_get_provisioning_uri(self):
         secret = b"12345678901234567890"
-        hotp = HOTP(secret, 6, SHA1(), backend)
+        hotp = HOTP(secret, 6, SHA1())
 
         assert hotp.get_provisioning_uri("Alice Smith", 1, None) == (
             "otpauth://hotp/Alice%20Smith?digits=6&secret=GEZDGNBV"
@@ -99,14 +99,14 @@ class TestHOTP:
             "&counter=1"
         )
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         key = bytearray(b"a long key with lots of entropy goes here")
-        hotp = HOTP(key, 6, SHA1(), backend)
+        hotp = HOTP(key, 6, SHA1())
         assert hotp.generate(10) == b"559978"
 
-    def test_invalid_counter(self, backend):
+    def test_invalid_counter(self):
         key = os.urandom(16)
-        hotp = HOTP(key, 6, SHA1(), backend)
+        hotp = HOTP(key, 6, SHA1())
 
         with pytest.raises(TypeError):
             hotp.generate(typing.cast(typing.Any, 2.5))
