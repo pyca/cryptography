@@ -295,7 +295,7 @@ def test_alternate_aes_classes(mode, alg_cls, backend):
     assert pt == data
 
 
-def test_reset_nonce(backend):
+def test_reset_nonce():
     data = b"helloworld" * 10
     nonce = b"\x00" * 16
     nonce_alt = b"\xee" * 16
@@ -339,7 +339,7 @@ def test_reset_nonce(backend):
         dec.reset_nonce(nonce)
 
 
-def test_reset_nonce_invalid_mode(backend):
+def test_reset_nonce_invalid_mode():
     iv = b"\x00" * 16
     c = base.Cipher(
         algorithms.AES(b"\x00" * 16),
