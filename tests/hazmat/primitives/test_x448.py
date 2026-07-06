@@ -30,7 +30,7 @@ from ...utils import (
     only_if=lambda backend: not backend.x448_supported(),
     skip_message="Requires OpenSSL without X448 support",
 )
-def test_x448_unsupported(backend):
+def test_x448_unsupported():
     with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_EXCHANGE_ALGORITHM):
         X448PublicKey.from_public_bytes(b"0" * 56)
 
@@ -53,7 +53,7 @@ class TestX448Exchange:
             load_nist_vectors,
         ),
     )
-    def test_rfc7748(self, vector, backend):
+    def test_rfc7748(self, vector):
         private = binascii.unhexlify(vector["input_scalar"])
         public = binascii.unhexlify(vector["input_u"])
         shared_key = binascii.unhexlify(vector["output_u"])
@@ -62,7 +62,7 @@ class TestX448Exchange:
         computed_shared_key = private_key.exchange(public_key)
         assert computed_shared_key == shared_key
 
-    def test_rfc7748_1000_iteration(self, backend):
+    def test_rfc7748_1000_iteration(self):
         old_private = private = public = binascii.unhexlify(
             b"05000000000000000000000000000000000000000000000000000000"
             b"00000000000000000000000000000000000000000000000000000000"
@@ -110,7 +110,7 @@ class TestX448Exchange:
             ),
         ],
     )
-    def test_pub_priv_bytes_raw(self, private_bytes, public_bytes, backend):
+    def test_pub_priv_bytes_raw(self, private_bytes, public_bytes):
         private_key = X448PrivateKey.from_private_bytes(private_bytes)
         assert (
             private_key.private_bytes(
@@ -171,38 +171,38 @@ class TestX448Exchange:
         ],
     )
     def test_round_trip_private_serialization(
-        self, encoding, fmt, encryption, passwd, load_func, backend
+        self, encoding, fmt, encryption, passwd, load_func
     ):
         key = X448PrivateKey.generate()
         serialized = key.private_bytes(encoding, fmt, encryption)
-        loaded_key = load_func(serialized, passwd, backend)
+        loaded_key = load_func(serialized, passwd)
         assert isinstance(loaded_key, X448PrivateKey)
 
-    def test_generate(self, backend):
+    def test_generate(self):
         key = X448PrivateKey.generate()
         assert key
         assert key.public_key()
 
-    def test_invalid_type_exchange(self, backend):
+    def test_invalid_type_exchange(self):
         key = X448PrivateKey.generate()
         with pytest.raises(TypeError):
             key.exchange(typing.cast(typing.Any, object()))
 
-    def test_invalid_length_from_public_bytes(self, backend):
+    def test_invalid_length_from_public_bytes(self):
         with pytest.raises(ValueError):
             X448PublicKey.from_public_bytes(b"a" * 55)
 
         with pytest.raises(ValueError):
             X448PublicKey.from_public_bytes(b"a" * 57)
 
-    def test_invalid_length_from_private_bytes(self, backend):
+    def test_invalid_length_from_private_bytes(self):
         with pytest.raises(ValueError):
             X448PrivateKey.from_private_bytes(b"a" * 55)
 
         with pytest.raises(ValueError):
             X448PrivateKey.from_private_bytes(b"a" * 57)
 
-    def test_invalid_private_bytes(self, backend):
+    def test_invalid_private_bytes(self):
         key = X448PrivateKey.generate()
         with pytest.raises(TypeError):
             key.private_bytes(
@@ -231,7 +231,7 @@ class TestX448Exchange:
                 serialization.NoEncryption(),
             )
 
-    def test_invalid_public_bytes(self, backend):
+    def test_invalid_public_bytes(self):
         key = X448PrivateKey.generate().public_key()
         with pytest.raises(ValueError):
             key.public_bytes(
@@ -258,7 +258,7 @@ class TestX448Exchange:
             -----END PUBLIC KEY-----""").encode()
             )
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         private_bytes = binascii.unhexlify(
             b"9a8f4925d1519f5775cf46b04b5800d4ee9ee8bae8bc5565d498c28d"
             b"d9c9baf574a9419744897391006382a6f127ab1d9ac2d8c0a598726b"
@@ -278,7 +278,7 @@ class TestX448Exchange:
     only_if=lambda backend: backend.x448_supported(),
     skip_message="Requires OpenSSL with X448 support",
 )
-def test_public_key_equality(backend):
+def test_public_key_equality():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "X448", "x448-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -298,7 +298,7 @@ def test_public_key_equality(backend):
     only_if=lambda backend: backend.x448_supported(),
     skip_message="Requires OpenSSL with X448 support",
 )
-def test_public_key_copy(backend):
+def test_public_key_copy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "X448", "x448-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -314,7 +314,7 @@ def test_public_key_copy(backend):
     only_if=lambda backend: backend.x448_supported(),
     skip_message="Requires OpenSSL with X448 support",
 )
-def test_public_key_deepcopy(backend):
+def test_public_key_deepcopy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "X448", "x448-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -330,7 +330,7 @@ def test_public_key_deepcopy(backend):
     only_if=lambda backend: backend.x448_supported(),
     skip_message="Requires OpenSSL with X448 support",
 )
-def test_private_key_copy(backend):
+def test_private_key_copy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "X448", "x448-pkcs8.der"),
         lambda derfile: derfile.read(),
@@ -346,7 +346,7 @@ def test_private_key_copy(backend):
     only_if=lambda backend: backend.x448_supported(),
     skip_message="Requires OpenSSL with X448 support",
 )
-def test_private_key_deepcopy(backend):
+def test_private_key_deepcopy():
     key_bytes = load_vectors_from_file(
         os.path.join("asymmetric", "X448", "x448-pkcs8.der"),
         lambda derfile: derfile.read(),
