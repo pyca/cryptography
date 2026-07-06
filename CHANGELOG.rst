@@ -41,6 +41,7 @@ Changelog
   classes and the classes in
   :mod:`~cryptography.hazmat.primitives.asymmetric.padding` can now be
   compared with ``==``.
+* Updated the minimum supported Rust version (MSRV) to 1.85.0, from 1.83.0.
 
 .. _v49-0-0:
 
