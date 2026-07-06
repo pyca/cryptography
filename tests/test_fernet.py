@@ -15,7 +15,6 @@ import pytest
 
 import cryptography_vectors
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
-from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 
 def json_parametrize(keys, filename):
@@ -31,12 +30,6 @@ def json_parametrize(keys, filename):
         )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
-    ),
-    skip_message="Does not support AES CBC",
-)
 class TestFernet:
     @json_parametrize(
         ("secret", "now", "iv", "src", "token"),
@@ -159,12 +152,6 @@ class TestFernet:
             f.extract_timestamp(b"nonsensetoken")
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 32), modes.CBC(b"\x00" * 16)
-    ),
-    skip_message="Does not support AES CBC",
-)
 class TestMultiFernet:
     def test_encrypt(self, backend):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
