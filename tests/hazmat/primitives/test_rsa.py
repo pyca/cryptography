@@ -305,16 +305,6 @@ class TestRSA:
             load_nist_vectors,
         ),
     )
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=b"label",
-            )
-        ),
-        skip_message="Does not support RSA OAEP labels",
-    )
     def test_oaep_label_decrypt(self, vector, backend):
         private_key = serialization.load_der_private_key(
             binascii.unhexlify(vector["key"]),
@@ -341,16 +331,6 @@ class TestRSA:
             (b"amazing encrypted msg", b""),
         ],
     )
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=b"label",
-            )
-        ),
-        skip_message="Does not support RSA OAEP labels",
-    )
     def test_oaep_label_roundtrip(self, rsa_key_2048, msg, label, backend):
         private_key = rsa_key_2048
         ct = private_key.public_key().encrypt(
@@ -375,16 +355,6 @@ class TestRSA:
         ("enclabel", "declabel"),
         [(b"label1", b"label2"), (b"label3", b""), (b"", b"label4")],
     )
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=b"label",
-            )
-        ),
-        skip_message="Does not support RSA OAEP labels",
-    )
     def test_oaep_wrong_label(self, rsa_key_2048, enclabel, declabel, backend):
         private_key = rsa_key_2048
         msg = b"test"
@@ -408,12 +378,6 @@ class TestRSA:
 
 
 class TestRSASignature:
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
     @pytest.mark.supported(
         only_if=lambda backend: backend.signature_hash_supported(
             hashes.SHA1()
@@ -447,18 +411,6 @@ class TestRSASignature:
                 )
                 assert binascii.hexlify(signature) == example["signature"]
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.signature_hash_supported(
-            hashes.SHA256()
-        ),
-        skip_message="Does not support SHA256 signature.",
-    )
     def test_pkcs1v15_signing_without_digest(self, backend, subtests):
         vectors = load_vectors_from_file(
             os.path.join(
@@ -606,15 +558,6 @@ class TestRSASignature:
         signature = private_key.sign(msg, pss, hash_alg)
         public_key.verify(signature, msg, pss, hash_alg)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PSS(
-                mgf=padding.MGF1(hashes.SHA256()),
-                salt_length=padding.PSS.DIGEST_LENGTH,
-            )
-        ),
-        skip_message="Does not support PSS.",
-    )
     def test_pss_digest_length(self, rsa_key_2048, backend):
         private_key = rsa_key_2048
         signature = private_key.sign(
@@ -679,10 +622,6 @@ class TestRSASignature:
             )
         ),
         skip_message="Does not support PSS.",
-    )
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
-        skip_message="Does not support SHA512.",
     )
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_pss_signing_digest_too_large_for_key_size(
@@ -782,12 +721,6 @@ class TestRSASignature:
                 hashes.SHA256(),
             )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_pkcs1_digest_too_large_for_key_size(self, backend):
         private_key = RSA_KEY_599.private_key(
@@ -798,12 +731,6 @@ class TestRSASignature:
                 b"failure coming", padding.PKCS1v15(), hashes.SHA512()
             )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_pkcs1_minimum_key_size(self, backend):
         private_key = RSA_KEY_745.private_key(
@@ -844,15 +771,6 @@ class TestRSASignature:
         public_key = private_key.public_key()
         public_key.verify(signature, message, pss, hashes.SHA256())
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PSS(
-                mgf=padding.MGF1(hashes.SHA256()),
-                salt_length=padding.PSS.DIGEST_LENGTH,
-            )
-        ),
-        skip_message="Does not support PSS.",
-    )
     def test_prehashed_digest_length(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
@@ -948,12 +866,6 @@ class TestRSASignature:
 
 class TestRSAVerification:
     @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
-    @pytest.mark.supported(
         only_if=lambda backend: backend.signature_hash_supported(
             hashes.SHA1()
         ),
@@ -994,12 +906,6 @@ class TestRSAVerification:
                 assert len(rec_sig_data) > len(msg_digest)
                 assert msg_digest == rec_sig_data[-len(msg_digest) :]
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
     def test_invalid_pkcs1v15_signature_wrong_data(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
@@ -1065,12 +971,6 @@ class TestRSAVerification:
                 hashes.SHA256(),
             )
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_padding_supported(
-            padding.PKCS1v15()
-        ),
-        skip_message="Does not support PKCS1v1.5.",
-    )
     def test_invalid_pkcs1v15_signature_wrong_key(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
@@ -1337,10 +1237,6 @@ class TestRSAVerification:
         ),
         skip_message="Does not support PSS.",
     )
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.hash_supported(hashes.SHA512()),
-        skip_message="Does not support SHA512.",
-    )
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_pss_verify_digest_too_large_for_key_size(
         self, rsa_key_512: rsa.RSAPrivateKey, backend
@@ -1603,13 +1499,7 @@ class TestRSAPKCS1Verification:
         )
     )
 
-    test_rsa_pkcs1v15_verify_sha256_without_digest = pytest.mark.supported(
-        only_if=lambda backend: (
-            backend.signature_hash_supported(hashes.SHA256())
-            and backend.rsa_padding_supported(padding.PKCS1v15())
-        ),
-        skip_message="Does not support SHA256 and PKCS1v1.5.",
-    )(
+    test_rsa_pkcs1v15_verify_sha256_without_digest = (
         generate_rsa_verification_without_digest_test(
             load_rsa_nist_vectors,
             os.path.join("asymmetric", "RSA", "FIPS_186-2"),
@@ -1623,84 +1513,52 @@ class TestRSAPKCS1Verification:
         )
     )
 
-    test_rsa_pkcs1v15_verify_sha224 = pytest.mark.supported(
-        only_if=lambda backend: (
-            backend.signature_hash_supported(hashes.SHA224())
-            and backend.rsa_padding_supported(padding.PKCS1v15())
-        ),
-        skip_message="Does not support SHA224 and PKCS1v1.5.",
-    )(
-        generate_rsa_verification_test(
-            load_rsa_nist_vectors,
-            os.path.join("asymmetric", "RSA", "FIPS_186-2"),
-            [
-                "SigGen15_186-2.rsp",
-                "SigGen15_186-3.rsp",
-                "SigVer15_186-3.rsp",
-            ],
-            hashes.SHA224(),
-            lambda params, hash_alg: padding.PKCS1v15(),
-        )
+    test_rsa_pkcs1v15_verify_sha224 = generate_rsa_verification_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGen15_186-2.rsp",
+            "SigGen15_186-3.rsp",
+            "SigVer15_186-3.rsp",
+        ],
+        hashes.SHA224(),
+        lambda params, hash_alg: padding.PKCS1v15(),
     )
 
-    test_rsa_pkcs1v15_verify_sha256 = pytest.mark.supported(
-        only_if=lambda backend: (
-            backend.signature_hash_supported(hashes.SHA256())
-            and backend.rsa_padding_supported(padding.PKCS1v15())
-        ),
-        skip_message="Does not support SHA256 and PKCS1v1.5.",
-    )(
-        generate_rsa_verification_test(
-            load_rsa_nist_vectors,
-            os.path.join("asymmetric", "RSA", "FIPS_186-2"),
-            [
-                "SigGen15_186-2.rsp",
-                "SigGen15_186-3.rsp",
-                "SigVer15_186-3.rsp",
-            ],
-            hashes.SHA256(),
-            lambda params, hash_alg: padding.PKCS1v15(),
-        )
+    test_rsa_pkcs1v15_verify_sha256 = generate_rsa_verification_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGen15_186-2.rsp",
+            "SigGen15_186-3.rsp",
+            "SigVer15_186-3.rsp",
+        ],
+        hashes.SHA256(),
+        lambda params, hash_alg: padding.PKCS1v15(),
     )
 
-    test_rsa_pkcs1v15_verify_sha384 = pytest.mark.supported(
-        only_if=lambda backend: (
-            backend.signature_hash_supported(hashes.SHA384())
-            and backend.rsa_padding_supported(padding.PKCS1v15())
-        ),
-        skip_message="Does not support SHA384 and PKCS1v1.5.",
-    )(
-        generate_rsa_verification_test(
-            load_rsa_nist_vectors,
-            os.path.join("asymmetric", "RSA", "FIPS_186-2"),
-            [
-                "SigGen15_186-2.rsp",
-                "SigGen15_186-3.rsp",
-                "SigVer15_186-3.rsp",
-            ],
-            hashes.SHA384(),
-            lambda params, hash_alg: padding.PKCS1v15(),
-        )
+    test_rsa_pkcs1v15_verify_sha384 = generate_rsa_verification_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGen15_186-2.rsp",
+            "SigGen15_186-3.rsp",
+            "SigVer15_186-3.rsp",
+        ],
+        hashes.SHA384(),
+        lambda params, hash_alg: padding.PKCS1v15(),
     )
 
-    test_rsa_pkcs1v15_verify_sha512 = pytest.mark.supported(
-        only_if=lambda backend: (
-            backend.signature_hash_supported(hashes.SHA512())
-            and backend.rsa_padding_supported(padding.PKCS1v15())
-        ),
-        skip_message="Does not support SHA512 and PKCS1v1.5.",
-    )(
-        generate_rsa_verification_test(
-            load_rsa_nist_vectors,
-            os.path.join("asymmetric", "RSA", "FIPS_186-2"),
-            [
-                "SigGen15_186-2.rsp",
-                "SigGen15_186-3.rsp",
-                "SigVer15_186-3.rsp",
-            ],
-            hashes.SHA512(),
-            lambda params, hash_alg: padding.PKCS1v15(),
-        )
+    test_rsa_pkcs1v15_verify_sha512 = generate_rsa_verification_test(
+        load_rsa_nist_vectors,
+        os.path.join("asymmetric", "RSA", "FIPS_186-2"),
+        [
+            "SigGen15_186-2.rsp",
+            "SigGen15_186-3.rsp",
+            "SigVer15_186-3.rsp",
+        ],
+        hashes.SHA512(),
+        lambda params, hash_alg: padding.PKCS1v15(),
     )
 
 
@@ -2066,16 +1924,6 @@ class TestRSADecryption:
                 )
                 assert message == binascii.unhexlify(example["message"])
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_encryption_supported(
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None,
-            )
-        ),
-        skip_message="Does not support OAEP.",
-    )
     def test_invalid_oaep_decryption(
         self, rsa_key_2048: rsa.RSAPrivateKey, backend
     ):
@@ -2184,16 +2032,6 @@ class TestRSADecryption:
 
 
 class TestRSAEncryption:
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.rsa_encryption_supported(
-            padding.OAEP(
-                mgf=padding.MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None,
-            )
-        ),
-        skip_message="Does not support OAEP.",
-    )
     @pytest.mark.parametrize(
         ("key_data", "pad"),
         list(
