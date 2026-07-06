@@ -30,7 +30,7 @@ runs:
     - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: target/maturin
-        key: "maturin-pyo3-config-${{ runner.os }}-${{ runner.arch }}-${{ steps.normalized-key.outputs.key }}-${{ hashFiles('Cargo.lock') }}-0"
+        key: "maturin-pyo3-config-${{ steps.normalized-key.outputs.key }}-0"
     # Cargo's rerun-if-changed check compares the config file's mtime
     # against the .fingerprint timestamps from rust-cache. The two caches
     # can be saved on different runs, so pin the config to a fixed old
