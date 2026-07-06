@@ -20,3 +20,26 @@ runs:
     - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
       with:
         key: ${{ steps.normalized-key.outputs.key }}-5
+    # maturin writes the pyo3 config file to target/maturin/, and pyo3-ffi's
+    # build script registers cargo:rerun-if-changed on it. rust-cache's
+    # cleanup deletes target/maturin/ before saving, so the file was
+    # recreated with a fresh mtime on every run, which recompiled pyo3-ffi
+    # and pyo3 despite a warm cache. Cache it separately. This step must
+    # come after rust-cache: post steps run in reverse order, so this one
+    # saves before rust-cache's cleanup deletes the directory.
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: target/maturin
+        key: "maturin-pyo3-config-${{ steps.normalized-key.outputs.key }}-0"
+    # Cargo's rerun-if-changed check compares the config file's mtime
+    # against the .fingerprint timestamps from rust-cache. The two caches
+    # can be saved on different runs, so pin the config to a fixed old
+    # mtime to keep it older than any cached fingerprint. If the config is
+    # stale (e.g. new Python version), maturin rewrites it and the build
+    # correctly reruns.
+    - name: Pin maturin config mtimes
+      run: |
+        if [ -d target/maturin ]; then
+          find target/maturin -type f -exec touch -t 200101010000 {} +
+        fi
+      shell: bash
