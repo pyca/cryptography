@@ -18,12 +18,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Value for RUST_LOG on steps that run `uv pip install -v` directly:
-  # suppress uv's per-file cache/index log lines while keeping the rest
-  # of the -v output. Must be scoped to those steps (not set globally as
-  # RUST_LOG) because uv honors RUST_LOG even without -v. Keep in sync
-  # with UV_RUST_LOG in noxfile.py, which covers all nox-run installs.
-  UV_VERBOSE_RUST_LOG: uv=debug,uv_client::cached_client=warn,uv_client::registry_client=error
+  # Enable uv's debug output everywhere, minus its per-file cache/index
+  # log lines. All directives must stay scoped to uv targets (no bare
+  # level like `debug`) so other Rust binaries that read RUST_LOG are
+  # unaffected. Keep in sync with UV_RUST_LOG in noxfile.py, which
+  # covers nox-run installs outside CI.
+  RUST_LOG: uv=debug,uv_client::cached_client=warn,uv_client::registry_client=error
 
 jobs:
   benchmark:
@@ -58,17 +58,11 @@ jobs:
         run: |
           uv venv .venv-base
           . .venv-base/bin/activate
-          uv pip install -v -c ./cryptography-base/ci-constraints-requirements.txt ./cryptography-base ./cryptography-base/vectors/ --group ./cryptography-base/pyproject.toml:test
-        env:
-          RUST_LOG: ${{ env.UV_VERBOSE_RUST_LOG }}
-      - name: Create virtualenv (PR)
+          uv pip install -v -c ./cryptography-base/ci-constraints-requirements.txt ./cryptography-base ./cryptography-base/vectors/ --group ./cryptography-base/pyproject.toml:test      - name: Create virtualenv (PR)
         run: |
           uv venv .venv-pr
           . .venv-pr/bin/activate
           uv pip install -v -c ./cryptography-pr/ci-constraints-requirements.txt ./cryptography-pr ./cryptography-pr/vectors/ --group ./cryptography-pr/pyproject.toml:test
-        env:
-          RUST_LOG: ${{ env.UV_VERBOSE_RUST_LOG }}
-
       - name: Run benchmarks (base)
         run: .venv-base/bin/pytest --benchmark-enable --benchmark-only ./cryptography-pr/tests/bench/ --benchmark-json=bench-base.json --x509-limbo-root=x509-limbo/
       - name: Run benchmarks (PR)
