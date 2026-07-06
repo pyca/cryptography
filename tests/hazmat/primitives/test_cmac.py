@@ -48,12 +48,6 @@ fake_key = b"\x00" * 16
 
 
 class TestCMAC:
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cmac_algorithm_supported(
-            AES(fake_key)
-        ),
-        skip_message="Does not support CMAC.",
-    )
     @pytest.mark.parametrize("params", vectors_aes)
     def test_aes_generate(self, backend, params):
         key = params["key"]
@@ -64,12 +58,6 @@ class TestCMAC:
         cmac.update(binascii.unhexlify(message))
         assert binascii.hexlify(cmac.finalize()) == output
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cmac_algorithm_supported(
-            AES(fake_key)
-        ),
-        skip_message="Does not support CMAC.",
-    )
     @pytest.mark.parametrize("params", vectors_aes)
     def test_aes_verify(self, backend, params):
         key = params["key"]
@@ -122,12 +110,6 @@ class TestCMAC:
         cmac.update(binascii.unhexlify(message))
         cmac.verify(binascii.unhexlify(output))
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cmac_algorithm_supported(
-            AES(fake_key)
-        ),
-        skip_message="Does not support CMAC.",
-    )
     def test_invalid_verify(self, backend):
         key = b"2b7e151628aed2a6abf7158809cf4f3c"
         cmac = CMAC(AES(key), backend)
@@ -148,12 +130,6 @@ class TestCMAC:
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             CMAC(DummyBlockCipherAlgorithm(b"bad"), backend)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cmac_algorithm_supported(
-            AES(fake_key)
-        ),
-        skip_message="Does not support CMAC.",
-    )
     def test_raises_after_finalize(self, backend):
         key = b"2b7e151628aed2a6abf7158809cf4f3c"
         cmac = CMAC(AES(key), backend)
@@ -171,12 +147,6 @@ class TestCMAC:
         with pytest.raises(AlreadyFinalized):
             cmac.verify(b"")
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cmac_algorithm_supported(
-            AES(fake_key)
-        ),
-        skip_message="Does not support CMAC.",
-    )
     def test_verify_reject_unicode(self, backend):
         key = b"2b7e151628aed2a6abf7158809cf4f3c"
         cmac = CMAC(AES(key), backend)
@@ -187,12 +157,6 @@ class TestCMAC:
         with pytest.raises(TypeError):
             cmac.verify(typing.cast(typing.Any, ""))
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cmac_algorithm_supported(
-            AES(fake_key)
-        ),
-        skip_message="Does not support CMAC.",
-    )
     def test_copy_with_backend(self, backend):
         key = b"2b7e151628aed2a6abf7158809cf4f3c"
         cmac = CMAC(AES(key), backend)
@@ -200,12 +164,6 @@ class TestCMAC:
         copy_cmac = cmac.copy()
         assert cmac.finalize() == copy_cmac.finalize()
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cmac_algorithm_supported(
-            AES(fake_key)
-        ),
-        skip_message="Does not support CMAC.",
-    )
     def test_buffer_protocol(self, backend):
         key = bytearray(b"2b7e151628aed2a6abf7158809cf4f3c")
         cmac = CMAC(AES(key), backend)
