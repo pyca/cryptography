@@ -8,10 +8,6 @@ X.509 Verification
 Support for X.509 certificate verification, also known as path validation
 or chain building.
 
-.. note::
-    While usable, these APIs should be considered unstable and not yet
-    subject to our backwards compatibility policy.
-
 Example usage, with `certifi <https://pypi.org/project/certifi/>`_ providing
 the root of trust:
 
