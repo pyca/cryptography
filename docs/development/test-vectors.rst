@@ -1041,6 +1041,9 @@ Custom PKCS7 Test Vectors
 * ``pkcs7/non-ascii-san.pem`` - An invalid certificate adapted for S/MIME
   signature & verification. It has an non-ASCII subject alternative name stored
   as `rfc822Name`.
+* ``pkcs7/authenticode.der`` - A DER encoded PKCS7 file containing an
+  Authenticode signature (with a ``SpcIndirectDataContent`` inner content
+  type), extracted from `Fedora 44's grubx64.efi`_.
 
 Custom OpenSSH Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1296,6 +1299,7 @@ header format (substituting the correct information):
 .. _`DHKE`: https://sandilands.info/sgordon/diffie-hellman-secret-key-exchange-with-openssl
 .. _`Botan's key wrap vectors`: https://github.com/randombit/botan/blob/737f33c09a18500e044dca3e2ae13bd2c08bafdd/src/tests/data/keywrap/nist_key_wrap.vec
 .. _`root-ed25519.pem`: https://github.com/openssl/openssl/blob/2a1e2fe145c6eb8e75aa2e1b3a8c3a49384b2852/test/certs/root-ed25519.pem
+.. _`Fedora 44's grubx64.efi`: https://dl.fedoraproject.org/pub/fedora/linux/releases/44/Server/x86_64/os/EFI/BOOT/grubx64.efi
 .. _`server-ed25519-cert.pem`: https://github.com/openssl/openssl/blob/2a1e2fe145c6eb8e75aa2e1b3a8c3a49384b2852/test/certs/server-ed25519-cert.pem
 .. _`server-ed448-cert.pem`: https://github.com/openssl/openssl/blob/2a1e2fe145c6eb8e75aa2e1b3a8c3a49384b2852/test/certs/server-ed448-cert.pem
 .. _`evpciph_aes_gcm_siv.txt`: https://github.com/openssl/openssl/blob/a2b1ab6100d5f0fb50b61d241471eea087415632/test/recipes/30-test_evp_data/evpciph_aes_gcm_siv.txt

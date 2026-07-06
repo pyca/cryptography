@@ -119,6 +119,24 @@ class TestPKCS7Loading:
             )
         ]
 
+    def test_load_pkcs7_der_unknown_content_type(self, backend):
+        # An Authenticode signature, whose inner ContentInfo has a
+        # SpcIndirectDataContent content type, which we don't know. It
+        # should parse successfully as DER, without falling back to BER
+        # with a warning.
+        certs = load_vectors_from_file(
+            os.path.join("pkcs7", "authenticode.der"),
+            lambda derfile: pkcs7.load_der_pkcs7_certificates(derfile.read()),
+            mode="rb",
+        )
+
+        assert len(certs) == 1
+        assert certs[0].subject.get_attributes_for_oid(
+            x509.oid.NameOID.COMMON_NAME
+        ) == [
+            x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, "kernel-signer")
+        ]
+
     def test_load_pkcs7_unsupported_type(self, backend):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_SERIALIZATION):
             load_vectors_from_file(
