@@ -78,8 +78,8 @@ class TestHMACSHA512:
     skip_message="Does not support BLAKE2",
 )
 class TestHMACBLAKE2:
-    def test_blake2b(self, backend):
-        h = hmac.HMAC(b"0" * 64, hashes.BLAKE2b(digest_size=64), backend)
+    def test_blake2b(self):
+        h = hmac.HMAC(b"0" * 64, hashes.BLAKE2b(digest_size=64))
         h.update(b"test")
         digest = h.finalize()
         assert digest == binascii.unhexlify(
@@ -87,8 +87,8 @@ class TestHMACBLAKE2:
             b"87dba4aeaa69e6bed7edc44f48d6b1be493a3ce583f9c737c53d6bacc09e2f32"
         )
 
-    def test_blake2s(self, backend):
-        h = hmac.HMAC(b"0" * 32, hashes.BLAKE2s(digest_size=32), backend)
+    def test_blake2s(self):
+        h = hmac.HMAC(b"0" * 32, hashes.BLAKE2s(digest_size=32))
         h.update(b"test")
         digest = h.finalize()
         assert digest == binascii.unhexlify(
