@@ -15,6 +15,12 @@ concurrency:
 
 env:
   CARGO_INCREMENTAL: 0
+  # Enable uv's debug output everywhere, minus its per-file cache/index
+  # log lines. All directives must stay scoped to uv targets (no bare
+  # level like `debug`) so other Rust binaries that read RUST_LOG are
+  # unaffected. Keep in sync with UV_RUST_LOG in noxfile.py, which
+  # covers nox-run installs outside CI.
+  RUST_LOG: uv=debug,uv_client::cached_client=warn,uv_client::registry_client=error,uv_resolver::resolver=warn
 
 jobs:
   linux:

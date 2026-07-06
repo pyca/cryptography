@@ -24,18 +24,28 @@ nox.options.reuse_existing_virtualenvs = True
 nox.options.default_venv_backend = "uv"
 
 
+# See RUST_LOG in .github/workflows/ci.yml
+UV_RUST_LOG = (
+    "uv=debug,uv_client::cached_client=warn,"
+    "uv_client::registry_client=error,uv_resolver::resolver=warn"
+)
+
+
 def install(
     session: nox.Session,
     *args: str,
     verbose: bool = True,
 ) -> None:
+    env = {}
     if verbose:
         args += ("-v",)
+        env["RUST_LOG"] = UV_RUST_LOG
     session.install(
         "-c",
         "ci-constraints-requirements.txt",
         *args,
         silent=False,
+        env=env,
     )
 
 
