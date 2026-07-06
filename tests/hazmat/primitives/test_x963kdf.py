@@ -15,33 +15,33 @@ from cryptography.hazmat.primitives.kdf.x963kdf import X963KDF
 
 
 class TestX963KDF:
-    def test_length_limit(self, backend):
+    def test_length_limit(self):
         big_length = hashes.SHA256().digest_size * (2**32 - 1) + 1
         error = OverflowError if sys.maxsize <= 2**31 else ValueError
 
         with pytest.raises(error):
-            X963KDF(hashes.SHA256(), big_length, None, backend)
+            X963KDF(hashes.SHA256(), big_length, None)
 
-    def test_already_finalized(self, backend):
-        xkdf = X963KDF(hashes.SHA256(), 16, None, backend)
+    def test_already_finalized(self):
+        xkdf = X963KDF(hashes.SHA256(), 16, None)
 
         xkdf.derive(b"\x01" * 16)
 
         with pytest.raises(AlreadyFinalized):
             xkdf.derive(b"\x02" * 16)
 
-    def test_derive(self, backend):
+    def test_derive(self):
         key = binascii.unhexlify(
             b"96c05619d56c328ab95fe84b18264b08725b85e33fd34f08"
         )
 
         derivedkey = binascii.unhexlify(b"443024c3dae66b95e6f5670601558f71")
 
-        xkdf = X963KDF(hashes.SHA256(), 16, None, backend)
+        xkdf = X963KDF(hashes.SHA256(), 16, None)
 
         assert xkdf.derive(key) == derivedkey
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         key = bytearray(
             binascii.unhexlify(
                 b"96c05619d56c328ab95fe84b18264b08725b85e33fd34f08"
@@ -50,11 +50,11 @@ class TestX963KDF:
 
         derivedkey = binascii.unhexlify(b"443024c3dae66b95e6f5670601558f71")
 
-        xkdf = X963KDF(hashes.SHA256(), 16, None, backend)
+        xkdf = X963KDF(hashes.SHA256(), 16, None)
 
         assert xkdf.derive(key) == derivedkey
 
-    def test_verify(self, backend):
+    def test_verify(self):
         key = binascii.unhexlify(
             b"22518b10e70f2a3f243810ae3254139efbee04aa57c7af7d"
         )
@@ -68,74 +68,65 @@ class TestX963KDF:
             b"142d43525a78e5bc79a17f59676a5706dc54d54d4d1f0bd7e386128ec26afc21"
         )
 
-        xkdf = X963KDF(hashes.SHA256(), 128, sharedinfo, backend)
+        xkdf = X963KDF(hashes.SHA256(), 128, sharedinfo)
 
         xkdf.verify(key, derivedkey)
 
-    def test_invalid_verify(self, backend):
+    def test_invalid_verify(self):
         key = binascii.unhexlify(
             b"96c05619d56c328ab95fe84b18264b08725b85e33fd34f08"
         )
 
-        xkdf = X963KDF(hashes.SHA256(), 16, None, backend)
+        xkdf = X963KDF(hashes.SHA256(), 16, None)
 
         with pytest.raises(InvalidKey):
             xkdf.verify(key, b"wrong derived key")
 
-    def test_unicode_typeerror(self, backend):
+    def test_unicode_typeerror(self):
         with pytest.raises(TypeError):
             X963KDF(
-                hashes.SHA256(),
-                16,
-                sharedinfo=typing.cast(typing.Any, "foo"),
-                backend=backend,
+                hashes.SHA256(), 16, sharedinfo=typing.cast(typing.Any, "foo")
             )
 
         with pytest.raises(TypeError):
-            xkdf = X963KDF(
-                hashes.SHA256(), 16, sharedinfo=None, backend=backend
-            )
+            xkdf = X963KDF(hashes.SHA256(), 16, sharedinfo=None)
 
             xkdf.derive(typing.cast(typing.Any, "foo"))
 
         with pytest.raises(TypeError):
-            xkdf = X963KDF(
-                hashes.SHA256(), 16, sharedinfo=None, backend=backend
-            )
+            xkdf = X963KDF(hashes.SHA256(), 16, sharedinfo=None)
 
             xkdf.verify(typing.cast(typing.Any, "foo"), b"bar")
 
         with pytest.raises(TypeError):
-            xkdf = X963KDF(
-                hashes.SHA256(), 16, sharedinfo=None, backend=backend
-            )
+            xkdf = X963KDF(hashes.SHA256(), 16, sharedinfo=None)
 
             xkdf.verify(b"foo", typing.cast(typing.Any, "bar"))
 
-    def test_derive_into(self, backend):
+    def test_derive_into(self):
         key = binascii.unhexlify(
             b"96c05619d56c328ab95fe84b18264b08725b85e33fd34f08"
         )
-        xkdf = X963KDF(hashes.SHA256(), 16, None, backend)
+        xkdf = X963KDF(hashes.SHA256(), 16, None)
         buf = bytearray(16)
         n = xkdf.derive_into(key, buf)
         assert n == 16
         # Verify the output matches what derive would produce
-        xkdf2 = X963KDF(hashes.SHA256(), 16, None, backend)
+        xkdf2 = X963KDF(hashes.SHA256(), 16, None)
         expected = xkdf2.derive(key)
         assert buf == expected
 
     @pytest.mark.parametrize(
         ("buflen", "outlen"), [(15, 16), (17, 16), (8, 16), (32, 16)]
     )
-    def test_derive_into_buffer_incorrect_size(self, buflen, outlen, backend):
-        xkdf = X963KDF(hashes.SHA256(), outlen, None, backend)
+    def test_derive_into_buffer_incorrect_size(self, buflen, outlen):
+        xkdf = X963KDF(hashes.SHA256(), outlen, None)
         buf = bytearray(buflen)
         with pytest.raises(ValueError, match="buffer must be"):
             xkdf.derive_into(b"key", buf)
 
-    def test_derive_into_already_finalized(self, backend):
-        xkdf = X963KDF(hashes.SHA256(), 16, None, backend)
+    def test_derive_into_already_finalized(self):
+        xkdf = X963KDF(hashes.SHA256(), 16, None)
         buf = bytearray(16)
         xkdf.derive_into(b"key", buf)
         with pytest.raises(AlreadyFinalized):
