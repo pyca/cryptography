@@ -26,7 +26,8 @@ nox.options.default_venv_backend = "uv"
 
 # See RUST_LOG in .github/workflows/ci.yml
 UV_RUST_LOG = (
-    "uv=debug,uv_client::cached_client=warn,uv_client::registry_client=error"
+    "uv=debug,uv_client::cached_client=warn,"
+    "uv_client::registry_client=error,uv_resolver::resolver=warn"
 )
 
 
