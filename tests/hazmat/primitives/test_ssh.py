@@ -68,7 +68,7 @@ class TestOpenSSHSerialization:
             ("sk-ed25519-nopsw.key.pub", None),
         ],
     )
-    def test_load_ssh_public_key(self, key_file, cert_file, backend):
+    def test_load_ssh_public_key(self, key_file, cert_file):
         # normal public key
         pub_data = load_vectors_from_file(
             os.path.join("asymmetric", "OpenSSH", key_file),
@@ -78,7 +78,7 @@ class TestOpenSSHSerialization:
         nocomment_data = b" ".join(pub_data.split()[:2])
         if key_file.startswith("dsa"):
             with pytest.warns(utils.DeprecatedIn40):
-                public_key = load_ssh_public_key(pub_data, backend)
+                public_key = load_ssh_public_key(pub_data)
             with pytest.warns(utils.DeprecatedIn40):
                 assert (
                     public_key.public_bytes(
@@ -87,7 +87,7 @@ class TestOpenSSHSerialization:
                     == nocomment_data
                 )
         else:
-            public_key = load_ssh_public_key(pub_data, backend)
+            public_key = load_ssh_public_key(pub_data)
             if not key_file.startswith("sk-"):
                 # SK keys do not round-trip
                 assert (
@@ -97,7 +97,7 @@ class TestOpenSSHSerialization:
                     == nocomment_data
                 )
 
-        self.run_partial_pubkey(pub_data, backend)
+        self.run_partial_pubkey(pub_data)
 
         # parse public key with ssh certificate
         if cert_file:
@@ -108,7 +108,7 @@ class TestOpenSSHSerialization:
             )
             if cert_file.startswith("dsa"):
                 with pytest.warns(utils.DeprecatedIn40):
-                    cert_key = load_ssh_public_key(cert_data, backend)
+                    cert_key = load_ssh_public_key(cert_data)
                 with pytest.warns(utils.DeprecatedIn40):
                     assert (
                         cert_key.public_bytes(
@@ -117,7 +117,7 @@ class TestOpenSSHSerialization:
                         == nocomment_data
                     )
             else:
-                cert_key = load_ssh_public_key(cert_data, backend)
+                cert_key = load_ssh_public_key(cert_data)
                 assert (
                     cert_key.public_bytes(
                         Encoding.OpenSSH, PublicFormat.OpenSSH
@@ -129,7 +129,7 @@ class TestOpenSSHSerialization:
             cert_data = b" \t ".join(cert_data.split())
             if cert_file.startswith("dsa"):
                 with pytest.warns(utils.DeprecatedIn40):
-                    cert_key = load_ssh_public_key(cert_data, backend)
+                    cert_key = load_ssh_public_key(cert_data)
                 with pytest.warns(utils.DeprecatedIn40):
                     assert (
                         cert_key.public_bytes(
@@ -138,7 +138,7 @@ class TestOpenSSHSerialization:
                         == nocomment_data
                     )
             else:
-                cert_key = load_ssh_public_key(cert_data, backend)
+                cert_key = load_ssh_public_key(cert_data)
                 assert (
                     cert_key.public_bytes(
                         Encoding.OpenSSH, PublicFormat.OpenSSH
@@ -146,16 +146,16 @@ class TestOpenSSHSerialization:
                     == nocomment_data
                 )
 
-            self.run_partial_pubkey(cert_data, backend)
+            self.run_partial_pubkey(cert_data)
 
-    def run_partial_pubkey(self, pubdata, backend):
+    def run_partial_pubkey(self, pubdata):
         parts = pubdata.split()
         raw = base64.b64decode(parts[1])
         for i in range(1, len(raw)):
             frag = base64.b64encode(raw[:i])
             new_pub = b" ".join([parts[0], frag])
             with pytest.raises(ValueError):
-                load_ssh_public_key(new_pub, backend)
+                load_ssh_public_key(new_pub)
 
     @pytest.mark.parametrize(
         "key_file",
@@ -171,7 +171,7 @@ class TestOpenSSHSerialization:
             "ed25519-aesgcm-psw.key",
         ],
     )
-    def test_load_ssh_private_key(self, key_file, backend):
+    def test_load_ssh_private_key(self, key_file):
         if "-psw" in key_file and not ssh._bcrypt_supported:
             pytest.skip("Requires bcrypt module")
 
@@ -207,7 +207,7 @@ class TestOpenSSHSerialization:
         for data in datas:
             if key_file.startswith("dsa"):
                 with pytest.warns(utils.DeprecatedIn40):
-                    private_key = load_ssh_private_key(data, password, backend)
+                    private_key = load_ssh_private_key(data, password)
                 with pytest.warns(utils.DeprecatedIn40):
                     assert (
                         private_key.public_key().public_bytes(
@@ -216,7 +216,7 @@ class TestOpenSSHSerialization:
                         == nocomment_data
                     )
             else:
-                private_key = load_ssh_private_key(data, password, backend)
+                private_key = load_ssh_private_key(data, password)
                 assert (
                     private_key.public_key().public_bytes(
                         Encoding.OpenSSH, PublicFormat.OpenSSH
@@ -236,9 +236,7 @@ class TestOpenSSHSerialization:
                     encryption,
                 )
             with pytest.warns(utils.DeprecatedIn40):
-                private_key2 = load_ssh_private_key(
-                    priv_data2, password, backend
-                )
+                private_key2 = load_ssh_private_key(priv_data2, password)
             with pytest.warns(utils.DeprecatedIn40):
                 assert (
                     private_key2.public_key().public_bytes(
@@ -252,7 +250,7 @@ class TestOpenSSHSerialization:
                 PrivateFormat.OpenSSH,
                 encryption,
             )
-            private_key2 = load_ssh_private_key(priv_data2, password, backend)
+            private_key2 = load_ssh_private_key(priv_data2, password)
             assert (
                 private_key2.public_key().public_bytes(
                     Encoding.OpenSSH, PublicFormat.OpenSSH
@@ -284,7 +282,7 @@ class TestOpenSSHSerialization:
         only_if=lambda backend: ssh._bcrypt_supported,
         skip_message="Requires that bcrypt exists",
     )
-    def test_load_ssh_private_key_invalid_tag(self, backend):
+    def test_load_ssh_private_key_invalid_tag(self):
         priv_data = bytearray(
             load_vectors_from_file(
                 os.path.join(
@@ -303,7 +301,7 @@ class TestOpenSSHSerialization:
         only_if=lambda backend: ssh._bcrypt_supported,
         skip_message="Requires that bcrypt exists",
     )
-    def test_load_ssh_private_key_tag_incorrect_length(self, backend):
+    def test_load_ssh_private_key_tag_incorrect_length(self):
         priv_data = load_vectors_from_file(
             os.path.join("asymmetric", "OpenSSH", "ed25519-aesgcm-psw.key"),
             lambda f: f.read(),
@@ -318,8 +316,8 @@ class TestOpenSSHSerialization:
         only_if=lambda backend: ssh._bcrypt_supported,
         skip_message="Requires that bcrypt exists",
     )
-    def test_bcrypt_encryption(self, backend):
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+    def test_bcrypt_encryption(self):
+        private_key = ec.generate_private_key(ec.SECP256R1())
         pub1 = private_key.public_key().public_bytes(
             Encoding.OpenSSH, PublicFormat.OpenSSH
         )
@@ -340,25 +338,21 @@ class TestOpenSSHSerialization:
             encdata = private_key.private_bytes(
                 Encoding.PEM, PrivateFormat.OpenSSH, encryption
             )
-            decoded_key = load_ssh_private_key(encdata, psw, backend)
+            decoded_key = load_ssh_private_key(encdata, psw)
             pub2 = decoded_key.public_key().public_bytes(
                 Encoding.OpenSSH, PublicFormat.OpenSSH
             )
             assert pub1 == pub2
 
             # bytearray
-            decoded_key2 = load_ssh_private_key(
-                bytearray(encdata), psw, backend
-            )
+            decoded_key2 = load_ssh_private_key(bytearray(encdata), psw)
             pub2 = decoded_key2.public_key().public_bytes(
                 Encoding.OpenSSH, PublicFormat.OpenSSH
             )
             assert pub1 == pub2
 
             # memoryview(bytes)
-            decoded_key2 = load_ssh_private_key(
-                memoryview(encdata), psw, backend
-            )
+            decoded_key2 = load_ssh_private_key(memoryview(encdata), psw)
             pub2 = decoded_key2.public_key().public_bytes(
                 Encoding.OpenSSH, PublicFormat.OpenSSH
             )
@@ -366,7 +360,7 @@ class TestOpenSSHSerialization:
 
             # memoryview(bytearray)
             decoded_key2 = load_ssh_private_key(
-                memoryview(bytearray(encdata)), psw, backend
+                memoryview(bytearray(encdata)), psw
             )
             pub2 = decoded_key2.public_key().public_bytes(
                 Encoding.OpenSSH, PublicFormat.OpenSSH
@@ -374,24 +368,24 @@ class TestOpenSSHSerialization:
             assert pub1 == pub2
 
             with pytest.raises(TypeError):
-                decoded_key = load_ssh_private_key(encdata, None, backend)
+                decoded_key = load_ssh_private_key(encdata, None)
             with pytest.raises(ValueError):
-                decoded_key = load_ssh_private_key(encdata, b"wrong", backend)
+                decoded_key = load_ssh_private_key(encdata, b"wrong")
 
     @pytest.mark.supported(
         only_if=lambda backend: not ssh._bcrypt_supported,
         skip_message="Requires that bcrypt is missing",
     )
-    def test_missing_bcrypt(self, backend):
+    def test_missing_bcrypt(self):
         priv_data = load_vectors_from_file(
             os.path.join("asymmetric", "OpenSSH", "ecdsa-psw.key"),
             lambda f: f.read(),
             mode="rb",
         )
         with raises_unsupported_algorithm(None):
-            load_ssh_private_key(priv_data, b"password", backend)
+            load_ssh_private_key(priv_data, b"password")
 
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        private_key = ec.generate_private_key(ec.SECP256R1())
         with raises_unsupported_algorithm(None):
             private_key.private_bytes(
                 Encoding.PEM,
@@ -459,57 +453,57 @@ class TestOpenSSHSerialization:
         res = main.tobytes()
         return header + base64.encodebytes(res[:cut]) + footer
 
-    def test_ssh_make_file(self, backend):
+    def test_ssh_make_file(self):
         # check if works by default
         data = self.make_file()
-        key = load_ssh_private_key(data, None, backend)
+        key = load_ssh_private_key(data, None)
         assert isinstance(key, ec.EllipticCurvePrivateKey)
 
-    def test_load_ssh_private_key_errors(self, backend):
+    def test_load_ssh_private_key_errors(self):
         # bad kdf
         data = self.make_file(kdfname=b"unknown", ciphername=b"aes256-ctr")
         with raises_unsupported_algorithm(None):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
         # bad cipher
         data = self.make_file(ciphername=b"unknown", kdfname=b"bcrypt")
         with raises_unsupported_algorithm(None):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
         # bad magic
         data = self.make_file(magic=b"unknown")
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
         # too few keys
         data = self.make_file(nkeys=0)
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
         # too many keys
         data = self.make_file(nkeys=2)
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
-    def test_ssh_errors_bad_values(self, backend):
+    def test_ssh_errors_bad_values(self):
         # bad curve
         data = self.make_file(pub_type=b"ecdsa-sha2-nistp444")
         with raises_unsupported_algorithm(None):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
         # curve mismatch
         data = self.make_file(priv_type=b"ecdsa-sha2-nistp384")
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
         # invalid bigint
         data = self.make_file(
             priv_fields=(b"nistp256", b"\x04" * 65, b"\x80" * 32)
         )
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
-    def test_ssh_errors_pubpriv_mismatch(self, backend):
+    def test_ssh_errors_pubpriv_mismatch(self):
         # ecdsa public-private mismatch
         data = self.make_file(
             pub_fields=(
@@ -518,7 +512,7 @@ class TestOpenSSHSerialization:
             )
         )
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
         # rsa public-private mismatch
         data = self.make_file(
@@ -527,7 +521,7 @@ class TestOpenSSHSerialization:
             priv_fields=(b"z" * 32,) * 6,
         )
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
         # dsa public-private mismatch
         data = self.make_file(
@@ -536,7 +530,7 @@ class TestOpenSSHSerialization:
             priv_fields=(b"z" * 32,) * 5,
         )
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
         # ed25519 public-private mismatch
         sk = b"x" * 32
@@ -551,7 +545,7 @@ class TestOpenSSHSerialization:
             ),
         )
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
         data = self.make_file(
             pub_type=b"ssh-ed25519",
             pub_fields=(pk1,),
@@ -561,53 +555,53 @@ class TestOpenSSHSerialization:
             ),
         )
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
-    def test_ssh_errors_bad_wrapper(self, backend):
+    def test_ssh_errors_bad_wrapper(self):
         # wrong header
         data = self.make_file(header=b"-----BEGIN RSA PRIVATE KEY-----\n")
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
         # wring footer
         data = self.make_file(footer=b"-----END RSA PRIVATE KEY-----\n")
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
-    def test_ssh_no_padding(self, backend):
+    def test_ssh_no_padding(self):
         # no padding must work, if data is on block boundary
         data = self.make_file(pad=b"", comment=b"")
-        key = load_ssh_private_key(data, None, backend)
+        key = load_ssh_private_key(data, None)
         assert isinstance(key, ec.EllipticCurvePrivateKey)
 
         # no padding with right last byte
         data = self.make_file(pad=b"", comment=b"\x08" * 8)
-        key = load_ssh_private_key(data, None, backend)
+        key = load_ssh_private_key(data, None)
         assert isinstance(key, ec.EllipticCurvePrivateKey)
 
         # avoid unexpected padding removal
         data = self.make_file(pad=b"", comment=b"1234\x01\x02\x03\x04")
-        key = load_ssh_private_key(data, None, backend)
+        key = load_ssh_private_key(data, None)
         assert isinstance(key, ec.EllipticCurvePrivateKey)
 
         # bad padding with right size
         data = self.make_file(pad=b"\x08" * 8, comment=b"")
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
-    def test_ssh_errors_bad_secrets(self, backend):
+    def test_ssh_errors_bad_secrets(self):
         # checkval mismatch
         data = self.make_file(checkval2=b"4321")
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
         # bad padding, correct=1
         data = self.make_file(pad=b"\x01\x02")
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
         data = self.make_file(pad=b"")
         with pytest.raises(ValueError):
-            load_ssh_private_key(data, None, backend)
+            load_ssh_private_key(data, None)
 
     def test_ssh_errors_unencrypted_with_password(self):
         data = load_vectors_from_file(
@@ -624,18 +618,18 @@ class TestOpenSSHSerialization:
         ),
         skip_message="Requires backend support for ec.SECP192R1",
     )
-    def test_serialize_ssh_private_key_errors_bad_curve(self, backend):
-        private_key = ec.generate_private_key(ec.SECP192R1(), backend)
+    def test_serialize_ssh_private_key_errors_bad_curve(self):
+        private_key = ec.generate_private_key(ec.SECP192R1())
         with pytest.raises(ValueError):
             private_key.private_bytes(
                 Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption()
             )
 
     def test_serialize_ssh_private_key_errors(
-        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey
     ):
         # bad encoding
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        private_key = ec.generate_private_key(ec.SECP256R1())
         with pytest.raises(ValueError):
             private_key.private_bytes(
                 Encoding.DER, PrivateFormat.OpenSSH, NoEncryption()
@@ -649,7 +643,7 @@ class TestOpenSSHSerialization:
                 NoEncryption(),
             )
 
-        private_key = ec.generate_private_key(ec.SECP256R1(), backend)
+        private_key = ec.generate_private_key(ec.SECP256R1())
 
         # unknown encryption class
         with pytest.raises(ValueError):
@@ -685,10 +679,10 @@ class TestOpenSSHSerialization:
         ],
     )
     def test_serialize_ssh_private_key_with_password(
-        self, password, kdf_rounds, rsa_key_2048: rsa.RSAPrivateKey, backend
+        self, password, kdf_rounds, rsa_key_2048: rsa.RSAPrivateKey
     ):
         for original_key in [
-            ec.generate_private_key(ec.SECP256R1(), backend),
+            ec.generate_private_key(ec.SECP256R1()),
             rsa_key_2048,
         ]:
             assert isinstance(
@@ -705,9 +699,7 @@ class TestOpenSSHSerialization:
             )
 
             decoded_key = load_ssh_private_key(
-                data=encoded_key_data,
-                password=password,
-                backend=backend,
+                data=encoded_key_data, password=password
             )
 
             original_public_key = original_key.public_key().public_bytes(
@@ -732,12 +724,10 @@ class TestOpenSSHSerialization:
             (["Traditional_OpenSSL_Serialization", "dsa.3072.pem"], False),
         ],
     )
-    def test_dsa_private_key_sizes(self, key_path, supported, backend):
+    def test_dsa_private_key_sizes(self, key_path, supported):
         key = load_vectors_from_file(
             os.path.join("asymmetric", *key_path),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read(), None, backend
-            ),
+            lambda pemfile: load_pem_private_key(pemfile.read(), None),
             mode="rb",
         )
         assert isinstance(key, dsa.DSAPrivateKey)
@@ -756,36 +746,36 @@ class TestOpenSSHSerialization:
 
 
 class TestRSASSHSerialization:
-    def test_load_ssh_public_key_unsupported(self, backend):
+    def test_load_ssh_public_key_unsupported(self):
         ssh_key = b"ecdsa-sha2-junk AAAAE2VjZHNhLXNoYTItbmlzdHAyNTY="
 
         with raises_unsupported_algorithm(None):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_bad_format(self, backend):
+    def test_load_ssh_public_key_bad_format(self):
         ssh_key = b"ssh-rsa not-a-real-key"
 
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_rsa_too_short(self, backend):
+    def test_load_ssh_public_key_rsa_too_short(self):
         ssh_key = b"ssh-rsa"
 
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_truncated_int(self, backend):
+    def test_load_ssh_public_key_truncated_int(self):
         ssh_key = b"ssh-rsa AAAAB3NzaC1yc2EAAAA="
 
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
         ssh_key = b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAACKr+IHXo"
 
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_rsa_comment_with_spaces(self, backend):
+    def test_load_ssh_public_key_rsa_comment_with_spaces(self):
         ssh_key = (
             b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
             b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
@@ -797,9 +787,9 @@ class TestRSASSHSerialization:
             b"2MzHvnbv testkey@localhost extra"
         )
 
-        load_ssh_public_key(ssh_key, backend)
+        load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_rsa_extra_data_after_modulo(self, backend):
+    def test_load_ssh_public_key_rsa_extra_data_after_modulo(self):
         ssh_key = (
             b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
             b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
@@ -811,9 +801,9 @@ class TestRSASSHSerialization:
         )
 
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_rsa_different_string(self, backend):
+    def test_load_ssh_public_key_rsa_different_string(self):
         ssh_key = (
             # "AAAAB3NzA" the final A is capitalized here to cause the string
             # ssh-rsa inside the base64 encoded blob to be incorrect. It should
@@ -827,9 +817,9 @@ class TestRSASSHSerialization:
             b"2MzHvnbvAQ== testkey@localhost"
         )
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_rsa(self, backend):
+    def test_load_ssh_public_key_rsa(self):
         ssh_key = (
             b"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDu/XRP1kyK6Cgt36gts9XAk"
             b"FiiuJLW6RU0j3KKVZSs1I7Z3UmU9/9aVh/rZV43WQG8jaR6kkcP4stOR0DEtll"
@@ -840,7 +830,7 @@ class TestRSASSHSerialization:
             b"2MzHvnbv testkey@localhost"
         )
 
-        key = load_ssh_public_key(ssh_key, backend)
+        key = load_ssh_public_key(ssh_key)
 
         assert key is not None
         assert isinstance(key, rsa.RSAPublicKey)
@@ -878,13 +868,13 @@ class TestRSASSHSerialization:
 
 
 class TestDSSSSHSerialization:
-    def test_load_ssh_public_key_dss_too_short(self, backend):
+    def test_load_ssh_public_key_dss_too_short(self):
         ssh_key = b"ssh-dss"
 
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_dss_comment_with_spaces(self, backend):
+    def test_load_ssh_public_key_dss_comment_with_spaces(self):
         ssh_key = (
             b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
             b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
@@ -899,9 +889,9 @@ class TestDSSSSHSerialization:
         )
 
         with pytest.warns(utils.DeprecatedIn40):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_dss_extra_data_after_modulo(self, backend):
+    def test_load_ssh_public_key_dss_extra_data_after_modulo(self):
         ssh_key = (
             b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
             b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
@@ -916,9 +906,9 @@ class TestDSSSSHSerialization:
         )
 
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_dss_different_string(self, backend):
+    def test_load_ssh_public_key_dss_different_string(self):
         ssh_key = (
             # "AAAAB3NzA" the final A is capitalized here to cause the string
             # ssh-dss inside the base64 encoded blob to be incorrect. It should
@@ -935,9 +925,9 @@ class TestDSSSSHSerialization:
             b"z53N7tPF/IhHTjBHb1Ol7IFu9p9A== testkey@localhost"
         )
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_dss(self, backend):
+    def test_load_ssh_public_key_dss(self):
         ssh_key = (
             b"ssh-dss AAAAB3NzaC1kc3MAAACBALmwUtfwdjAUjU2Dixd5DvT0NDcjjr69UD"
             b"LqSD/Xt5Al7D3GXr1WOrWGpjO0NE9qzRCvMTU7zykRH6XjuNXB6Hvv48Zfm4vm"
@@ -952,7 +942,7 @@ class TestDSSSSHSerialization:
         )
 
         with pytest.warns(utils.DeprecatedIn40):
-            key = load_ssh_public_key(ssh_key, backend)
+            key = load_ssh_public_key(ssh_key)
 
         assert key is not None
         assert isinstance(key, dsa.DSAPublicKey)
@@ -1086,25 +1076,25 @@ class TestECDSASSHSerialization:
             expected_x, expected_y, ec.SECP521R1()
         )
 
-    def test_load_ssh_public_key_ecdsa_nist_p256_trailing_data(self, backend):
+    def test_load_ssh_public_key_ecdsa_nist_p256_trailing_data(self):
         ssh_key = (
             b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
             b"NTYAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
             b"teIg1TO03/FD9hbpBFgBeix3NrCFPltB= root@cloud-server-01"
         )
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_ecdsa_nist_p256_missing_data(self, backend):
+    def test_load_ssh_public_key_ecdsa_nist_p256_missing_data(self):
         ssh_key = (
             b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
             b"NTYAAABBBGG2MfkHXp0UkxUyllDzWNBAImsvt5t7pFtTXegZK2WbGxml8zMrgWi5"
             b"teIg1TO03/FD9hbpBFgBeix3NrCF= root@cloud-server-01"
         )
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_ecdsa_nist_p256_compressed(self, backend):
+    def test_load_ssh_public_key_ecdsa_nist_p256_compressed(self):
         # If we ever implement compressed points, note that this is not a valid
         # one, it just has the compressed marker in the right place.
         ssh_key = (
@@ -1113,9 +1103,9 @@ class TestECDSASSHSerialization:
             b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
         )
         with pytest.raises(NotImplementedError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_ecdsa_nist_p256_empty_point(self, backend):
+    def test_load_ssh_public_key_ecdsa_nist_p256_empty_point(self):
         # Malformed key with empty point data should raise ValueError,
         # not IndexError.
         ssh_key = (
@@ -1123,9 +1113,9 @@ class TestECDSASSHSerialization:
             b"NTYAAAAA"
         )
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_ecdsa_nist_p256_bad_curve_name(self, backend):
+    def test_load_ssh_public_key_ecdsa_nist_p256_bad_curve_name(self):
         ssh_key = (
             # The curve name in here is changed to be "nistp255".
             b"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAy"
@@ -1133,52 +1123,52 @@ class TestECDSASSHSerialization:
             b"teIg1TO03/FD9hbpBFgBeix3NrCFPls= root@cloud-server-01"
         )
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
 
 class TestEd25519SSHSerialization:
-    def test_load_ssh_public_key(self, backend):
+    def test_load_ssh_public_key(self):
         ssh_key = (
             b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG2fgpmpYO61qeAxGd0wgRaN/E4"
             b"GR+xWvBmvxjxrB1vG user@chiron.local"
         )
-        key = load_ssh_public_key(ssh_key, backend)
+        key = load_ssh_public_key(ssh_key)
         assert isinstance(key, ed25519.Ed25519PublicKey)
         assert key.public_bytes(Encoding.Raw, PublicFormat.Raw) == (
             b"m\x9f\x82\x99\xa9`\xee\xb5\xa9\xe01\x19\xdd0\x81\x16\x8d\xfc"
             b"N\x06G\xecV\xbc\x19\xaf\xc6<k\x07[\xc6"
         )
 
-    def test_public_bytes_openssh(self, backend):
+    def test_public_bytes_openssh(self):
         ssh_key = (
             b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG2fgpmpYO61qeAxGd0wgRaN/E4"
             b"GR+xWvBmvxjxrB1vG"
         )
-        key = load_ssh_public_key(ssh_key, backend)
+        key = load_ssh_public_key(ssh_key)
         assert isinstance(key, ed25519.Ed25519PublicKey)
         assert (
             key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH) == ssh_key
         )
 
-    def test_load_ssh_public_key_not_32_bytes(self, backend):
+    def test_load_ssh_public_key_not_32_bytes(self):
         ssh_key = (
             b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI22fgpmpYO61qeAxGd0wgRaN/E4"
             b"GR+xWvBmvxjxrB1vGaGVs user@chiron.local"
         )
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
-    def test_load_ssh_public_key_trailing_data(self, backend):
+    def test_load_ssh_public_key_trailing_data(self):
         ssh_key = (
             b"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG2fgpmpYO61qeAxGd0wgRa"
             b"N/E4GR+xWvBmvxjxrB1vGdHJhaWxpbmdkYXRh user@chiron.local"
         )
         with pytest.raises(ValueError):
-            load_ssh_public_key(ssh_key, backend)
+            load_ssh_public_key(ssh_key)
 
 
 class TestSSHCertificate:
-    def test_loads_ssh_cert(self, backend):
+    def test_loads_ssh_cert(self):
         # secp256r1 public key, ed25519 signing key
         cert = load_ssh_public_identity(
             b"ecdsa-sha2-nistp256-cert-v01@openssh.com AAAAKGVjZHNhLXNoYTItbm"
@@ -1706,7 +1696,7 @@ class TestSSHCertificateBuilder:
             (b"zebra@cryptography.io", b""),
         ]
 
-    def test_sign_ed25519(self, backend):
+    def test_sign_ed25519(self):
         private_key = ed25519.Ed25519PrivateKey.generate()
         builder = (
             SSHCertificateBuilder()
@@ -1802,15 +1792,13 @@ class TestSSHCertificateBuilder:
             b"zbwL217Q93R08bJn1hDWuiTiaHGauSy2gPUI+cnkvlEocHM"
         )
 
-    def test_sign_and_byte_compare_ed25519(self, monkeypatch, backend):
+    def test_sign_and_byte_compare_ed25519(self, monkeypatch):
         # Monkey patch urandom to return a known value so we
         # get a deterministic signature with Ed25519.
         monkeypatch.setattr(os, "urandom", lambda _: b"\x00" * 32)
         private_key = load_vectors_from_file(
             os.path.join("asymmetric", "Ed25519", "ed25519-pkcs8.pem"),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read(), None, backend
-            ),
+            lambda pemfile: load_pem_private_key(pemfile.read(), None),
             mode="rb",
         )
         assert isinstance(private_key, ed25519.Ed25519PrivateKey)
