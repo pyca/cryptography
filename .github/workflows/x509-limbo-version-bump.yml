@@ -24,8 +24,8 @@ jobs:
             --repo-url "https://github.com/C2SP/x509-limbo" \
             --branch "main" \
             --file-path ".github/actions/fetch-vectors/action.yml" \
-            --current-version-pattern 'ref: "([a-f0-9]{40})" # x509-limbo-ref' \
-            --update-pattern 'ref: "{new_version}" # x509-limbo-ref' \
+            --current-version-pattern 'X509_LIMBO_REF: "([a-f0-9]{40})" # x509-limbo-ref' \
+            --update-pattern 'X509_LIMBO_REF: "{new_version}" # x509-limbo-ref' \
             --comment-pattern 'Latest commit on the x509-limbo main branch.*?\.'
       - id: bump-wycheproof
         run: |
@@ -34,8 +34,8 @@ jobs:
             --repo-url "https://github.com/C2SP/wycheproof" \
             --branch "main" \
             --file-path ".github/actions/fetch-vectors/action.yml" \
-            --current-version-pattern 'ref: "([a-f0-9]{40})" # wycheproof-ref' \
-            --update-pattern 'ref: "{new_version}" # wycheproof-ref' \
+            --current-version-pattern 'WYCHEPROOF_REF: "([a-f0-9]{40})" # wycheproof-ref' \
+            --update-pattern 'WYCHEPROOF_REF: "{new_version}" # wycheproof-ref' \
             --comment-pattern 'Latest commit on the wycheproof main branch.*?\.'
       - name: Check for updates
         run: git status
