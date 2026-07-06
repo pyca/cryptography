@@ -1,22 +1,34 @@
-name: Clone test vectors
-description: Clones the wycheproof and x509-limbo repositories
+name: Fetch test vectors
+description: Fetches the wycheproof and x509-limbo repositories
 
 runs:
   using: "composite"
 
   steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      with:
-        repository: "C2SP/wycheproof"
-        path: "wycheproof"
+    # Codeload snapshots skip the git protocol entirely: no ref
+    # negotiation, no server-side pack generation, no client-side object
+    # hashing, and no .git directory to write. The two downloads run in
+    # parallel.
+    - name: Download test vectors
+      shell: bash
+      run: |
+        download() {
+          curl --fail --silent --show-error \
+            --retry 4 --retry-all-errors --retry-delay 2 \
+            --output "$2.tar.gz" \
+            "https://codeload.github.com/$1/tar.gz/$3"
+          mkdir "$2"
+          tar -xzf "$2.tar.gz" --strip-components=1 -C "$2"
+          rm "$2.tar.gz"
+        }
+        download C2SP/wycheproof wycheproof "$WYCHEPROOF_REF" &
+        wycheproof_pid=$!
+        download C2SP/x509-limbo x509-limbo "$X509_LIMBO_REF" &
+        x509_limbo_pid=$!
+        wait "$wycheproof_pid"
+        wait "$x509_limbo_pid"
+      env:
         # Latest commit on the wycheproof main branch, as of Jul 03, 2026.
-        ref: "d0db6205a1570feb1e5918a735f7e57f6ad7b3f6" # wycheproof-ref
-        persist-credentials: false
-
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      with:
-        repository: "C2SP/x509-limbo"
-        path: "x509-limbo"
+        WYCHEPROOF_REF: "d0db6205a1570feb1e5918a735f7e57f6ad7b3f6" # wycheproof-ref
         # Latest commit on the x509-limbo main branch, as of Jun 30, 2026.
-        ref: "8a2e6f41023b1716dc16fe63335e4bb972e4c3f6" # x509-limbo-ref
-        persist-credentials: false
+        X509_LIMBO_REF: "8a2e6f41023b1716dc16fe63335e4bb972e4c3f6" # x509-limbo-ref
