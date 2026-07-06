@@ -36,10 +36,6 @@ from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 __all__ = ["rsa_key_2048"]
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.pkcs7_supported(),
-    skip_message="Requires OpenSSL with PKCS7 support",
-)
 class TestPKCS7Loading:
     def test_load_invalid_der_pkcs7(self, backend):
         with pytest.raises(ValueError):
@@ -1439,10 +1435,6 @@ class TestPKCS7Decrypt:
             )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.pkcs7_supported(),
-    skip_message="Requires OpenSSL with PKCS7 support",
-)
 class TestPKCS7SerializeCerts:
     @pytest.mark.parametrize(
         ("encoding", "loader"),
