@@ -35,8 +35,8 @@ class TestFernet:
         ("secret", "now", "iv", "src", "token"),
         "generate.json",
     )
-    def test_generate(self, secret, now, iv, src, token, backend):
-        f = Fernet(secret.encode("ascii"), backend=backend)
+    def test_generate(self, secret, now, iv, src, token):
+        f = Fernet(secret.encode("ascii"))
         actual_token = f._encrypt_from_parts(
             src.encode("ascii"),
             int(datetime.datetime.fromisoformat(now).timestamp()),
@@ -48,11 +48,9 @@ class TestFernet:
         ("secret", "now", "src", "ttl_sec", "token"),
         "verify.json",
     )
-    def test_verify(
-        self, secret, now, src, ttl_sec, token, backend, monkeypatch
-    ):
+    def test_verify(self, secret, now, src, ttl_sec, token, monkeypatch):
         # secret & token are both str
-        f = Fernet(secret.encode("ascii"), backend=backend)
+        f = Fernet(secret.encode("ascii"))
         current_time = int(datetime.datetime.fromisoformat(now).timestamp())
         payload = f.decrypt_at_time(
             token,  # str
@@ -77,8 +75,8 @@ class TestFernet:
         assert payload == src.encode("ascii")
 
     @json_parametrize(("secret", "token", "now", "ttl_sec"), "invalid.json")
-    def test_invalid(self, secret, token, now, ttl_sec, backend, monkeypatch):
-        f = Fernet(secret.encode("ascii"), backend=backend)
+    def test_invalid(self, secret, token, now, ttl_sec, monkeypatch):
+        f = Fernet(secret.encode("ascii"))
         current_time = int(datetime.datetime.fromisoformat(now).timestamp())
         with pytest.raises(InvalidToken):
             f.decrypt_at_time(
@@ -90,39 +88,39 @@ class TestFernet:
         with pytest.raises(InvalidToken):
             f.decrypt(token.encode("ascii"), ttl=ttl_sec)
 
-    def test_invalid_start_byte(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+    def test_invalid_start_byte(self):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x81"))
 
-    def test_timestamp_too_short(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+    def test_timestamp_too_short(self):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         with pytest.raises(InvalidToken):
             f.decrypt(base64.urlsafe_b64encode(b"\x80abc"))
 
-    def test_non_base64_token(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+    def test_non_base64_token(self):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         with pytest.raises(InvalidToken):
             f.decrypt(b"\x00")
         with pytest.raises(InvalidToken):
             f.decrypt("nonsensetoken")
 
-    def test_invalid_types(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+    def test_invalid_types(self):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         with pytest.raises(TypeError):
             f.encrypt(typing.cast(typing.Any, ""))
         with pytest.raises(TypeError):
             f.decrypt(typing.cast(typing.Any, 12345))
 
-    def test_timestamp_ignored_no_ttl(self, monkeypatch, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+    def test_timestamp_ignored_no_ttl(self, monkeypatch):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         pt = b"encrypt me"
         token = f.encrypt(pt)
         monkeypatch.setattr(time, "time", pretend.raiser(ValueError))
         assert f.decrypt(token, ttl=None) == pt
 
-    def test_ttl_required_in_decrypt_at_time(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+    def test_ttl_required_in_decrypt_at_time(self):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         pt = b"encrypt me"
         token = f.encrypt(pt)
         with pytest.raises(ValueError):
@@ -133,17 +131,17 @@ class TestFernet:
             )
 
     @pytest.mark.parametrize("message", [b"", b"Abc!", b"\x00\xff\x00\x80"])
-    def test_roundtrips(self, message, backend):
-        f = Fernet(Fernet.generate_key(), backend=backend)
+    def test_roundtrips(self, message):
+        f = Fernet(Fernet.generate_key())
         assert f.decrypt(f.encrypt(message)) == message
 
     @pytest.mark.parametrize("key", [base64.urlsafe_b64encode(b"abc"), b"abc"])
-    def test_bad_key(self, backend, key):
+    def test_bad_key(self, key):
         with pytest.raises(ValueError):
-            Fernet(key, backend=backend)
+            Fernet(key)
 
-    def test_extract_timestamp(self, backend):
-        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+    def test_extract_timestamp(self):
+        f = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         current_time = 1526138327
         token = f.encrypt_at_time(b"encrypt me", current_time)
         assert f.extract_timestamp(token) == current_time
@@ -153,16 +151,16 @@ class TestFernet:
 
 
 class TestMultiFernet:
-    def test_encrypt(self, backend):
-        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
-        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+    def test_encrypt(self):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32))
         f = MultiFernet([f1, f2])
 
         assert f1.decrypt(f.encrypt(b"abc")) == b"abc"
 
-    def test_decrypt(self, backend):
-        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
-        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+    def test_decrypt(self):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32))
         f = MultiFernet([f1, f2])
 
         # token as bytes
@@ -176,8 +174,8 @@ class TestMultiFernet:
         with pytest.raises(InvalidToken):
             f.decrypt(b"\x00" * 16)
 
-    def test_decrypt_at_time(self, backend):
-        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+    def test_decrypt_at_time(self):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         f = MultiFernet([f1])
         pt = b"encrypt me"
         token = f.encrypt_at_time(pt, current_time=100)
@@ -191,17 +189,17 @@ class TestMultiFernet:
                 current_time=100,
             )
 
-    def test_no_fernets(self, backend):
+    def test_no_fernets(self):
         with pytest.raises(ValueError):
             MultiFernet([])
 
-    def test_non_iterable_argument(self, backend):
+    def test_non_iterable_argument(self):
         with pytest.raises(TypeError):
             MultiFernet(typing.cast(typing.Any, None))
 
-    def test_rotate_bytes(self, backend):
-        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
-        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+    def test_rotate_bytes(self):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32))
 
         mf1 = MultiFernet([f1])
         mf2 = MultiFernet([f2, f1])
@@ -219,9 +217,9 @@ class TestMultiFernet:
         with pytest.raises(InvalidToken):
             mf1.decrypt(rotated)
 
-    def test_rotate_str(self, backend):
-        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
-        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+    def test_rotate_str(self):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32))
 
         mf1 = MultiFernet([f1])
         mf2 = MultiFernet([f2, f1])
@@ -238,9 +236,9 @@ class TestMultiFernet:
         with pytest.raises(InvalidToken):
             mf1.decrypt(rotated)
 
-    def test_rotate_preserves_timestamp(self, backend):
-        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
-        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+    def test_rotate_preserves_timestamp(self):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32))
 
         mf1 = MultiFernet([f1])
         mf2 = MultiFernet([f2, f1])
@@ -256,9 +254,9 @@ class TestMultiFernet:
         assert int(time.time()) != rotated_time
         assert original_time == rotated_time
 
-    def test_rotate_decrypt_no_shared_keys(self, backend):
-        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
-        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+    def test_rotate_decrypt_no_shared_keys(self):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32))
 
         mf1 = MultiFernet([f1])
         mf2 = MultiFernet([f2])
@@ -266,23 +264,23 @@ class TestMultiFernet:
         with pytest.raises(InvalidToken):
             mf2.rotate(mf1.encrypt(b"abc"))
 
-    def test_extract_timestamp_first_fernet_valid_token(self, backend):
-        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+    def test_extract_timestamp_first_fernet_valid_token(self):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         mf1 = MultiFernet([f1])
         current_time = 1526138327
         token = mf1.encrypt_at_time(b"encrypt me", current_time)
         assert mf1.extract_timestamp(token) == current_time
 
-    def test_extract_timestamp_second_fernet_valid_token(self, backend):
-        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
-        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32), backend=backend)
+    def test_extract_timestamp_second_fernet_valid_token(self):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32))
         mf1 = MultiFernet([f1, f2])
         current_time = 1526138327
         token = f2.encrypt_at_time(b"encrypt me", current_time)
         assert mf1.extract_timestamp(token) == current_time
 
-    def test_extract_timestamp_invalid_token(self, backend):
-        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32), backend=backend)
+    def test_extract_timestamp_invalid_token(self):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         mf1 = MultiFernet([f1])
         with pytest.raises(InvalidToken):
             mf1.extract_timestamp(b"nonsensetoken")
