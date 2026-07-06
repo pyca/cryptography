@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from ...utils import load_nist_vectors, load_vectors_from_file
 
 
-def test_pbkdf2_hmacsha1_vectors(subtests, backend):
+def test_pbkdf2_hmacsha1_vectors(subtests):
     params = load_vectors_from_file(
         os.path.join("KDF", "rfc-6070-PBKDF2-SHA1.txt"),
         load_nist_vectors,
