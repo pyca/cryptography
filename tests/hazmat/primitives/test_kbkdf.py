@@ -28,7 +28,7 @@ from ...utils import raises_unsupported_algorithm
 
 
 class TestKBKDFHMAC:
-    def test_invalid_key(self, backend):
+    def test_invalid_key(self):
         kdf = KBKDFHMAC(
             hashes.SHA256(),
             Mode.CounterMode,
@@ -39,7 +39,6 @@ class TestKBKDFHMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
 
         key = kdf.derive(b"material")
@@ -54,13 +53,12 @@ class TestKBKDFHMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
 
         with pytest.raises(InvalidKey):
             kdf.verify(b"material2", key)
 
-    def test_already_finalized(self, backend):
+    def test_already_finalized(self):
         kdf = KBKDFHMAC(
             hashes.SHA256(),
             Mode.CounterMode,
@@ -71,7 +69,6 @@ class TestKBKDFHMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
 
         kdf.derive(b"material")
@@ -89,7 +86,6 @@ class TestKBKDFHMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
 
         key = kdf.derive(b"material")
@@ -107,14 +103,13 @@ class TestKBKDFHMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
         kdf.verify(b"material", key)
 
         with pytest.raises(AlreadyFinalized):
             kdf.verify(b"material", key)
 
-    def test_derive_into(self, backend):
+    def test_derive_into(self):
         kdf = KBKDFHMAC(
             hashes.SHA256(),
             Mode.CounterMode,
@@ -125,7 +120,6 @@ class TestKBKDFHMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
         buf = bytearray(32)
         n = kdf.derive_into(b"material", buf)
@@ -141,13 +135,12 @@ class TestKBKDFHMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
         expected = kdf2.derive(b"material")
         assert buf == expected
 
     @pytest.mark.parametrize(("buflen", "outlen"), [(31, 32), (33, 32)])
-    def test_derive_into_buffer_incorrect_size(self, buflen, outlen, backend):
+    def test_derive_into_buffer_incorrect_size(self, buflen, outlen):
         kdf = KBKDFHMAC(
             hashes.SHA256(),
             Mode.CounterMode,
@@ -158,13 +151,12 @@ class TestKBKDFHMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
         buf = bytearray(buflen)
         with pytest.raises(ValueError, match="buffer must be"):
             kdf.derive_into(b"material", buf)
 
-    def test_derive_into_already_finalized(self, backend):
+    def test_derive_into_already_finalized(self):
         kdf = KBKDFHMAC(
             hashes.SHA256(),
             Mode.CounterMode,
@@ -175,14 +167,13 @@ class TestKBKDFHMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
         buf = bytearray(32)
         kdf.derive_into(b"material", buf)
         with pytest.raises(AlreadyFinalized):
             kdf.derive_into(b"material2", buf)
 
-    def test_key_length(self, backend):
+    def test_key_length(self):
         error = OverflowError if sys.maxsize <= 2**31 else ValueError
         with pytest.raises(error):
             KBKDFHMAC(
@@ -195,10 +186,9 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_rlen(self, backend):
+    def test_rlen(self):
         with pytest.raises(ValueError):
             KBKDFHMAC(
                 hashes.SHA256(),
@@ -210,10 +200,9 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_r_type(self, backend):
+    def test_r_type(self):
         with pytest.raises(TypeError):
             KBKDFHMAC(
                 hashes.SHA1(),
@@ -225,10 +214,9 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_zero_llen(self, backend):
+    def test_zero_llen(self):
         with pytest.raises(ValueError):
             KBKDFHMAC(
                 hashes.SHA256(),
@@ -240,10 +228,9 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_l_type(self, backend):
+    def test_l_type(self):
         with pytest.raises(TypeError):
             KBKDFHMAC(
                 hashes.SHA1(),
@@ -255,10 +242,9 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_l(self, backend):
+    def test_l(self):
         with pytest.raises(ValueError):
             KBKDFHMAC(
                 hashes.SHA1(),
@@ -270,10 +256,9 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_unsupported_mode(self, backend):
+    def test_unsupported_mode(self):
         with pytest.raises(TypeError):
             KBKDFHMAC(
                 hashes.SHA256(),
@@ -285,10 +270,9 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_unsupported_location(self, backend):
+    def test_unsupported_location(self):
         with pytest.raises(TypeError):
             KBKDFHMAC(
                 hashes.SHA256(),
@@ -300,10 +284,9 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_unsupported_parameters(self, backend):
+    def test_unsupported_parameters(self):
         with pytest.raises(ValueError):
             KBKDFHMAC(
                 hashes.SHA256(),
@@ -315,10 +298,9 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 b"fixed",
-                backend=backend,
             )
 
-    def test_missing_break_location(self, backend):
+    def test_missing_break_location(self):
         with pytest.raises(
             ValueError, match=re.escape("Please specify a break_location")
         ):
@@ -332,7 +314,6 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
         with pytest.raises(
@@ -348,7 +329,6 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
                 break_location=None,
             )
 
@@ -370,7 +350,7 @@ class TestKBKDFHMAC:
                 0,  # type: ignore[misc]
             )
 
-    def test_invalid_break_location(self, backend):
+    def test_invalid_break_location(self):
         with pytest.raises(OverflowError):
             KBKDFHMAC(
                 hashes.SHA256(),
@@ -382,7 +362,6 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
                 break_location=-1,
             )
 
@@ -399,12 +378,11 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
                 break_location=18,
             )
             kdf.derive(b"input key")
 
-    def test_ignored_break_location_before(self, backend):
+    def test_ignored_break_location_before(self):
         with pytest.raises(
             ValueError,
             match=re.escape(
@@ -422,11 +400,10 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
                 break_location=0,
             )
 
-    def test_ignored_break_location_after(self, backend):
+    def test_ignored_break_location_after(self):
         with pytest.raises(
             ValueError,
             match=re.escape(
@@ -444,11 +421,10 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
                 break_location=0,
             )
 
-    def test_unsupported_hash(self, backend):
+    def test_unsupported_hash(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             KBKDFHMAC(
                 DummyHashAlgorithm(),
@@ -460,10 +436,9 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_unsupported_algorithm(self, backend):
+    def test_unsupported_algorithm(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
             KBKDFHMAC(
                 DummyHashAlgorithm(),
@@ -475,10 +450,9 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_unicode_error_label(self, backend):
+    def test_unicode_error_label(self):
         with pytest.raises(TypeError):
             KBKDFHMAC(
                 hashes.SHA256(),
@@ -490,10 +464,9 @@ class TestKBKDFHMAC:
                 typing.cast(typing.Any, "label"),
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_unicode_error_context(self, backend):
+    def test_unicode_error_context(self):
         with pytest.raises(TypeError):
             KBKDFHMAC(
                 hashes.SHA256(),
@@ -505,10 +478,9 @@ class TestKBKDFHMAC:
                 b"label",
                 typing.cast(typing.Any, "context"),
                 None,
-                backend=backend,
             )
 
-    def test_unicode_error_key_material(self, backend):
+    def test_unicode_error_key_material(self):
         with pytest.raises(TypeError):
             kdf = KBKDFHMAC(
                 hashes.SHA256(),
@@ -520,11 +492,10 @@ class TestKBKDFHMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
             kdf.derive(typing.cast(typing.Any, "material"))
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         kdf = KBKDFHMAC(
             hashes.SHA256(),
             Mode.CounterMode,
@@ -535,7 +506,6 @@ class TestKBKDFHMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
 
         key = kdf.derive(bytearray(b"material"))
@@ -546,7 +516,7 @@ class TestKBKDFCMAC:
     _KEY_MATERIAL = bytes(32)
     _KEY_MATERIAL2 = _KEY_MATERIAL.replace(b"\x00", b"\x01", 1)
 
-    def test_invalid_key(self, backend):
+    def test_invalid_key(self):
         kdf = KBKDFCMAC(
             algorithms.AES,
             Mode.CounterMode,
@@ -557,7 +527,6 @@ class TestKBKDFCMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
 
         key = kdf.derive(self._KEY_MATERIAL)
@@ -572,13 +541,12 @@ class TestKBKDFCMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
 
         with pytest.raises(InvalidKey):
             kdf.verify(self._KEY_MATERIAL2, key)
 
-    def test_already_finalized(self, backend):
+    def test_already_finalized(self):
         kdf = KBKDFCMAC(
             algorithms.AES,
             Mode.CounterMode,
@@ -589,7 +557,6 @@ class TestKBKDFCMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
 
         kdf.derive(self._KEY_MATERIAL)
@@ -607,7 +574,6 @@ class TestKBKDFCMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
 
         key = kdf.derive(self._KEY_MATERIAL)
@@ -625,14 +591,13 @@ class TestKBKDFCMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
         kdf.verify(self._KEY_MATERIAL, key)
 
         with pytest.raises(AlreadyFinalized):
             kdf.verify(self._KEY_MATERIAL, key)
 
-    def test_key_length(self, backend):
+    def test_key_length(self):
         error = OverflowError if sys.maxsize <= 2**31 else ValueError
         with pytest.raises(error):
             KBKDFCMAC(
@@ -645,10 +610,9 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_rlen(self, backend):
+    def test_rlen(self):
         with pytest.raises(ValueError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -660,10 +624,9 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_r_type(self, backend):
+    def test_r_type(self):
         with pytest.raises(TypeError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -675,10 +638,9 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_zero_llen(self, backend):
+    def test_zero_llen(self):
         with pytest.raises(ValueError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -690,10 +652,9 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_l_type(self, backend):
+    def test_l_type(self):
         with pytest.raises(TypeError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -705,10 +666,9 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_l(self, backend):
+    def test_l(self):
         with pytest.raises(ValueError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -720,10 +680,9 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_unsupported_mode(self, backend):
+    def test_unsupported_mode(self):
         with pytest.raises(TypeError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -735,10 +694,9 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_unsupported_location(self, backend):
+    def test_unsupported_location(self):
         with pytest.raises(TypeError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -750,10 +708,9 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_unsupported_parameters(self, backend):
+    def test_unsupported_parameters(self):
         with pytest.raises(ValueError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -765,10 +722,9 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 b"fixed",
-                backend=backend,
             )
 
-    def test_missing_break_location(self, backend):
+    def test_missing_break_location(self):
         with pytest.raises(
             ValueError, match=re.escape("Please specify a break_location")
         ):
@@ -782,7 +738,6 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
         with pytest.raises(
@@ -798,7 +753,6 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
                 break_location=None,
             )
 
@@ -820,7 +774,7 @@ class TestKBKDFCMAC:
                 0,  # type: ignore[misc]
             )
 
-    def test_invalid_break_location(self, backend):
+    def test_invalid_break_location(self):
         with pytest.raises(OverflowError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -832,7 +786,6 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
                 break_location=-1,
             )
 
@@ -849,12 +802,11 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
                 break_location=18,
             )
             kdf.derive(b"32 bytes long input key material")
 
-    def test_ignored_break_location_before(self, backend):
+    def test_ignored_break_location_before(self):
         with pytest.raises(
             ValueError,
             match=re.escape(
@@ -872,11 +824,10 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
                 break_location=0,
             )
 
-    def test_ignored_break_location_after(self, backend):
+    def test_ignored_break_location_after(self):
         with pytest.raises(
             ValueError,
             match=re.escape(
@@ -894,11 +845,10 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
                 break_location=0,
             )
 
-    def test_unsupported_algorithm(self, backend):
+    def test_unsupported_algorithm(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             KBKDFCMAC(
                 DummyCipherAlgorithm,
@@ -910,7 +860,6 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
@@ -924,10 +873,9 @@ class TestKBKDFCMAC:
                 b"label",
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_unicode_error_label(self, backend):
+    def test_unicode_error_label(self):
         with pytest.raises(TypeError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -939,10 +887,9 @@ class TestKBKDFCMAC:
                 typing.cast(typing.Any, "label"),
                 b"context",
                 None,
-                backend=backend,
             )
 
-    def test_unicode_error_context(self, backend):
+    def test_unicode_error_context(self):
         with pytest.raises(TypeError):
             KBKDFCMAC(
                 algorithms.AES,
@@ -954,10 +901,9 @@ class TestKBKDFCMAC:
                 b"label",
                 typing.cast(typing.Any, "context"),
                 None,
-                backend=backend,
             )
 
-    def test_unsupported_cipher(self, backend):
+    def test_unsupported_cipher(self):
         kdf = KBKDFCMAC(
             DummyBlockCipherAlgorithm,
             Mode.CounterMode,
@@ -968,12 +914,11 @@ class TestKBKDFCMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
             kdf.derive(self._KEY_MATERIAL)
 
-    def test_unicode_error_key_material(self, backend):
+    def test_unicode_error_key_material(self):
         kdf = KBKDFCMAC(
             algorithms.AES,
             Mode.CounterMode,
@@ -984,12 +929,11 @@ class TestKBKDFCMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
         with pytest.raises(TypeError):
             kdf.derive(typing.cast(typing.Any, "material"))
 
-    def test_wrong_key_material_length(self, backend):
+    def test_wrong_key_material_length(self):
         kdf = KBKDFCMAC(
             algorithms.AES,
             Mode.CounterMode,
@@ -1000,12 +944,11 @@ class TestKBKDFCMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
         with pytest.raises(ValueError):
             kdf.derive(b"material")
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         kdf = KBKDFCMAC(
             algorithms.AES,
             Mode.CounterMode,
@@ -1016,7 +959,6 @@ class TestKBKDFCMAC:
             b"label",
             b"context",
             None,
-            backend=backend,
         )
 
         key = kdf.derive(bytearray(self._KEY_MATERIAL))
