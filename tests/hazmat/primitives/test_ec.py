@@ -854,12 +854,12 @@ class TestECSerialization:
         only_if=lambda backend: backend._fips_enabled,
         skip_message="Requires FIPS",
     )
-    def test_traditional_serialization_fips(self, backend):
+    def test_traditional_serialization_fips(self):
         key_bytes = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "ec_private_key.pem"),
             lambda pemfile: pemfile.read().encode(),
         )
-        key = serialization.load_pem_private_key(key_bytes, None, backend)
+        key = serialization.load_pem_private_key(key_bytes, None)
         assert isinstance(key, ec.EllipticCurvePrivateKey)
         with pytest.raises(ValueError):
             key.private_bytes(
