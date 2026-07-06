@@ -972,7 +972,7 @@ class TestOCSPResponseBuilder:
                 ocsp.OCSPResponseStatus.SUCCESSFUL
             )
 
-    def test_sign_unknown_private_key(self, backend):
+    def test_sign_unknown_private_key(self):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         root_cert, _ = _generate_root()
@@ -1128,7 +1128,7 @@ class TestOCSPResponseBuilder:
         ),
         skip_message="Does not support BLAKE2b",
     )
-    def test_sign_unrecognized_hash_algorithm(self, backend):
+    def test_sign_unrecognized_hash_algorithm(self):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         root_cert, private_key = _generate_root()
@@ -1194,7 +1194,7 @@ class TestSignedCertificateTimestampsExtension:
             "<SignedCertificateTimestamps([])>"
         )
 
-    def test_eq(self, backend):
+    def test_eq(self):
         sct1 = (
             _load_data(
                 os.path.join("x509", "ocsp", "resp-sct-extension.der"),
@@ -1217,7 +1217,7 @@ class TestSignedCertificateTimestampsExtension:
         )
         assert sct1 == sct2
 
-    def test_ne(self, backend):
+    def test_ne(self):
         sct1 = (
             _load_data(
                 os.path.join("x509", "ocsp", "resp-sct-extension.der"),
@@ -1232,7 +1232,7 @@ class TestSignedCertificateTimestampsExtension:
         assert sct1 != sct2
         assert sct1 != object()
 
-    def test_hash(self, backend):
+    def test_hash(self):
         sct1 = (
             _load_data(
                 os.path.join("x509", "ocsp", "resp-sct-extension.der"),
@@ -1257,7 +1257,7 @@ class TestSignedCertificateTimestampsExtension:
         assert hash(sct1) == hash(sct2)
         assert hash(sct1) != hash(sct3)
 
-    def test_entry_type(self, backend):
+    def test_entry_type(self):
         [sct, _, _, _] = (
             _load_data(
                 os.path.join("x509", "ocsp", "resp-sct-extension.der"),
@@ -1583,7 +1583,7 @@ class TestOCSPResponse:
         with pytest.raises(ValueError):
             resp.public_bytes(serialization.Encoding.PEM)
 
-    def test_single_extensions_sct(self, backend):
+    def test_single_extensions_sct(self):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-sct-extension.der"),
             ocsp.load_der_ocsp_response,
@@ -1600,7 +1600,7 @@ class TestOCSPResponse:
             b"7ku9t3XOYLrhQmkfq+GeZqMPfl+wctiDAMR7iXqo/cs=",
         ]
 
-    def test_single_extensions(self, backend):
+    def test_single_extensions(self):
         resp = _load_data(
             os.path.join("x509", "ocsp", "resp-single-extension-reason.der"),
             ocsp.load_der_ocsp_response,
@@ -1639,7 +1639,7 @@ class TestOCSPResponse:
 
 
 class TestOCSPEdDSA:
-    def test_invalid_algorithm(self, backend):
+    def test_invalid_algorithm(self):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         private_key = ed25519.Ed25519PrivateKey.generate()
@@ -1667,7 +1667,7 @@ class TestOCSPEdDSA:
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256())
 
-    def test_sign_ed25519(self, backend):
+    def test_sign_ed25519(self):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         private_key = ed25519.Ed25519PrivateKey.generate()
@@ -1713,7 +1713,7 @@ class TestOCSPEdDSA:
         only_if=lambda backend: backend.ed448_supported(),
         skip_message="Requires OpenSSL with Ed448 support / OCSP",
     )
-    def test_sign_ed448(self, backend):
+    def test_sign_ed448(self):
         builder = ocsp.OCSPResponseBuilder()
         cert, issuer = _cert_and_issuer()
         private_key = ed448.Ed448PrivateKey.generate()

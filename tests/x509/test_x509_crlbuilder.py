@@ -54,7 +54,7 @@ class TestCertificateRevocationListBuilder:
                 x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
             )
 
-    def test_aware_last_update(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+    def test_aware_last_update(self, rsa_key_2048: rsa.RSAPrivateKey):
         tz = datetime.timezone(datetime.timedelta(hours=-8))
         last_time = datetime.datetime(2012, 1, 16, 22, 43, tzinfo=tz)
         utc_last = datetime.datetime(2012, 1, 17, 6, 43)
@@ -75,7 +75,7 @@ class TestCertificateRevocationListBuilder:
             .next_update(next_time)
         )
 
-        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        crl = builder.sign(private_key, hashes.SHA256())
         with pytest.warns(utils.DeprecatedIn42):
             assert crl.last_update == utc_last
         assert crl.last_update_utc == utc_last.replace(
@@ -99,7 +99,7 @@ class TestCertificateRevocationListBuilder:
         with pytest.raises(ValueError):
             builder.last_update(datetime.datetime(2002, 1, 1, 12, 1))
 
-    def test_aware_next_update(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+    def test_aware_next_update(self, rsa_key_2048: rsa.RSAPrivateKey):
         tz = datetime.timezone(datetime.timedelta(hours=-8))
         next_time = datetime.datetime(2022, 1, 16, 22, 43, tzinfo=tz)
         utc_next = datetime.datetime(2022, 1, 17, 6, 43)
@@ -120,7 +120,7 @@ class TestCertificateRevocationListBuilder:
             .next_update(next_time)
         )
 
-        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        crl = builder.sign(private_key, hashes.SHA256())
         with pytest.warns(utils.DeprecatedIn42):
             assert crl.next_update == utc_next
         assert crl.next_update_utc == utc_next.replace(
@@ -178,7 +178,7 @@ class TestCertificateRevocationListBuilder:
         with pytest.raises(TypeError):
             builder.add_revoked_certificate(typing.cast(typing.Any, object()))
 
-    def test_no_issuer_name(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+    def test_no_issuer_name(self, rsa_key_2048: rsa.RSAPrivateKey):
         private_key = rsa_key_2048
         builder = (
             x509.CertificateRevocationListBuilder()
@@ -187,9 +187,9 @@ class TestCertificateRevocationListBuilder:
         )
 
         with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.SHA256(), backend)
+            builder.sign(private_key, hashes.SHA256())
 
-    def test_no_last_update(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+    def test_no_last_update(self, rsa_key_2048: rsa.RSAPrivateKey):
         private_key = rsa_key_2048
         builder = (
             x509.CertificateRevocationListBuilder()
@@ -200,9 +200,9 @@ class TestCertificateRevocationListBuilder:
         )
 
         with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.SHA256(), backend)
+            builder.sign(private_key, hashes.SHA256())
 
-    def test_no_next_update(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+    def test_no_next_update(self, rsa_key_2048: rsa.RSAPrivateKey):
         private_key = rsa_key_2048
         builder = (
             x509.CertificateRevocationListBuilder()
@@ -213,11 +213,9 @@ class TestCertificateRevocationListBuilder:
         )
 
         with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.SHA256(), backend)
+            builder.sign(private_key, hashes.SHA256())
 
-    def test_sign_invalid_padding(
-        self, rsa_key_2048: rsa.RSAPrivateKey, backend
-    ):
+    def test_sign_invalid_padding(self, rsa_key_2048: rsa.RSAPrivateKey):
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
         builder = (
@@ -247,7 +245,7 @@ class TestCertificateRevocationListBuilder:
                 eckey, hashes.SHA256(), rsa_padding=padding.PKCS1v15()
             )
 
-    def test_sign_empty_list(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+    def test_sign_empty_list(self, rsa_key_2048: rsa.RSAPrivateKey):
         private_key = rsa_key_2048
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -266,7 +264,7 @@ class TestCertificateRevocationListBuilder:
             .next_update(next_update)
         )
 
-        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        crl = builder.sign(private_key, hashes.SHA256())
         assert len(crl) == 0
         with pytest.warns(utils.DeprecatedIn42):
             assert crl.last_update == last_update
@@ -278,7 +276,7 @@ class TestCertificateRevocationListBuilder:
             tzinfo=datetime.timezone.utc
         )
 
-    def test_sign_pss(self, rsa_key_2048: rsa.RSAPrivateKey, backend):
+    def test_sign_pss(self, rsa_key_2048: rsa.RSAPrivateKey):
         private_key = rsa_key_2048
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -337,9 +335,7 @@ class TestCertificateRevocationListBuilder:
             ),
         ],
     )
-    def test_sign_extensions(
-        self, rsa_key_2048: rsa.RSAPrivateKey, backend, extension
-    ):
+    def test_sign_extensions(self, rsa_key_2048: rsa.RSAPrivateKey, extension):
         private_key = rsa_key_2048
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -359,7 +355,7 @@ class TestCertificateRevocationListBuilder:
             .add_extension(extension, False)
         )
 
-        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        crl = builder.sign(private_key, hashes.SHA256())
         assert len(crl) == 0
         assert len(crl.extensions) == 1
         ext = crl.extensions.get_extension_for_class(type(extension))
@@ -367,7 +363,7 @@ class TestCertificateRevocationListBuilder:
         assert ext.value == extension
 
     def test_sign_multiple_extensions_critical(
-        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey
     ):
         private_key = rsa_key_2048
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
@@ -393,7 +389,7 @@ class TestCertificateRevocationListBuilder:
             .add_extension(ian, True)
         )
 
-        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        crl = builder.sign(private_key, hashes.SHA256())
         assert len(crl) == 0
         assert len(crl.extensions) == 2
         ext1 = crl.extensions.get_extension_for_class(x509.CRLNumber)
@@ -405,9 +401,7 @@ class TestCertificateRevocationListBuilder:
         assert ext2.critical is True
         assert ext2.value == ian
 
-    def test_freshestcrl_extension(
-        self, rsa_key_2048: rsa.RSAPrivateKey, backend
-    ):
+    def test_freshestcrl_extension(self, rsa_key_2048: rsa.RSAPrivateKey):
         private_key = rsa_key_2048
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -437,7 +431,7 @@ class TestCertificateRevocationListBuilder:
             .add_extension(freshest, False)
         )
 
-        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        crl = builder.sign(private_key, hashes.SHA256())
         assert len(crl) == 0
         assert len(crl.extensions) == 1
         ext1 = crl.extensions.get_extension_for_class(x509.FreshestCRL)
@@ -449,9 +443,7 @@ class TestCertificateRevocationListBuilder:
         assert isinstance(uri, x509.UniformResourceIdentifier)
         assert uri.value == "http://d.om/delta"
 
-    def test_add_unsupported_extension(
-        self, rsa_key_2048: rsa.RSAPrivateKey, backend
-    ):
+    def test_add_unsupported_extension(self, rsa_key_2048: rsa.RSAPrivateKey):
         private_key = rsa_key_2048
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -471,10 +463,10 @@ class TestCertificateRevocationListBuilder:
             .add_extension(DummyExtension(), False)
         )
         with pytest.raises(NotImplementedError):
-            builder.sign(private_key, hashes.SHA256(), backend)
+            builder.sign(private_key, hashes.SHA256())
 
     def test_add_unsupported_entry_extension(
-        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey
     ):
         builder = (
             x509.RevokedCertificateBuilder()
@@ -489,9 +481,7 @@ class TestCertificateRevocationListBuilder:
         with pytest.raises(NotImplementedError):
             builder.build()
 
-    def test_sign_rsa_key_too_small(
-        self, rsa_key_512: rsa.RSAPrivateKey, backend
-    ):
+    def test_sign_rsa_key_too_small(self, rsa_key_512: rsa.RSAPrivateKey):
         private_key = rsa_key_512
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -511,11 +501,9 @@ class TestCertificateRevocationListBuilder:
         )
 
         with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.SHA512(), backend)
+            builder.sign(private_key, hashes.SHA512())
 
-    def test_sign_with_invalid_hash(
-        self, rsa_key_2048: rsa.RSAPrivateKey, backend
-    ):
+    def test_sign_with_invalid_hash(self, rsa_key_2048: rsa.RSAPrivateKey):
         private_key = rsa_key_2048
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -535,13 +523,9 @@ class TestCertificateRevocationListBuilder:
         )
 
         with pytest.raises(TypeError):
-            builder.sign(
-                private_key,
-                typing.cast(typing.Any, object()),
-                backend,
-            )
+            builder.sign(private_key, typing.cast(typing.Any, object()))
 
-    def test_sign_with_invalid_hash_ed25519(self, backend):
+    def test_sign_with_invalid_hash_ed25519(self):
         private_key = ed25519.Ed25519PrivateKey.generate()
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -561,19 +545,15 @@ class TestCertificateRevocationListBuilder:
         )
 
         with pytest.raises(TypeError):
-            builder.sign(
-                private_key,
-                typing.cast(typing.Any, object()),
-                backend,
-            )
+            builder.sign(private_key, typing.cast(typing.Any, object()))
         with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.SHA256(), backend)
+            builder.sign(private_key, hashes.SHA256())
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.ed448_supported(),
         skip_message="Requires OpenSSL with Ed448 support",
     )
-    def test_sign_with_invalid_hash_ed448(self, backend):
+    def test_sign_with_invalid_hash_ed448(self):
         private_key = ed448.Ed448PrivateKey.generate()
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -593,20 +573,16 @@ class TestCertificateRevocationListBuilder:
         )
 
         with pytest.raises(TypeError):
-            builder.sign(
-                private_key,
-                typing.cast(typing.Any, object()),
-                backend,
-            )
+            builder.sign(private_key, typing.cast(typing.Any, object()))
         with pytest.raises(ValueError):
-            builder.sign(private_key, hashes.SHA256(), backend)
+            builder.sign(private_key, hashes.SHA256())
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.dsa_supported(),
         skip_message="Requires OpenSSL with DSA support",
     )
-    def test_sign_dsa_key(self, backend):
-        private_key = DSA_KEY_2048.private_key(backend)
+    def test_sign_dsa_key(self):
+        private_key = DSA_KEY_2048.private_key()
         invalidity_date = x509.InvalidityDate(
             datetime.datetime(2002, 1, 1, 0, 0)
         )
@@ -618,7 +594,7 @@ class TestCertificateRevocationListBuilder:
             .serial_number(2)
             .revocation_date(datetime.datetime(2012, 1, 1, 1, 1))
             .add_extension(invalidity_date, False)
-            .build(backend)
+            .build()
         )
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -639,7 +615,7 @@ class TestCertificateRevocationListBuilder:
             .add_extension(ian, False)
         )
 
-        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        crl = builder.sign(private_key, hashes.SHA256())
         assert (
             crl.extensions.get_extension_for_class(
                 x509.IssuerAlternativeName
@@ -706,7 +682,7 @@ class TestCertificateRevocationListBuilder:
         assert ext.critical is False
         assert ext.value == invalidity_date
 
-    def test_sign_ed25519_key(self, backend):
+    def test_sign_ed25519_key(self):
         private_key = ed25519.Ed25519PrivateKey.generate()
         invalidity_date = x509.InvalidityDate(
             datetime.datetime(2002, 1, 1, 0, 0)
@@ -719,7 +695,7 @@ class TestCertificateRevocationListBuilder:
             .serial_number(2)
             .revocation_date(datetime.datetime(2012, 1, 1, 1, 1))
             .add_extension(invalidity_date, False)
-            .build(backend)
+            .build()
         )
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -740,7 +716,7 @@ class TestCertificateRevocationListBuilder:
             .add_extension(ian, False)
         )
 
-        crl = builder.sign(private_key, None, backend)
+        crl = builder.sign(private_key, None)
         assert crl.signature_hash_algorithm is None
         assert crl.signature_algorithm_oid == SignatureAlgorithmOID.ED25519
         assert (
@@ -762,7 +738,7 @@ class TestCertificateRevocationListBuilder:
         only_if=lambda backend: backend.ed448_supported(),
         skip_message="Requires OpenSSL with Ed448 support",
     )
-    def test_sign_ed448_key(self, backend):
+    def test_sign_ed448_key(self):
         private_key = ed448.Ed448PrivateKey.generate()
         invalidity_date = x509.InvalidityDate(
             datetime.datetime(2002, 1, 1, 0, 0)
@@ -775,7 +751,7 @@ class TestCertificateRevocationListBuilder:
             .serial_number(2)
             .revocation_date(datetime.datetime(2012, 1, 1, 1, 1))
             .add_extension(invalidity_date, False)
-            .build(backend)
+            .build()
         )
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -796,7 +772,7 @@ class TestCertificateRevocationListBuilder:
             .add_extension(ian, False)
         )
 
-        crl = builder.sign(private_key, None, backend)
+        crl = builder.sign(private_key, None)
         assert crl.signature_hash_algorithm is None
         assert crl.signature_algorithm_oid == SignatureAlgorithmOID.ED448
         assert (
@@ -826,7 +802,7 @@ class TestCertificateRevocationListBuilder:
             (mldsa.MLDSA87PrivateKey, SignatureAlgorithmOID.ML_DSA_87),
         ],
     )
-    def test_sign_mldsa_key(self, priv_key_cls, sig_oid, backend):
+    def test_sign_mldsa_key(self, priv_key_cls, sig_oid):
         private_key = priv_key_cls.generate()
         invalidity_date = x509.InvalidityDate(
             datetime.datetime(2002, 1, 1, 0, 0)
@@ -839,7 +815,7 @@ class TestCertificateRevocationListBuilder:
             .serial_number(2)
             .revocation_date(datetime.datetime(2012, 1, 1, 1, 1))
             .add_extension(invalidity_date, False)
-            .build(backend)
+            .build()
         )
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
@@ -860,7 +836,7 @@ class TestCertificateRevocationListBuilder:
             .add_extension(ian, False)
         )
 
-        crl = builder.sign(private_key, None, backend)
+        crl = builder.sign(private_key, None)
         assert crl.signature_hash_algorithm is None
         assert crl.signature_algorithm_oid == sig_oid
         assert crl.is_signature_valid(private_key.public_key())
@@ -872,8 +848,8 @@ class TestCertificateRevocationListBuilder:
         )
         assert crl[0].serial_number == revoked_cert0.serial_number
 
-    def test_dsa_key_sign_md5(self, backend):
-        private_key = DSA_KEY_2048.private_key(backend)
+    def test_dsa_key_sign_md5(self):
+        private_key = DSA_KEY_2048.private_key()
         last_time = datetime.datetime(2012, 1, 16, 22, 43)
         next_time = datetime.datetime(2022, 1, 17, 6, 43)
         builder = (
@@ -892,11 +868,7 @@ class TestCertificateRevocationListBuilder:
         )
 
         with pytest.raises(UnsupportedAlgorithm):
-            builder.sign(
-                private_key,
-                typing.cast(typing.Any, hashes.MD5()),
-                backend,
-            )
+            builder.sign(private_key, typing.cast(typing.Any, hashes.MD5()))
 
     def test_ec_key_sign_md5(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -926,7 +898,7 @@ class TestCertificateRevocationListBuilder:
             )
 
     def test_sign_with_revoked_certificates(
-        self, rsa_key_2048: rsa.RSAPrivateKey, backend
+        self, rsa_key_2048: rsa.RSAPrivateKey
     ):
         private_key = rsa_key_2048
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
@@ -938,7 +910,7 @@ class TestCertificateRevocationListBuilder:
             x509.RevokedCertificateBuilder()
             .serial_number(38)
             .revocation_date(datetime.datetime(2011, 1, 1, 1, 1))
-            .build(backend)
+            .build()
         )
         revoked_cert1 = (
             x509.RevokedCertificateBuilder()
@@ -948,7 +920,7 @@ class TestCertificateRevocationListBuilder:
             .add_extension(
                 x509.CRLReason(x509.ReasonFlags.ca_compromise), False
             )
-            .build(backend)
+            .build()
         )
         ci = x509.CertificateIssuer([x509.DNSName("cryptography.io")])
         revoked_cert2 = (
@@ -956,7 +928,7 @@ class TestCertificateRevocationListBuilder:
             .serial_number(40)
             .revocation_date(datetime.datetime(2011, 1, 1, 1, 1))
             .add_extension(ci, False)
-            .build(backend)
+            .build()
         )
         builder = (
             x509.CertificateRevocationListBuilder()
@@ -976,7 +948,7 @@ class TestCertificateRevocationListBuilder:
             .add_revoked_certificate(revoked_cert2)
         )
 
-        crl = builder.sign(private_key, hashes.SHA256(), backend)
+        crl = builder.sign(private_key, hashes.SHA256())
         assert len(crl) == 3
         with pytest.warns(utils.DeprecatedIn42):
             assert crl.last_update == last_update
@@ -1054,9 +1026,7 @@ class TestCertificateRevocationListBuilder:
             crl1.signature, crl1.tbs_certlist_bytes, ec.ECDSA(hashes.SHA256())
         )
 
-    def test_deterministic_signature_wrong_key_type(
-        self, rsa_key_2048, backend
-    ):
+    def test_deterministic_signature_wrong_key_type(self, rsa_key_2048):
         last_update = datetime.datetime(2002, 1, 1, 12, 1)
         next_update = datetime.datetime(2030, 1, 1, 12, 1)
         builder = (
@@ -1067,8 +1037,5 @@ class TestCertificateRevocationListBuilder:
         )
         with pytest.raises(TypeError):
             builder.sign(
-                rsa_key_2048,
-                hashes.SHA256(),
-                backend,
-                ecdsa_deterministic=True,
+                rsa_key_2048, hashes.SHA256(), ecdsa_deterministic=True
             )
