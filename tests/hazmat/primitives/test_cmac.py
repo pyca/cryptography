@@ -49,22 +49,22 @@ fake_key = b"\x00" * 16
 
 class TestCMAC:
     @pytest.mark.parametrize("params", vectors_aes)
-    def test_aes_generate(self, backend, params):
+    def test_aes_generate(self, params):
         key = params["key"]
         message = params["message"]
         output = params["output"]
 
-        cmac = CMAC(AES(binascii.unhexlify(key)), backend)
+        cmac = CMAC(AES(binascii.unhexlify(key)))
         cmac.update(binascii.unhexlify(message))
         assert binascii.hexlify(cmac.finalize()) == output
 
     @pytest.mark.parametrize("params", vectors_aes)
-    def test_aes_verify(self, backend, params):
+    def test_aes_verify(self, params):
         key = params["key"]
         message = params["message"]
         output = params["output"]
 
-        cmac = CMAC(AES(binascii.unhexlify(key)), backend)
+        cmac = CMAC(AES(binascii.unhexlify(key)))
         cmac.update(binascii.unhexlify(message))
         cmac.verify(binascii.unhexlify(output))
 
@@ -75,7 +75,7 @@ class TestCMAC:
         skip_message="Does not support CMAC.",
     )
     @pytest.mark.parametrize("params", vectors_3des)
-    def test_3des_generate(self, backend, params):
+    def test_3des_generate(self, params):
         key1 = params["key1"]
         key2 = params["key2"]
         key3 = params["key3"]
@@ -85,7 +85,7 @@ class TestCMAC:
         message = params["message"]
         output = params["output"]
 
-        cmac = CMAC(TripleDES(binascii.unhexlify(key)), backend)
+        cmac = CMAC(TripleDES(binascii.unhexlify(key)))
         cmac.update(binascii.unhexlify(message))
         assert binascii.hexlify(cmac.finalize()) == output
 
@@ -96,7 +96,7 @@ class TestCMAC:
         skip_message="Does not support CMAC.",
     )
     @pytest.mark.parametrize("params", vectors_3des)
-    def test_3des_verify(self, backend, params):
+    def test_3des_verify(self, params):
         key1 = params["key1"]
         key2 = params["key2"]
         key3 = params["key3"]
@@ -106,13 +106,13 @@ class TestCMAC:
         message = params["message"]
         output = params["output"]
 
-        cmac = CMAC(TripleDES(binascii.unhexlify(key)), backend)
+        cmac = CMAC(TripleDES(binascii.unhexlify(key)))
         cmac.update(binascii.unhexlify(message))
         cmac.verify(binascii.unhexlify(output))
 
-    def test_invalid_verify(self, backend):
+    def test_invalid_verify(self):
         key = b"2b7e151628aed2a6abf7158809cf4f3c"
-        cmac = CMAC(AES(key), backend)
+        cmac = CMAC(AES(key))
         cmac.update(b"6bc1bee22e409f96e93d7e117393172a")
 
         with pytest.raises(InvalidSignature):
@@ -122,17 +122,17 @@ class TestCMAC:
         only_if=lambda backend: backend.cipher_supported(ARC4(fake_key), None),
         skip_message="Does not support CMAC.",
     )
-    def test_invalid_algorithm(self, backend):
+    def test_invalid_algorithm(self):
         key = b"0102030405"
         with pytest.raises(TypeError):
-            CMAC(typing.cast(typing.Any, ARC4(key)), backend)
+            CMAC(typing.cast(typing.Any, ARC4(key)))
 
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_CIPHER):
-            CMAC(DummyBlockCipherAlgorithm(b"bad"), backend)
+            CMAC(DummyBlockCipherAlgorithm(b"bad"))
 
-    def test_raises_after_finalize(self, backend):
+    def test_raises_after_finalize(self):
         key = b"2b7e151628aed2a6abf7158809cf4f3c"
-        cmac = CMAC(AES(key), backend)
+        cmac = CMAC(AES(key))
         cmac.finalize()
 
         with pytest.raises(AlreadyFinalized):
@@ -147,9 +147,9 @@ class TestCMAC:
         with pytest.raises(AlreadyFinalized):
             cmac.verify(b"")
 
-    def test_verify_reject_unicode(self, backend):
+    def test_verify_reject_unicode(self):
         key = b"2b7e151628aed2a6abf7158809cf4f3c"
-        cmac = CMAC(AES(key), backend)
+        cmac = CMAC(AES(key))
 
         with pytest.raises(TypeError):
             cmac.update(typing.cast(typing.Any, ""))
@@ -157,16 +157,16 @@ class TestCMAC:
         with pytest.raises(TypeError):
             cmac.verify(typing.cast(typing.Any, ""))
 
-    def test_copy_with_backend(self, backend):
+    def test_copy_with_backend(self):
         key = b"2b7e151628aed2a6abf7158809cf4f3c"
-        cmac = CMAC(AES(key), backend)
+        cmac = CMAC(AES(key))
         cmac.update(b"6bc1bee22e409f96e93d7e117393172a")
         copy_cmac = cmac.copy()
         assert cmac.finalize() == copy_cmac.finalize()
 
-    def test_buffer_protocol(self, backend):
+    def test_buffer_protocol(self):
         key = bytearray(b"2b7e151628aed2a6abf7158809cf4f3c")
-        cmac = CMAC(AES(key), backend)
+        cmac = CMAC(AES(key))
         cmac.update(b"6bc1bee22e409f96e93d7e117393172a")
         assert cmac.finalize() == binascii.unhexlify(
             b"a21e6e647bfeaf5ca0a5e1bcd957dfad"
