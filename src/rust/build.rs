@@ -6,6 +6,14 @@ use std::env;
 
 #[allow(clippy::unusual_byte_groupings)]
 fn main() {
+    // Without any rerun-if directives cargo reruns the build script (and
+    // recompiles the crate) whenever any mtime in the package changes,
+    // which defeats CI build caching. Everything below depends only on
+    // this file, the environment variables it reads, and metadata from
+    // openssl-sys (which cargo tracks as a dependency on its own).
+    println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-env-changed=CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY");
+
     pyo3_build_config::use_pyo3_cfgs();
 
     if let Ok(version) = env::var("DEP_OPENSSL_VERSION_NUMBER") {
