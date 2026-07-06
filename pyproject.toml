@@ -6,6 +6,7 @@ requires = [
 
     # Must be kept in sync with `project.dependencies`
     "cffi>=2.0.0; platform_python_implementation != 'PyPy'",
+    "cffi>=2.1; python_version >= '3.15'",
     # Used by cffi (which import distutils, and in Python 3.12, distutils has
     # been removed from the stdlib, but installing setuptools puts it back) as
     # well as our build.rs for the rust/cffi bridge.

@@ -1,6 +1,7 @@
 # Must be kept sync with build-system.requires at pyproject.toml
 setuptools!=74.0.0
 cffi>=2.0.0; platform_python_implementation != 'PyPy'
+cffi>=2.1; python_version >= '3.15'
 maturin>=1.14.1,<2
 
 # Must be kept sync with build-system.requires at vectors/pyproject.toml
