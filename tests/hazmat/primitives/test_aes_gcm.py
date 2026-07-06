@@ -16,12 +16,6 @@ from ...utils import load_nist_vectors, raises_unsupported_algorithm
 from .utils import generate_aead_test
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 16), modes.GCM(b"\x00" * 12)
-    ),
-    skip_message="Does not support AES GCM",
-)
 class TestAESModeGCM:
     test_gcm = generate_aead_test(
         load_nist_vectors,

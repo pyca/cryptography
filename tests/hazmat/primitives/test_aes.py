@@ -92,12 +92,6 @@ class TestAESModeXTS:
             base.Cipher(algorithms.AES256(b"0" * 32), modes.XTS(b"\x00" * 16))
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 16), modes.CBC(b"\x00" * 16)
-    ),
-    skip_message="Does not support AES CBC",
-)
 class TestAESModeCBC:
     test_cbc = generate_encrypt_test(
         load_nist_vectors,
@@ -124,12 +118,6 @@ class TestAESModeCBC:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 16), modes.ECB()
-    ),
-    skip_message="Does not support AES ECB",
-)
 class TestAESModeECB:
     test_ecb = generate_encrypt_test(
         load_nist_vectors,
@@ -156,12 +144,6 @@ class TestAESModeECB:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 16), OFB(b"\x00" * 16)
-    ),
-    skip_message="Does not support AES OFB",
-)
 class TestAESModeOFB:
     test_ofb = generate_encrypt_test(
         load_nist_vectors,
@@ -252,12 +234,6 @@ class TestAESModeCFB8:
     )
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.cipher_supported(
-        algorithms.AES(b"\x00" * 16), modes.CTR(b"\x00" * 16)
-    ),
-    skip_message="Does not support AES CTR",
-)
 class TestAESModeCTR:
     test_ctr = generate_encrypt_test(
         load_nist_vectors,

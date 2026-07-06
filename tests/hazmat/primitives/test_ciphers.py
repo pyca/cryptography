@@ -106,12 +106,6 @@ class TestCamellia:
             Camellia(typing.cast(typing.Any, "0" * 32))
 
 
-@pytest.mark.supported(
-    only_if=lambda backend: backend.cipher_supported(
-        AES(b"\x00" * 16), modes.ECB()
-    ),
-    skip_message="Does not support AES ECB",
-)
 class TestCipherUpdateInto:
     @pytest.mark.parametrize(
         "params",
@@ -131,12 +125,6 @@ class TestCipherUpdateInto:
         assert res == len(pt)
         assert bytes(buf)[:res] == ct
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            AES(b"\x00" * 16), modes.GCM(b"0" * 12)
-        ),
-        skip_message="Does not support AES GCM",
-    )
     def test_update_into_gcm(self, backend):
         key = binascii.unhexlify(b"e98b72a9881a84ca6b76e0f43e68647a")
         iv = binascii.unhexlify(b"8b23299fde174053f3d652ba")
@@ -156,12 +144,6 @@ class TestCipherUpdateInto:
         assert res == len(pt)
         assert bytes(buf)[:res] == pt
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            AES(b"\x00" * 16), modes.GCM(b"0" * 12)
-        ),
-        skip_message="Does not support AES GCM",
-    )
     def test_finalize_with_tag_already_finalized(self, backend):
         key = binascii.unhexlify(b"e98b72a9881a84ca6b76e0f43e68647a")
         iv = binascii.unhexlify(b"8b23299fde174053f3d652ba")
@@ -178,12 +160,6 @@ class TestCipherUpdateInto:
         with pytest.raises(AlreadyFinalized):
             decryptor.finalize_with_tag(encryptor.tag)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            AES(b"\x00" * 16), modes.GCM(b"0" * 12)
-        ),
-        skip_message="Does not support AES GCM",
-    )
     def test_finalize_with_tag_duplicate_tag(self, backend):
         decryptor = ciphers.Cipher(
             AES(b"\x00" * 16),
@@ -229,12 +205,6 @@ class TestCipherUpdateInto:
         with pytest.raises((TypeError, BufferError)):
             encryptor.update_into(b"testing", buf)
 
-    @pytest.mark.supported(
-        only_if=lambda backend: backend.cipher_supported(
-            AES(b"\x00" * 16), modes.GCM(b"\x00" * 12)
-        ),
-        skip_message="Does not support AES GCM",
-    )
     def test_update_into_buffer_too_small_gcm(self, backend):
         key = b"\x00" * 16
         c = ciphers.Cipher(AES(key), modes.GCM(b"\x00" * 12), backend)
