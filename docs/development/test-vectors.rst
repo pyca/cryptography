@@ -1041,6 +1041,10 @@ Custom PKCS7 Test Vectors
 * ``pkcs7/non-ascii-san.pem`` - An invalid certificate adapted for S/MIME
   signature & verification. It has an non-ASCII subject alternative name stored
   as `rfc822Name`.
+* ``pkcs7/authenticode.der`` - A DER encoded PKCS7 file containing an
+  Authenticode signature (with a ``SpcIndirectDataContent`` inner content
+  type), extracted from `Fedora 44's grubx64.efi
+  <https://dl.fedoraproject.org/pub/fedora/linux/releases/44/Server/x86_64/os/EFI/BOOT/grubx64.efi>`_.
 
 Custom OpenSSH Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
