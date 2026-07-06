@@ -17,17 +17,17 @@ from .utils import generate_base_hash_test
 
 
 class TestHashContext:
-    def test_hash_reject_unicode(self, backend):
-        m = hashes.Hash(hashes.SHA1(), backend=backend)
+    def test_hash_reject_unicode(self):
+        m = hashes.Hash(hashes.SHA1())
         with pytest.raises(TypeError):
             m.update(typing.cast(typing.Any, "\u00fc"))
 
-    def test_hash_algorithm_instance(self, backend):
+    def test_hash_algorithm_instance(self):
         with pytest.raises(TypeError):
-            hashes.Hash(typing.cast(typing.Any, hashes.SHA1), backend=backend)
+            hashes.Hash(typing.cast(typing.Any, hashes.SHA1))
 
-    def test_raises_after_finalize(self, backend):
-        h = hashes.Hash(hashes.SHA1(), backend=backend)
+    def test_raises_after_finalize(self):
+        h = hashes.Hash(hashes.SHA1())
         h.finalize()
 
         with pytest.raises(AlreadyFinalized):
@@ -39,9 +39,9 @@ class TestHashContext:
         with pytest.raises(AlreadyFinalized):
             h.finalize()
 
-    def test_unsupported_hash(self, backend):
+    def test_unsupported_hash(self):
         with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
-            hashes.Hash(DummyHashAlgorithm(), backend)
+            hashes.Hash(DummyHashAlgorithm())
 
 
 @pytest.mark.supported(
@@ -106,7 +106,7 @@ class TestBLAKE2b:
         digest_size=64,
     )
 
-    def test_invalid_digest_size(self, backend):
+    def test_invalid_digest_size(self):
         with pytest.raises(ValueError):
             hashes.BLAKE2b(digest_size=65)
 
@@ -129,7 +129,7 @@ class TestBLAKE2s:
         digest_size=32,
     )
 
-    def test_invalid_digest_size(self, backend):
+    def test_invalid_digest_size(self):
         with pytest.raises(ValueError):
             hashes.BLAKE2s(digest_size=33)
 
@@ -146,9 +146,9 @@ def test_non_contiguous_buffer_rejected():
         h.update(memoryview(bytearray(10))[::-1])
 
 
-def test_buffer_protocol_hash(backend):
+def test_buffer_protocol_hash():
     data = binascii.unhexlify(b"b4190e")
-    h = hashes.Hash(hashes.SHA256(), backend)
+    h = hashes.Hash(hashes.SHA256())
     h.update(bytearray(data))
     assert h.finalize() == binascii.unhexlify(
         b"dff2e73091f6c05e528896c4c831b9448653dc2ff043528f6769437bc7b975c2"

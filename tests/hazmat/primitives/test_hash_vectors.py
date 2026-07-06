@@ -198,7 +198,7 @@ class TestSHAKE128:
         hashes.SHAKE128(digest_size=16),
     )
 
-    def test_shake128_variable(self, backend, subtests):
+    def test_shake128_variable(self, subtests):
         vectors = _load_all_params(
             os.path.join("hashes", "SHAKE"),
             ["SHAKE128VariableOut.rsp"],
@@ -209,7 +209,7 @@ class TestSHAKE128:
                 output_length = int(vector["outputlen"]) // 8
                 msg = binascii.unhexlify(vector["msg"])
                 shake = hashes.SHAKE128(digest_size=output_length)
-                m = hashes.Hash(shake, backend=backend)
+                m = hashes.Hash(shake)
                 m.update(msg)
                 assert m.finalize() == binascii.unhexlify(vector["output"])
 
@@ -228,7 +228,7 @@ class TestSHAKE256:
         hashes.SHAKE256(digest_size=32),
     )
 
-    def test_shake256_variable(self, backend, subtests):
+    def test_shake256_variable(self, subtests):
         vectors = _load_all_params(
             os.path.join("hashes", "SHAKE"),
             ["SHAKE256VariableOut.rsp"],
@@ -239,7 +239,7 @@ class TestSHAKE256:
                 output_length = int(vector["outputlen"]) // 8
                 msg = binascii.unhexlify(vector["msg"])
                 shake = hashes.SHAKE256(digest_size=output_length)
-                m = hashes.Hash(shake, backend=backend)
+                m = hashes.Hash(shake)
                 m.update(msg)
                 assert m.finalize() == binascii.unhexlify(vector["output"])
 
