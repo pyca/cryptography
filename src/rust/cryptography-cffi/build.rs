@@ -27,7 +27,17 @@ fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
     // FIXME: maybe pyo3-build-config should provide a way to do this?
     let python = env::var("PYO3_PYTHON").unwrap_or_else(|_| "python3".to_string());
-    println!("cargo:rerun-if-env-changed=PYO3_PYTHON");
+    // maturin/uv build isolation points PYO3_PYTHON at an ephemeral
+    // environment whose path changes on every build, so fingerprinting
+    // its value would rerun this script (and recompile this crate and
+    // its dependents) on every build. When a pyo3 config file is in use
+    // it fully identifies the target interpreter, so track it instead.
+    if let Ok(config_file) = env::var("PYO3_CONFIG_FILE") {
+        println!("cargo:rerun-if-env-changed=PYO3_CONFIG_FILE");
+        println!("cargo:rerun-if-changed={config_file}");
+    } else {
+        println!("cargo:rerun-if-env-changed=PYO3_PYTHON");
+    }
     println!("cargo:rerun-if-changed=../../_cffi_src/");
     println!("cargo:rerun-if-changed=../../cryptography/__about__.py");
     let output = Command::new(&python)
