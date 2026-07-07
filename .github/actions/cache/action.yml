@@ -5,15 +5,6 @@ inputs:
     description: 'extra cache key components'
     required: false
     default: ''
-  cache-workspace-crates:
-    description: |
-      Also cache the workspace crates' own artifacts, not just
-      dependencies. Only useful for jobs that restore deterministic
-      source mtimes first (.github/bin/prepare_rust_cache_mtimes.py) and
-      record the built commit in .rust-build-meta/anchor-commit, which
-      is cached alongside the target directory below.
-    required: false
-    default: 'false'
 
 
 runs:
@@ -26,13 +17,16 @@ runs:
       shell: bash
       env:
         KEY: "${{ inputs.key }}"
-    # Workspace-crate caches live in their own key namespace: their target
-    # directories contain artifacts (and the anchor file) that plain jobs
-    # neither produce nor expect.
+    # cache-workspace-crates keeps the workspace crates' own artifacts
+    # and fingerprints, not just dependencies'. .rust-build-meta records
+    # which commit they were built from (and stashes the cdylib, which
+    # rust-cache's cleanup drops); it is cached in the same entry so the
+    # two cannot fall out of sync. Written by
+    # .github/bin/record_rust_cache_anchor.sh at the end of build steps.
     - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
       with:
-        key: ${{ steps.normalized-key.outputs.key }}${{ inputs.cache-workspace-crates == 'true' && '-ws' || '' }}-5
-        cache-workspace-crates: ${{ inputs.cache-workspace-crates }}
+        key: ${{ steps.normalized-key.outputs.key }}-6
+        cache-workspace-crates: true
         cache-directories: |
           ${{ github.workspace }}/.rust-build-meta
     # maturin writes the pyo3 config file to target/maturin/, and pyo3-ffi's
@@ -56,5 +50,20 @@ runs:
       run: |
         if [ -d target/maturin ]; then
           find target/maturin -type f -exec touch -t 200101010000 {} +
+        fi
+      shell: bash
+    # Make the restored workspace-crate artifacts reusable: pin the
+    # mtimes of Rust build inputs that are unchanged since the commit
+    # the cache was built at, and put back the stashed cdylib. Jobs
+    # without a usable anchor (no prior save, evicted cache, or the
+    # anchor commit not in the fetched history) simply rebuild, which is
+    # the prior behavior.
+    - name: Restore Rust build freshness
+      run: |
+        if command -v python3 >/dev/null 2>&1; then PY=python3; else PY=python; fi
+        "$PY" .github/bin/prepare_rust_cache_mtimes.py .rust-build-meta/anchor-commit
+        if [ -d .rust-build-meta/artifacts/deps ]; then
+          mkdir -p target/release/deps
+          cp -p .rust-build-meta/artifacts/deps/* target/release/deps/ 2>/dev/null || true
         fi
       shell: bash

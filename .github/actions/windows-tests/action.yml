@@ -58,7 +58,9 @@ runs:
       uses: ./.github/actions/fetch-vectors
 
     - name: Build nox environment
-      run: nox -v --install-only
+      run: |
+        nox -v --install-only
+        sh .github/bin/record_rust_cache_anchor.sh
       env:
         NOXSESSION: ${{ inputs.noxsession }}
       shell: bash
