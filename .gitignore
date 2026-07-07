@@ -13,6 +13,7 @@ htmlcov/
 *.py[cdo]
 .hypothesis/
 target/
+.rust-build-meta/
 .rust-cov/
 *.lcov
 *.profdata

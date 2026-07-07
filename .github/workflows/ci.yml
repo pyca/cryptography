@@ -302,6 +302,11 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
+          # Full commit history (cheap without historical blobs) so that
+          # prepare_rust_cache_mtimes.py below can diff against the
+          # commit the Rust cache was built from.
+          fetch-depth: 0
+          filter: blob:none
       - name: Setup python
         id: setup-python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -321,6 +326,21 @@ jobs:
         timeout-minutes: 2
         with:
           key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}
+          cache-workspace-crates: 'true'
+      # Pin the mtimes of Rust build inputs that are unchanged since the
+      # cached build so cargo reuses the cached workspace artifacts
+      # instead of recompiling the workspace from scratch on every run.
+      # rust-cache's cleanup drops the workspace cdylib from the cache
+      # even with cache-workspace-crates, so it is stashed in the cached
+      # metadata directory at build time and put back here; without it
+      # cargo rebuilds and relinks the final crate on every run.
+      - name: Restore mtimes for cached Rust builds
+        run: |
+          python3 .github/bin/prepare_rust_cache_mtimes.py .rust-build-meta/anchor-commit
+          if [ -d .rust-build-meta/artifacts ]; then
+            mkdir -p target/release/deps
+            cp -p .rust-build-meta/artifacts/deps/* target/release/deps/ 2>/dev/null || true
+          fi
       - run: rustup component add llvm-tools-preview
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
@@ -341,6 +361,16 @@ jobs:
             OPENSSL_STATIC=1 \
             CFLAGS="-Werror -Wno-error=deprecated-declarations -Wno-error=incompatible-pointer-types-discards-qualifiers -Wno-error=unused-function" \
             nox -v --install-only
+          # Record the commit these artifacts were built from; cached and
+          # restored together with the target directory (see
+          # .github/bin/prepare_rust_cache_mtimes.py).
+          mkdir -p .rust-build-meta
+          git rev-parse HEAD > .rust-build-meta/anchor-commit
+          # Stash the workspace cdylib next to the anchor: rust-cache's
+          # cleanup would otherwise drop it from the cache, forcing a
+          # rebuild+relink of the final crate on every run.
+          mkdir -p .rust-build-meta/artifacts/deps
+          cp -p target/release/deps/libcryptography_rust* .rust-build-meta/artifacts/deps/ 2>/dev/null || true
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           MACOSX_DEPLOYMENT_TARGET: "11.0"
