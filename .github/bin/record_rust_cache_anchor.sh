@@ -12,6 +12,11 @@
 # the end of every CI step that builds the extension.
 set -e
 
+# Container jobs run steps with a different HOME than the checkout
+# action, so its safe.directory registration isn't visible here and
+# git refuses to read the workspace ("dubious ownership").
+git config --global --add safe.directory "$(pwd)" 2>/dev/null || true
+
 mkdir -p .rust-build-meta/artifacts/deps
 git rev-parse HEAD > .rust-build-meta/anchor-commit
 cp -p target/release/deps/*cryptography_rust* \

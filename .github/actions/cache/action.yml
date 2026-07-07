@@ -60,6 +60,10 @@ runs:
     # the prior behavior.
     - name: Restore Rust build freshness
       run: |
+        # Container jobs run steps with a different HOME than the
+        # checkout action, so its safe.directory registration isn't
+        # visible here and git would refuse to read the workspace.
+        git config --global --add safe.directory "$(pwd)" 2>/dev/null || true
         if command -v python3 >/dev/null 2>&1; then PY=python3; else PY=python; fi
         "$PY" .github/bin/prepare_rust_cache_mtimes.py .rust-build-meta/anchor-commit
         if [ -d .rust-build-meta/artifacts/deps ]; then
