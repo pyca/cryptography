@@ -302,19 +302,25 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - name: Cache rust and pip
-        uses: ./.github/actions/cache
-        timeout-minutes: 2
-        with:
-          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}
-
       - name: Setup python
+        id: setup-python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
         timeout-minutes: 3
+      # Keyed on the resolved interpreter version (like the linux and
+      # windows jobs), not just the matrix name: the alpha that a -dev
+      # entry resolves to moves over time, and a cached maturin/pyo3
+      # config built by an older alpha gets rewritten by maturin on every
+      # run, which re-dirties pyo3-ffi and recompiles it, pyo3, and every
+      # crate above them despite a warm cache.
+      - name: Cache rust and pip
+        uses: ./.github/actions/cache
+        timeout-minutes: 2
+        with:
+          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}
       - run: rustup component add llvm-tools-preview
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
