@@ -347,7 +347,7 @@ class TestKBKDFHMAC:
                 b"context",
                 None,
                 backend,
-                0,  # type: ignore[misc]
+                0,  # type: ignore[call-arg]
             )
 
     def test_invalid_break_location(self):
@@ -771,7 +771,7 @@ class TestKBKDFCMAC:
                 b"context",
                 None,
                 backend,
-                0,  # type: ignore[misc]
+                0,  # type: ignore[call-arg]
             )
 
     def test_invalid_break_location(self):

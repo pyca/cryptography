@@ -256,7 +256,7 @@ class TestSequenceAPI:
                 TypeError,
                 match="takes 1 positional argument but 2 were given",
             ):
-                Example(5)  # type: ignore[misc]
+                Example(5)  # type: ignore[call-arg]
 
     def test_fail_malformed_root_type(self) -> None:
         @asn1.sequence
@@ -571,7 +571,7 @@ class TestSetAPI:
                 TypeError,
                 match="takes 1 positional argument but 2 were given",
             ):
-                Example(5)  # type: ignore[misc]
+                Example(5)  # type: ignore[call-arg]
 
     def test_fail_malformed_root_type(self) -> None:
         @asn1.set
