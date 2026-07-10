@@ -41,6 +41,8 @@ Changelog
   classes and the classes in
   :mod:`~cryptography.hazmat.primitives.asymmetric.padding` can now be
   compared with ``==``.
+* :class:`~cryptography.x509.CertificateBuilder` now supports creating unsigned
+  certificates (:rfc:`9925`) with the ``create_unsigned`` method.
 
 .. _v49-0-0:
 
