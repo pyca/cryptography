@@ -24,6 +24,7 @@ CentOS
 changelog
 Changelog
 ciphertext
+Cobblestone
 codebook
 committer
 committers
@@ -42,10 +43,10 @@ Decapsulate
 Decapsulation
 declaratively
 decrypt
+Decryptor
 decrypts
 Decrypts
 decrypted
-Decrypter
 decrypting
 deprecations
 DER
@@ -62,7 +63,7 @@ duplicative
 El
 embeddability
 Encodings
-Encrypter
+Encryptor
 endian
 Euler
 extendable

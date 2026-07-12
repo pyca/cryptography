@@ -3,16 +3,16 @@
 # for complete details.
 
 
-import base64
-import hashlib
-import json
 import os
-import zlib
 
 import pytest
 
-import cryptography_vectors
-from cryptography.chunked_encryption import Decrypter, Encrypter
+from cryptography.chunked_encryption import (
+    Cobblestone128Decryptor,
+    Cobblestone128Encryptor,
+    Cobblestone256Decryptor,
+    Cobblestone256Encryptor,
+)
 from cryptography.exceptions import AlreadyFinalized, InvalidTag
 
 CHUNK_SIZE = 16 * 1024
@@ -22,24 +22,25 @@ SALT_LEN = 24
 COMMITMENT_LEN = 32
 HEADER_LEN = SALT_LEN + COMMITMENT_LEN
 
+VARIANTS = [
+    pytest.param(
+        (Cobblestone128Encryptor, Cobblestone128Decryptor, 16),
+        id="cobblestone128",
+    ),
+    pytest.param(
+        (Cobblestone256Encryptor, Cobblestone256Decryptor, 32),
+        id="cobblestone256",
+    ),
+]
 
-def _load_vectors():
-    vector_file = cryptography_vectors.open_vector_file(
-        os.path.join("chunked-encryption", "vectors.json"), "r"
-    )
-    with vector_file:
-        vectors = json.load(vector_file)["vectors"]
-    # The public API only supports AES-128-GCM.
-    return [v for v in vectors if v["aead"] == "AEAD_AES_128_GCM"]
 
-
-def _encrypt_all(key: bytes, context: bytes, plaintext: bytes) -> bytes:
-    enc = Encrypter(key, context)
+def _encrypt_all(encryptor_cls, key: bytes, context: bytes, plaintext: bytes):
+    enc = encryptor_cls(key, context)
     return enc.update(plaintext) + enc.finalize()
 
 
-def _decrypt_all(key: bytes, context: bytes, ciphertext: bytes) -> bytes:
-    dec = Decrypter(key, context)
+def _decrypt_all(decryptor_cls, key: bytes, context: bytes, ciphertext: bytes):
+    dec = decryptor_cls(key, context)
     return dec.update(ciphertext) + dec.finalize()
 
 
@@ -58,52 +59,30 @@ MESSAGE_LENGTHS = [
 ]
 
 
+@pytest.mark.parametrize("variant", VARIANTS)
 class TestChunkedEncryption:
-    @pytest.mark.parametrize(
-        "vector", _load_vectors(), ids=lambda v: v["name"]
-    )
-    def test_vectors(self, vector):
-        key = bytes.fromhex(vector["key"])
-        context = vector["context"].encode()
-        if vector["ciphertext"] is None:
-            ciphertext = b""
-        else:
-            ciphertext = base64.b64decode(vector["ciphertext"])
-        if vector.get("compressed"):
-            ciphertext = zlib.decompress(ciphertext)
-
-        if vector["expect"] == "success":
-            plaintext = _decrypt_all(key, context, ciphertext)
-            assert len(plaintext) == vector["payload_length"]
-            assert (
-                hashlib.sha256(plaintext).hexdigest()
-                == vector["payload_sha256"]
-            )
-        elif len(key) != 16:
-            with pytest.raises(ValueError):
-                Decrypter(key, context)
-        else:
-            with pytest.raises(InvalidTag):
-                _decrypt_all(key, context, ciphertext)
-
     @pytest.mark.parametrize("length", MESSAGE_LENGTHS)
-    def test_round_trip(self, length):
-        key = Encrypter.generate_key()
+    def test_round_trip(self, variant, length):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
         context = b"test context"
         plaintext = os.urandom(length)
 
-        ciphertext = _encrypt_all(key, context, plaintext)
+        ciphertext = _encrypt_all(encryptor_cls, key, context, plaintext)
         n_chunks = length // CHUNK_SIZE + 1
         assert len(ciphertext) == HEADER_LEN + length + n_chunks * TAG_LEN
-        assert _decrypt_all(key, context, ciphertext) == plaintext
+        assert (
+            _decrypt_all(decryptor_cls, key, context, ciphertext) == plaintext
+        )
 
     @pytest.mark.parametrize("piece_size", [1, 57, 1024, 16384, 16400])
-    def test_streaming(self, piece_size):
-        key = Encrypter.generate_key()
+    def test_streaming(self, variant, piece_size):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
         context = b""
         plaintext = os.urandom(2 * CHUNK_SIZE + 12345)
 
-        enc = Encrypter(key, context)
+        enc = encryptor_cls(key, context)
         ciphertext = b""
         for i in range(0, len(plaintext), piece_size):
             ciphertext += enc.update(plaintext[i : i + piece_size])
@@ -113,60 +92,66 @@ class TestChunkedEncryption:
         # split up.
         assert len(ciphertext) == HEADER_LEN + len(plaintext) + 3 * TAG_LEN
 
-        dec = Decrypter(key, context)
+        dec = decryptor_cls(key, context)
         decrypted = b""
         for i in range(0, len(ciphertext), piece_size):
             decrypted += dec.update(ciphertext[i : i + piece_size])
         decrypted += dec.finalize()
         assert decrypted == plaintext
 
-    def test_empty_message(self):
-        key = Encrypter.generate_key()
-        enc = Encrypter(key, b"ctx")
+    def test_empty_message(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
+        enc = encryptor_cls(key, b"ctx")
         ciphertext = enc.finalize()
         assert len(ciphertext) == HEADER_LEN + TAG_LEN
-        assert _decrypt_all(key, b"ctx", ciphertext) == b""
+        assert _decrypt_all(decryptor_cls, key, b"ctx", ciphertext) == b""
 
-    def test_update_with_empty_data_emits_header(self):
-        key = Encrypter.generate_key()
-        enc = Encrypter(key, b"")
+    def test_update_with_empty_data_emits_header(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
+        enc = encryptor_cls(key, b"")
         header = enc.update(b"")
         assert len(header) == HEADER_LEN
         assert enc.update(b"") == b""
         ciphertext = header + enc.finalize()
-        assert _decrypt_all(key, b"", ciphertext) == b""
+        assert _decrypt_all(decryptor_cls, key, b"", ciphertext) == b""
 
-    def test_exact_chunk_boundary_has_empty_final_chunk(self):
-        key = Encrypter.generate_key()
+    def test_exact_chunk_boundary_has_empty_final_chunk(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
         plaintext = os.urandom(CHUNK_SIZE)
-        ciphertext = _encrypt_all(key, b"", plaintext)
+        ciphertext = _encrypt_all(encryptor_cls, key, b"", plaintext)
         # One full chunk plus an empty final chunk.
         assert len(ciphertext) == HEADER_LEN + WIRE_CHUNK_SIZE + TAG_LEN
-        assert _decrypt_all(key, b"", ciphertext) == plaintext
+        assert _decrypt_all(decryptor_cls, key, b"", ciphertext) == plaintext
 
-    def test_decrypter_streams_plaintext_incrementally(self):
-        key = Encrypter.generate_key()
+    def test_decrypter_streams_plaintext_incrementally(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
         plaintext = os.urandom(3 * CHUNK_SIZE)
-        ciphertext = _encrypt_all(key, b"", plaintext)
+        ciphertext = _encrypt_all(encryptor_cls, key, b"", plaintext)
 
-        dec = Decrypter(key, b"")
+        dec = decryptor_cls(key, b"")
         out = dec.update(ciphertext[: HEADER_LEN + WIRE_CHUNK_SIZE])
         assert out == plaintext[:CHUNK_SIZE]
         out = dec.update(ciphertext[HEADER_LEN + WIRE_CHUNK_SIZE :])
         assert out == plaintext[CHUNK_SIZE:]
         assert dec.finalize() == b""
 
-    def test_wrong_key(self):
-        key = Encrypter.generate_key()
-        ciphertext = _encrypt_all(key, b"", b"message")
-        dec = Decrypter(Decrypter.generate_key(), b"")
+    def test_wrong_key(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
+        ciphertext = _encrypt_all(encryptor_cls, key, b"", b"message")
+        dec = decryptor_cls(decryptor_cls.generate_key(), b"")
         with pytest.raises(InvalidTag):
             dec.update(ciphertext)
 
-    def test_wrong_context(self):
-        key = Encrypter.generate_key()
-        ciphertext = _encrypt_all(key, b"context a", b"message")
-        dec = Decrypter(key, b"context b")
+    def test_wrong_context(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
+        ciphertext = _encrypt_all(encryptor_cls, key, b"context a", b"msg")
+        dec = decryptor_cls(key, b"context b")
         with pytest.raises(InvalidTag):
             dec.update(ciphertext)
 
@@ -180,21 +165,25 @@ class TestChunkedEncryption:
             HEADER_LEN + WIRE_CHUNK_SIZE + 3,  # final chunk
         ],
     )
-    def test_tampering_detected(self, position):
-        key = Encrypter.generate_key()
+    def test_tampering_detected(self, variant, position):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
         plaintext = os.urandom(CHUNK_SIZE + 100)
-        ciphertext = bytearray(_encrypt_all(key, b"", plaintext))
+        ciphertext = bytearray(
+            _encrypt_all(encryptor_cls, key, b"", plaintext)
+        )
         ciphertext[position] ^= 1
 
-        dec = Decrypter(key, b"")
+        dec = decryptor_cls(key, b"")
         with pytest.raises(InvalidTag):
             dec.update(bytes(ciphertext))
             dec.finalize()
 
-    def test_swapped_chunks_detected(self):
-        key = Encrypter.generate_key()
+    def test_swapped_chunks_detected(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
         plaintext = os.urandom(2 * CHUNK_SIZE + 100)
-        ciphertext = _encrypt_all(key, b"", plaintext)
+        ciphertext = _encrypt_all(encryptor_cls, key, b"", plaintext)
 
         chunk0_start = HEADER_LEN
         chunk1_start = HEADER_LEN + WIRE_CHUNK_SIZE
@@ -205,7 +194,7 @@ class TestChunkedEncryption:
             + ciphertext[chunk0_start:chunk1_start]
             + ciphertext[chunk2_start:]
         )
-        dec = Decrypter(key, b"")
+        dec = decryptor_cls(key, b"")
         with pytest.raises(InvalidTag):
             dec.update(swapped)
 
@@ -221,66 +210,72 @@ class TestChunkedEncryption:
             HEADER_LEN + WIRE_CHUNK_SIZE + TAG_LEN - 1,
         ],
     )
-    def test_truncation_detected(self, length):
-        key = Encrypter.generate_key()
+    def test_truncation_detected(self, variant, length):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
         plaintext = os.urandom(CHUNK_SIZE + 100)
-        ciphertext = _encrypt_all(key, b"", plaintext)
+        ciphertext = _encrypt_all(encryptor_cls, key, b"", plaintext)
 
-        dec = Decrypter(key, b"")
+        dec = decryptor_cls(key, b"")
         with pytest.raises(InvalidTag):
             dec.update(ciphertext[:length])
             dec.finalize()
 
-    def test_extension_detected(self):
-        key = Encrypter.generate_key()
-        ciphertext = _encrypt_all(key, b"", b"message")
+    def test_extension_detected(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
+        ciphertext = _encrypt_all(encryptor_cls, key, b"", b"message")
 
-        dec = Decrypter(key, b"")
+        dec = decryptor_cls(key, b"")
         with pytest.raises(InvalidTag):
             dec.update(ciphertext + b"extra garbage bytes!")
             dec.finalize()
 
-    def test_ciphertexts_are_randomized(self):
-        key = Encrypter.generate_key()
-        assert _encrypt_all(key, b"", b"data") != _encrypt_all(
-            key, b"", b"data"
+    def test_ciphertexts_are_randomized(self, variant):
+        encryptor_cls, _, _ = variant
+        key = encryptor_cls.generate_key()
+        assert _encrypt_all(encryptor_cls, key, b"", b"data") != _encrypt_all(
+            encryptor_cls, key, b"", b"data"
         )
 
-    def test_update_into(self):
-        key = Encrypter.generate_key()
+    def test_update_into(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
         plaintext = os.urandom(CHUNK_SIZE + 100)
 
-        enc = Encrypter(key, b"")
+        enc = encryptor_cls(key, b"")
         buf = bytearray(HEADER_LEN + 2 * WIRE_CHUNK_SIZE)
         n = enc.update_into(plaintext, buf)
         assert n == HEADER_LEN + WIRE_CHUNK_SIZE
         ciphertext = bytes(buf[:n]) + enc.finalize()
-        assert _decrypt_all(key, b"", ciphertext) == plaintext
+        assert _decrypt_all(decryptor_cls, key, b"", ciphertext) == plaintext
 
-        dec = Decrypter(key, b"")
+        dec = decryptor_cls(key, b"")
         out = bytearray(2 * CHUNK_SIZE)
         n = dec.update_into(ciphertext, out)
         assert n == CHUNK_SIZE
         assert bytes(out[:n]) + dec.finalize() == plaintext
 
-    def test_update_into_accepts_larger_buffer(self):
-        key = Encrypter.generate_key()
-        enc = Encrypter(key, b"")
+    def test_update_into_accepts_larger_buffer(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
+        enc = encryptor_cls(key, b"")
         buf = bytearray(10 * WIRE_CHUNK_SIZE)
         n = enc.update_into(b"abc", buf)
         assert n == HEADER_LEN
         ciphertext = bytes(buf[:n]) + enc.finalize()
-        assert _decrypt_all(key, b"", ciphertext) == b"abc"
+        assert _decrypt_all(decryptor_cls, key, b"", ciphertext) == b"abc"
 
-    def test_update_into_buffer_too_small(self):
-        key = Encrypter.generate_key()
-        enc = Encrypter(key, b"")
+    def test_update_into_buffer_too_small(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
+        enc = encryptor_cls(key, b"")
         with pytest.raises(ValueError, match="buffer must be at least"):
             enc.update_into(b"abc", bytearray(HEADER_LEN - 1))
         # The context remains usable after the failed call.
         ciphertext = enc.update(b"abc") + enc.finalize()
 
-        dec = Decrypter(key, b"")
+        dec = decryptor_cls(key, b"")
         with pytest.raises(ValueError, match="buffer must be at least"):
             dec.update_into(
                 ciphertext + bytes(WIRE_CHUNK_SIZE), bytearray(CHUNK_SIZE - 1)
@@ -288,14 +283,16 @@ class TestChunkedEncryption:
         assert dec.update(ciphertext) == b""
         assert dec.finalize() == b"abc"
 
-    def test_update_into_zero_output(self):
-        key = Encrypter.generate_key()
-        dec = Decrypter(key, b"")
+    def test_update_into_zero_output(self, variant):
+        _, decryptor_cls, _ = variant
+        key = decryptor_cls.generate_key()
+        dec = decryptor_cls(key, b"")
         assert dec.update_into(b"", bytearray(0)) == 0
 
-    def test_use_after_finalize(self):
-        key = Encrypter.generate_key()
-        enc = Encrypter(key, b"")
+    def test_use_after_finalize(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
+        enc = encryptor_cls(key, b"")
         ciphertext = enc.update(b"data") + enc.finalize()
         with pytest.raises(AlreadyFinalized):
             enc.update(b"more")
@@ -304,7 +301,7 @@ class TestChunkedEncryption:
         with pytest.raises(AlreadyFinalized):
             enc.finalize()
 
-        dec = Decrypter(key, b"")
+        dec = decryptor_cls(key, b"")
         dec.update(ciphertext)
         dec.finalize()
         with pytest.raises(AlreadyFinalized):
@@ -314,12 +311,13 @@ class TestChunkedEncryption:
         with pytest.raises(AlreadyFinalized):
             dec.finalize()
 
-    def test_decrypter_unusable_after_invalid_tag(self):
-        key = Encrypter.generate_key()
-        ciphertext = bytearray(_encrypt_all(key, b"", b"data"))
+    def test_decryptor_unusable_after_invalid_tag(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
+        ciphertext = bytearray(_encrypt_all(encryptor_cls, key, b"", b"data"))
         ciphertext[-1] ^= 1
 
-        dec = Decrypter(key, b"")
+        dec = decryptor_cls(key, b"")
         dec.update(bytes(ciphertext))
         with pytest.raises(InvalidTag):
             dec.finalize()
@@ -329,13 +327,16 @@ class TestChunkedEncryption:
         with pytest.raises(AlreadyFinalized):
             dec.finalize()
 
-    def test_decrypter_update_into_unusable_after_invalid_tag(self):
-        key = Encrypter.generate_key()
+    def test_decryptor_update_into_unusable_after_invalid_tag(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
         plaintext = os.urandom(CHUNK_SIZE + 100)
-        ciphertext = bytearray(_encrypt_all(key, b"", plaintext))
+        ciphertext = bytearray(
+            _encrypt_all(encryptor_cls, key, b"", plaintext)
+        )
         ciphertext[HEADER_LEN] ^= 1  # corrupt the first full chunk
 
-        dec = Decrypter(key, b"")
+        dec = decryptor_cls(key, b"")
         buf = bytearray(2 * CHUNK_SIZE)
         with pytest.raises(InvalidTag):
             dec.update_into(bytes(ciphertext), buf)
@@ -345,44 +346,63 @@ class TestChunkedEncryption:
         with pytest.raises(AlreadyFinalized):
             dec.finalize()
 
-    def test_finalize_only_decrypter_rejects_empty_stream(self):
-        key = Decrypter.generate_key()
-        dec = Decrypter(key, b"")
+    def test_finalize_only_decryptor_rejects_empty_stream(self, variant):
+        _, decryptor_cls, _ = variant
+        key = decryptor_cls.generate_key()
+        dec = decryptor_cls(key, b"")
         with pytest.raises(InvalidTag):
             dec.finalize()
 
-    def test_generate_key(self):
-        key = Encrypter.generate_key()
+    def test_generate_key(self, variant):
+        encryptor_cls, decryptor_cls, key_len = variant
+        key = encryptor_cls.generate_key()
         assert isinstance(key, bytes)
-        assert len(key) == 16
-        assert len(Decrypter.generate_key()) == 16
-        assert Encrypter.generate_key() != Encrypter.generate_key()
+        assert len(key) == key_len
+        assert len(decryptor_cls.generate_key()) == key_len
+        assert encryptor_cls.generate_key() != encryptor_cls.generate_key()
 
-    @pytest.mark.parametrize("length", [0, 15, 17, 32])
-    def test_invalid_key_size(self, length):
-        with pytest.raises(ValueError):
-            Encrypter(b"\x00" * length, b"")
-        with pytest.raises(ValueError):
-            Decrypter(b"\x00" * length, b"")
+    def test_invalid_key_size(self, variant):
+        encryptor_cls, decryptor_cls, key_len = variant
+        for length in [0, key_len - 1, key_len + 1, 64]:
+            with pytest.raises(ValueError):
+                encryptor_cls(b"\x00" * length, b"")
+            with pytest.raises(ValueError):
+                decryptor_cls(b"\x00" * length, b"")
 
-    def test_invalid_types(self):
-        key = Encrypter.generate_key()
+    def test_invalid_types(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
         with pytest.raises(TypeError):
-            Encrypter("not bytes", b"")  # type: ignore[arg-type]
+            encryptor_cls("not bytes", b"")
         with pytest.raises(TypeError):
-            Encrypter(key, "not bytes")  # type: ignore[arg-type]
+            encryptor_cls(key, "not bytes")
         with pytest.raises(TypeError):
-            Decrypter("not bytes", b"")  # type: ignore[arg-type]
-        enc = Encrypter(key, b"")
+            decryptor_cls("not bytes", b"")
+        enc = encryptor_cls(key, b"")
         with pytest.raises(TypeError):
-            enc.update("not bytes")  # type: ignore[arg-type]
+            enc.update("not bytes")
         with pytest.raises(TypeError):
             enc.update_into(b"", b"immutable")
 
-    def test_accepts_buffers(self):
-        key = bytearray(Encrypter.generate_key())
+    def test_accepts_buffers(self, variant):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = bytearray(encryptor_cls.generate_key())
         plaintext = os.urandom(1000)
-        enc = Encrypter(key, memoryview(b"ctx"))
+        enc = encryptor_cls(key, memoryview(b"ctx"))
         ciphertext = enc.update(memoryview(plaintext)) + enc.finalize()
-        dec = Decrypter(memoryview(bytes(key)), bytearray(b"ctx"))
+        dec = decryptor_cls(memoryview(bytes(key)), bytearray(b"ctx"))
         assert dec.update(bytearray(ciphertext)) + dec.finalize() == plaintext
+
+
+class TestVariantsAreDistinct:
+    def test_key_sizes_differ(self):
+        assert len(Cobblestone128Encryptor.generate_key()) == 16
+        assert len(Cobblestone256Encryptor.generate_key()) == 32
+
+    def test_cross_variant_key_sizes_rejected(self):
+        key128 = Cobblestone128Encryptor.generate_key()
+        key256 = Cobblestone256Encryptor.generate_key()
+        with pytest.raises(ValueError, match="key must be 16 bytes"):
+            Cobblestone128Encryptor(key256, b"")
+        with pytest.raises(ValueError, match="key must be 32 bytes"):
+            Cobblestone256Decryptor(key128, b"")

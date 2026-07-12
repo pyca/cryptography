@@ -8,10 +8,14 @@ from cryptography.hazmat.bindings._rust import (
     chunked_encryption as _chunked_encryption,
 )
 
-Decrypter = _chunked_encryption.Decrypter
-Encrypter = _chunked_encryption.Encrypter
+Cobblestone128Decryptor = _chunked_encryption.Cobblestone128Decryptor
+Cobblestone128Encryptor = _chunked_encryption.Cobblestone128Encryptor
+Cobblestone256Decryptor = _chunked_encryption.Cobblestone256Decryptor
+Cobblestone256Encryptor = _chunked_encryption.Cobblestone256Encryptor
 
 __all__ = [
-    "Decrypter",
-    "Encrypter",
+    "Cobblestone128Decryptor",
+    "Cobblestone128Encryptor",
+    "Cobblestone256Decryptor",
+    "Cobblestone256Encryptor",
 ]

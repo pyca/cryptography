@@ -3,8 +3,9 @@
 // for complete details.
 
 // Implementation of the C2SP chunked-encryption specification
-// (https://c2sp.org/chunked-encryption), instantiated with SHA-256 and
-// AES-128-GCM.
+// (https://c2sp.org/chunked-encryption), providing its two named
+// instantiations: Cobblestone-128 (SHA-512 and AES-128-GCM) and
+// Cobblestone-256 (SHA-512 and AES-256-GCM).
 
 use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
@@ -46,10 +47,28 @@ static AES_128_GCM: AeadParams = AeadParams {
     tag_len: 16,
 };
 
+static AES_256_GCM: AeadParams = AeadParams {
+    iana_name: b"AEAD_AES_256_GCM",
+    key_len: 32,
+    tag_len: 16,
+};
+
 fn message_too_large_error() -> CryptographyError {
     CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
         "Message exceeds the maximum chunked encryption length (2**38 chunks).",
     ))
+}
+
+fn check_key_length(params: &AeadParams, key: &[u8]) -> CryptographyResult<()> {
+    if key.len() != params.key_len {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(format!(
+                "key must be {} bytes.",
+                params.key_len
+            )),
+        ));
+    }
+    Ok(())
 }
 
 struct DerivedKeys<'p> {
@@ -74,7 +93,7 @@ fn derive_keys<'p>(
     info.extend_from_slice(salt);
     info.extend_from_slice(context);
 
-    let algorithm = types::SHA256.get(py)?.call0()?;
+    let algorithm = types::SHA512.get(py)?.call0()?;
     let mut hkdf = HkdfExpand::new(
         py,
         algorithm.unbind(),
@@ -188,8 +207,7 @@ impl ChunkCipher {
     }
 }
 
-#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.chunked_encryption")]
-pub(crate) struct Encrypter {
+struct EncrypterCore {
     cipher: ChunkCipher,
     buffer: Vec<u8>,
     header: [u8; HEADER_LEN],
@@ -197,7 +215,30 @@ pub(crate) struct Encrypter {
     finalized: bool,
 }
 
-impl Encrypter {
+impl EncrypterCore {
+    fn new(
+        py: pyo3::Python<'_>,
+        params: &AeadParams,
+        key: &[u8],
+        context: &[u8],
+    ) -> CryptographyResult<Self> {
+        check_key_length(params, key)?;
+        let mut salt = [0; SALT_LEN];
+        cryptography_openssl::rand::rand_bytes(&mut salt)?;
+        let keys = derive_keys(py, params, key, &salt, context)?;
+        let cipher = ChunkCipher::new(py, params, &keys)?;
+        let mut header = [0; HEADER_LEN];
+        header[..SALT_LEN].copy_from_slice(&salt);
+        header[SALT_LEN..].copy_from_slice(&keys.commitment);
+        Ok(EncrypterCore {
+            cipher,
+            buffer: Vec::with_capacity(CHUNK_SIZE),
+            header,
+            header_pending: true,
+            finalized: false,
+        })
+    }
+
     fn check_active(&self) -> CryptographyResult<()> {
         if self.finalized {
             return Err(exceptions::already_finalized_error());
@@ -256,52 +297,13 @@ impl Encrypter {
         self.buffer.extend_from_slice(data);
         Ok(written)
     }
-}
-
-#[pyo3::pymethods]
-impl Encrypter {
-    #[new]
-    fn new(
-        py: pyo3::Python<'_>,
-        key: CffiBuf<'_>,
-        context: CffiBuf<'_>,
-    ) -> CryptographyResult<Self> {
-        let params = &AES_128_GCM;
-        if key.as_bytes().len() != params.key_len {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("key must be 16 bytes."),
-            ));
-        }
-        let mut salt = [0; SALT_LEN];
-        cryptography_openssl::rand::rand_bytes(&mut salt)?;
-        let keys = derive_keys(py, params, key.as_bytes(), &salt, context.as_bytes())?;
-        let cipher = ChunkCipher::new(py, params, &keys)?;
-        let mut header = [0; HEADER_LEN];
-        header[..SALT_LEN].copy_from_slice(&salt);
-        header[SALT_LEN..].copy_from_slice(&keys.commitment);
-        Ok(Encrypter {
-            cipher,
-            buffer: Vec::with_capacity(CHUNK_SIZE),
-            header,
-            header_pending: true,
-            finalized: false,
-        })
-    }
-
-    #[staticmethod]
-    fn generate_key(
-        py: pyo3::Python<'_>,
-    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
-        crate::backend::rand::get_rand_bytes(py, AES_128_GCM.key_len)
-    }
 
     fn update<'p>(
         &mut self,
         py: pyo3::Python<'p>,
-        data: CffiBuf<'_>,
+        data: &[u8],
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         self.check_active()?;
-        let data = data.as_bytes();
         let out_len = self.update_out_len(data.len());
         Ok(pyo3::types::PyBytes::new_with(py, out_len, |b| {
             let n = self.update_impl(py, data, b)?;
@@ -313,13 +315,11 @@ impl Encrypter {
     fn update_into(
         &mut self,
         py: pyo3::Python<'_>,
-        data: CffiBuf<'_>,
-        mut buf: CffiMutBuf<'_>,
+        data: &[u8],
+        out: &mut [u8],
     ) -> CryptographyResult<usize> {
         self.check_active()?;
-        let data = data.as_bytes();
         let out_len = self.update_out_len(data.len());
-        let out = buf.as_mut_bytes();
         if out.len() < out_len {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
@@ -365,14 +365,26 @@ enum DecrypterState {
     },
 }
 
-#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.chunked_encryption")]
-pub(crate) struct Decrypter {
+struct DecrypterCore {
+    params: &'static AeadParams,
     // `None` once finalized, or after any error: a failed context cannot
     // process more data.
     state: Option<DecrypterState>,
 }
 
-impl Decrypter {
+impl DecrypterCore {
+    fn new(params: &'static AeadParams, key: &[u8], context: &[u8]) -> CryptographyResult<Self> {
+        check_key_length(params, key)?;
+        Ok(DecrypterCore {
+            params,
+            state: Some(DecrypterState::Header {
+                key: key.to_vec(),
+                context: context.to_vec(),
+                buf: Vec::with_capacity(HEADER_LEN),
+            }),
+        })
+    }
+
     fn active_state(&mut self) -> CryptographyResult<&mut DecrypterState> {
         match &mut self.state {
             Some(state) => Ok(state),
@@ -380,16 +392,17 @@ impl Decrypter {
         }
     }
 
-    fn update_out_len(state: &DecrypterState, data_len: usize) -> usize {
+    fn update_out_len(params: &AeadParams, state: &DecrypterState, data_len: usize) -> usize {
         let body_len = match state {
             DecrypterState::Header { buf, .. } => data_len.saturating_sub(HEADER_LEN - buf.len()),
             DecrypterState::Body { buffer, .. } => buffer.len() + data_len,
         };
-        (body_len / AES_128_GCM.wire_chunk_size()) * CHUNK_SIZE
+        (body_len / params.wire_chunk_size()) * CHUNK_SIZE
     }
 
     fn update_impl(
         py: pyo3::Python<'_>,
+        params: &AeadParams,
         state: &mut DecrypterState,
         mut data: &[u8],
         out: &mut [u8],
@@ -404,12 +417,12 @@ impl Decrypter {
                     return Ok(0);
                 }
                 let (salt, commitment) = buf.split_at(SALT_LEN);
-                let keys = derive_keys(py, &AES_128_GCM, key, salt, context)?;
+                let keys = derive_keys(py, params, key, salt, context)?;
                 if !cryptography_crypto::constant_time::bytes_eq(&keys.commitment, commitment) {
                     return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
                 }
-                let mut cipher = ChunkCipher::new(py, &AES_128_GCM, &keys)?;
-                let mut buffer = Vec::with_capacity(AES_128_GCM.wire_chunk_size());
+                let mut cipher = ChunkCipher::new(py, params, &keys)?;
+                let mut buffer = Vec::with_capacity(params.wire_chunk_size());
                 let written = Self::decrypt_chunks(py, &mut cipher, &mut buffer, data, out)?;
                 *state = DecrypterState::Body { cipher, buffer };
                 Ok(written)
@@ -458,43 +471,17 @@ impl Decrypter {
         buffer.extend_from_slice(data);
         Ok(written)
     }
-}
-
-#[pyo3::pymethods]
-impl Decrypter {
-    #[new]
-    fn new(key: CffiBuf<'_>, context: CffiBuf<'_>) -> CryptographyResult<Self> {
-        if key.as_bytes().len() != AES_128_GCM.key_len {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("key must be 16 bytes."),
-            ));
-        }
-        Ok(Decrypter {
-            state: Some(DecrypterState::Header {
-                key: key.as_bytes().to_vec(),
-                context: context.as_bytes().to_vec(),
-                buf: Vec::with_capacity(HEADER_LEN),
-            }),
-        })
-    }
-
-    #[staticmethod]
-    fn generate_key(
-        py: pyo3::Python<'_>,
-    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
-        crate::backend::rand::get_rand_bytes(py, AES_128_GCM.key_len)
-    }
 
     fn update<'p>(
         &mut self,
         py: pyo3::Python<'p>,
-        data: CffiBuf<'_>,
+        data: &[u8],
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let data = data.as_bytes();
+        let params = self.params;
         let state = self.active_state()?;
-        let out_len = Self::update_out_len(state, data.len());
+        let out_len = Self::update_out_len(params, state, data.len());
         let result = pyo3::types::PyBytes::new_with(py, out_len, |b| {
-            let n = Self::update_impl(py, state, data, b)?;
+            let n = Self::update_impl(py, params, state, data, b)?;
             debug_assert_eq!(n, out_len);
             Ok(())
         });
@@ -507,13 +494,12 @@ impl Decrypter {
     fn update_into(
         &mut self,
         py: pyo3::Python<'_>,
-        data: CffiBuf<'_>,
-        mut buf: CffiMutBuf<'_>,
+        data: &[u8],
+        out: &mut [u8],
     ) -> CryptographyResult<usize> {
-        let data = data.as_bytes();
+        let params = self.params;
         let state = self.active_state()?;
-        let out_len = Self::update_out_len(state, data.len());
-        let out = buf.as_mut_bytes();
+        let out_len = Self::update_out_len(params, state, data.len());
         if out.len() < out_len {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
@@ -521,7 +507,7 @@ impl Decrypter {
                 )),
             ));
         }
-        let result = Self::update_impl(py, state, data, out);
+        let result = Self::update_impl(py, params, state, data, out);
         if result.is_err() {
             self.state = None;
         }
@@ -561,11 +547,127 @@ impl Decrypter {
     }
 }
 
+macro_rules! define_variant {
+    ($encryptor:ident, $decryptor:ident, $params:ident) => {
+        #[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.chunked_encryption")]
+        pub(crate) struct $encryptor {
+            core: EncrypterCore,
+        }
+
+        #[pyo3::pymethods]
+        impl $encryptor {
+            #[new]
+            fn new(
+                py: pyo3::Python<'_>,
+                key: CffiBuf<'_>,
+                context: CffiBuf<'_>,
+            ) -> CryptographyResult<Self> {
+                Ok($encryptor {
+                    core: EncrypterCore::new(py, &$params, key.as_bytes(), context.as_bytes())?,
+                })
+            }
+
+            #[staticmethod]
+            fn generate_key(
+                py: pyo3::Python<'_>,
+            ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
+                crate::backend::rand::get_rand_bytes(py, $params.key_len)
+            }
+
+            fn update<'p>(
+                &mut self,
+                py: pyo3::Python<'p>,
+                data: CffiBuf<'_>,
+            ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+                self.core.update(py, data.as_bytes())
+            }
+
+            fn update_into(
+                &mut self,
+                py: pyo3::Python<'_>,
+                data: CffiBuf<'_>,
+                mut buf: CffiMutBuf<'_>,
+            ) -> CryptographyResult<usize> {
+                self.core
+                    .update_into(py, data.as_bytes(), buf.as_mut_bytes())
+            }
+
+            fn finalize<'p>(
+                &mut self,
+                py: pyo3::Python<'p>,
+            ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+                self.core.finalize(py)
+            }
+        }
+
+        #[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.chunked_encryption")]
+        pub(crate) struct $decryptor {
+            core: DecrypterCore,
+        }
+
+        #[pyo3::pymethods]
+        impl $decryptor {
+            #[new]
+            fn new(key: CffiBuf<'_>, context: CffiBuf<'_>) -> CryptographyResult<Self> {
+                Ok($decryptor {
+                    core: DecrypterCore::new(&$params, key.as_bytes(), context.as_bytes())?,
+                })
+            }
+
+            #[staticmethod]
+            fn generate_key(
+                py: pyo3::Python<'_>,
+            ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
+                crate::backend::rand::get_rand_bytes(py, $params.key_len)
+            }
+
+            fn update<'p>(
+                &mut self,
+                py: pyo3::Python<'p>,
+                data: CffiBuf<'_>,
+            ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+                self.core.update(py, data.as_bytes())
+            }
+
+            fn update_into(
+                &mut self,
+                py: pyo3::Python<'_>,
+                data: CffiBuf<'_>,
+                mut buf: CffiMutBuf<'_>,
+            ) -> CryptographyResult<usize> {
+                self.core
+                    .update_into(py, data.as_bytes(), buf.as_mut_bytes())
+            }
+
+            fn finalize<'p>(
+                &mut self,
+                py: pyo3::Python<'p>,
+            ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+                self.core.finalize(py)
+            }
+        }
+    };
+}
+
+define_variant!(
+    Cobblestone128Encryptor,
+    Cobblestone128Decryptor,
+    AES_128_GCM
+);
+define_variant!(
+    Cobblestone256Encryptor,
+    Cobblestone256Decryptor,
+    AES_256_GCM
+);
+
 #[pyo3::pymodule(gil_used = false)]
 #[pyo3(name = "chunked_encryption")]
 pub(crate) mod chunked_encryption_mod {
     #[pymodule_export]
-    use super::{Decrypter, Encrypter};
+    use super::{
+        Cobblestone128Decryptor, Cobblestone128Encryptor, Cobblestone256Decryptor,
+        Cobblestone256Encryptor,
+    };
 }
 
 #[cfg(test)]
