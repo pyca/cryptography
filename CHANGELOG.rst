@@ -10,6 +10,15 @@ Changelog
 
 * The :mod:`X.509 verification <cryptography.x509.verification>` APIs are now
   considered stable and are subject to our API stability policy.
+* :doc:`AES key wrapping </hazmat/primitives/keywrap>` is now implemented in
+  Rust, significantly improving its performance by eliminating a
+  Python-level loop that made one extension call per 8-byte block. As part
+  of this,
+  :func:`~cryptography.hazmat.primitives.keywrap.aes_key_unwrap_with_padding`
+  now raises
+  :class:`~cryptography.hazmat.primitives.keywrap.InvalidUnwrap` (instead of
+  ``ValueError``) for wrapped keys whose length is not a multiple of 8
+  bytes.
 * Parsing a Signed Certificate Timestamp list now rejects encodings that
   carry trailing bytes after the list or after an individual SCT, instead of
   silently ignoring them.

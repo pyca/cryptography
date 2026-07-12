@@ -242,6 +242,8 @@ mod _rust {
         use crate::backend::kdf::kdf;
         #[pymodule_export]
         use crate::backend::keys::keys;
+        #[pymodule_export]
+        use crate::backend::keywrap::keywrap;
         #[cfg(any(
             CRYPTOGRAPHY_IS_BORINGSSL,
             CRYPTOGRAPHY_IS_AWSLC,

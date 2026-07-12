@@ -74,6 +74,12 @@ class TestAESKeyWrap:
         with pytest.raises(keywrap.InvalidUnwrap):
             keywrap.aes_key_unwrap(b"sixteen_byte_key", b"\x00" * 27)
 
+    def test_wrap_unwrap_large_roundtrip(self):
+        wrapping_key = os.urandom(32)
+        key_to_wrap = os.urandom(4096)
+        wrapped = keywrap.aes_key_wrap(wrapping_key, key_to_wrap)
+        assert keywrap.aes_key_unwrap(wrapping_key, wrapped) == key_to_wrap
+
 
 class TestAESKeyWrapWithPadding:
     def test_wrap(self, subtests):
@@ -146,6 +152,22 @@ class TestAESKeyWrapWithPadding:
             keywrap.aes_key_unwrap_with_padding(
                 b"sixteen_byte_key", b"\x00" * 15
             )
+
+        # Keys to unwrap must be a multiple of 8 bytes
+        with pytest.raises(keywrap.InvalidUnwrap, match="multiple of 8 bytes"):
+            keywrap.aes_key_unwrap_with_padding(
+                b"sixteen_byte_key", b"\x00" * 17
+            )
+
+    def test_wrap_unwrap_large_roundtrip(self):
+        wrapping_key = os.urandom(32)
+        # Deliberately not a multiple of 8, to exercise padding.
+        key_to_wrap = os.urandom(4099)
+        wrapped = keywrap.aes_key_wrap_with_padding(wrapping_key, key_to_wrap)
+        assert (
+            keywrap.aes_key_unwrap_with_padding(wrapping_key, wrapped)
+            == key_to_wrap
+        )
 
     def test_wrap_empty_key_to_wrap(self):
         with pytest.raises(
