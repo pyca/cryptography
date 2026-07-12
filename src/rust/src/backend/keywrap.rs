@@ -38,18 +38,6 @@ fn ecb_ctx(
     Ok(ctx)
 }
 
-fn cipher_block(
-    ctx: &mut openssl::cipher_ctx::CipherCtx,
-    input: &[u8; 16],
-    out: &mut [u8; 16],
-) -> CryptographyResult<()> {
-    // SAFETY: `out` is exactly one block and ECB with padding disabled
-    // always writes exactly one block of output per block of input.
-    let n = unsafe { ctx.cipher_update_unchecked(input, Some(out))? };
-    debug_assert_eq!(n, 16);
-    Ok(())
-}
-
 fn wrap_core(
     ctx: &mut openssl::cipher_ctx::CipherCtx,
     mut a: [u8; 8],
@@ -58,15 +46,19 @@ fn wrap_core(
     debug_assert_eq!(r.len() % 8, 0);
     let n = r.len() / 8;
     let mut block = [0u8; 16];
-    let mut out = [0u8; 16];
+    // The safe `cipher_update` API requires room for an extra block, even
+    // though ECB with padding disabled always writes exactly one block of
+    // output per block of input.
+    let mut out = [0u8; 32];
     for j in 0..6u64 {
         for i in 0..n {
             block[..8].copy_from_slice(&a);
             block[8..].copy_from_slice(&r[i * 8..i * 8 + 8]);
-            cipher_block(ctx, &block, &mut out)?;
+            let written = ctx.cipher_update(&block, Some(&mut out))?;
+            assert_eq!(written, 16);
             let t = (n as u64) * j + (i as u64) + 1;
             a = (u64::from_be_bytes(out[..8].try_into().unwrap()) ^ t).to_be_bytes();
-            r[i * 8..i * 8 + 8].copy_from_slice(&out[8..]);
+            r[i * 8..i * 8 + 8].copy_from_slice(&out[8..16]);
         }
     }
 
@@ -84,15 +76,19 @@ fn unwrap_core(
     debug_assert_eq!(r.len() % 8, 0);
     let n = r.len() / 8;
     let mut block = [0u8; 16];
-    let mut out = [0u8; 16];
+    // The safe `cipher_update` API requires room for an extra block, even
+    // though ECB with padding disabled always writes exactly one block of
+    // output per block of input.
+    let mut out = [0u8; 32];
     for j in (0..6u64).rev() {
         for i in (0..n).rev() {
             let t = (n as u64) * j + (i as u64) + 1;
             block[..8].copy_from_slice(&(u64::from_be_bytes(a) ^ t).to_be_bytes());
             block[8..].copy_from_slice(&r[i * 8..i * 8 + 8]);
-            cipher_block(ctx, &block, &mut out)?;
+            let written = ctx.cipher_update(&block, Some(&mut out))?;
+            assert_eq!(written, 16);
             a.copy_from_slice(&out[..8]);
-            r[i * 8..i * 8 + 8].copy_from_slice(&out[8..]);
+            r[i * 8..i * 8 + 8].copy_from_slice(&out[8..16]);
         }
     }
 
@@ -199,9 +195,10 @@ fn aes_key_wrap_with_padding<'p>(
         let mut block = [0u8; 16];
         block[..8].copy_from_slice(&aiv);
         block[8..].copy_from_slice(&r);
-        let mut out = [0u8; 16];
-        cipher_block(&mut ctx, &block, &mut out)?;
-        Ok(pyo3::types::PyBytes::new(py, &out))
+        let mut out = [0u8; 32];
+        let written = ctx.cipher_update(&block, Some(&mut out))?;
+        assert_eq!(written, 16);
+        Ok(pyo3::types::PyBytes::new(py, &out[..16]))
     } else {
         let result = wrap_core(&mut ctx, aiv, &mut r)?;
         Ok(pyo3::types::PyBytes::new(py, &result))
@@ -234,10 +231,11 @@ fn aes_key_unwrap_with_padding<'p>(
 
     let (a, mut data) = if wrapped_key.len() == 16 {
         // RFC 5649 - 4.2 - exactly two 64-bit blocks
-        let mut out = [0u8; 16];
-        cipher_block(&mut ctx, wrapped_key.try_into().unwrap(), &mut out)?;
+        let mut out = [0u8; 32];
+        let written = ctx.cipher_update(wrapped_key, Some(&mut out))?;
+        assert_eq!(written, 16);
         let a: [u8; 8] = out[..8].try_into().unwrap();
-        (a, out[8..].to_vec())
+        (a, out[8..16].to_vec())
     } else {
         let a = wrapped_key[..8].try_into().unwrap();
         let mut r = wrapped_key[8..].to_vec();
