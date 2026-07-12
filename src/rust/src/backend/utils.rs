@@ -9,6 +9,27 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::serialization::{Encoding, PrivateFormat, PublicFormat};
 use crate::types;
 
+// Releasing and re-acquiring the GIL (or, on free-threaded builds,
+// detaching from the runtime) has a fixed cost, so it's only worth doing
+// when the cryptographic work is large enough to dominate it. This
+// matches CPython's own `HASHLIB_GIL_MINSIZE`.
+pub(crate) const GIL_DETACH_MINSIZE: usize = 2048;
+
+/// Runs `f` with the GIL released if `data_len` is large enough that the
+/// operation's cost dominates the cost of releasing and re-acquiring the
+/// GIL, otherwise runs it inline.
+pub(crate) fn detach_for_data<F, T>(py: pyo3::Python<'_>, data_len: usize, f: F) -> T
+where
+    F: FnOnce() -> T + pyo3::marker::Ungil,
+    T: pyo3::marker::Ungil,
+{
+    if data_len >= GIL_DETACH_MINSIZE {
+        py.detach(f)
+    } else {
+        f()
+    }
+}
+
 pub(crate) fn py_int_to_bn(
     py: pyo3::Python<'_>,
     v: &pyo3::Bound<'_, pyo3::PyAny>,

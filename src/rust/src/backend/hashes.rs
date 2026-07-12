@@ -98,8 +98,11 @@ impl Hash {
         })
     }
 
-    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        self.update_bytes(data.as_bytes())
+    fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
+        let data = data.as_bytes();
+        let ctx = self.get_mut_ctx()?;
+        crate::backend::utils::detach_for_data(py, data.len(), || ctx.update(data))?;
+        Ok(())
     }
 
     pub(crate) fn finalize<'p>(
@@ -143,6 +146,7 @@ impl Hash {
         data: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let md = message_digest_from_algorithm(py, algorithm)?;
+        let data_bytes = data.as_bytes();
 
         #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
         {
@@ -151,15 +155,19 @@ impl Hash {
                     .getattr(pyo3::intern!(py, "digest_size"))?
                     .extract::<usize>()?;
                 let result = pyo3::types::PyBytes::new_with(py, digest_size, |b| {
-                    openssl::hash::hash_xof(md, data.as_bytes(), b)
-                        .map_err(CryptographyError::from)?;
+                    crate::backend::utils::detach_for_data(py, data_bytes.len(), || {
+                        openssl::hash::hash_xof(md, data_bytes, b)
+                    })
+                    .map_err(CryptographyError::from)?;
                     Ok(())
                 })?;
                 return Ok(result);
             }
         }
 
-        let digest = openssl::hash::hash(md, data.as_bytes())?;
+        let digest = crate::backend::utils::detach_for_data(py, data_bytes.len(), || {
+            openssl::hash::hash(md, data_bytes)
+        })?;
         Ok(pyo3::types::PyBytes::new(py, &digest))
     }
 }
@@ -171,13 +179,6 @@ pub(crate) struct XOFHash {
     ctx: openssl::hash::Hasher,
     bytes_remaining: u64,
     squeezed: bool,
-}
-
-impl XOFHash {
-    pub(crate) fn update_bytes(&mut self, data: &[u8]) -> CryptographyResult<()> {
-        self.ctx.update(data)?;
-        Ok(())
-    }
 }
 
 #[pyo3::pymethods]
@@ -225,13 +226,16 @@ impl XOFHash {
         }
     }
 
-    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
+    fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
         if self.squeezed {
             return Err(CryptographyError::from(
                 exceptions::AlreadyFinalized::new_err("Context was already squeezed."),
             ));
         }
-        self.update_bytes(data.as_bytes())
+        let data = data.as_bytes();
+        let ctx = &mut self.ctx;
+        crate::backend::utils::detach_for_data(py, data.len(), || ctx.update(data))?;
+        Ok(())
     }
     #[cfg(any(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER, CRYPTOGRAPHY_IS_AWSLC))]
     fn squeeze<'p>(
@@ -249,8 +253,9 @@ impl XOFHash {
                     "Exceeded maximum squeeze limit specified by digest_size.",
                 )
             })?;
+        let ctx = &mut self.ctx;
         let result = pyo3::types::PyBytes::new_with(py, length, |b| {
-            self.ctx.squeeze_xof(b).unwrap();
+            crate::backend::utils::detach_for_data(py, length, || ctx.squeeze_xof(b)).unwrap();
             Ok(())
         })?;
         Ok(result)

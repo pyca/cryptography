@@ -95,19 +95,26 @@ impl EvpCipherAead {
     }
 
     fn process_aad(
+        py: pyo3::Python<'_>,
         ctx: &mut openssl::cipher_ctx::CipherCtx,
         aad: Option<Aad<'_>>,
     ) -> CryptographyResult<()> {
         match aad {
             Some(Aad::Single(ad)) => {
-                check_length(ad.as_bytes())?;
-                ctx.cipher_update(ad.as_bytes(), None)?;
+                let ad = ad.as_bytes();
+                check_length(ad)?;
+                crate::backend::utils::detach_for_data(py, ad.len(), || {
+                    ctx.cipher_update(ad, None)
+                })?;
             }
             Some(Aad::List(ads)) => {
                 for ad in ads.iter() {
                     let ad = ad.extract::<CffiBuf<'_>>()?;
-                    check_length(ad.as_bytes())?;
-                    ctx.cipher_update(ad.as_bytes(), None)?;
+                    let ad_bytes = ad.as_bytes();
+                    check_length(ad_bytes)?;
+                    crate::backend::utils::detach_for_data(py, ad_bytes.len(), || {
+                        ctx.cipher_update(ad_bytes, None)
+                    })?;
                 }
             }
             None => {}
@@ -205,7 +212,7 @@ impl EvpCipherAead {
             ctx.encrypt_init(None, None, nonce)?;
         }
 
-        Self::process_aad(&mut ctx, aad)?;
+        Self::process_aad(py, &mut ctx, aad)?;
 
         let ciphertext;
         let tag;
@@ -215,7 +222,10 @@ impl EvpCipherAead {
             (ciphertext, tag) = buf.split_at_mut(plaintext.len());
         }
 
-        Self::process_data(&mut ctx, plaintext, ciphertext, self.is_ccm)?;
+        let is_ccm = self.is_ccm;
+        crate::backend::utils::detach_for_data(py, plaintext.len(), || {
+            Self::process_data(&mut ctx, plaintext, ciphertext, is_ccm)
+        })?;
 
         ctx.tag(tag).map_err(CryptographyError::from)?;
 
@@ -270,10 +280,13 @@ impl EvpCipherAead {
             ctx.set_tag(tag)?;
         }
 
-        Self::process_aad(&mut ctx, aad)?;
+        Self::process_aad(py, &mut ctx, aad)?;
 
-        Self::process_data(&mut ctx, ciphertext_data, buf, self.is_ccm)
-            .map_err(|_| exceptions::InvalidTag::new_err(()))?;
+        let is_ccm = self.is_ccm;
+        crate::backend::utils::detach_for_data(py, ciphertext_data.len(), || {
+            Self::process_data(&mut ctx, ciphertext_data, buf, is_ccm)
+        })
+        .map_err(|_| exceptions::InvalidTag::new_err(()))?;
 
         Ok(())
     }
@@ -300,7 +313,7 @@ impl EvpAead {
 
     fn encrypt_into(
         &self,
-        _py: pyo3::Python<'_>,
+        py: pyo3::Python<'_>,
         plaintext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
@@ -315,15 +328,17 @@ impl EvpAead {
             assert!(aad.is_none());
             b""
         };
-        self.ctx
-            .encrypt(plaintext, nonce.unwrap_or(b""), ad, buf)
-            .map_err(CryptographyError::from)?;
+        let ctx = &self.ctx;
+        crate::backend::utils::detach_for_data(py, plaintext.len() + ad.len(), || {
+            ctx.encrypt(plaintext, nonce.unwrap_or(b""), ad, buf)
+        })
+        .map_err(CryptographyError::from)?;
         Ok(())
     }
 
     fn decrypt_into(
         &self,
-        _py: pyo3::Python<'_>,
+        py: pyo3::Python<'_>,
         ciphertext: &[u8],
         aad: Option<Aad<'_>>,
         nonce: Option<&[u8]>,
@@ -337,9 +352,11 @@ impl EvpAead {
             b""
         };
 
-        self.ctx
-            .decrypt(ciphertext, nonce.unwrap_or(b""), ad, buf)
-            .map_err(|_| exceptions::InvalidTag::new_err(()))?;
+        let ctx = &self.ctx;
+        crate::backend::utils::detach_for_data(py, ciphertext.len() + ad.len(), || {
+            ctx.decrypt(ciphertext, nonce.unwrap_or(b""), ad, buf)
+        })
+        .map_err(|_| exceptions::InvalidTag::new_err(()))?;
 
         Ok(())
     }

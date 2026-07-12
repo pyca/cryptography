@@ -82,8 +82,11 @@ impl Hmac {
         Hmac::new_bytes(py, key.as_bytes(), algorithm)
     }
 
-    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        self.update_bytes(data.as_bytes())
+    fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
+        let data = data.as_bytes();
+        let ctx = self.get_mut_ctx()?;
+        crate::backend::utils::detach_for_data(py, data.len(), || ctx.update(data))?;
+        Ok(())
     }
 
     pub(crate) fn finalize<'p>(

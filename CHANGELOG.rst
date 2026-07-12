@@ -10,6 +10,10 @@ Changelog
 
 * The :mod:`X.509 verification <cryptography.x509.verification>` APIs are now
   considered stable and are subject to our API stability policy.
+* Symmetric operations (hashing, HMAC, CMAC, Poly1305, cipher, and AEAD
+  operations) now release the GIL when operating on data at least 2048 bytes
+  long, allowing other Python threads to run while the cryptographic
+  operation executes.
 * Parsing a Signed Certificate Timestamp list now rejects encodings that
   carry trailing bytes after the list or after an individual SCT, instead of
   silently ignoring them.

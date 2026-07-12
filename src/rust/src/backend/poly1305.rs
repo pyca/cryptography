@@ -34,8 +34,10 @@ impl Poly1305Boring {
         Ok(Poly1305Boring { context: ctx })
     }
 
-    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        self.context.update(data.as_bytes());
+    fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
+        let data = data.as_bytes();
+        let ctx = &mut self.context;
+        crate::backend::utils::detach_for_data(py, data.len(), || ctx.update(data));
         Ok(())
     }
     fn finalize<'p>(
@@ -87,9 +89,10 @@ impl Poly1305Open {
             })?,
         })
     }
-    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
+    fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
         let buf = data.as_bytes();
-        self.signer.update(buf)?;
+        let signer = &mut self.signer;
+        crate::backend::utils::detach_for_data(py, buf.len(), || signer.update(buf))?;
         Ok(())
     }
     fn finalize<'p>(
@@ -150,7 +153,7 @@ impl Poly1305 {
         data: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut p = Poly1305::new(key)?;
-        p.update(data)?;
+        p.update(py, data)?;
         p.finalize(py)
     }
 
@@ -162,15 +165,15 @@ impl Poly1305 {
         tag: &[u8],
     ) -> CryptographyResult<()> {
         let mut p = Poly1305::new(key)?;
-        p.update(data)?;
+        p.update(py, data)?;
         p.verify(py, tag)
     }
 
-    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
+    fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
         self.inner
             .as_mut()
             .map_or(Err(exceptions::already_finalized_error()), |b| {
-                b.update(data)
+                b.update(py, data)
             })
     }
 

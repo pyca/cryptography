@@ -96,8 +96,11 @@ impl Cmac {
         Cmac::new_with_algorithm(py, &algorithm)
     }
 
-    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        self.update_bytes(data.as_bytes())
+    fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
+        let data = data.as_bytes();
+        let ctx = self.get_mut_ctx()?;
+        crate::backend::utils::detach_for_data(py, data.len(), || ctx.update(data))?;
+        Ok(())
     }
 
     fn finalize<'p>(
