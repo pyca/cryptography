@@ -41,9 +41,12 @@ fn ecb_ctx(
 fn wrap_core(
     ctx: &mut openssl::cipher_ctx::CipherCtx,
     mut a: [u8; 8],
-    r: &mut [u8],
+    r: &[u8],
 ) -> CryptographyResult<Vec<u8>> {
     let n = r.len() / 8;
+    let mut result = vec![0u8; 8 + r.len()];
+    let data = &mut result[8..];
+    data.copy_from_slice(r);
     let mut block = [0u8; 16];
     // The safe `cipher_update` API requires room for an extra block, even
     // though ECB with padding disabled always writes exactly one block of
@@ -52,18 +55,16 @@ fn wrap_core(
     for j in 0..6u64 {
         for i in 0..n {
             block[..8].copy_from_slice(&a);
-            block[8..].copy_from_slice(&r[i * 8..i * 8 + 8]);
+            block[8..].copy_from_slice(&data[i * 8..i * 8 + 8]);
             let written = ctx.cipher_update(&block, Some(&mut out))?;
             assert_eq!(written, 16);
             let t = (n as u64) * j + (i as u64) + 1;
             a = (u64::from_be_bytes(out[..8].try_into().unwrap()) ^ t).to_be_bytes();
-            r[i * 8..i * 8 + 8].copy_from_slice(&out[8..16]);
+            data[i * 8..i * 8 + 8].copy_from_slice(&out[8..16]);
         }
     }
 
-    let mut result = Vec::with_capacity(8 + r.len());
-    result.extend_from_slice(&a);
-    result.extend_from_slice(r);
+    result[..8].copy_from_slice(&a);
     Ok(result)
 }
 
@@ -101,7 +102,7 @@ fn aes_key_wrap<'p>(
     key_to_wrap: CffiBuf<'_>,
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let _ = backend;
+    _ = backend;
     let key_to_wrap = key_to_wrap.as_bytes();
 
     let mut ctx = ecb_ctx(wrapping_key.as_bytes(), openssl::symm::Mode::Encrypt)?;
@@ -119,8 +120,7 @@ fn aes_key_wrap<'p>(
         ));
     }
 
-    let mut r = key_to_wrap.to_vec();
-    let result = wrap_core(&mut ctx, [0xa6; 8], &mut r)?;
+    let result = wrap_core(&mut ctx, [0xa6; 8], key_to_wrap)?;
     Ok(pyo3::types::PyBytes::new(py, &result))
 }
 
@@ -132,7 +132,7 @@ fn aes_key_unwrap<'p>(
     wrapped_key: CffiBuf<'_>,
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let _ = backend;
+    _ = backend;
     let wrapped_key = wrapped_key.as_bytes();
 
     if wrapped_key.len() < 24 {
@@ -168,7 +168,7 @@ fn aes_key_wrap_with_padding<'p>(
     key_to_wrap: CffiBuf<'_>,
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let _ = backend;
+    _ = backend;
     let key_to_wrap = key_to_wrap.as_bytes();
 
     let mut ctx = ecb_ctx(wrapping_key.as_bytes(), openssl::symm::Mode::Encrypt)?;
@@ -198,7 +198,7 @@ fn aes_key_wrap_with_padding<'p>(
         assert_eq!(written, 16);
         Ok(pyo3::types::PyBytes::new(py, &out[..16]))
     } else {
-        let result = wrap_core(&mut ctx, aiv, &mut r)?;
+        let result = wrap_core(&mut ctx, aiv, &r)?;
         Ok(pyo3::types::PyBytes::new(py, &result))
     }
 }
@@ -211,7 +211,7 @@ fn aes_key_unwrap_with_padding<'p>(
     wrapped_key: CffiBuf<'_>,
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-    let _ = backend;
+    _ = backend;
     let wrapped_key = wrapped_key.as_bytes();
 
     if wrapped_key.len() < 16 {
