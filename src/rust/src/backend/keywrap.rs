@@ -43,7 +43,6 @@ fn wrap_core(
     mut a: [u8; 8],
     r: &mut [u8],
 ) -> CryptographyResult<Vec<u8>> {
-    debug_assert_eq!(r.len() % 8, 0);
     let n = r.len() / 8;
     let mut block = [0u8; 16];
     // The safe `cipher_update` API requires room for an extra block, even
@@ -73,7 +72,6 @@ fn unwrap_core(
     mut a: [u8; 8],
     r: &mut [u8],
 ) -> CryptographyResult<[u8; 8]> {
-    debug_assert_eq!(r.len() % 8, 0);
     let n = r.len() / 8;
     let mut block = [0u8; 16];
     // The safe `cipher_update` API requires room for an extra block, even
