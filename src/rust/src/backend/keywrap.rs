@@ -50,8 +50,6 @@ fn cipher_block(
     Ok(())
 }
 
-// RFC 3394 Key Wrap - 2.2.1 (index method). `r` holds the data to wrap and
-// is transformed in place; the result is `a || r`.
 fn wrap_core(
     ctx: &mut openssl::cipher_ctx::CipherCtx,
     mut a: [u8; 8],
@@ -78,8 +76,6 @@ fn wrap_core(
     Ok(result)
 }
 
-// RFC 3394 Key Unwrap - 2.2.2 (index method). `r` is unwrapped in place;
-// the recovered integrity check value is returned.
 fn unwrap_core(
     ctx: &mut openssl::cipher_ctx::CipherCtx,
     mut a: [u8; 8],
@@ -189,7 +185,6 @@ fn aes_key_wrap_with_padding<'p>(
         ));
     }
 
-    // RFC 5649 - the alternative initial value carries the unpadded length.
     let mut aiv = [0u8; 8];
     aiv[..4].copy_from_slice(b"\xa6\x59\x59\xa6");
     aiv[4..].copy_from_slice(&(key_to_wrap.len() as u32).to_be_bytes());
