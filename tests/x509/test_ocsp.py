@@ -167,6 +167,13 @@ class TestOCSPRequest:
         with pytest.raises(x509.DuplicateExtension):
             req.extensions
 
+    def test_load_request_invalid_version(self):
+        with pytest.raises(ValueError):
+            _load_data(
+                os.path.join("x509", "ocsp", "req-invalid-version.der"),
+                ocsp.load_der_ocsp_request,
+            )
+
     def test_load_request_two_requests(self):
         with pytest.raises(NotImplementedError):
             _load_data(
@@ -1278,6 +1285,13 @@ class TestOCSPResponse:
     def test_bad_response(self):
         with pytest.raises(ValueError):
             ocsp.load_der_ocsp_response(b"invalid")
+
+    def test_load_response_invalid_version(self):
+        with pytest.raises(ValueError):
+            _load_data(
+                os.path.join("x509", "ocsp", "resp-invalid-version.der"),
+                ocsp.load_der_ocsp_response,
+            )
 
     def test_load_response(self):
         resp = _load_data(

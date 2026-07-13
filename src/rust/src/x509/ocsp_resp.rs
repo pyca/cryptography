@@ -45,6 +45,18 @@ pub(crate) fn load_der_ocsp_response(
             ))
         }
     };
+    if let Some(response_bytes) = response.response_bytes.as_ref() {
+        let version = match &response_bytes.response {
+            Response::Basic(basic) => basic.get().tbs_response_data.version,
+        };
+        if version != 0 {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "{version} is not a valid OCSP response version"
+                )),
+            ));
+        }
+    }
     Ok(OCSPResponse {
         raw: Arc::new(raw),
         cached_extensions: pyo3::sync::PyOnceLock::new(),

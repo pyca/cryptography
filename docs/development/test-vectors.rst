@@ -887,6 +887,12 @@ Custom X.509 OCSP Test Vectors
   invalid hash algorithm OID.
 * ``x509/ocsp/req-acceptable-responses.der`` - An OCSP request containing an
   acceptable responses extension.
+* ``x509/ocsp/req-invalid-version.der`` - ``req-sha1.der`` modified so the
+  ``tbsRequest`` carries an explicit version of 1, which is not defined by
+  RFC 6960.
+* ``x509/ocsp/resp-invalid-version.der`` - ``resp-sha256.der`` modified so the
+  ``tbsResponseData`` carries an explicit version of 1, which is not defined by
+  RFC 6960.
 
 Custom PKCS12 Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

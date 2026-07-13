@@ -22,6 +22,11 @@ Changelog
   ``GeneralizedTime`` that carries fractional seconds or another non-DER form,
   matching the strict encoding already required for every other X.509 time
   field.
+* :func:`~cryptography.x509.ocsp.load_der_ocsp_request` and
+  :func:`~cryptography.x509.ocsp.load_der_ocsp_response` now reject a request
+  or response whose ``version`` field is not ``v1``, the only version defined
+  by RFC 6960, matching the version validation already performed when loading
+  certificates, CSRs and CRLs.
 * :class:`~cryptography.hazmat.primitives.hashes.XOFHash` is now supported
   when building against AWS-LC.
 * HMAC (and therefore PBKDF2-HMAC) with SHA-3 hashes is now supported when
