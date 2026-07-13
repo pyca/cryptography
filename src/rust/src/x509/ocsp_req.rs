@@ -26,6 +26,15 @@ pub(crate) fn load_der_ocsp_request(
 ) -> CryptographyResult<OCSPRequest> {
     let raw = OwnedOCSPRequest::try_new(data, |data| asn1::parse_single(data.as_bytes(py)))?;
 
+    let version = raw.borrow_dependent().tbs_request.version;
+    if version != 0 {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(format!(
+                "{version} is not a valid OCSP request version"
+            )),
+        ));
+    }
+
     if raw
         .borrow_dependent()
         .tbs_request
