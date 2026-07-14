@@ -24,6 +24,18 @@ updates:
       # Also update indirect dependencies
       - dependency-type: all
     open-pull-requests-limit: 1024
+    cooldown:
+      exclude:
+        - asn1
+        - asn1-derive
+        - openssl
+        - openssl-macros
+        - openssl-sys
+        - pyo3
+        - pyo3-build-config
+        - pyo3-ffi
+        - pyo3-macros
+        - pyo3-macros-backend
 
   - package-ecosystem: uv
     directories:
@@ -37,3 +49,17 @@ updates:
       # Also update indirect dependencies
       - dependency-type: all
     open-pull-requests-limit: 1024
+    cooldown:
+      exclude:
+        - coverage
+        - mypy
+        - nox
+        - pytest
+        - pytest-benchmark
+        - pytest-cov
+        - pytest-randomly
+        - pytest-xdist
+        - ruff
+        - uv
+        - cffi
+        - maturin
