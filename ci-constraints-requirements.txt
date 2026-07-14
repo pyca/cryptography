@@ -100,7 +100,7 @@ markupsafe==3.0.3
     # via jinja2
 mypy==1.19.1 ; python_full_version < '3.10'
     # via cryptography (pyproject.toml:dev)
-mypy==2.1.0 ; python_full_version >= '3.10'
+mypy==2.3.0 ; python_full_version >= '3.10'
     # via cryptography (pyproject.toml:dev)
 mypy-extensions==1.1.0
     # via mypy
