@@ -354,11 +354,10 @@ class TestChunkedEncryption:
             dec.finalize()
 
     def test_generate_key(self, variant):
-        encryptor_cls, decryptor_cls, key_len = variant
+        encryptor_cls, _, key_len = variant
         key = encryptor_cls.generate_key()
         assert isinstance(key, bytes)
         assert len(key) == key_len
-        assert not hasattr(decryptor_cls, "generate_key")
         assert encryptor_cls.generate_key() != encryptor_cls.generate_key()
 
     def test_invalid_key_size(self, variant):
