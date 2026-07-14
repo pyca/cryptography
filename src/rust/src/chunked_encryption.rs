@@ -612,13 +612,6 @@ impl Cobblestone128Decryptor {
         })
     }
 
-    #[staticmethod]
-    fn generate_key(
-        py: pyo3::Python<'_>,
-    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
-        crate::backend::rand::get_rand_bytes(py, AES_128_GCM.key_len)
-    }
-
     fn update<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -710,13 +703,6 @@ impl Cobblestone256Decryptor {
         })
     }
 
-    #[staticmethod]
-    fn generate_key(
-        py: pyo3::Python<'_>,
-    ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyBytes>> {
-        crate::backend::rand::get_rand_bytes(py, AES_256_GCM.key_len)
-    }
-
     fn update<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -757,32 +743,8 @@ pub(crate) mod chunked_encryption_mod {
 mod tests {
     use super::{ChunkNonces, MAX_CHUNK_COUNT, NONCE_LEN};
 
-    #[test]
-    fn test_chunk_nonces_xor_counter() {
-        let mut nonces = ChunkNonces {
-            base_nonce: [0xab; NONCE_LEN],
-            counter: 0,
-        };
-        assert_eq!(nonces.next().ok().unwrap(), [0xab; NONCE_LEN]);
-
-        let mut expected = [0xab; NONCE_LEN];
-        expected[NONCE_LEN - 1] ^= 0x01;
-        assert_eq!(nonces.next().ok().unwrap(), expected);
-
-        let mut nonces = ChunkNonces {
-            base_nonce: [0xab; NONCE_LEN],
-            counter: 0x0123456789,
-        };
-        let mut expected = [0xab; NONCE_LEN];
-        for (n, c) in expected[NONCE_LEN - 8..]
-            .iter_mut()
-            .zip(0x0123456789u64.to_be_bytes())
-        {
-            *n ^= c;
-        }
-        assert_eq!(nonces.next().ok().unwrap(), expected);
-    }
-
+    // Reaching the chunk counter limit requires processing a 4 PiB message,
+    // so this error path can't be exercised from the Python tests.
     #[test]
     fn test_chunk_nonces_counter_limit() {
         let mut nonces = ChunkNonces {

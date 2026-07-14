@@ -143,7 +143,7 @@ class TestChunkedEncryption:
         encryptor_cls, decryptor_cls, _ = variant
         key = encryptor_cls.generate_key()
         ciphertext = _encrypt_all(encryptor_cls, key, b"", b"message")
-        dec = decryptor_cls(decryptor_cls.generate_key(), b"")
+        dec = decryptor_cls(encryptor_cls.generate_key(), b"")
         with pytest.raises(InvalidTag):
             dec.update(ciphertext)
 
@@ -284,8 +284,8 @@ class TestChunkedEncryption:
         assert dec.finalize() == b"abc"
 
     def test_update_into_zero_output(self, variant):
-        _, decryptor_cls, _ = variant
-        key = decryptor_cls.generate_key()
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
         dec = decryptor_cls(key, b"")
         assert dec.update_into(b"", bytearray(0)) == 0
 
@@ -347,8 +347,8 @@ class TestChunkedEncryption:
             dec.finalize()
 
     def test_finalize_only_decryptor_rejects_empty_stream(self, variant):
-        _, decryptor_cls, _ = variant
-        key = decryptor_cls.generate_key()
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
         dec = decryptor_cls(key, b"")
         with pytest.raises(InvalidTag):
             dec.finalize()
@@ -358,7 +358,7 @@ class TestChunkedEncryption:
         key = encryptor_cls.generate_key()
         assert isinstance(key, bytes)
         assert len(key) == key_len
-        assert len(decryptor_cls.generate_key()) == key_len
+        assert not hasattr(decryptor_cls, "generate_key")
         assert encryptor_cls.generate_key() != encryptor_cls.generate_key()
 
     def test_invalid_key_size(self, variant):

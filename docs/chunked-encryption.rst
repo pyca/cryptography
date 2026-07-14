@@ -11,13 +11,6 @@ instantiations: **Cobblestone-128** (SHA-512 and AES-128-GCM, the
 recommended choice) and **Cobblestone-256** (SHA-512 and AES-256-GCM,
 for environments that mandate 256-bit keys).
 
-A message is encrypted in 16 KiB chunks, each of which is individually
-authenticated, so decryption can also be performed as a stream:
-decrypted data is returned incrementally, and only authenticated
-plaintext is ever returned. Reordering, truncating, or extending the
-ciphertext is detected. The scheme is also key committing: a ciphertext
-can only be decrypted with the key it was encrypted with.
-
 .. doctest::
 
     >>> from cryptography.chunked_encryption import (
@@ -47,9 +40,8 @@ can only be decrypted with the key it was encrypted with.
 
     :param key: A 16-byte key. This **must** be kept secret, and
         **must** be uniformly random (e.g. the output of
-        :meth:`generate_key`, :func:`os.urandom`, or a key derivation
-        function — never a password). A single key may be used to
-        encrypt a practically unlimited number of messages.
+        :meth:`generate_key` — never a password). A single key may be
+        used to encrypt a practically unlimited number of messages.
     :type key: :term:`bytes-like`
     :param context: Application-provided context, bound to the
         ciphertext. Decryption fails unless the same value is passed to
@@ -86,9 +78,7 @@ can only be decrypted with the key it was encrypted with.
         :type data: :term:`bytes-like`
         :param buf: A writable buffer to write the ciphertext into. A
             buffer of ``len(data) + len(data) // 1024 + 16456`` bytes
-            is always large enough; the exact number of bytes required
-            for a given call is included in the :class:`ValueError`
-            raised if the buffer is too small.
+            is always large enough.
         :type buf: :term:`bytes-like`
         :return int: The number of bytes written to ``buf``.
         :raises ValueError: If ``buf`` is too small.
@@ -96,9 +86,8 @@ can only be decrypted with the key it was encrypted with.
     .. method:: finalize()
 
         Encrypts the final chunk and returns the last portion of the
-        ciphertext. This must always be called, even if ``update``
-        returned all but the last few bytes of ciphertext, and the
-        instance cannot be used afterwards.
+        ciphertext. This must always be called, and the instance cannot
+        be used afterwards.
 
         :return bytes: The remainder of the ciphertext.
         :raises cryptography.exceptions.AlreadyFinalized: If
@@ -131,12 +120,6 @@ can only be decrypted with the key it was encrypted with.
     :type context: :term:`bytes-like`
     :raises ValueError: If ``key`` is not 16 bytes.
 
-    .. staticmethod:: generate_key()
-
-        Generates a fresh 16-byte key.
-
-        :return bytes: A new key.
-
     .. method:: update(data)
 
         Processes ``data``, which need not be aligned to any boundary,
@@ -159,9 +142,7 @@ can only be decrypted with the key it was encrypted with.
         :type data: :term:`bytes-like`
         :param buf: A writable buffer to write the plaintext into. A
             buffer of ``len(data) + 16400`` bytes is always large
-            enough; the exact number of bytes required for a given call
-            is included in the :class:`ValueError` raised if the buffer
-            is too small.
+            enough.
         :type buf: :term:`bytes-like`
         :return int: The number of bytes written to ``buf``.
         :raises ValueError: If ``buf`` is too small.
