@@ -27,6 +27,10 @@ Changelog
   or response whose ``version`` field is not ``v1``, the only version defined
   by RFC 6960, matching the version validation already performed when loading
   certificates, CSRs and CRLs.
+* Decrypting a PKCS7 ``EnvelopedData`` structure now rejects a non-zero
+  ``EnvelopedData`` or ``RecipientInfo`` ``version``, which RFC 5652 fixes at
+  ``0`` for the structure shape that is accepted, instead of ignoring the
+  field.
 * :class:`~cryptography.hazmat.primitives.hashes.XOFHash` is now supported
   when building against AWS-LC.
 * HMAC (and therefore PBKDF2-HMAC) with SHA-3 hashes is now supported when

@@ -1326,6 +1326,37 @@ class TestPKCS7Decrypt:
         with pytest.raises(ValueError):
             pkcs7.pkcs7_decrypt_der(enveloped, certificate, private_key, [])
 
+    @pytest.mark.parametrize("occurrence", [0, 1])
+    def test_pkcs7_decrypt_der_invalid_version(
+        self, occurrence, data, certificate, private_key
+    ):
+        # occurrence 0 is the EnvelopedData version, occurrence 1 is the
+        # RecipientInfo version; both are the only "INTEGER 0" fields that
+        # appear before the (large) serial number, and RFC 5652 fixes both at 0
+        # for the structure we accept.
+        builder = (
+            pkcs7.PKCS7EnvelopeBuilder()
+            .set_data(data)
+            .add_recipient(certificate)
+        )
+        enveloped = bytearray(builder.encrypt(serialization.Encoding.DER, []))
+
+        positions = []
+        start = 0
+        while True:
+            i = enveloped.find(b"\x02\x01\x00", start)
+            if i == -1:
+                break
+            positions.append(i)
+            start = i + 3
+        # Bump the value byte to a version RFC 5652 does not permit here.
+        enveloped[positions[occurrence] + 2] = 0x2A
+
+        with pytest.raises(ValueError):
+            pkcs7.pkcs7_decrypt_der(
+                bytes(enveloped), certificate, private_key, []
+            )
+
     def test_pkcs7_decrypt_text_no_header(
         self, data, certificate, private_key
     ):

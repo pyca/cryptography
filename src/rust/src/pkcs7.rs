@@ -248,6 +248,18 @@ fn decrypt_der<'p>(
             // Extract enveloped data
             let enveloped_data = data.into_inner();
 
+            // For the structure we accept here (no originatorInfo and no
+            // unprotectedAttrs), RFC 5652 6.1 fixes the EnvelopedData version at
+            // 0, so anything else is malformed input.
+            if enveloped_data.version != 0 {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(format!(
+                        "{} is not a valid EnvelopedData version",
+                        enveloped_data.version
+                    )),
+                ));
+            }
+
             // Get recipients, and the one matching with the given certificate (if any)
             let mut recipient_infos = enveloped_data.recipient_infos.unwrap_read().clone();
             let recipient_certificate = certificate.get().raw.borrow_dependent();
@@ -269,6 +281,18 @@ fn decrypt_der<'p>(
                     ));
                 }
             };
+
+            // A KeyTransRecipientInfo that identifies the recipient by
+            // issuerAndSerialNumber (the only form we parse) is version 0 per
+            // RFC 5652 6.2.1; reject any other value as malformed.
+            if recipient_info.version != 0 {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(format!(
+                        "{} is not a valid RecipientInfo version",
+                        recipient_info.version
+                    )),
+                ));
+            }
 
             // Raise error when the key encryption algorithm is not RSA
             let key = match recipient_info.key_encryption_algorithm.oid() {
