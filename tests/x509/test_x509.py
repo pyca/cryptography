@@ -2988,6 +2988,8 @@ class TestCertificateBuilder:
         )
         with pytest.raises(ValueError):
             builder.sign(subject_private_key, hashes.SHA256())
+        with pytest.raises(ValueError):
+            builder.create_unsigned()
 
     def test_no_issuer_name(self, rsa_key_2048: rsa.RSAPrivateKey):
         subject_private_key = rsa_key_2048
@@ -3003,6 +3005,8 @@ class TestCertificateBuilder:
         )
         with pytest.raises(ValueError):
             builder.sign(subject_private_key, hashes.SHA256())
+        with pytest.raises(ValueError):
+            builder.create_unsigned()
 
     def test_no_public_key(self, rsa_key_2048: rsa.RSAPrivateKey):
         subject_private_key = rsa_key_2048
@@ -3020,6 +3024,8 @@ class TestCertificateBuilder:
         )
         with pytest.raises(ValueError):
             builder.sign(subject_private_key, hashes.SHA256())
+        with pytest.raises(ValueError):
+            builder.create_unsigned()
 
     def test_no_not_valid_before(self, rsa_key_2048: rsa.RSAPrivateKey):
         subject_private_key = rsa_key_2048
@@ -3037,6 +3043,8 @@ class TestCertificateBuilder:
         )
         with pytest.raises(ValueError):
             builder.sign(subject_private_key, hashes.SHA256())
+        with pytest.raises(ValueError):
+            builder.create_unsigned()
 
     def test_no_not_valid_after(self, rsa_key_2048: rsa.RSAPrivateKey):
         subject_private_key = rsa_key_2048
@@ -3054,6 +3062,8 @@ class TestCertificateBuilder:
         )
         with pytest.raises(ValueError):
             builder.sign(subject_private_key, hashes.SHA256())
+        with pytest.raises(ValueError):
+            builder.create_unsigned()
 
     def test_no_serial_number(self, rsa_key_2048: rsa.RSAPrivateKey):
         subject_private_key = rsa_key_2048
@@ -3071,6 +3081,8 @@ class TestCertificateBuilder:
         )
         with pytest.raises(ValueError):
             builder.sign(subject_private_key, hashes.SHA256())
+        with pytest.raises(ValueError):
+            builder.create_unsigned()
 
     def test_issuer_name_must_be_a_name_type(self):
         builder = x509.CertificateBuilder()
@@ -4784,6 +4796,62 @@ class TestCertificateBuilder:
         ext = cert.extensions.get_extension_for_oid(unrecognized.oid)
 
         assert ext.value == unrecognized
+
+    def test_sign_without_private_key(self, rsa_key_2048: rsa.RSAPrivateKey):
+        subject_private_key = rsa_key_2048
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = (
+            x509.CertificateBuilder()
+            .serial_number(777)
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "NO")])
+            )
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "NO")])
+            )
+            .public_key(subject_private_key.public_key())
+            .not_valid_before(not_valid_before)
+            .not_valid_after(not_valid_after)
+        )
+
+        with pytest.raises(TypeError):
+            builder.sign(None, None)  # type:ignore[arg-type]
+
+    def test_build_unsigned_cert(self, rsa_key_2048: rsa.RSAPrivateKey):
+        subject_private_key = rsa_key_2048
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = (
+            x509.CertificateBuilder()
+            .serial_number(777)
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "NO")])
+            )
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "NO")])
+            )
+            .public_key(subject_private_key.public_key())
+            .not_valid_before(not_valid_before)
+            .not_valid_after(not_valid_after)
+        )
+
+        cert = builder.create_unsigned()
+
+        assert cert.public_key() == subject_private_key.public_key()
+        assert cert.signature_algorithm_oid == SignatureAlgorithmOID.UNSIGNED
+        assert cert.signature_hash_algorithm is None
+        assert cert.signature_algorithm_parameters is None
+        assert cert.signature == b""
+
+        with pytest.raises(
+            ValueError, match="Unsupported signature algorithm"
+        ):
+            cert.verify_directly_issued_by(cert)
 
 
 class TestCertificateSigningRequestBuilder:

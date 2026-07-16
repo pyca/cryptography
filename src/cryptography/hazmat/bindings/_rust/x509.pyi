@@ -43,7 +43,7 @@ def parse_name_bytes(data: bytes) -> x509.Name: ...
 def encode_extension_value(extension: x509.ExtensionType) -> bytes: ...
 def create_x509_certificate(
     builder: x509.CertificateBuilder,
-    private_key: PrivateKeyTypes,
+    private_key: PrivateKeyTypes | None,
     hash_algorithm: hashes.HashAlgorithm | None,
     rsa_padding: PKCS1v15 | PSS | None,
     ecdsa_deterministic: bool | None,

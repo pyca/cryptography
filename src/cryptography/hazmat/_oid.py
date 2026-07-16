@@ -87,6 +87,7 @@ class NameOID:
     OGRN = ObjectIdentifier("1.2.643.100.1")
     SNILS = ObjectIdentifier("1.2.643.100.3")
     UNSTRUCTURED_NAME = ObjectIdentifier("1.2.840.113549.1.9.2")
+    UNSIGNED = ObjectIdentifier("1.3.6.1.5.5.7.25.1")
 
 
 class SignatureAlgorithmOID:
@@ -125,6 +126,7 @@ class SignatureAlgorithmOID:
     GOSTR3411_94_WITH_3410_2001 = ObjectIdentifier("1.2.643.2.2.3")
     GOSTR3410_2012_WITH_3411_2012_256 = ObjectIdentifier("1.2.643.7.1.1.3.2")
     GOSTR3410_2012_WITH_3411_2012_512 = ObjectIdentifier("1.2.643.7.1.1.3.3")
+    UNSIGNED = ObjectIdentifier("1.3.6.1.5.5.7.6.36")
 
 
 _SIG_OIDS_TO_HASH: dict[ObjectIdentifier, hashes.HashAlgorithm | None] = {
@@ -159,6 +161,7 @@ _SIG_OIDS_TO_HASH: dict[ObjectIdentifier, hashes.HashAlgorithm | None] = {
     SignatureAlgorithmOID.GOSTR3411_94_WITH_3410_2001: None,
     SignatureAlgorithmOID.GOSTR3410_2012_WITH_3411_2012_256: None,
     SignatureAlgorithmOID.GOSTR3410_2012_WITH_3411_2012_512: None,
+    SignatureAlgorithmOID.UNSIGNED: None,
 }
 
 

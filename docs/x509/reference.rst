@@ -887,7 +887,7 @@ X.509 Certificate Builder
     .. versionadded:: 1.0
 
     .. note::
-       All methods, except :meth:`sign`, return a **new** CertificateBuilder
+       All methods, except :meth:`sign` and :meth:`create_unsigned`, return a **new** CertificateBuilder
        instance with the corresponding updated value. They do not modify the
        existing builder in place.
 
@@ -1077,6 +1077,14 @@ X.509 Certificate Builder
             key types **must** not pass a value other than ``None``.
 
         :type ecdsa_deterministic: ``None``, ``bool``
+
+        :returns: :class:`~cryptography.x509.Certificate`
+
+    .. method:: create_unsigned()
+
+        .. versionadded:: 50.0.0
+
+        Creates an unsigned certificate, per :rfc:`9925`.
 
         :returns: :class:`~cryptography.x509.Certificate`
 
@@ -3661,6 +3669,13 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.5.4.17"``.
 
+    .. attribute:: UNSIGNED
+
+        .. versionadded:: 50.0.0
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.25.1"``. Used in
+        unsigned certificates. See :rfc:`9925`.
+
     .. attribute:: UNSTRUCTURED_NAME
 
         .. versionadded:: 3.0
@@ -3840,6 +3855,13 @@ instances. The following common OIDs are available as constants.
 
         Corresponds to the dotted string ``"2.16.840.1.101.3.4.3.19"``. This is
         a signature using an ML-DSA-87 key.
+
+    .. attribute:: UNSIGNED
+
+        .. versionadded:: 50.0.0
+
+        Corresponds to the dotted string ``"1.3.6.1.5.5.7.6.36"``. This indicates
+        that there is no signature. See :rfc:`9925`.
 
 
 .. class:: ExtendedKeyUsageOID

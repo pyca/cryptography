@@ -70,6 +70,9 @@ pub enum AlgorithmParameters<'a> {
     #[defined_by(oid::ML_KEM_1024_OID)]
     MlKem1024,
 
+    #[defined_by(oid::UNSIGNED_OID)]
+    Unsigned,
+
     // These encodings are only used in SPKI AlgorithmIdentifiers.
     #[defined_by(oid::EC_OID)]
     Ec(EcParameters<'a>),

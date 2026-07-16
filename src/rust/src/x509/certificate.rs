@@ -1009,12 +1009,19 @@ pub(crate) fn create_x509_certificate(
     rsa_padding: &pyo3::Bound<'_, pyo3::PyAny>,
     ecdsa_deterministic: Option<bool>,
 ) -> CryptographyResult<Certificate> {
-    let sigalg = x509::sign::compute_signature_algorithm(
-        py,
-        private_key.clone(),
-        hash_algorithm.clone(),
-        rsa_padding.clone(),
-    )?;
+    let sigalg = if private_key.is_none() {
+        common::AlgorithmIdentifier {
+            oid: asn1::DefinedByMarker::marker(),
+            params: common::AlgorithmParameters::Unsigned,
+        }
+    } else {
+        x509::sign::compute_signature_algorithm(
+            py,
+            private_key.clone(),
+            hash_algorithm.clone(),
+            rsa_padding.clone(),
+        )?
+    };
 
     let spki_bytes = builder
         .getattr(pyo3::intern!(py, "_public_key"))?
@@ -1090,19 +1097,25 @@ pub(crate) fn create_x509_certificate(
         )?,
     };
 
-    let tbs_bytes = asn1::write_single(&tbs_cert)?;
-    let signature = x509::sign::sign_data(
-        py,
-        private_key.clone(),
-        hash_algorithm.clone(),
-        rsa_padding.clone(),
-        ecdsa_deterministic,
-        &tbs_bytes,
-    )?;
+    let sig_bytes = if private_key.is_none() {
+        None
+    } else {
+        let tbs_bytes = asn1::write_single(&tbs_cert)?;
+        Some(x509::sign::sign_data(
+            py,
+            private_key.clone(),
+            hash_algorithm.clone(),
+            rsa_padding.clone(),
+            ecdsa_deterministic,
+            &tbs_bytes,
+        )?)
+    };
+    let signature = sig_bytes.as_deref().unwrap_or(b"");
+
     let data = asn1::write_single(&cryptography_x509::certificate::Certificate {
         tbs_cert,
         signature_alg: sigalg,
-        signature: asn1::BitString::new(&signature, 0).unwrap(),
+        signature: asn1::BitString::new(signature, 0).unwrap(),
     })?;
     load_der_x509_certificate(py, pyo3::types::PyBytes::new(py, &data).unbind(), None)
 }
