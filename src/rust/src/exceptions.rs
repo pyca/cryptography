@@ -35,6 +35,7 @@ pyo3::import_exception!(cryptography.exceptions, InvalidSignature);
 pyo3::import_exception!(cryptography.exceptions, InvalidTag);
 pyo3::import_exception!(cryptography.exceptions, NotYetFinalized);
 pyo3::import_exception!(cryptography.exceptions, UnsupportedAlgorithm);
+pyo3::import_exception!(cryptography.hazmat.primitives.keywrap, InvalidUnwrap);
 pyo3::import_exception!(cryptography.x509, AttributeNotFound);
 pyo3::import_exception!(cryptography.x509, DuplicateExtension);
 pyo3::import_exception!(cryptography.x509, UnsupportedGeneralNameType);
