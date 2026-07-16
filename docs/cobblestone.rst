@@ -1,19 +1,19 @@
-Chunked encryption (streaming symmetric encryption)
-====================================================
+Cobblestone (streaming symmetric encryption)
+=============================================
 
-.. currentmodule:: cryptography.chunked_encryption
+.. currentmodule:: cryptography.cobblestone
 
-Chunked encryption provides authenticated symmetric encryption of large
+Cobblestone provides authenticated symmetric encryption of large
 messages — up to 4 PiB — as a stream, without ever holding the whole
 message in memory. It is an implementation of the `C2SP
-chunked-encryption specification`_, providing its two named
-instantiations: **Cobblestone-128** (SHA-512 and AES-128-GCM, the
-recommended choice) and **Cobblestone-256** (SHA-512 and AES-256-GCM,
-for environments that mandate 256-bit keys).
+chunked-encryption specification`_'s two named instantiations:
+**Cobblestone-128** (SHA-512 and AES-128-GCM, the recommended choice)
+and **Cobblestone-256** (SHA-512 and AES-256-GCM, for environments
+that mandate 256-bit keys).
 
 .. doctest::
 
-    >>> from cryptography.chunked_encryption import (
+    >>> from cryptography.cobblestone import (
     ...     Cobblestone128Decryptor, Cobblestone128Encryptor
     ... )
     >>> key = Cobblestone128Encryptor.generate_key()
@@ -182,20 +182,4 @@ for environments that mandate 256-bit keys).
     messages produced by :class:`Cobblestone256Encryptor` with a
     32-byte key.
 
-Implementation
---------------
-
-This module implements `version 1 of the C2SP chunked-encryption
-specification`_, and is interoperable with other implementations of
-its Cobblestone-128 and Cobblestone-256 instantiations.
-
-For each message, a fresh AEAD key, base nonce, and key commitment are
-derived with HKDF-Expand-SHA-512 from the input key, a random 24-byte
-salt, and the context. The message is split into 16 KiB chunks (the
-final chunk is always shorter, and may be empty), and each chunk is
-encrypted with the AEAD, with a nonce derived from the base nonce and
-the chunk counter. The ciphertext is the salt, followed by the 32-byte
-commitment, followed by the encrypted chunks.
-
 .. _`C2SP chunked-encryption specification`: https://c2sp.org/chunked-encryption
-.. _`version 1 of the C2SP chunked-encryption specification`: https://c2sp.org/chunked-encryption

@@ -68,7 +68,7 @@ hazmat layer only when necessary.
     :caption: The recipes layer
 
     fernet
-    chunked-encryption
+    cobblestone
     x509/index
 
 .. toctree::

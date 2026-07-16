@@ -7,7 +7,7 @@ import os
 
 import pytest
 
-from cryptography.chunked_encryption import (
+from cryptography.cobblestone import (
     Cobblestone128Decryptor,
     Cobblestone128Encryptor,
     Cobblestone256Decryptor,
@@ -60,7 +60,7 @@ MESSAGE_LENGTHS = [
 
 
 @pytest.mark.parametrize("variant", VARIANTS)
-class TestChunkedEncryption:
+class TestCobblestone:
     @pytest.mark.parametrize("length", MESSAGE_LENGTHS)
     def test_round_trip(self, variant, length):
         encryptor_cls, decryptor_cls, _ = variant

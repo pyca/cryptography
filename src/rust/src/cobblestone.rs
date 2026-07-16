@@ -547,7 +547,7 @@ impl ChunkedDecryptor {
     }
 }
 
-#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.chunked_encryption")]
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.cobblestone")]
 pub(crate) struct Cobblestone128Encryptor {
     inner: ChunkedEncryptor,
 }
@@ -598,7 +598,7 @@ impl Cobblestone128Encryptor {
     }
 }
 
-#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.chunked_encryption")]
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.cobblestone")]
 pub(crate) struct Cobblestone128Decryptor {
     inner: ChunkedDecryptor,
 }
@@ -638,7 +638,7 @@ impl Cobblestone128Decryptor {
     }
 }
 
-#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.chunked_encryption")]
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.cobblestone")]
 pub(crate) struct Cobblestone256Encryptor {
     inner: ChunkedEncryptor,
 }
@@ -689,7 +689,7 @@ impl Cobblestone256Encryptor {
     }
 }
 
-#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.chunked_encryption")]
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.cobblestone")]
 pub(crate) struct Cobblestone256Decryptor {
     inner: ChunkedDecryptor,
 }
@@ -730,8 +730,8 @@ impl Cobblestone256Decryptor {
 }
 
 #[pyo3::pymodule(gil_used = false)]
-#[pyo3(name = "chunked_encryption")]
-pub(crate) mod chunked_encryption_mod {
+#[pyo3(name = "cobblestone")]
+pub(crate) mod cobblestone_mod {
     #[pymodule_export]
     use super::{
         Cobblestone128Decryptor, Cobblestone128Encryptor, Cobblestone256Decryptor,

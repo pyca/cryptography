@@ -5,13 +5,13 @@
 from __future__ import annotations
 
 from cryptography.hazmat.bindings._rust import (
-    chunked_encryption as _chunked_encryption,
+    cobblestone as _cobblestone,
 )
 
-Cobblestone128Decryptor = _chunked_encryption.Cobblestone128Decryptor
-Cobblestone128Encryptor = _chunked_encryption.Cobblestone128Encryptor
-Cobblestone256Decryptor = _chunked_encryption.Cobblestone256Decryptor
-Cobblestone256Encryptor = _chunked_encryption.Cobblestone256Encryptor
+Cobblestone128Decryptor = _cobblestone.Cobblestone128Decryptor
+Cobblestone128Encryptor = _cobblestone.Cobblestone128Encryptor
+Cobblestone256Decryptor = _cobblestone.Cobblestone256Decryptor
+Cobblestone256Encryptor = _cobblestone.Cobblestone256Encryptor
 
 __all__ = [
     "Cobblestone128Decryptor",
