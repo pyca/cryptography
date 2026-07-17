@@ -438,7 +438,7 @@ pub(crate) fn symmetric_decrypt(
 
     // Decrypt the data
     let mut decrypted_data = vec![0; data.len() + (block_size / 8)];
-    let count = cipher.update_into(py, data, &mut decrypted_data)?;
+    let count = cipher.update_into(data, &mut decrypted_data)?;
     let final_block = cipher.finalize(py)?;
     assert!(final_block.as_bytes().is_empty());
     decrypted_data.truncate(count);
