@@ -50,7 +50,14 @@ pub(crate) struct Certificate {
 impl Certificate {
     fn __hash__(&self) -> u64 {
         let mut hasher = DefaultHasher::new();
-        self.raw.borrow_dependent().hash(&mut hasher);
+        // The serial and signature discriminate as well as the full
+        // certificate, without the cost of hashing the entire parsed
+        // structure. (We can't hash the owner's bytes: certificates parsed
+        // out of a larger structure, e.g. an OCSP response, share that
+        // structure's bytes as their owner.)
+        let cert = self.raw.borrow_dependent();
+        cert.tbs_cert.serial.hash(&mut hasher);
+        cert.signature.hash(&mut hasher);
         hasher.finish()
     }
 
