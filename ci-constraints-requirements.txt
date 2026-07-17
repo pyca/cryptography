@@ -186,7 +186,7 @@ requests==2.34.2 ; python_full_version >= '3.10'
     #   sphinxcontrib-spelling
 roman-numerals==4.1.0 ; python_full_version >= '3.11'
     # via sphinx
-ruff==0.15.21
+ruff==0.15.22
     # via cryptography (pyproject.toml:dev)
 snowballstemmer==3.1.1
     # via sphinx
