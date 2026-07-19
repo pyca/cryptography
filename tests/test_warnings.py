@@ -6,7 +6,6 @@
 import sys
 import types
 import typing
-import warnings
 
 import pytest
 
@@ -34,19 +33,13 @@ class TestDeprecated:
         mod = sys.modules[mod.__name__]
         mod.Z = 3
 
-        with warnings.catch_warnings(record=True) as log:
-            warnings.simplefilter("always", PendingDeprecationWarning)
-            warnings.simplefilter("always", DeprecationWarning)
+        with pytest.warns(DeprecationWarning, match="deprecated message text"):
             assert mod.X == 1
+        with pytest.warns(
+            PendingDeprecationWarning, match="more deprecated text"
+        ):
             assert mod.Y == 2
-            assert mod.Z == 3
-
-        [msg1, msg2] = log
-        assert msg1.category is DeprecationWarning
-        assert msg1.message.args == ("deprecated message text",)
-
-        assert msg2.category is PendingDeprecationWarning
-        assert msg2.message.args == ("more deprecated text",)
+        assert mod.Z == 3
 
         assert "Y" in dir(mod)
 
@@ -70,19 +63,13 @@ class TestDeprecated:
         mod = sys.modules[mod.__name__]
         mod.Z = 3
 
-        with warnings.catch_warnings(record=True) as log:
-            warnings.simplefilter("always", PendingDeprecationWarning)
-            warnings.simplefilter("always", DeprecationWarning)
+        with pytest.warns(DeprecationWarning, match="deprecated message text"):
             del mod.X
+        with pytest.warns(
+            PendingDeprecationWarning, match="more deprecated text"
+        ):
             del mod.Y
-            del mod.Z
-
-        [msg1, msg2] = log
-        assert msg1.category is DeprecationWarning
-        assert msg1.message.args == ("deprecated message text",)
-
-        assert msg2.category is PendingDeprecationWarning
-        assert msg2.message.args == ("more deprecated text",)
+        del mod.Z
 
         assert "X" not in dir(mod)
         assert "Y" not in dir(mod)
