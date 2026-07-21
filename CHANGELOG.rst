@@ -10,6 +10,11 @@ Changelog
 
 * The :mod:`X.509 verification <cryptography.x509.verification>` APIs are now
   considered stable and are subject to our API stability policy.
+* Added the :doc:`/cobblestone` recipe, an implementation of the
+  Cobblestone-128 and Cobblestone-256 instantiations of the `C2SP
+  chunked-encryption specification
+  <https://c2sp.org/chunked-encryption>`_ for streaming authenticated
+  encryption of large messages.
 * Parsing a Signed Certificate Timestamp list now rejects encodings that
   carry trailing bytes after the list or after an individual SCT, instead of
   silently ignoring them.

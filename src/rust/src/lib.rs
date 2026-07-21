@@ -34,6 +34,7 @@ use crate::error::CryptographyResult;
 mod asn1;
 mod backend;
 mod buf;
+mod cobblestone;
 mod declarative_asn1;
 mod error;
 mod exceptions;
@@ -131,6 +132,8 @@ mod _rust {
 
     #[pymodule_export]
     use crate::asn1::asn1_mod;
+    #[pymodule_export]
+    use crate::cobblestone::cobblestone_mod;
     #[pymodule_export]
     use crate::exceptions::exceptions;
     #[pymodule_export]
