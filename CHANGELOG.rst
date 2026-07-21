@@ -14,7 +14,9 @@ Changelog
   Cobblestone-128 and Cobblestone-256 instantiations of the `C2SP
   chunked-encryption specification
   <https://c2sp.org/chunked-encryption>`_ for streaming authenticated
-  encryption of large messages.
+  encryption of large messages. The decryptor classes also provide a
+  ``decrypt_range`` method for authenticated random access into a
+  message from a buffer, file, or remote source.
 * Parsing a Signed Certificate Timestamp list now rejects encodings that
   carry trailing bytes after the list or after an individual SCT, instead of
   silently ignoring them.
