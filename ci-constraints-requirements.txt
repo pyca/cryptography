@@ -172,7 +172,7 @@ pytest-randomly==4.1.0 ; python_full_version >= '3.10'
     # via cryptography (pyproject.toml:dev)
 pytest-xdist==3.8.0
     # via cryptography (pyproject.toml:dev)
-python-discovery==1.4.4
+python-discovery==1.5.0
     # via virtualenv
 readme-renderer==44.0 ; python_full_version < '3.10'
     # via cryptography (pyproject.toml:dev)
