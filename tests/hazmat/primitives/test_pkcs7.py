@@ -911,12 +911,10 @@ def _load_rsa_cert_key():
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: (
-        backend.pkcs7_supported()
-        and backend.rsa_encryption_supported(padding.PKCS1v15())
+    only_if=lambda backend: backend.rsa_encryption_supported(
+        padding.PKCS1v15()
     ),
-    skip_message="Requires OpenSSL with PKCS7 support and PKCS1 v1.5 padding "
-    "support",
+    skip_message="Requires OpenSSL with PKCS1 v1.5 padding support",
 )
 class TestPKCS7EnvelopeBuilder:
     def test_invalid_data(self):
@@ -1145,12 +1143,10 @@ class TestPKCS7EnvelopeBuilder:
 
 
 @pytest.mark.supported(
-    only_if=lambda backend: (
-        backend.pkcs7_supported()
-        and backend.rsa_encryption_supported(padding.PKCS1v15())
+    only_if=lambda backend: backend.rsa_encryption_supported(
+        padding.PKCS1v15()
     ),
-    skip_message="Requires OpenSSL with PKCS7 support and PKCS1 v1.5 padding "
-    "support",
+    skip_message="Requires OpenSSL with PKCS1 v1.5 padding support",
 )
 class TestPKCS7Decrypt:
     @pytest.fixture(name="data")
@@ -1513,8 +1509,7 @@ class TestPKCS7SerializeCerts:
 
 @pytest.mark.supported(
     only_if=lambda backend: (
-        backend.pkcs7_supported()
-        and not backend.rsa_encryption_supported(padding.PKCS1v15())
+        not backend.rsa_encryption_supported(padding.PKCS1v15())
     ),
     skip_message="Requires OpenSSL with no PKCS1 v1.5 padding support",
 )
@@ -1526,8 +1521,7 @@ class TestPKCS7EnvelopeBuilderUnsupported:
 
 @pytest.mark.supported(
     only_if=lambda backend: (
-        backend.pkcs7_supported()
-        and not backend.rsa_encryption_supported(padding.PKCS1v15())
+        not backend.rsa_encryption_supported(padding.PKCS1v15())
     ),
     skip_message="Requires OpenSSL with no PKCS1 v1.5 padding support",
 )

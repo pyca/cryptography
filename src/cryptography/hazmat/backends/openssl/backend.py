@@ -305,8 +305,5 @@ class Backend:
             return True
         return not self._fips_enabled
 
-    def pkcs7_supported(self) -> bool:
-        return True
-
 
 backend = Backend()
