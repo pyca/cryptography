@@ -75,7 +75,7 @@ CertificateIssuerPublicKeyTypes = typing.Union[
     mldsa.MLDSA65PublicKey,
     mldsa.MLDSA87PublicKey,
 ]
-# This type removes DHPublicKey. x448/x25519 can be a public key
+# This type removes DHPublicKey. x448/x25519/mlkem can be a public key
 # but cannot be used in signing so they are allowed here.
 CertificatePublicKeyTypes = typing.Union[
     dsa.DSAPublicKey,
@@ -86,6 +86,8 @@ CertificatePublicKeyTypes = typing.Union[
     mldsa.MLDSA44PublicKey,
     mldsa.MLDSA65PublicKey,
     mldsa.MLDSA87PublicKey,
+    mlkem.MLKEM768PublicKey,
+    mlkem.MLKEM1024PublicKey,
     x25519.X25519PublicKey,
     x448.X448PublicKey,
 ]

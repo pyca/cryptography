@@ -18,6 +18,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     ed448,
     ed25519,
     mldsa,
+    mlkem,
     padding,
     rsa,
     x448,
@@ -372,6 +373,8 @@ class CertificateBuilder:
                 mldsa.MLDSA44PublicKey,
                 mldsa.MLDSA65PublicKey,
                 mldsa.MLDSA87PublicKey,
+                mlkem.MLKEM768PublicKey,
+                mlkem.MLKEM1024PublicKey,
                 x25519.X25519PublicKey,
                 x448.X448PublicKey,
             ),
@@ -380,8 +383,8 @@ class CertificateBuilder:
                 "Expecting one of DSAPublicKey, RSAPublicKey,"
                 " EllipticCurvePublicKey, Ed25519PublicKey,"
                 " Ed448PublicKey, MLDSA44PublicKey, MLDSA65PublicKey,"
-                " MLDSA87PublicKey, X25519PublicKey, or "
-                "X448PublicKey."
+                " MLDSA87PublicKey, MLKEM768PublicKey, MLKEM1024PublicKey,"
+                " X25519PublicKey or X448PublicKey."
             )
         if rsa_padding is not None:
             if rsa_padding is not padding.PSS:
