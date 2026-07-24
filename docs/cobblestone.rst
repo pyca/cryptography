@@ -165,6 +165,58 @@ that mandate 256-bit keys).
         :raises cryptography.exceptions.AlreadyFinalized: If
             ``finalize`` has already been called.
 
+    .. method:: decrypt_range(source, offset, length)
+
+        .. versionadded:: 50.0.0
+
+        Decrypts and returns the ``length`` plaintext bytes beginning at
+        ``offset``, reading only the ciphertext needed to cover that
+        range rather than the whole message. See :ref:`random access
+        <cobblestone-random-access>` below.
+
+        The requested range is silently widened to whole 16 KiB chunk
+        boundaries so that every chunk it touches can be authenticated
+        by its tag; the requested sub-range is then sliced out of the
+        authenticated plaintext. Unauthenticated bytes are never
+        returned.
+
+        This method is an alternative to :meth:`update`/:meth:`finalize`:
+        a single instance may be used for streaming **or** random-access
+        decryption, not both. It does not consume the instance and may be
+        called repeatedly for different ranges.
+
+        .. warning::
+
+            A range read authenticates the bytes it returns, but **not
+            the message as a whole**. It cannot detect that chunks beyond
+            the requested range were removed, so it provides no
+            protection against truncation of the overall message. The
+            total plaintext length must come from a trusted source; do
+            not infer it from the (possibly truncated) size of
+            ``source``. Whole-message truncation protection is only
+            provided by streaming through :meth:`finalize`.
+
+        :param source: The ciphertext, as either a :term:`bytes-like`
+            object (for example an :class:`mmap.mmap` of a file, which
+            avoids reading it all into memory) or a binary file-like
+            object. A file-like ``source`` only needs to implement
+            ``seek(offset)`` and ``read(size)``; nothing else is used, so
+            an object that fetches byte ranges from remote storage on
+            demand works as well as an open file.
+        :param int offset: The plaintext offset to start at.
+        :param int length: The number of plaintext bytes to return.
+        :return bytes: The authenticated plaintext for the requested
+            range.
+        :raises cryptography.exceptions.InvalidTag: If a covering chunk
+            was encrypted with a different key or context, has been
+            modified, or is missing because ``source`` is truncated
+            within the requested range (which includes reading past the
+            end of the message).
+        :raises ValueError: If ``length`` is negative, ``offset`` is
+            negative, the range exceeds the maximum message length, or
+            the instance has already been used for streaming
+            decryption.
+
 .. class:: Cobblestone256Encryptor(key, context)
 
     .. versionadded:: 50.0.0
@@ -180,6 +232,76 @@ that mandate 256-bit keys).
 
     Exactly like :class:`Cobblestone128Decryptor`, but decrypts
     messages produced by :class:`Cobblestone256Encryptor` with a
-    32-byte key.
+    32-byte key. It provides the same :meth:`~Cobblestone128Decryptor.decrypt_range`
+    method for random access.
+
+.. _cobblestone-random-access:
+
+Random-access decryption
+-------------------------
+
+Because each 16 KiB chunk is encrypted independently, a range of a large
+message can be decrypted without processing everything before it, using
+:meth:`~Cobblestone128Decryptor.decrypt_range`. The decryptor reads only
+the chunks that cover the requested range, authenticates each of them,
+and returns just the requested bytes.
+
+Any object supporting the buffer protocol, or any binary file-like
+object, can be the source. To read a range out of a large file without
+loading it into memory, pass an :class:`mmap.mmap`:
+
+.. doctest::
+
+    >>> import io
+    >>> from cryptography.cobblestone import (
+    ...     Cobblestone128Decryptor, Cobblestone128Encryptor
+    ... )
+    >>> key = Cobblestone128Encryptor.generate_key()
+    >>> encryptor = Cobblestone128Encryptor(key, context=b"ranged")
+    >>> plaintext = b"the quick brown fox" * 10000
+    >>> ciphertext = encryptor.update(plaintext) + encryptor.finalize()
+    >>> decryptor = Cobblestone128Decryptor(key, context=b"ranged")
+    >>> decryptor.decrypt_range(io.BytesIO(ciphertext), 40005, 9)
+    b'brown fox'
+    >>> _ == plaintext[40005:40014]
+    True
+
+For data held remotely, a file-like ``source`` only needs to implement
+``seek`` and ``read``, so a small adapter that turns those into ranged
+requests (for example an HTTP ``Range`` request or an object-storage
+ranged ``GET``) is enough — ``decrypt_range`` issues one contiguous read
+for the covering chunks:
+
+.. code-block:: python
+
+    class RangeReader:
+        def __init__(self, client, key):
+            self._client = client
+            self._key = key
+            self._pos = 0
+
+        def seek(self, offset, whence=0):
+            assert whence == 0
+            self._pos = offset
+            return self._pos
+
+        def read(self, size):
+            end = self._pos + size - 1
+            data = self._client.get_range(self._key, self._pos, end)
+            self._pos += len(data)
+            return data
+
+    decryptor = Cobblestone128Decryptor(key, context=b"ranged")
+    chunk = decryptor.decrypt_range(RangeReader(client, "blob"), 40000, 4096)
+
+.. warning::
+
+    A range read authenticates the bytes it returns, but not the
+    message as a whole: it cannot detect that chunks beyond the
+    requested range were removed. Obtain the total plaintext length from
+    a trusted source rather than inferring it from the ciphertext, and
+    rely on streaming through
+    :meth:`~Cobblestone128Decryptor.finalize` when you need to verify
+    that a whole message is intact and has not been truncated.
 
 .. _`C2SP chunked-encryption specification`: https://c2sp.org/chunked-encryption
