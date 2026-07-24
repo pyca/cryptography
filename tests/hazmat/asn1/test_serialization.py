@@ -489,7 +489,7 @@ class TestSequence:
             a: typing.Union[bool, None]
             b: int
             c: bytes
-            d: typing.Union[None, str]
+            d: typing.Union[str, None]
 
         assert_roundtrips(
             [
@@ -518,7 +518,7 @@ class TestSequence:
             a: typing.Union[typing.Union[bool, None], None]
             b: int
             c: bytes
-            d: typing.Union[None, typing.Union[None, str]]
+            d: typing.Union[typing.Union[str, None], None]
 
         assert_roundtrips(
             [
