@@ -644,9 +644,8 @@ class TestCobblestoneSeekable:
         key, ciphertext = self._encrypt(variant, b"", plaintext)
         source = _RangeFetcher(ciphertext, none_at_eof=True)
         dec = decryptor_cls(key, b"")
-        assert (
-            dec.decrypt_range(source, CHUNK_SIZE, 1234) == plaintext[CHUNK_SIZE:]
-        )
+        result = dec.decrypt_range(source, CHUNK_SIZE, 1234)
+        assert result == plaintext[CHUNK_SIZE:]
 
     def test_short_header_rejected(self, variant):
         # A source too short to even hold the 56-byte header is truncated.
