@@ -401,10 +401,12 @@ MAX_CHUNK_COUNT = 1 << 38
 class _RangeFetcher:
     """A minimal seek()/read() source, standing in for remote range fetches."""
 
-    def __init__(self, data: bytes):
+    def __init__(self, data: bytes, none_at_eof: bool = False):
         self._data = bytes(data)
         self._pos = 0
         self.reads = 0
+        # Some streams return None (rather than b"") to signal no data.
+        self._none_at_eof = none_at_eof
 
     def seek(self, offset, whence=0):
         assert whence == 0
@@ -415,6 +417,8 @@ class _RangeFetcher:
         self.reads += 1
         chunk = self._data[self._pos : self._pos + size]
         self._pos += len(chunk)
+        if not chunk and self._none_at_eof:
+            return None
         return chunk
 
 
@@ -628,7 +632,39 @@ class TestCobblestoneSeekable:
         with pytest.raises(ValueError, match="cannot be used for both"):
             dec.update(ciphertext)
         with pytest.raises(ValueError, match="cannot be used for both"):
+            dec.update_into(ciphertext, bytearray(2 * CHUNK_SIZE))
+        with pytest.raises(ValueError, match="cannot be used for both"):
             dec.finalize()
+
+    def test_final_chunk_read_via_none_returning_source(self, variant):
+        # A file-like source that signals end-of-input with None (rather than
+        # b"") is handled: reading the short final chunk asks past its end.
+        _, decryptor_cls, _ = variant
+        plaintext = os.urandom(CHUNK_SIZE + 1234)
+        key, ciphertext = self._encrypt(variant, b"", plaintext)
+        source = _RangeFetcher(ciphertext, none_at_eof=True)
+        dec = decryptor_cls(key, b"")
+        assert (
+            dec.decrypt_range(source, CHUNK_SIZE, 1234) == plaintext[CHUNK_SIZE:]
+        )
+
+    def test_short_header_rejected(self, variant):
+        # A source too short to even hold the 56-byte header is truncated.
+        _, decryptor_cls, _ = variant
+        key, _ = self._encrypt(variant, b"", b"data")
+        dec = decryptor_cls(key, b"")
+        with pytest.raises(InvalidTag):
+            dec.decrypt_range(b"\x00" * (HEADER_LEN - 1), 0, 1)
+
+    def test_final_chunk_shorter_than_tag_rejected(self, variant):
+        # A final wire chunk shorter than the tag cannot be authenticated.
+        _, decryptor_cls, _ = variant
+        key, ciphertext = self._encrypt(variant, b"", os.urandom(100))
+        # Keep the full header, but leave only a few (< TAG_LEN) body bytes.
+        truncated = ciphertext[: HEADER_LEN + TAG_LEN - 1]
+        dec = decryptor_cls(key, b"")
+        with pytest.raises(InvalidTag):
+            dec.decrypt_range(truncated, 0, 1)
 
     def test_seeking_instance_survives_out_of_range_error(self, variant):
         # Unlike the streaming decryptor, a random-access failure (here, a

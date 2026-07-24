@@ -689,19 +689,15 @@ impl ChunkedDecryptor {
         let params = self.params;
         let wire = params.wire_chunk_size();
         let first_chunk = offset / CHUNK_SIZE as u64;
-        // `offset + length` can overflow for a hostile offset; treat that, like
-        // any range past the message limit, as too large.
+        // Bound the range to the maximum message length (which also guards
+        // against `offset + length` overflowing for a hostile offset). This
+        // keeps every chunk index below MAX_CHUNK_COUNT.
         let last_byte = offset
             .checked_add(length as u64)
             .filter(|end| *end <= MAX_CHUNK_COUNT * CHUNK_SIZE as u64)
             .ok_or_else(message_too_large_error)?
             - 1;
         let last_chunk = last_byte / CHUNK_SIZE as u64;
-        // decrypt_chunk_at rejects indices past the limit, but the final chunk
-        // index bounds the whole read, so reject up front for a clear error.
-        if last_chunk >= MAX_CHUNK_COUNT {
-            return Err(message_too_large_error());
-        }
         let n_chunks = (last_chunk - first_chunk + 1) as usize;
 
         // A buffer-protocol source (bytes, mmap, ...) is indexed directly; any
