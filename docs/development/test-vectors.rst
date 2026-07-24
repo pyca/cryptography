@@ -66,6 +66,13 @@ Asymmetric ciphers
   RustCrypto using scrypt as the KDF. The password is ``hunter42``.
 * FIPS 203 ML-KEM-{512,768,1024} KAT vectors from `post-quantum-cryptography/KAT`_.
 * FIPS 204 ML-DSA-{44,65,87} KAT vectors from `post-quantum-cryptography/KAT`_.
+* FIPS 205 SLH-DSA vectors from `NIST ACVP-Server`_.
+  Filtered from the full upstream data:
+
+  - Only SLH-DSA-SHA2-128s and SLH-DSA-SHAKE-256f parameter sets are kept.
+  - Signature Generation: only ``deterministic=false``, pure, external-interface vectors are
+    kept.
+  - Signature Verification: only pure, external-interface vectors are kept.
 
 Custom asymmetric vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1269,6 +1276,7 @@ header format (substituting the correct information):
 .. _`IETF`: https://www.ietf.org/
 .. _`Project Wycheproof`: https://github.com/C2SP/wycheproof
 .. _`post-quantum-cryptography/KAT`: https://github.com/post-quantum-cryptography/KAT
+.. _`NIST ACVP-Server`: https://github.com/usnistgov/ACVP-Server
 .. _`NIST CAVP`: https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program
 .. _`Bruce Schneier's vectors`: https://www.schneier.com/wp-content/uploads/2015/12/vectors-2.txt
 .. _`Camellia page`: https://info.isl.ntt.co.jp/crypt/eng/camellia/
