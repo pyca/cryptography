@@ -2,7 +2,11 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-#![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
+#![deny(
+    rust_2018_idioms,
+    unsafe_op_in_unsafe_fn,
+    clippy::undocumented_unsafe_blocks
+)]
 
 #[cfg(python_implementation = "PyPy")]
 extern "C" {
