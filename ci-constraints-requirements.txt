@@ -54,7 +54,7 @@ docutils==0.21.2 ; python_full_version < '3.11'
     #   readme-renderer
     #   sphinx
     #   sphinx-rtd-theme
-docutils==0.22.4 ; python_full_version >= '3.11'
+docutils==0.23 ; python_full_version >= '3.11'
     # via
     #   readme-renderer
     #   sphinx
