@@ -27,7 +27,9 @@ jobs:
     # We're not actually verifying that the triggering push event was for a
     # tag, because github doesn't expose enough information to do so.
     # wheel-builder.yml currently only has push events for tags.
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
+    # The repository_owner check keeps forks from attempting a publish (or
+    # requesting OIDC tokens/attestations) if a tag is ever pushed to one.
+    if: github.repository_owner == 'pyca' && (github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success'))
     permissions:
       id-token: "write"
       attestations: "write"
