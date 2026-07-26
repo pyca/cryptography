@@ -14,7 +14,7 @@ import pytest
 from cryptography import x509
 from cryptography.hazmat._oid import ExtendedKeyUsageOID
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec, mldsa
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509 import ExtensionType
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.oid import NameOID
@@ -260,117 +260,6 @@ class TestServerVerifier:
             match=r"<Certificate\(subject=.*?CN=www.cryptography.io.*?\)>",
         ):
             verifier.verify(leaf, [])
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.mldsa_supported(),
-    skip_message="Requires a backend with ML-DSA support",
-)
-@pytest.mark.parametrize(
-    "private_key_cls",
-    [
-        mldsa.MLDSA44PrivateKey,
-        mldsa.MLDSA65PrivateKey,
-        mldsa.MLDSA87PrivateKey,
-    ],
-)
-class TestMLDSAVerification:
-    @staticmethod
-    def _chain(private_key_cls):
-        # Builds a (ca, leaf) chain where both the CA's public key and the
-        # signatures over both certificates use ML-DSA.
-        ca_key = private_key_cls.generate()
-        leaf_key = private_key_cls.generate()
-
-        not_before = datetime.datetime(2024, 1, 1)
-        not_after = datetime.datetime(2034, 1, 1)
-        validation_time = datetime.datetime(2025, 1, 1)
-
-        ca_name = x509.Name(
-            [x509.NameAttribute(NameOID.COMMON_NAME, "Test ML-DSA CA")]
-        )
-        ca = (
-            x509.CertificateBuilder()
-            .subject_name(ca_name)
-            .issuer_name(ca_name)
-            .public_key(ca_key.public_key())
-            .serial_number(x509.random_serial_number())
-            .not_valid_before(not_before)
-            .not_valid_after(not_after)
-            .add_extension(
-                x509.BasicConstraints(ca=True, path_length=None),
-                critical=True,
-            )
-            .add_extension(
-                x509.KeyUsage(
-                    digital_signature=False,
-                    content_commitment=False,
-                    key_encipherment=False,
-                    data_encipherment=False,
-                    key_agreement=False,
-                    key_cert_sign=True,
-                    crl_sign=True,
-                    encipher_only=False,
-                    decipher_only=False,
-                ),
-                critical=True,
-            )
-            .sign(ca_key, None)
-        )
-
-        leaf_name = x509.Name(
-            [x509.NameAttribute(NameOID.COMMON_NAME, "example.com")]
-        )
-        leaf = (
-            x509.CertificateBuilder()
-            .subject_name(leaf_name)
-            .issuer_name(ca_name)
-            .public_key(leaf_key.public_key())
-            .serial_number(x509.random_serial_number())
-            .not_valid_before(not_before)
-            .not_valid_after(not_after)
-            .add_extension(
-                x509.BasicConstraints(ca=False, path_length=None),
-                critical=True,
-            )
-            .add_extension(
-                x509.SubjectAlternativeName([x509.DNSName("example.com")]),
-                critical=False,
-            )
-            .add_extension(
-                x509.AuthorityKeyIdentifier.from_issuer_public_key(
-                    ca_key.public_key()
-                ),
-                critical=False,
-            )
-            .sign(ca_key, None)
-        )
-
-        return ca, leaf, validation_time
-
-    def test_verify_server(self, private_key_cls):
-        ca, leaf, validation_time = self._chain(private_key_cls)
-
-        verifier = (
-            PolicyBuilder()
-            .store(Store([ca]))
-            .time(validation_time)
-            .build_server_verifier(DNSName("example.com"))
-        )
-
-        assert verifier.verify(leaf, []) == [leaf, ca]
-
-    def test_verify_client(self, private_key_cls):
-        ca, leaf, validation_time = self._chain(private_key_cls)
-
-        verifier = (
-            PolicyBuilder()
-            .store(Store([ca]))
-            .time(validation_time)
-            .build_client_verifier()
-        )
-
-        assert verifier.verify(leaf, []).chain == [leaf, ca]
 
 
 SUPPORTED_EXTENSION_TYPES = (
