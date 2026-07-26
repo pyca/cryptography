@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import mmap
 import os
 import threading
 import typing
@@ -50,7 +51,9 @@ class BufferReader:
     into memory.
     """
 
-    def __init__(self, data: Buffer) -> None:
+    # mmap.mmap supports the buffer protocol but is not one of the concrete
+    # types Buffer names, so it is spelled out here.
+    def __init__(self, data: Buffer | mmap.mmap) -> None:
         self._data = memoryview(data).cast("B")
 
     def read_at(self, offset: int, length: int) -> Buffer:

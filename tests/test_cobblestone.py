@@ -3,6 +3,8 @@
 # for complete details.
 
 
+from __future__ import annotations
+
 import mmap
 import os
 
