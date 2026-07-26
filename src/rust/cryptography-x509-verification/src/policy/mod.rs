@@ -80,7 +80,7 @@ const ML_DSA_87: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.1 (page 96)
 /// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
-/// ML-DSA (RFC 9881) is permitted in addition.
+/// ML-DSA (RFC 9881) is also permitted.
 pub static WEBPKI_PERMITTED_SPKI_ALGORITHMS: LazyLock<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
     LazyLock::new(|| {
         Arc::new(HashSet::from([
@@ -170,7 +170,7 @@ const ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.2 (pages 96-98)
 /// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
-/// ML-DSA (RFC 9881) is permitted in addition.
+/// ML-DSA (RFC 9881) is also permitted.
 pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: LazyLock<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
     LazyLock::new(|| {
         Arc::new(HashSet::from([
