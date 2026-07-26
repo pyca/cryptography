@@ -6,16 +6,10 @@ import typing
 
 from cryptography.utils import Buffer
 
-class SeekableReader(typing.Protocol):
-    """The minimal binary file-like interface ``decrypt_range`` requires.
-
-    Only ``seek`` and ``read`` are used; an implementation need not provide
-    anything else. ``mmap.mmap`` and files opened in binary mode satisfy this,
-    as does a small adapter that fetches byte ranges from remote storage.
-    """
-
-    def seek(self, offset: int, whence: int = ..., /) -> object: ...
-    def read(self, size: int, /) -> bytes: ...
+class _RangeReader(typing.Protocol):
+    # Structural mirror of cryptography.cobblestone.RangeReader, kept local so
+    # this stub does not import back into the package it is a binding for.
+    def read_at(self, offset: int, length: int) -> Buffer: ...
 
 class Cobblestone128Encryptor:
     def __init__(self, key: Buffer, context: Buffer) -> None: ...
@@ -30,11 +24,11 @@ class Cobblestone128Decryptor:
     def update(self, data: Buffer) -> bytes: ...
     def update_into(self, data: Buffer, buf: Buffer) -> int: ...
     def finalize(self) -> bytes: ...
+
+class Cobblestone128RangeDecryptor:
+    def __init__(self, key: Buffer, context: Buffer) -> None: ...
     def decrypt_range(
-        self,
-        source: Buffer | SeekableReader,
-        offset: int,
-        length: int,
+        self, reader: _RangeReader, offset: int, length: int
     ) -> bytes: ...
 
 class Cobblestone256Encryptor:
@@ -50,9 +44,9 @@ class Cobblestone256Decryptor:
     def update(self, data: Buffer) -> bytes: ...
     def update_into(self, data: Buffer, buf: Buffer) -> int: ...
     def finalize(self) -> bytes: ...
+
+class Cobblestone256RangeDecryptor:
+    def __init__(self, key: Buffer, context: Buffer) -> None: ...
     def decrypt_range(
-        self,
-        source: Buffer | SeekableReader,
-        offset: int,
-        length: int,
+        self, reader: _RangeReader, offset: int, length: int
     ) -> bytes: ...

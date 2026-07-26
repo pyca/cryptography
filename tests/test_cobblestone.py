@@ -3,17 +3,21 @@
 # for complete details.
 
 
-import io
 import mmap
 import os
 
 import pytest
 
+from cryptography import cobblestone as cobblestone_module
 from cryptography.cobblestone import (
+    BufferReader,
     Cobblestone128Decryptor,
     Cobblestone128Encryptor,
+    Cobblestone128RangeDecryptor,
     Cobblestone256Decryptor,
     Cobblestone256Encryptor,
+    Cobblestone256RangeDecryptor,
+    FileReader,
 )
 from cryptography.exceptions import AlreadyFinalized, InvalidTag
 
@@ -397,42 +401,38 @@ class TestCobblestone:
 
 MAX_CHUNK_COUNT = 1 << 38
 
+RANGE_VARIANTS = [
+    pytest.param(
+        (Cobblestone128Encryptor, Cobblestone128RangeDecryptor),
+        id="cobblestone128",
+    ),
+    pytest.param(
+        (Cobblestone256Encryptor, Cobblestone256RangeDecryptor),
+        id="cobblestone256",
+    ),
+]
 
-class _RangeFetcher:
-    """A minimal seek()/read() source, standing in for remote range fetches."""
 
-    def __init__(self, data: bytes, none_at_eof: bool = False):
+class _CountingReader:
+    """A minimal RangeReader, standing in for remote range fetches.
+
+    ``max_read`` caps how much a single ``read_at`` returns, so that callers
+    which need more must issue further reads.
+    """
+
+    def __init__(self, data: bytes, max_read: int | None = None):
         self._data = bytes(data)
-        self._pos = 0
+        self._max_read = max_read
         self.reads = 0
-        # Some streams return None (rather than b"") to signal no data.
-        self._none_at_eof = none_at_eof
 
-    def seek(self, offset, whence=0):
-        assert whence == 0
-        self._pos = offset
-        return self._pos
-
-    def read(self, size):
+    def read_at(self, offset, length):
         self.reads += 1
-        chunk = self._data[self._pos : self._pos + size]
-        self._pos += len(chunk)
-        if not chunk and self._none_at_eof:
-            return None
-        return chunk
+        if self._max_read is not None:
+            length = min(length, self._max_read)
+        return self._data[offset : offset + length]
 
 
-def _buffer_and_filelike_sources(ciphertext: bytes):
-    # Buffer-protocol sources take the direct-indexing path; io.BytesIO and the
-    # range fetcher exercise the seek()/read() path.
-    yield "bytes", bytes(ciphertext)
-    yield "bytearray", bytearray(ciphertext)
-    yield "memoryview", memoryview(bytes(ciphertext))
-    yield "bytesio", io.BytesIO(ciphertext)
-    yield "range_fetcher", _RangeFetcher(ciphertext)
-
-
-SEEK_RANGES = [
+RANGES = [
     (0, 10),  # start of the first chunk
     (100, 50),  # within the first chunk
     (CHUNK_SIZE - 10, 20),  # spanning the 0/1 chunk boundary
@@ -444,106 +444,167 @@ SEEK_RANGES = [
 ]
 
 
-@pytest.mark.parametrize("variant", VARIANTS)
-class TestCobblestoneSeekable:
+@pytest.mark.parametrize("variant", RANGE_VARIANTS)
+class TestCobblestoneRangeDecryptor:
     def _encrypt(self, variant, context, plaintext):
-        encryptor_cls, _, _ = variant
+        encryptor_cls, _ = variant
         key = encryptor_cls.generate_key()
         return key, _encrypt_all(encryptor_cls, key, context, plaintext)
 
-    @pytest.mark.parametrize("offset,length", SEEK_RANGES)
+    @pytest.mark.parametrize("offset,length", RANGES)
     def test_decrypt_range_matches_plaintext(self, variant, offset, length):
-        _, decryptor_cls, _ = variant
-        context = b"seekable context"
+        _, range_cls = variant
+        context = b"range context"
         plaintext = os.urandom(3 * CHUNK_SIZE + 5000)
         key, ciphertext = self._encrypt(variant, context, plaintext)
         expected = plaintext[offset : offset + length]
 
-        for source_id, source in _buffer_and_filelike_sources(ciphertext):
-            dec = decryptor_cls(key, context)
-            assert dec.decrypt_range(source, offset, length) == expected, (
-                source_id
-            )
+        readers = [
+            BufferReader(ciphertext),
+            BufferReader(bytearray(ciphertext)),
+            BufferReader(memoryview(ciphertext)),
+            _CountingReader(ciphertext),
+        ]
+        for reader in readers:
+            dec = range_cls(key, context)
+            assert dec.decrypt_range(reader, offset, length) == expected
 
     def test_decrypt_range_whole_message(self, variant):
-        _, decryptor_cls, _ = variant
+        _, range_cls = variant
         plaintext = os.urandom(2 * CHUNK_SIZE + 1234)
         key, ciphertext = self._encrypt(variant, b"", plaintext)
-        dec = decryptor_cls(key, b"")
-        assert dec.decrypt_range(ciphertext, 0, len(plaintext)) == plaintext
+        dec = range_cls(key, b"")
+        result = dec.decrypt_range(BufferReader(ciphertext), 0, len(plaintext))
+        assert result == plaintext
 
     def test_decrypt_range_on_exact_chunk_boundary_message(self, variant):
         # A message whose length is a multiple of CHUNK_SIZE has an empty
         # final chunk; ranges not touching it still decrypt.
-        _, decryptor_cls, _ = variant
+        _, range_cls = variant
         plaintext = os.urandom(2 * CHUNK_SIZE)
         key, ciphertext = self._encrypt(variant, b"", plaintext)
-        dec = decryptor_cls(key, b"")
-        assert dec.decrypt_range(ciphertext, 0, 2 * CHUNK_SIZE) == plaintext
+        dec = range_cls(key, b"")
+        reader = BufferReader(ciphertext)
+        assert dec.decrypt_range(reader, 0, 2 * CHUNK_SIZE) == plaintext
         assert (
-            dec.decrypt_range(ciphertext, 2 * CHUNK_SIZE - 5, 5)
-            == plaintext[-5:]
+            dec.decrypt_range(reader, 2 * CHUNK_SIZE - 5, 5) == plaintext[-5:]
         )
 
-    def test_decrypt_range_via_mmap(self, variant):
-        _, decryptor_cls, _ = variant
+    def test_buffer_reader_over_mmap(self, variant):
+        _, range_cls = variant
         plaintext = os.urandom(2 * CHUNK_SIZE + 777)
         key, ciphertext = self._encrypt(variant, b"ctx", plaintext)
         mm = mmap.mmap(-1, len(ciphertext))
         try:
             mm[:] = ciphertext
-            dec = decryptor_cls(key, b"ctx")
-            assert (
-                dec.decrypt_range(mm, CHUNK_SIZE - 3, 10)
-                == plaintext[CHUNK_SIZE - 3 : CHUNK_SIZE + 7]
-            )
+            dec = range_cls(key, b"ctx")
+            result = dec.decrypt_range(BufferReader(mm), CHUNK_SIZE - 3, 10)
+            assert result == plaintext[CHUNK_SIZE - 3 : CHUNK_SIZE + 7]
         finally:
             mm.close()
 
+    def test_file_reader(self, variant, tmp_path):
+        _, range_cls = variant
+        plaintext = os.urandom(2 * CHUNK_SIZE + 999)
+        key, ciphertext = self._encrypt(variant, b"", plaintext)
+        path = tmp_path / "message.bin"
+        path.write_bytes(ciphertext)
+
+        with path.open("rb") as f:
+            dec = range_cls(key, b"")
+            reader = FileReader(f)
+            result = dec.decrypt_range(reader, CHUNK_SIZE - 4, 12)
+            assert result == plaintext[CHUNK_SIZE - 4 : CHUNK_SIZE + 8]
+            assert dec.decrypt_range(reader, 0, 20) == plaintext[:20]
+
+    def test_file_reader_without_pread(self, variant, tmp_path, monkeypatch):
+        # Platforms without os.pread fall back to a locked seek/read.
+        monkeypatch.setattr(cobblestone_module, "_HAS_PREAD", False)
+        _, range_cls = variant
+        plaintext = os.urandom(CHUNK_SIZE + 50)
+        key, ciphertext = self._encrypt(variant, b"", plaintext)
+        path = tmp_path / "message.bin"
+        path.write_bytes(ciphertext)
+
+        with path.open("rb") as f:
+            dec = range_cls(key, b"")
+            result = dec.decrypt_range(FileReader(f), CHUNK_SIZE, 50)
+            assert result == plaintext[CHUNK_SIZE:]
+
+    def test_reader_returning_short_reads(self, variant):
+        # A reader that returns less than asked is read from repeatedly.
+        _, range_cls = variant
+        plaintext = os.urandom(2 * CHUNK_SIZE)
+        key, ciphertext = self._encrypt(variant, b"", plaintext)
+        reader = _CountingReader(ciphertext, max_read=1000)
+        dec = range_cls(key, b"")
+        assert (
+            dec.decrypt_range(reader, 0, CHUNK_SIZE) == plaintext[:CHUNK_SIZE]
+        )
+
     def test_zero_length_returns_empty(self, variant):
-        _, decryptor_cls, _ = variant
+        _, range_cls = variant
         key, ciphertext = self._encrypt(variant, b"", b"some data")
-        dec = decryptor_cls(key, b"")
-        # No source access is required for a zero-length range.
-        assert dec.decrypt_range(b"", 0, 0) == b""
-        assert dec.decrypt_range(ciphertext, 3, 0) == b""
+        dec = range_cls(key, b"")
+        reader = _CountingReader(ciphertext)
+        assert dec.decrypt_range(reader, 0, 0) == b""
+        assert dec.decrypt_range(reader, 3, 0) == b""
+        # A zero-length range needs no ciphertext at all.
+        assert reader.reads == 0
 
     def test_instance_is_reusable_for_many_ranges(self, variant):
-        _, decryptor_cls, _ = variant
+        _, range_cls = variant
         plaintext = os.urandom(3 * CHUNK_SIZE)
         key, ciphertext = self._encrypt(variant, b"", plaintext)
-        dec = decryptor_cls(key, b"")
-        assert dec.decrypt_range(ciphertext, 10, 20) == plaintext[10:30]
+        dec = range_cls(key, b"")
+        reader = BufferReader(ciphertext)
+        assert dec.decrypt_range(reader, 10, 20) == plaintext[10:30]
         assert (
-            dec.decrypt_range(ciphertext, 2 * CHUNK_SIZE, 100)
+            dec.decrypt_range(reader, 2 * CHUNK_SIZE, 100)
             == plaintext[2 * CHUNK_SIZE : 2 * CHUNK_SIZE + 100]
         )
 
+    def test_instance_reused_across_different_messages(self, variant):
+        # Each call re-reads the header, so one decryptor may serve readers
+        # for different messages (which have different salts).
+        _, range_cls = variant
+        first = os.urandom(CHUNK_SIZE + 10)
+        second = os.urandom(CHUNK_SIZE + 10)
+        encryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
+        ct1 = _encrypt_all(encryptor_cls, key, b"ctx", first)
+        ct2 = _encrypt_all(encryptor_cls, key, b"ctx", second)
+
+        dec = range_cls(key, b"ctx")
+        assert dec.decrypt_range(BufferReader(ct1), 0, 100) == first[:100]
+        assert dec.decrypt_range(BufferReader(ct2), 0, 100) == second[:100]
+        assert dec.decrypt_range(BufferReader(ct1), 0, 100) == first[:100]
+
     def test_multi_chunk_range_is_a_single_body_read(self, variant):
-        _, decryptor_cls, _ = variant
+        _, range_cls = variant
         plaintext = os.urandom(4 * CHUNK_SIZE)
         key, ciphertext = self._encrypt(variant, b"", plaintext)
-        fetcher = _RangeFetcher(ciphertext)
-        dec = decryptor_cls(key, b"")
-        dec.decrypt_range(fetcher, 100, 2 * CHUNK_SIZE)
+        reader = _CountingReader(ciphertext)
+        dec = range_cls(key, b"")
+        dec.decrypt_range(reader, 100, 2 * CHUNK_SIZE)
         # One read for the header, one contiguous read for the covering chunks.
-        assert fetcher.reads == 2
+        assert reader.reads == 2
 
     def test_wrong_key_rejected(self, variant):
-        encryptor_cls, decryptor_cls, _ = variant
+        encryptor_cls, range_cls = variant
         _, ciphertext = self._encrypt(variant, b"", os.urandom(CHUNK_SIZE + 1))
-        dec = decryptor_cls(encryptor_cls.generate_key(), b"")
+        dec = range_cls(encryptor_cls.generate_key(), b"")
         with pytest.raises(InvalidTag):
-            dec.decrypt_range(ciphertext, 0, 10)
+            dec.decrypt_range(BufferReader(ciphertext), 0, 10)
 
     def test_wrong_context_rejected(self, variant):
-        _, decryptor_cls, _ = variant
+        _, range_cls = variant
         key, ciphertext = self._encrypt(
             variant, b"context a", os.urandom(CHUNK_SIZE + 1)
         )
-        dec = decryptor_cls(key, b"context b")
+        dec = range_cls(key, b"context b")
         with pytest.raises(InvalidTag):
-            dec.decrypt_range(ciphertext, 0, 10)
+            dec.decrypt_range(BufferReader(ciphertext), 0, 10)
 
     @pytest.mark.parametrize(
         "position",
@@ -555,126 +616,159 @@ class TestCobblestoneSeekable:
         ],
     )
     def test_tampering_in_range_detected(self, variant, position):
-        _, decryptor_cls, _ = variant
+        _, range_cls = variant
         key, ciphertext = self._encrypt(
             variant, b"", os.urandom(CHUNK_SIZE + 100)
         )
         ciphertext = bytearray(ciphertext)
         ciphertext[position] ^= 1
-        dec = decryptor_cls(key, b"")
+        dec = range_cls(key, b"")
         with pytest.raises(InvalidTag):
-            dec.decrypt_range(bytes(ciphertext), 0, 100)
+            dec.decrypt_range(BufferReader(bytes(ciphertext)), 0, 100)
 
     def test_reading_past_end_rejected(self, variant):
-        _, decryptor_cls, _ = variant
+        _, range_cls = variant
         plaintext = os.urandom(CHUNK_SIZE + 500)
         key, ciphertext = self._encrypt(variant, b"", plaintext)
-        dec = decryptor_cls(key, b"")
+        dec = range_cls(key, b"")
+        reader = BufferReader(ciphertext)
         # Starting exactly at the end, and overshooting the end, both fail
         # rather than returning short: past the authenticated end there are no
         # bytes to return.
         with pytest.raises(InvalidTag):
-            dec.decrypt_range(ciphertext, len(plaintext), 1)
+            dec.decrypt_range(reader, len(plaintext), 1)
         with pytest.raises(InvalidTag):
-            dec.decrypt_range(ciphertext, len(plaintext) - 2, 5)
+            dec.decrypt_range(reader, len(plaintext) - 2, 5)
 
     def test_truncated_source_in_range_rejected(self, variant):
-        _, decryptor_cls, _ = variant
+        _, range_cls = variant
         plaintext = os.urandom(2 * CHUNK_SIZE + 10)
         key, ciphertext = self._encrypt(variant, b"", plaintext)
         # Drop everything after the first chunk.
-        truncated = ciphertext[: HEADER_LEN + WIRE_CHUNK_SIZE]
+        reader = BufferReader(ciphertext[: HEADER_LEN + WIRE_CHUNK_SIZE])
 
-        dec = decryptor_cls(key, b"")
+        dec = range_cls(key, b"")
         # A range served entirely by the surviving first chunk still succeeds:
-        # decrypt_range cannot detect truncation beyond the requested range.
-        assert dec.decrypt_range(truncated, 0, 100) == plaintext[:100]
+        # a range read cannot detect truncation beyond the requested range.
+        assert dec.decrypt_range(reader, 0, 100) == plaintext[:100]
         # A range needing a dropped chunk is rejected.
         with pytest.raises(InvalidTag):
-            dec.decrypt_range(truncated, CHUNK_SIZE, 10)
-
-    def test_too_large_offset_rejected(self, variant):
-        _, decryptor_cls, _ = variant
-        key, ciphertext = self._encrypt(variant, b"", b"data")
-        dec = decryptor_cls(key, b"")
-        with pytest.raises(ValueError):
-            dec.decrypt_range(ciphertext, MAX_CHUNK_COUNT * CHUNK_SIZE, 1)
-
-    def test_negative_arguments_rejected(self, variant):
-        _, decryptor_cls, _ = variant
-        key, ciphertext = self._encrypt(variant, b"", b"data")
-        dec = decryptor_cls(key, b"")
-        with pytest.raises((ValueError, OverflowError)):
-            dec.decrypt_range(ciphertext, -1, 1)
-        with pytest.raises((ValueError, OverflowError)):
-            dec.decrypt_range(ciphertext, 0, -1)
-
-    def test_invalid_source_type_rejected(self, variant):
-        _, decryptor_cls, _ = variant
-        key, _ = self._encrypt(variant, b"", b"data")
-        dec = decryptor_cls(key, b"")
-        with pytest.raises((TypeError, AttributeError)):
-            dec.decrypt_range(12345, 0, 10)
-
-    def test_cannot_seek_after_streaming(self, variant):
-        _, decryptor_cls, _ = variant
-        key, ciphertext = self._encrypt(variant, b"", os.urandom(CHUNK_SIZE))
-        dec = decryptor_cls(key, b"")
-        dec.update(ciphertext[:HEADER_LEN])
-        with pytest.raises(ValueError, match="cannot be used for both"):
-            dec.decrypt_range(ciphertext, 0, 10)
-
-    def test_cannot_stream_after_seeking(self, variant):
-        _, decryptor_cls, _ = variant
-        key, ciphertext = self._encrypt(variant, b"", os.urandom(CHUNK_SIZE))
-        dec = decryptor_cls(key, b"")
-        dec.decrypt_range(ciphertext, 0, 10)
-        with pytest.raises(ValueError, match="cannot be used for both"):
-            dec.update(ciphertext)
-        with pytest.raises(ValueError, match="cannot be used for both"):
-            dec.update_into(ciphertext, bytearray(2 * CHUNK_SIZE))
-        with pytest.raises(ValueError, match="cannot be used for both"):
-            dec.finalize()
-
-    def test_final_chunk_read_via_none_returning_source(self, variant):
-        # A file-like source that signals end-of-input with None (rather than
-        # b"") is handled: reading the short final chunk asks past its end.
-        _, decryptor_cls, _ = variant
-        plaintext = os.urandom(CHUNK_SIZE + 1234)
-        key, ciphertext = self._encrypt(variant, b"", plaintext)
-        source = _RangeFetcher(ciphertext, none_at_eof=True)
-        dec = decryptor_cls(key, b"")
-        result = dec.decrypt_range(source, CHUNK_SIZE, 1234)
-        assert result == plaintext[CHUNK_SIZE:]
+            dec.decrypt_range(reader, CHUNK_SIZE, 10)
 
     def test_short_header_rejected(self, variant):
         # A source too short to even hold the 56-byte header is truncated.
-        _, decryptor_cls, _ = variant
+        _, range_cls = variant
         key, _ = self._encrypt(variant, b"", b"data")
-        dec = decryptor_cls(key, b"")
+        dec = range_cls(key, b"")
         with pytest.raises(InvalidTag):
-            dec.decrypt_range(b"\x00" * (HEADER_LEN - 1), 0, 1)
+            dec.decrypt_range(BufferReader(b"\x00" * (HEADER_LEN - 1)), 0, 1)
 
     def test_final_chunk_shorter_than_tag_rejected(self, variant):
         # A final wire chunk shorter than the tag cannot be authenticated.
-        _, decryptor_cls, _ = variant
+        _, range_cls = variant
         key, ciphertext = self._encrypt(variant, b"", os.urandom(100))
         # Keep the full header, but leave only a few (< TAG_LEN) body bytes.
-        truncated = ciphertext[: HEADER_LEN + TAG_LEN - 1]
-        dec = decryptor_cls(key, b"")
+        reader = BufferReader(ciphertext[: HEADER_LEN + TAG_LEN - 1])
+        dec = range_cls(key, b"")
         with pytest.raises(InvalidTag):
-            dec.decrypt_range(truncated, 0, 1)
+            dec.decrypt_range(reader, 0, 1)
 
-    def test_seeking_instance_survives_out_of_range_error(self, variant):
-        # Unlike the streaming decryptor, a random-access failure (here, a
-        # read past the end) does not poison the instance.
-        _, decryptor_cls, _ = variant
-        plaintext = os.urandom(CHUNK_SIZE + 200)
-        key, ciphertext = self._encrypt(variant, b"", plaintext)
-        dec = decryptor_cls(key, b"")
-        with pytest.raises(InvalidTag):
-            dec.decrypt_range(ciphertext, len(plaintext), 1)
-        assert dec.decrypt_range(ciphertext, 0, 50) == plaintext[:50]
+    def test_too_large_offset_rejected(self, variant):
+        _, range_cls = variant
+        key, ciphertext = self._encrypt(variant, b"", b"data")
+        dec = range_cls(key, b"")
+        with pytest.raises(ValueError):
+            dec.decrypt_range(
+                BufferReader(ciphertext), MAX_CHUNK_COUNT * CHUNK_SIZE, 1
+            )
+
+    def test_negative_arguments_rejected(self, variant):
+        _, range_cls = variant
+        key, ciphertext = self._encrypt(variant, b"", b"data")
+        dec = range_cls(key, b"")
+        reader = BufferReader(ciphertext)
+        with pytest.raises((ValueError, OverflowError)):
+            dec.decrypt_range(reader, -1, 1)
+        with pytest.raises((ValueError, OverflowError)):
+            dec.decrypt_range(reader, 0, -1)
+
+    def test_reader_without_read_at_rejected(self, variant):
+        _, range_cls = variant
+        key, ciphertext = self._encrypt(variant, b"", b"data")
+        dec = range_cls(key, b"")
+        # A bytes-like is not a reader: it must be wrapped in a BufferReader.
+        with pytest.raises(AttributeError):
+            dec.decrypt_range(ciphertext, 0, 10)
+
+    def test_reader_returning_non_buffer_rejected(self, variant):
+        _, range_cls = variant
+        key, _ = self._encrypt(variant, b"", b"data")
+
+        class BadReader:
+            def read_at(self, offset, length):
+                return "not bytes"
+
+        dec = range_cls(key, b"")
+        with pytest.raises(TypeError):
+            dec.decrypt_range(BadReader(), 0, 10)
+
+    def test_invalid_key_size(self, variant):
+        encryptor_cls, range_cls = variant
+        key_len = len(encryptor_cls.generate_key())
+        for length in [0, key_len - 1, key_len + 1, 64]:
+            with pytest.raises(ValueError):
+                range_cls(b"\x00" * length, b"")
+
+    def test_streaming_decryptor_has_no_decrypt_range(self, variant):
+        # Random access lives on its own class: the streaming decryptor is
+        # unchanged, so the two modes cannot be interleaved on one object.
+        _, range_cls = variant
+        assert not hasattr(Cobblestone128Decryptor, "decrypt_range")
+        assert not hasattr(Cobblestone256Decryptor, "decrypt_range")
+        assert not hasattr(range_cls, "update")
+        assert not hasattr(range_cls, "finalize")
+
+
+class TestRangeReaders:
+    def test_buffer_reader_read_at(self):
+        reader = BufferReader(b"0123456789")
+        assert bytes(reader.read_at(0, 4)) == b"0123"
+        assert bytes(reader.read_at(4, 3)) == b"456"
+        # Reads past the end are short rather than an error.
+        assert bytes(reader.read_at(8, 10)) == b"89"
+        assert bytes(reader.read_at(20, 4)) == b""
+
+    def test_file_reader_read_at(self, tmp_path):
+        path = tmp_path / "data.bin"
+        path.write_bytes(b"0123456789")
+        with path.open("rb") as f:
+            reader = FileReader(f)
+            assert bytes(reader.read_at(0, 4)) == b"0123"
+            assert bytes(reader.read_at(4, 3)) == b"456"
+            assert bytes(reader.read_at(20, 4)) == b""
+
+    def test_file_reader_read_at_without_pread(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(cobblestone_module, "_HAS_PREAD", False)
+        path = tmp_path / "data.bin"
+        path.write_bytes(b"0123456789")
+        with path.open("rb") as f:
+            reader = FileReader(f)
+            assert bytes(reader.read_at(0, 4)) == b"0123"
+            assert bytes(reader.read_at(4, 3)) == b"456"
+
+    @pytest.mark.skipif(
+        not cobblestone_module._HAS_PREAD, reason="platform has no os.pread"
+    )
+    def test_file_reader_does_not_disturb_cursor(self, tmp_path):
+        # With pread the file position is untouched, which is what allows one
+        # reader to serve concurrent ranges.
+        path = tmp_path / "data.bin"
+        path.write_bytes(b"0123456789")
+        with path.open("rb") as f:
+            f.seek(2)
+            reader = FileReader(f)
+            assert bytes(reader.read_at(6, 2)) == b"67"
+            assert f.tell() == 2
 
 
 class TestVariantsAreDistinct:
