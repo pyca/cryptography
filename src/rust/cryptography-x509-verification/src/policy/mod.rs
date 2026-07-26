@@ -61,25 +61,18 @@ const SPKI_SECP521R1: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     params: AlgorithmParameters::Ec(EcParameters::NamedCurve(EC_SECP521R1)),
 };
 
-// ML-DSA AlgorithmIdentifier constants.
-//
-// NOTE: ML-DSA takes no parameters and is not parameterized by a hash,
-// so the same `AlgorithmIdentifier` is used in both the SubjectPublicKeyInfo
-// and signature positions.
-
-// ML-DSA-44
+// ML-DSA AlgorithmIdentifiers: note that these are used for both SPKIs and
+// signatures.
 const ML_DSA_44: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::MlDsa44,
 };
 
-// ML-DSA-65
 const ML_DSA_65: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::MlDsa65,
 };
 
-// ML-DSA-87
 const ML_DSA_87: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
     oid: asn1::DefinedByMarker::marker(),
     params: AlgorithmParameters::MlDsa87,
@@ -87,9 +80,7 @@ const ML_DSA_87: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.1 (page 96)
 /// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
-///
-/// The ML-DSA algorithms (RFC 9881) are permitted in addition to the
-/// Baseline Requirements' algorithms.
+/// ML-DSA (RFC 9881) is permitted in addition.
 pub static WEBPKI_PERMITTED_SPKI_ALGORITHMS: LazyLock<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
     LazyLock::new(|| {
         Arc::new(HashSet::from([
@@ -179,9 +170,7 @@ const ECDSA_SHA512: AlgorithmIdentifier<'_> = AlgorithmIdentifier {
 
 /// Permitted algorithms, from CA/B Forum's Baseline Requirements, section 7.1.3.2 (pages 96-98)
 /// https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-v2.0.0.pdf
-///
-/// The ML-DSA algorithms (RFC 9881) are permitted in addition to the
-/// Baseline Requirements' algorithms.
+/// ML-DSA (RFC 9881) is permitted in addition.
 pub static WEBPKI_PERMITTED_SIGNATURE_ALGORITHMS: LazyLock<Arc<HashSet<AlgorithmIdentifier<'_>>>> =
     LazyLock::new(|| {
         Arc::new(HashSet::from([
