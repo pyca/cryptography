@@ -110,12 +110,15 @@ def _get_limbo_peer(expected_peer):
         return x509.RFC822Name(value)
 
 
-def _limbo_testcase(id_, testcase):
+def _limbo_testcase(id_, testcase, backend):
     if id_ in LIMBO_SKIP_TESTCASES:
         pytest.skip(f"explicitly skipped testcase: {id_}")
 
     features = testcase["features"]
     unsupported = LIMBO_UNSUPPORTED_FEATURES.intersection(features)
+    # ML-DSA chains can only be validated on backends that support ML-DSA.
+    if "has-mldsa" in features and not backend.mldsa_supported():
+        unsupported.add("has-mldsa")
     if unsupported:
         pytest.skip(f"explicitly skipped features: {unsupported}")
 
@@ -199,9 +202,9 @@ def _limbo_testcases(pytestconfig):
 
 
 @pytest.mark.parametrize("shard", range(4))
-def test_limbo(subtests, _limbo_testcases, shard):
+def test_limbo(subtests, _limbo_testcases, shard, backend):
     for testcase in _limbo_testcases[shard::4]:
         with subtests.test():
             # NOTE: Pass in the id separately to make pytest
             # error renderings slightly nicer.
-            _limbo_testcase(testcase["id"], testcase)
+            _limbo_testcase(testcase["id"], testcase, backend)

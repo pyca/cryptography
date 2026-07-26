@@ -53,6 +53,9 @@ Changelog
   compared with ``==``.
 * :class:`~cryptography.x509.CertificateBuilder` now supports creating unsigned
   certificates (:rfc:`9925`) with the ``create_unsigned`` method.
+* The :mod:`X.509 verification <cryptography.x509.verification>` APIs now
+  permit ML-DSA-44, ML-DSA-65, and ML-DSA-87 (:rfc:`9881`) public keys and
+  signatures by default.
 
 .. _v49-0-0:
 
