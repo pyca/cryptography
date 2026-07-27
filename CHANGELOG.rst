@@ -7,6 +7,7 @@ Changelog
 ~~~~~~~~~~~~~~~~
 
 .. note:: This version is not yet released and is under active development.
+
 * Added the :meth:`~cryptography.hazmat.primitives.hashes.SHAKE128.xof`
   and :meth:`~cryptography.hazmat.primitives.hashes.SHAKE256.xof`
   class methods for constructing algorithm instances configured for use with
