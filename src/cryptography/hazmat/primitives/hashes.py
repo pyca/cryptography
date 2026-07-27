@@ -258,6 +258,7 @@ class SHAKE128(HashAlgorithm, ExtendableOutputFunction):
     def xof(cls):
         return cls(sys.maxsize)
 
+
 class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
     name = "shake256"
     block_size = None
@@ -284,6 +285,7 @@ class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
     @classmethod
     def xof(cls):
         return cls(sys.maxsize)
+
 
 class MD5(HashAlgorithm):
     name = "md5"

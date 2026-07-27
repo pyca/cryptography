@@ -8,9 +8,10 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
-* Added the :meth:`~cryptography.hazmat.primitives.hashes.SHAKE128.xof`
-  and :meth:`~cryptography.hazmat.primitives.hashes.SHAKE256.xof`
-  class methods for constructing algorithm instances configured for use with
+* Added ``xof()`` class methods to
+  :class:`~cryptography.hazmat.primitives.hashes.SHAKE128` and
+  :class:`~cryptography.hazmat.primitives.hashes.SHAKE256` for constructing
+  algorithm instances configured for use with
   :class:`~cryptography.hazmat.primitives.hashes.XOFHash`.
 * The :mod:`X.509 verification <cryptography.x509.verification>` APIs are now
   considered stable and are subject to our API stability policy.

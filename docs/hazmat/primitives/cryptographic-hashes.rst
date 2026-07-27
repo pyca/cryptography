@@ -325,6 +325,11 @@ Extendable Output Functions
 
     :raises ValueError: If the ``digest_size`` is invalid.
 
+    .. classmethod:: xof()
+
+        Returns a :class:`SHAKE128` instance configured for use with
+        :class:`XOFHash`.
+
 .. class:: SHAKE256(digest_size)
 
     .. versionadded:: 2.5
@@ -344,6 +349,11 @@ Extendable Output Functions
         zero.
 
     :raises ValueError: If the ``digest_size`` is invalid.
+
+    .. classmethod:: xof()
+
+        Returns a :class:`SHAKE256` instance configured for use with
+        :class:`XOFHash`.
 
 
 
