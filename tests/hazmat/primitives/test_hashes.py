@@ -3,6 +3,7 @@
 # for complete details.
 
 
+import sys
 import binascii
 import typing
 
@@ -253,6 +254,11 @@ class TestSHAKE:
         with pytest.raises(ValueError):
             xof(digest_size=0)
 
+    @pytest.mark.parametrize("xof", [hashes.SHAKE128, hashes.SHAKE256])
+    def test_xof(self, xof):
+        algorithm = xof.xof()
+        assert isinstance(algorithm, xof)
+        assert algorithm.digest_size == sys.maxsize
 
 @pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(hashes.SM3()),
