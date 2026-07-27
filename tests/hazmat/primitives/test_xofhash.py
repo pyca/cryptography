@@ -78,7 +78,10 @@ class TestXOFHash:
             actual = hashes.XOFHash(algorithm.xof())
             actual.update(data)
 
-            assert actual.squeeze(16) + actual.squeeze(16) == expected.squeeze(32)
+            assert (
+                actual.squeeze(16) + actual.squeeze(16)
+                == expected.squeeze(32)
+            )
 
     def test_exhaust_bytes(self):
         h = hashes.XOFHash(hashes.SHAKE128(digest_size=256))
