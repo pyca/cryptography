@@ -260,6 +260,7 @@ class TestSHAKE:
         assert isinstance(algorithm, xof)
         assert algorithm.digest_size == sys.maxsize
 
+
 @pytest.mark.supported(
     only_if=lambda backend: backend.hash_supported(hashes.SM3()),
     skip_message="Does not support SM3",
