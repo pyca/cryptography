@@ -4,8 +4,8 @@
 
 from __future__ import annotations
 
-import sys
 import abc
+import sys
 
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.utils import Buffer

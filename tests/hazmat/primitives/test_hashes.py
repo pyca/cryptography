@@ -3,8 +3,8 @@
 # for complete details.
 
 
-import sys
 import binascii
+import sys
 import typing
 
 import pytest
