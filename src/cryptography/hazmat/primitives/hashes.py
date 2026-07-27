@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import abc
+import sys
 
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.utils import Buffer
@@ -253,6 +254,10 @@ class SHAKE128(HashAlgorithm, ExtendableOutputFunction):
     def digest_size(self) -> int:
         return self._digest_size
 
+    @classmethod
+    def xof(cls):
+        return cls(sys.maxsize)
+
 
 class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
     name = "shake256"
@@ -276,6 +281,10 @@ class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
     @property
     def digest_size(self) -> int:
         return self._digest_size
+
+    @classmethod
+    def xof(cls):
+        return cls(sys.maxsize)
 
 
 class MD5(HashAlgorithm):

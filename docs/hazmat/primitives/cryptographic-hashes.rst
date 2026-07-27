@@ -98,9 +98,8 @@ Message digests (Hashing)
 
     .. doctest::
 
-        >>> import sys
         >>> from cryptography.hazmat.primitives import hashes
-        >>> digest = hashes.XOFHash(hashes.SHAKE128(digest_size=sys.maxsize))
+        >>> digest = hashes.XOFHash(hashes.SHAKE128.xof())
         >>> digest.update(b"abc")
         >>> digest.update(b"123")
         >>> digest.squeeze(16)
@@ -326,6 +325,11 @@ Extendable Output Functions
 
     :raises ValueError: If the ``digest_size`` is invalid.
 
+    .. classmethod:: xof()
+
+        Returns a :class:`SHAKE128` instance configured for use with
+        :class:`XOFHash`.
+
 .. class:: SHAKE256(digest_size)
 
     .. versionadded:: 2.5
@@ -345,6 +349,11 @@ Extendable Output Functions
         zero.
 
     :raises ValueError: If the ``digest_size`` is invalid.
+
+    .. classmethod:: xof()
+
+        Returns a :class:`SHAKE256` instance configured for use with
+        :class:`XOFHash`.
 
 
 

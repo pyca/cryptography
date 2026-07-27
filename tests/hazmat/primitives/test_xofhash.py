@@ -68,6 +68,19 @@ class TestXOFHash:
         h2 = h.copy()
         assert h2.squeeze(10) == h.squeeze(10)
 
+    def test_xof_classmethod(self):
+        data = b"test data"
+
+        for algorithm in (hashes.SHAKE128, hashes.SHAKE256):
+            expected = hashes.XOFHash(algorithm(sys.maxsize))
+            expected.update(data)
+
+            actual = hashes.XOFHash(algorithm.xof())
+            actual.update(data)
+
+            actual_output = actual.squeeze(16) + actual.squeeze(16)
+            assert actual_output == expected.squeeze(32)
+
     def test_exhaust_bytes(self):
         h = hashes.XOFHash(hashes.SHAKE128(digest_size=256))
         h.update(b"foo")
