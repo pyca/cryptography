@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     ed448,
     ed25519,
     mldsa,
+    mlkem,
     padding,
     rsa,
     types,
@@ -4090,6 +4091,108 @@ class TestCertificateBuilder:
         assert cert.signature_hash_algorithm is None
         assert cert.signature_algorithm_parameters is None
         assert isinstance(cert.public_key(), pub_key_cls)
+        assert cert.public_key_algorithm_oid == pub_oid
+        assert cert.version is x509.Version.v3
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            backend.mldsa_supported() and backend.mlkem_supported()
+        ),
+        skip_message="Requires a backend with ML-DSA and ML-KEM support",
+    )
+    @pytest.mark.parametrize(
+        (
+            "issuer_key_cls",
+            "priv_subject_key_cls",
+            "pub_subject_key_cls",
+            "sig_oid",
+            "pub_oid",
+        ),
+        [
+            (
+                mldsa.MLDSA44PrivateKey,
+                mlkem.MLKEM768PrivateKey,
+                mlkem.MLKEM768PublicKey,
+                SignatureAlgorithmOID.ML_DSA_44,
+                PublicKeyAlgorithmOID.ML_KEM_768,
+            ),
+            (
+                mldsa.MLDSA65PrivateKey,
+                mlkem.MLKEM768PrivateKey,
+                mlkem.MLKEM768PublicKey,
+                SignatureAlgorithmOID.ML_DSA_65,
+                PublicKeyAlgorithmOID.ML_KEM_768,
+            ),
+            (
+                mldsa.MLDSA87PrivateKey,
+                mlkem.MLKEM768PrivateKey,
+                mlkem.MLKEM768PublicKey,
+                SignatureAlgorithmOID.ML_DSA_87,
+                PublicKeyAlgorithmOID.ML_KEM_768,
+            ),
+            (
+                mldsa.MLDSA44PrivateKey,
+                mlkem.MLKEM1024PrivateKey,
+                mlkem.MLKEM1024PublicKey,
+                SignatureAlgorithmOID.ML_DSA_44,
+                PublicKeyAlgorithmOID.ML_KEM_1024,
+            ),
+            (
+                mldsa.MLDSA65PrivateKey,
+                mlkem.MLKEM1024PrivateKey,
+                mlkem.MLKEM1024PublicKey,
+                SignatureAlgorithmOID.ML_DSA_65,
+                PublicKeyAlgorithmOID.ML_KEM_1024,
+            ),
+            (
+                mldsa.MLDSA87PrivateKey,
+                mlkem.MLKEM1024PrivateKey,
+                mlkem.MLKEM1024PublicKey,
+                SignatureAlgorithmOID.ML_DSA_87,
+                PublicKeyAlgorithmOID.ML_KEM_1024,
+            ),
+        ],
+    )
+    def test_build_cert_with_public_mlkem_mldsa_sig(
+        self,
+        issuer_key_cls,
+        priv_subject_key_cls,
+        pub_subject_key_cls,
+        sig_oid,
+        pub_oid,
+    ):
+        issuer_private_key = issuer_key_cls.generate()
+        subject_private_key = priv_subject_key_cls.generate()
+
+        not_valid_before = datetime.datetime(2002, 1, 1, 12, 1)
+        not_valid_after = datetime.datetime(2030, 12, 31, 8, 30)
+
+        builder = (
+            x509.CertificateBuilder()
+            .serial_number(777)
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(subject_private_key.public_key())
+            .add_extension(
+                x509.BasicConstraints(ca=False, path_length=None),
+                True,
+            )
+            .not_valid_before(not_valid_before)
+            .not_valid_after(not_valid_after)
+        )
+
+        cert = builder.sign(issuer_private_key, None)
+        issuer_private_key.public_key().verify(
+            cert.signature, cert.tbs_certificate_bytes
+        )
+        assert cert.signature_algorithm_oid == sig_oid
+        assert cert.signature_hash_algorithm is None
+        assert cert.signature_algorithm_parameters is None
+        assert isinstance(cert.public_key(), pub_subject_key_cls)
         assert cert.public_key_algorithm_oid == pub_oid
         assert cert.version is x509.Version.v3
 

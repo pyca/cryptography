@@ -193,6 +193,8 @@ class PublicKeyAlgorithmOID:
     ML_DSA_44 = ObjectIdentifier("2.16.840.1.101.3.4.3.17")
     ML_DSA_65 = ObjectIdentifier("2.16.840.1.101.3.4.3.18")
     ML_DSA_87 = ObjectIdentifier("2.16.840.1.101.3.4.3.19")
+    ML_KEM_768 = ObjectIdentifier("2.16.840.1.101.3.4.4.2")
+    ML_KEM_1024 = ObjectIdentifier("2.16.840.1.101.3.4.4.3")
 
 
 class ExtendedKeyUsageOID:
