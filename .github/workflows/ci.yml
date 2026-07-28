@@ -406,8 +406,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Jul 25, 2026.
-            REF: 4dccfb9db71a6e718acfce3e1397e63997fc7ad5
+            # Latest commit on the pyopenssl main branch, as of Jul 28, 2026.
+            REF: 1ff4a02f77fb8a267c77ae6b33df8fd93b0463bd
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -416,8 +416,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Jul 27, 2026.
-            REF: 63850f73177ec1f33fc68e9d6a59922075744bef
+            # Latest commit on the twisted trunk branch, as of Jul 28, 2026.
+            REF: 65ca753ebbf2d9f9200b788e3237a1c3d6c232f2
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -446,8 +446,8 @@ jobs:
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Jul 27, 2026.
-            REF: 96991da7231f281605d84a23c5cc1ee16e36f19c
+            # Latest commit on the sigstore-python main branch, as of Jul 28, 2026.
+            REF: 181074f4dc11b7e85ef44556e25248ef14fcb554
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
