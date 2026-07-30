@@ -78,10 +78,6 @@ fn _extract_buffer_length<'p>(
     Ok((bufobj, ptrval, len))
 }
 
-// Fields are deliberately GIL-independent (`Py` rather than `Bound`,
-// and `PyBuffer` is `Send + Sync`) so that a `CffiBuf` may be used from
-// a detached (GIL-released) region while the calling frame keeps it
-// alive.
 pub(crate) struct CffiBuf<'p> {
     pyobj: pyo3::Py<pyo3::PyAny>,
     #[cfg(not(Py_3_11))]
