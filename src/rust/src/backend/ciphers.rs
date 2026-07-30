@@ -192,13 +192,7 @@ impl CipherContext {
             ));
         }
 
-        if data.len() >= crate::backend::GIL_DETACH_THRESHOLD {
-            // Both slices are borrowed from buffers whose owners are held
-            // alive by this frame, so they remain valid while detached.
-            py.detach(|| self.update_into_inner(data, buf))
-        } else {
-            self.update_into_inner(data, buf)
-        }
+        crate::backend::run_with_gil_detached(py, data.len(), || self.update_into_inner(data, buf))
     }
 
     fn update_into_inner(&mut self, data: &[u8], buf: &mut [u8]) -> CryptographyResult<usize> {
@@ -228,11 +222,9 @@ impl CipherContext {
         py: pyo3::Python<'_>,
         data: &[u8],
     ) -> CryptographyResult<()> {
-        if data.len() >= crate::backend::GIL_DETACH_THRESHOLD {
-            py.detach(|| self.ctx.cipher_update(data, None))?;
-        } else {
-            self.ctx.cipher_update(data, None)?;
-        }
+        crate::backend::run_with_gil_detached(py, data.len(), || {
+            self.ctx.cipher_update(data, None)
+        })?;
         Ok(())
     }
 

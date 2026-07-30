@@ -13,8 +13,8 @@ Changelog
   ``cryptography.hazmat.primitives.asymmetric.dh`` and loading FFDH keys or
   parameters with the key loading APIs. Users should migrate to a more
   modern key exchange algorithm.
-* Hashing, HMAC, symmetric cipher, and AEAD operations on payloads of 2KiB
-  or more now release the GIL, allowing other threads to run while the
+* Hashing, HMAC, and symmetric cipher operations on payloads of 2KiB or
+  more now release the GIL, allowing other threads to run while the
   cryptographic work happens. Multi-threaded hashing and encryption of
   large payloads now scale across CPU cores.
 * Added ``xof()`` class methods to

@@ -101,13 +101,7 @@ impl Hash {
     fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
         let data = data.as_bytes();
         let ctx = self.get_mut_ctx()?;
-        if data.len() >= crate::backend::GIL_DETACH_THRESHOLD {
-            // The `CffiBuf` holding `data` alive is owned by this frame, so
-            // the borrowed slice remains valid while detached.
-            py.detach(|| ctx.update(data))?;
-        } else {
-            ctx.update(data)?;
-        }
+        crate::backend::run_with_gil_detached(py, data.len(), || ctx.update(data))?;
         Ok(())
     }
 
@@ -169,11 +163,9 @@ impl Hash {
         }
 
         let data = data.as_bytes();
-        let digest = if data.len() >= crate::backend::GIL_DETACH_THRESHOLD {
-            py.detach(|| openssl::hash::hash(md, data))?
-        } else {
-            openssl::hash::hash(md, data)?
-        };
+        let digest = crate::backend::run_with_gil_detached(py, data.len(), || {
+            openssl::hash::hash(md, data)
+        })?;
         Ok(pyo3::types::PyBytes::new(py, &digest))
     }
 }
@@ -185,13 +177,6 @@ pub(crate) struct XOFHash {
     ctx: openssl::hash::Hasher,
     bytes_remaining: u64,
     squeezed: bool,
-}
-
-impl XOFHash {
-    pub(crate) fn update_bytes(&mut self, data: &[u8]) -> CryptographyResult<()> {
-        self.ctx.update(data)?;
-        Ok(())
-    }
 }
 
 #[pyo3::pymethods]
@@ -246,13 +231,9 @@ impl XOFHash {
             ));
         }
         let data = data.as_bytes();
-        if data.len() >= crate::backend::GIL_DETACH_THRESHOLD {
-            let ctx = &mut self.ctx;
-            py.detach(|| ctx.update(data))?;
-            Ok(())
-        } else {
-            self.update_bytes(data)
-        }
+        let ctx = &mut self.ctx;
+        crate::backend::run_with_gil_detached(py, data.len(), || ctx.update(data))?;
+        Ok(())
     }
     #[cfg(any(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER, CRYPTOGRAPHY_IS_AWSLC))]
     fn squeeze<'p>(

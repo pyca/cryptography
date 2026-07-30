@@ -85,15 +85,8 @@ impl Hmac {
     fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
         let data = data.as_bytes();
         let ctx = self.get_mut_ctx()?;
-        if data.len() >= crate::backend::GIL_DETACH_THRESHOLD {
-            // The `CffiBuf` holding `data` alive is owned by this frame, so
-            // the borrowed slice remains valid while detached.
-            py.detach(|| ctx.update(data))?;
-            Ok(())
-        } else {
-            ctx.update(data)?;
-            Ok(())
-        }
+        crate::backend::run_with_gil_detached(py, data.len(), || ctx.update(data))?;
+        Ok(())
     }
 
     pub(crate) fn finalize<'p>(

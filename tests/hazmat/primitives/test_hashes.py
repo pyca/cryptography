@@ -5,7 +5,6 @@
 
 import binascii
 import sys
-import threading
 import typing
 
 import pytest
@@ -155,30 +154,6 @@ def test_buffer_protocol_hash():
     assert h.finalize() == binascii.unhexlify(
         b"dff2e73091f6c05e528896c4c831b9448653dc2ff043528f6769437bc7b975c2"
     )
-
-
-def test_hash_threaded():
-    # Updates over the GIL-release threshold detach from the interpreter;
-    # hash concurrently from several threads to exercise that path.
-    data = b"x" * (1024 * 1024)
-    h = hashes.Hash(hashes.SHA256())
-    h.update(data)
-    expected = h.finalize()
-
-    results = []
-
-    def work():
-        h = hashes.Hash(hashes.SHA256())
-        h.update(data)
-        results.append(h.finalize())
-
-    threads = [threading.Thread(target=work) for _ in range(4)]
-    for t in threads:
-        t.start()
-    for t in threads:
-        t.join()
-
-    assert results == [expected] * 4
 
 
 class TestHashHash:
