@@ -53,8 +53,8 @@ pub(crate) fn public_key_from_pkey(
 }
 
 #[pyo3::pyfunction]
-fn generate_parameters(key_size: u32) -> CryptographyResult<DsaParameters> {
-    let dsa = openssl::dsa::Dsa::generate_params(key_size)?;
+fn generate_parameters(py: pyo3::Python<'_>, key_size: u32) -> CryptographyResult<DsaParameters> {
+    let dsa = py.detach(|| openssl::dsa::Dsa::generate_params(key_size))?;
     Ok(DsaParameters { dsa })
 }
 
