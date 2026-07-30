@@ -103,6 +103,14 @@ impl<'a> CffiBuf<'a> {
         self.buf
     }
 
+    /// Like `as_bytes`, but the returned slice carries the full `'p`
+    /// lifetime instead of borrowing from `self`. The caller is
+    /// responsible for keeping this `CffiBuf` (which keeps the underlying
+    /// buffer alive and pinned) around for as long as the slice is used.
+    pub(crate) fn as_bytes_full(&self) -> &'a [u8] {
+        self.buf
+    }
+
     pub(crate) fn into_pyobj(self) -> pyo3::Bound<'a, pyo3::PyAny> {
         self.pyobj
     }
