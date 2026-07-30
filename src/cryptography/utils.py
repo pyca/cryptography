@@ -77,9 +77,21 @@ class _ModuleWithDeprecations(types.ModuleType):
         if isinstance(obj, _DeprecatedValue):
             warnings.warn(obj.message, obj.warning_class, stacklevel=2)
             obj = obj.value
+        else:
+            # Cache non-deprecated attributes in our own `__dict__` so that
+            # subsequent lookups are ordinary module attribute accesses and
+            # don't pay for this `__getattr__` (which would otherwise defeat
+            # CPython's LOAD_ATTR module caching for every attribute of the
+            # module). `__setattr__` and `__delattr__` keep the cache
+            # coherent.
+            self.__dict__[name] = obj
         return obj
 
     def __setattr__(self, attr: str, value: object) -> None:
+        if isinstance(value, _DeprecatedValue):
+            self.__dict__.pop(attr, None)
+        else:
+            self.__dict__[attr] = value
         setattr(self._module, attr, value)
 
     def __delattr__(self, attr: str) -> None:
@@ -87,6 +99,7 @@ class _ModuleWithDeprecations(types.ModuleType):
         if isinstance(obj, _DeprecatedValue):
             warnings.warn(obj.message, obj.warning_class, stacklevel=2)
 
+        self.__dict__.pop(attr, None)
         delattr(self._module, attr)
 
     def __dir__(self) -> Sequence[str]:
