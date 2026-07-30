@@ -3,55 +3,8 @@
 # for complete details.
 
 import enum
-import typing
-
-import pytest
 
 from cryptography import utils
-
-
-class TestCachedProperty:
-    def test_simple(self):
-        class T:
-            @utils.cached_property
-            def t(self):
-                accesses.append(None)
-                return 14
-
-        accesses: list[typing.Optional[T]] = []
-
-        assert T.t
-        t = T()
-        assert t.t == 14
-        assert len(accesses) == 1
-        assert t.t == 14
-        assert len(accesses) == 1
-
-        t = T()
-        assert t.t == 14
-        assert len(accesses) == 2
-        assert t.t == 14
-        assert len(accesses) == 2
-
-    def test_set(self):
-        class T:
-            @utils.cached_property
-            def t(self):
-                accesses.append(None)
-                return 14
-
-        accesses: list[typing.Optional[T]] = []
-        t = T()
-        with pytest.raises(AttributeError):
-            t.t = None
-        assert len(accesses) == 0
-        assert t.t == 14
-        assert len(accesses) == 1
-        with pytest.raises(AttributeError):
-            t.t = None
-        assert len(accesses) == 1
-        assert t.t == 14
-        assert len(accesses) == 1
 
 
 def test_enum():

@@ -9,7 +9,7 @@ import sys
 import types
 import typing
 import warnings
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 
 
 # We use a UserWarning subclass, instead of DeprecationWarning, because CPython
@@ -124,21 +124,6 @@ def deprecated(
     if name is not None:
         setattr(module, name, dv)
     return dv
-
-
-def cached_property(func: Callable) -> property:
-    cached_name = f"_cached_{func}"
-    sentinel = object()
-
-    def inner(instance: object):
-        cache = getattr(instance, cached_name, sentinel)
-        if cache is not sentinel:
-            return cache
-        result = func(instance)
-        setattr(instance, cached_name, result)
-        return result
-
-    return property(inner)
 
 
 # Python 3.10 changed representation of enums. We use well-defined object
