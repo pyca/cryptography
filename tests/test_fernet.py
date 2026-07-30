@@ -174,6 +174,19 @@ class TestMultiFernet:
         with pytest.raises(InvalidToken):
             f.decrypt(b"\x00" * 16)
 
+    def test_decrypt_ttl(self, monkeypatch):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
+        f = MultiFernet([f1])
+        current_time = 1526138327
+        token = f.encrypt_at_time(b"encrypt me", current_time)
+
+        monkeypatch.setattr(time, "time", lambda: current_time)
+        assert f.decrypt(token, ttl=1) == b"encrypt me"
+
+        monkeypatch.setattr(time, "time", lambda: current_time + 2)
+        with pytest.raises(InvalidToken):
+            f.decrypt(token, ttl=1)
+
     def test_decrypt_at_time(self):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
         f = MultiFernet([f1])
@@ -278,6 +291,14 @@ class TestMultiFernet:
         current_time = 1526138327
         token = f2.encrypt_at_time(b"encrypt me", current_time)
         assert mf1.extract_timestamp(token) == current_time
+
+    def test_extract_timestamp_no_valid_signature(self):
+        f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
+        f2 = Fernet(base64.urlsafe_b64encode(b"\x01" * 32))
+        mf1 = MultiFernet([f1])
+        # Well-formed token, but signed by a key not in the MultiFernet.
+        with pytest.raises(InvalidToken):
+            mf1.extract_timestamp(f2.encrypt(b"encrypt me"))
 
     def test_extract_timestamp_invalid_token(self):
         f1 = Fernet(base64.urlsafe_b64encode(b"\x00" * 32))
