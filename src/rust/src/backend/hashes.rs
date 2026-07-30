@@ -181,6 +181,18 @@ pub(crate) struct XOFHash {
     squeezed: bool,
 }
 
+impl XOFHash {
+    pub(crate) fn update_bytes(
+        &mut self,
+        py: pyo3::Python<'_>,
+        data: &[u8],
+    ) -> CryptographyResult<()> {
+        let ctx = &mut self.ctx;
+        crate::backend::run_with_gil_detached(py, data.len(), || ctx.update(data))?;
+        Ok(())
+    }
+}
+
 #[pyo3::pymethods]
 impl XOFHash {
     #[new]
@@ -232,10 +244,7 @@ impl XOFHash {
                 exceptions::AlreadyFinalized::new_err("Context was already squeezed."),
             ));
         }
-        let data = data.as_bytes();
-        let ctx = &mut self.ctx;
-        crate::backend::run_with_gil_detached(py, data.len(), || ctx.update(data))?;
-        Ok(())
+        self.update_bytes(py, data.as_bytes())
     }
     #[cfg(any(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER, CRYPTOGRAPHY_IS_AWSLC))]
     fn squeeze<'p>(
