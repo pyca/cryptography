@@ -83,12 +83,13 @@ impl PKCS7PaddingContext {
 
     pub(crate) fn update<'a>(
         &mut self,
+        py: pyo3::Python<'a>,
         buf: CffiBuf<'a>,
     ) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
         match self.length_seen.as_mut() {
             Some(v) => {
                 *v += buf.as_bytes().len();
-                Ok(buf.into_pyobj())
+                Ok(buf.into_pyobj(py))
             }
             None => Err(exceptions::already_finalized_error()),
         }
@@ -127,12 +128,13 @@ impl ANSIX923PaddingContext {
 
     pub(crate) fn update<'a>(
         &mut self,
+        py: pyo3::Python<'a>,
         buf: CffiBuf<'a>,
     ) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
         match self.length_seen.as_mut() {
             Some(v) => {
                 *v += buf.as_bytes().len();
-                Ok(buf.into_pyobj())
+                Ok(buf.into_pyobj(py))
             }
             None => Err(exceptions::already_finalized_error()),
         }

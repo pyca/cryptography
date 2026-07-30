@@ -26,6 +26,38 @@ pub(crate) enum Aad<'a> {
     List(pyo3::Bound<'a, pyo3::types::PyList>),
 }
 
+/// AAD that has been extracted and length-checked while attached to the
+/// interpreter. `CffiBuf` holds no GIL-bound references, so this may be
+/// used from a detached region.
+enum ExtractedAad<'a> {
+    None,
+    Single(CffiBuf<'a>),
+    List(Vec<CffiBuf<'a>>),
+}
+
+/// Returns the extracted AAD and its total length in bytes.
+fn extract_aad(aad: Option<Aad<'_>>) -> CryptographyResult<(ExtractedAad<'_>, usize)> {
+    match aad {
+        None => Ok((ExtractedAad::None, 0)),
+        Some(Aad::Single(ad)) => {
+            check_length(ad.as_bytes())?;
+            let len = ad.as_bytes().len();
+            Ok((ExtractedAad::Single(ad), len))
+        }
+        Some(Aad::List(ads)) => {
+            let mut bufs = Vec::with_capacity(ads.len());
+            let mut len = 0;
+            for ad in ads.iter() {
+                let buf = ad.extract::<CffiBuf<'_>>()?;
+                check_length(buf.as_bytes())?;
+                len += buf.as_bytes().len();
+                bufs.push(buf);
+            }
+            Ok((ExtractedAad::List(bufs), len))
+        }
+    }
+}
+
 pub(crate) enum AeadCipher {
     Static(&'static openssl::cipher::CipherRef),
     #[cfg(not(any(
@@ -96,21 +128,18 @@ impl EvpCipherAead {
 
     fn process_aad(
         ctx: &mut openssl::cipher_ctx::CipherCtx,
-        aad: Option<Aad<'_>>,
+        aad: &ExtractedAad<'_>,
     ) -> CryptographyResult<()> {
         match aad {
-            Some(Aad::Single(ad)) => {
-                check_length(ad.as_bytes())?;
+            ExtractedAad::None => {}
+            ExtractedAad::Single(ad) => {
                 ctx.cipher_update(ad.as_bytes(), None)?;
             }
-            Some(Aad::List(ads)) => {
-                for ad in ads.iter() {
-                    let ad = ad.extract::<CffiBuf<'_>>()?;
-                    check_length(ad.as_bytes())?;
+            ExtractedAad::List(ads) => {
+                for ad in ads {
                     ctx.cipher_update(ad.as_bytes(), None)?;
                 }
             }
-            None => {}
         }
 
         Ok(())
@@ -205,8 +234,6 @@ impl EvpCipherAead {
             ctx.encrypt_init(None, None, nonce)?;
         }
 
-        Self::process_aad(&mut ctx, aad)?;
-
         let ciphertext;
         let tag;
         if self.tag_first {
@@ -215,9 +242,19 @@ impl EvpCipherAead {
             (ciphertext, tag) = buf.split_at_mut(plaintext.len());
         }
 
-        Self::process_data(&mut ctx, plaintext, ciphertext, self.is_ccm)?;
+        let (aad, aad_len) = extract_aad(aad)?;
 
-        ctx.tag(tag).map_err(CryptographyError::from)?;
+        let is_ccm = self.is_ccm;
+        crate::backend::run_with_gil_detached(
+            py,
+            plaintext.len() + aad_len,
+            || -> CryptographyResult<()> {
+                Self::process_aad(&mut ctx, &aad)?;
+                Self::process_data(&mut ctx, plaintext, ciphertext, is_ccm)?;
+                ctx.tag(tag).map_err(CryptographyError::from)?;
+                Ok(())
+            },
+        )?;
 
         Ok(())
     }
@@ -270,10 +307,19 @@ impl EvpCipherAead {
             ctx.set_tag(tag)?;
         }
 
-        Self::process_aad(&mut ctx, aad)?;
+        let (aad, aad_len) = extract_aad(aad)?;
 
-        Self::process_data(&mut ctx, ciphertext_data, buf, self.is_ccm)
-            .map_err(|_| exceptions::InvalidTag::new_err(()))?;
+        let is_ccm = self.is_ccm;
+        crate::backend::run_with_gil_detached(
+            py,
+            ciphertext_data.len() + aad_len,
+            || -> CryptographyResult<()> {
+                Self::process_aad(&mut ctx, &aad)?;
+                Self::process_data(&mut ctx, ciphertext_data, buf, is_ccm)
+                    .map_err(|_| exceptions::InvalidTag::new_err(()))?;
+                Ok(())
+            },
+        )?;
 
         Ok(())
     }

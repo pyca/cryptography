@@ -78,10 +78,12 @@ fn _extract_buffer_length<'p>(
     Ok((bufobj, ptrval, len))
 }
 
+// Contains no GIL-bound references, so it is sound to use while the GIL
+// is released, as long as it's kept alive.
 pub(crate) struct CffiBuf<'p> {
-    pyobj: pyo3::Bound<'p, pyo3::PyAny>,
+    pyobj: pyo3::Py<pyo3::PyAny>,
     #[cfg(not(Py_3_11))]
-    _bufobj: pyo3::Bound<'p, pyo3::PyAny>,
+    _bufobj: pyo3::Py<pyo3::PyAny>,
     #[cfg(Py_3_11)]
     _bufobj: Option<pyo3::buffer::PyBuffer<u8>>,
     buf: &'p [u8],
@@ -90,11 +92,11 @@ pub(crate) struct CffiBuf<'p> {
 impl<'a> CffiBuf<'a> {
     pub(crate) fn from_bytes(py: pyo3::Python<'a>, buf: &'a [u8]) -> Self {
         CffiBuf {
-            pyobj: py.None().into_bound(py),
+            pyobj: py.None(),
             #[cfg(Py_3_11)]
             _bufobj: None,
             #[cfg(not(Py_3_11))]
-            _bufobj: py.None().into_bound(py),
+            _bufobj: py.None(),
             buf,
         }
     }
@@ -103,8 +105,8 @@ impl<'a> CffiBuf<'a> {
         self.buf
     }
 
-    pub(crate) fn into_pyobj(self) -> pyo3::Bound<'a, pyo3::PyAny> {
-        self.pyobj
+    pub(crate) fn into_pyobj(self, py: pyo3::Python<'a>) -> pyo3::Bound<'a, pyo3::PyAny> {
+        self.pyobj.into_bound(py)
     }
 }
 
@@ -127,8 +129,11 @@ impl<'p> pyo3::conversion::FromPyObject<'_, 'p> for CffiBuf<'p> {
             unsafe { slice::from_raw_parts(ptrval as *const u8, len) }
         };
         Ok(CffiBuf {
-            pyobj: pyobj.to_owned(),
+            pyobj: pyobj.to_owned().unbind(),
+            #[cfg(Py_3_11)]
             _bufobj: bufobj,
+            #[cfg(not(Py_3_11))]
+            _bufobj: bufobj.unbind(),
             buf,
         })
     }
