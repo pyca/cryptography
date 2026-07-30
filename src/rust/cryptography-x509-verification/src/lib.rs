@@ -396,7 +396,10 @@ impl<'a, 'chain, B: CryptoOps> ChainBuilder<'a, 'chain, B> {
         // likely untrusted one.
         //
         // See: <https://github.com/golang/go/blob/d00c67f297e/src/crypto/x509/cert_pool.go#L136>
-        candidates.sort_by_key(|candidate| {
+        // `sort_by_cached_key` rather than `sort_by_key`: the key function
+        // re-parses the candidate's extensions, so we only want to run it
+        // once per candidate rather than once per comparison.
+        candidates.sort_by_cached_key(|candidate| {
             let have_kid: Option<&[u8]> =
                 candidate.certificate().extensions().ok().and_then(|exts| {
                     exts.get_extension(&SUBJECT_KEY_IDENTIFIER_OID)
