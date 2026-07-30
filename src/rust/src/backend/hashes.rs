@@ -98,8 +98,17 @@ impl Hash {
         })
     }
 
-    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        self.update_bytes(data.as_bytes())
+    fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
+        let data = data.as_bytes();
+        let ctx = self.get_mut_ctx()?;
+        if data.len() >= crate::backend::GIL_DETACH_THRESHOLD {
+            // The `CffiBuf` holding `data` alive is owned by this frame, so
+            // the borrowed slice remains valid while detached.
+            py.detach(|| ctx.update(data))?;
+        } else {
+            ctx.update(data)?;
+        }
+        Ok(())
     }
 
     pub(crate) fn finalize<'p>(
@@ -159,7 +168,12 @@ impl Hash {
             }
         }
 
-        let digest = openssl::hash::hash(md, data.as_bytes())?;
+        let data = data.as_bytes();
+        let digest = if data.len() >= crate::backend::GIL_DETACH_THRESHOLD {
+            py.detach(|| openssl::hash::hash(md, data))?
+        } else {
+            openssl::hash::hash(md, data)?
+        };
         Ok(pyo3::types::PyBytes::new(py, &digest))
     }
 }
@@ -225,13 +239,20 @@ impl XOFHash {
         }
     }
 
-    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
+    fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
         if self.squeezed {
             return Err(CryptographyError::from(
                 exceptions::AlreadyFinalized::new_err("Context was already squeezed."),
             ));
         }
-        self.update_bytes(data.as_bytes())
+        let data = data.as_bytes();
+        if data.len() >= crate::backend::GIL_DETACH_THRESHOLD {
+            let ctx = &mut self.ctx;
+            py.detach(|| ctx.update(data))?;
+            Ok(())
+        } else {
+            self.update_bytes(data)
+        }
     }
     #[cfg(any(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER, CRYPTOGRAPHY_IS_AWSLC))]
     fn squeeze<'p>(

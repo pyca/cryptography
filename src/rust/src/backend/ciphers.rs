@@ -167,17 +167,22 @@ impl CipherContext {
             // output, so encrypt directly into the result PyBytes instead
             // of into a zeroed scratch Vec that then gets copied.
             return Ok(pyo3::types::PyBytes::new_with(py, data.len(), |b| {
-                let n = self.update_into(data, b)?;
+                let n = self.update_into(py, data, b)?;
                 assert_eq!(n, data.len());
                 Ok(())
             })?);
         }
         let mut buf = vec![0; data.len() + block_size];
-        let n = self.update_into(data, &mut buf)?;
+        let n = self.update_into(py, data, &mut buf)?;
         Ok(pyo3::types::PyBytes::new(py, &buf[..n]))
     }
 
-    pub(crate) fn update_into(&mut self, data: &[u8], buf: &mut [u8]) -> CryptographyResult<usize> {
+    pub(crate) fn update_into(
+        &mut self,
+        py: pyo3::Python<'_>,
+        data: &[u8],
+        buf: &mut [u8],
+    ) -> CryptographyResult<usize> {
         if buf.len() < (data.len() + self.ctx.block_size() - 1) {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
@@ -187,6 +192,16 @@ impl CipherContext {
             ));
         }
 
+        if data.len() >= crate::backend::GIL_DETACH_THRESHOLD {
+            // Both slices are borrowed from buffers whose owners are held
+            // alive by this frame, so they remain valid while detached.
+            py.detach(|| self.update_into_inner(data, buf))
+        } else {
+            self.update_into_inner(data, buf)
+        }
+    }
+
+    fn update_into_inner(&mut self, data: &[u8], buf: &mut [u8]) -> CryptographyResult<usize> {
         let mut total_written = 0;
         for chunk in data.chunks(1 << 29) {
             // SAFETY: We ensure that outbuf is sufficiently large above.
@@ -208,8 +223,16 @@ impl CipherContext {
         Ok(total_written)
     }
 
-    fn authenticate_additional_data(&mut self, data: &[u8]) -> CryptographyResult<()> {
-        self.ctx.cipher_update(data, None)?;
+    fn authenticate_additional_data(
+        &mut self,
+        py: pyo3::Python<'_>,
+        data: &[u8],
+    ) -> CryptographyResult<()> {
+        if data.len() >= crate::backend::GIL_DETACH_THRESHOLD {
+            py.detach(|| self.ctx.cipher_update(data, None))?;
+        } else {
+            self.ctx.cipher_update(data, None)?;
+        }
         Ok(())
     }
 
@@ -346,12 +369,13 @@ impl PyCipherContext {
 
     fn update_into(
         &mut self,
+        py: pyo3::Python<'_>,
         data: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
         let data = data.as_bytes();
         self.decrement_bytes_remaining(data.len())?;
-        get_mut_ctx(self.ctx.as_mut())?.update_into(data, buf.as_mut_bytes())
+        get_mut_ctx(self.ctx.as_mut())?.update_into(py, data, buf.as_mut_bytes())
     }
 
     fn finalize<'p>(
@@ -385,6 +409,7 @@ impl PyAEADEncryptionContext {
 
     fn update_into(
         &mut self,
+        py: pyo3::Python<'_>,
         data: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
@@ -397,10 +422,14 @@ impl PyAEADEncryptionContext {
             .ok_or_else(|| {
                 pyo3::exceptions::PyValueError::new_err("Exceeded maximum encrypted byte limit")
             })?;
-        get_mut_ctx(self.ctx.as_mut())?.update_into(data, buf.as_mut_bytes())
+        get_mut_ctx(self.ctx.as_mut())?.update_into(py, data, buf.as_mut_bytes())
     }
 
-    fn authenticate_additional_data(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
+    fn authenticate_additional_data(
+        &mut self,
+        py: pyo3::Python<'_>,
+        data: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
         let ctx = get_mut_ctx(self.ctx.as_mut())?;
         if self.updated {
             return Err(CryptographyError::from(
@@ -415,7 +444,7 @@ impl PyAEADEncryptionContext {
             .ok_or_else(|| {
                 pyo3::exceptions::PyValueError::new_err("Exceeded maximum AAD byte limit")
             })?;
-        ctx.authenticate_additional_data(data)
+        ctx.authenticate_additional_data(py, data)
     }
 
     fn finalize<'p>(
@@ -475,6 +504,7 @@ impl PyAEADDecryptionContext {
 
     fn update_into(
         &mut self,
+        py: pyo3::Python<'_>,
         data: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
@@ -487,10 +517,14 @@ impl PyAEADDecryptionContext {
             .ok_or_else(|| {
                 pyo3::exceptions::PyValueError::new_err("Exceeded maximum encrypted byte limit")
             })?;
-        get_mut_ctx(self.ctx.as_mut())?.update_into(data, buf.as_mut_bytes())
+        get_mut_ctx(self.ctx.as_mut())?.update_into(py, data, buf.as_mut_bytes())
     }
 
-    fn authenticate_additional_data(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
+    fn authenticate_additional_data(
+        &mut self,
+        py: pyo3::Python<'_>,
+        data: CffiBuf<'_>,
+    ) -> CryptographyResult<()> {
         let ctx = get_mut_ctx(self.ctx.as_mut())?;
         if self.updated {
             return Err(CryptographyError::from(
@@ -505,7 +539,7 @@ impl PyAEADDecryptionContext {
             .ok_or_else(|| {
                 pyo3::exceptions::PyValueError::new_err("Exceeded maximum AAD byte limit")
             })?;
-        ctx.authenticate_additional_data(data)
+        ctx.authenticate_additional_data(py, data)
     }
 
     fn finalize<'p>(

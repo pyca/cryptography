@@ -7,6 +7,7 @@ import binascii
 import mmap
 import os
 import sys
+import threading
 import typing
 
 import pytest
@@ -548,6 +549,30 @@ def _load_gcm_vectors():
 
 
 class TestAESGCM:
+    def test_threaded(self):
+        # Payloads over the GIL-release threshold detach from the
+        # interpreter; encrypt/decrypt concurrently to exercise that path.
+        key = AESGCM.generate_key(128)
+        aesgcm = AESGCM(key)
+        nonce = os.urandom(12)
+        data = b"x" * (1024 * 1024)
+        aad = b"a" * 4096
+        expected = aesgcm.encrypt(nonce, data, aad)
+
+        results = []
+
+        def work():
+            ct = aesgcm.encrypt(nonce, data, aad)
+            results.append((ct, aesgcm.decrypt(nonce, ct, aad)))
+
+        threads = [threading.Thread(target=work) for _ in range(4)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert results == [(expected, data)] * 4
+
     @pytest.mark.skipif(
         sys.platform not in {"linux", "darwin"} or sys.maxsize < 2**31,
         reason="mmap and 64-bit platform required",
