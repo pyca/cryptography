@@ -161,7 +161,19 @@ impl CipherContext {
         py: pyo3::Python<'p>,
         data: &[u8],
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let mut buf = vec![0; data.len() + self.ctx.block_size()];
+        let block_size = self.ctx.block_size();
+        if block_size == 1 {
+            // Streaming modes (CTR, CFB, OFB, GCM, ChaCha20, XTS) always
+            // produce exactly data.len() bytes of output, so encrypt
+            // directly into the result PyBytes instead of into a zeroed
+            // scratch Vec that then gets copied.
+            return Ok(pyo3::types::PyBytes::new_with(py, data.len(), |b| {
+                let n = self.update_into(data, b)?;
+                assert_eq!(n, data.len());
+                Ok(())
+            })?);
+        }
+        let mut buf = vec![0; data.len() + block_size];
         let n = self.update_into(data, &mut buf)?;
         Ok(pyo3::types::PyBytes::new(py, &buf[..n]))
     }
