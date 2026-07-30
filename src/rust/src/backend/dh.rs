@@ -34,6 +34,7 @@ struct DHParameters {
 #[pyo3::pyfunction]
 #[pyo3(signature = (generator, key_size, backend=None))]
 fn generate_parameters(
+    py: pyo3::Python<'_>,
     generator: u32,
     key_size: u32,
     backend: Option<pyo3::Bound<'_, pyo3::PyAny>>,
@@ -54,7 +55,10 @@ fn generate_parameters(
         ));
     }
 
-    let dh = openssl::dh::Dh::generate_params(key_size, generator)
+    // Parameter generation runs for seconds to minutes at common key
+    // sizes; let other threads run in the meantime.
+    let dh = py
+        .detach(|| openssl::dh::Dh::generate_params(key_size, generator))
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Unable to generate DH parameters"))?;
     Ok(DHParameters { dh })
 }
