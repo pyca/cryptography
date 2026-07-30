@@ -35,31 +35,25 @@ enum ExtractedAad<'a> {
     List(Vec<CffiBuf<'a>>),
 }
 
-impl ExtractedAad<'_> {
-    fn len(&self) -> usize {
-        match self {
-            ExtractedAad::None => 0,
-            ExtractedAad::Single(buf) => buf.as_bytes().len(),
-            ExtractedAad::List(bufs) => bufs.iter().map(|b| b.as_bytes().len()).sum(),
-        }
-    }
-}
-
-fn extract_aad(aad: Option<Aad<'_>>) -> CryptographyResult<ExtractedAad<'_>> {
+/// Returns the extracted AAD and its total length in bytes.
+fn extract_aad(aad: Option<Aad<'_>>) -> CryptographyResult<(ExtractedAad<'_>, usize)> {
     match aad {
-        None => Ok(ExtractedAad::None),
+        None => Ok((ExtractedAad::None, 0)),
         Some(Aad::Single(ad)) => {
             check_length(ad.as_bytes())?;
-            Ok(ExtractedAad::Single(ad))
+            let len = ad.as_bytes().len();
+            Ok((ExtractedAad::Single(ad), len))
         }
         Some(Aad::List(ads)) => {
             let mut bufs = Vec::with_capacity(ads.len());
+            let mut len = 0;
             for ad in ads.iter() {
                 let buf = ad.extract::<CffiBuf<'_>>()?;
                 check_length(buf.as_bytes())?;
+                len += buf.as_bytes().len();
                 bufs.push(buf);
             }
-            Ok(ExtractedAad::List(bufs))
+            Ok((ExtractedAad::List(bufs), len))
         }
     }
 }
@@ -248,12 +242,12 @@ impl EvpCipherAead {
             (ciphertext, tag) = buf.split_at_mut(plaintext.len());
         }
 
-        let aad = extract_aad(aad)?;
+        let (aad, aad_len) = extract_aad(aad)?;
 
         let is_ccm = self.is_ccm;
         crate::backend::run_with_gil_detached(
             py,
-            plaintext.len() + aad.len(),
+            plaintext.len() + aad_len,
             || -> CryptographyResult<()> {
                 Self::process_aad(&mut ctx, &aad)?;
                 Self::process_data(&mut ctx, plaintext, ciphertext, is_ccm)?;
@@ -313,12 +307,12 @@ impl EvpCipherAead {
             ctx.set_tag(tag)?;
         }
 
-        let aad = extract_aad(aad)?;
+        let (aad, aad_len) = extract_aad(aad)?;
 
         let is_ccm = self.is_ccm;
         crate::backend::run_with_gil_detached(
             py,
-            ciphertext_data.len() + aad.len(),
+            ciphertext_data.len() + aad_len,
             || -> CryptographyResult<()> {
                 Self::process_aad(&mut ctx, &aad)?;
                 Self::process_data(&mut ctx, ciphertext_data, buf, is_ccm)
