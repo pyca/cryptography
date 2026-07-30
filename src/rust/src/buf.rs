@@ -78,6 +78,8 @@ fn _extract_buffer_length<'p>(
     Ok((bufobj, ptrval, len))
 }
 
+// Contains no GIL-bound references, so it is sound to use while the GIL
+// is released, as long as it's kept alive.
 pub(crate) struct CffiBuf<'p> {
     pyobj: pyo3::Py<pyo3::PyAny>,
     #[cfg(not(Py_3_11))]
