@@ -39,8 +39,13 @@ impl Hmac {
         })
     }
 
-    pub(crate) fn update_bytes(&mut self, data: &[u8]) -> CryptographyResult<()> {
-        self.get_mut_ctx()?.update(data)?;
+    pub(crate) fn update_bytes(
+        &mut self,
+        py: pyo3::Python<'_>,
+        data: &[u8],
+    ) -> CryptographyResult<()> {
+        let ctx = self.get_mut_ctx()?;
+        crate::backend::run_with_gil_detached(py, data.len(), || ctx.update(data))?;
         Ok(())
     }
 
@@ -82,8 +87,8 @@ impl Hmac {
         Hmac::new_bytes(py, key.as_bytes(), algorithm)
     }
 
-    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        self.update_bytes(data.as_bytes())
+    fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
+        self.update_bytes(py, data.as_bytes())
     }
 
     pub(crate) fn finalize<'p>(

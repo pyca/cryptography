@@ -821,13 +821,13 @@ impl Suite {
             KDF::SHAKE256 => types::SHAKE256.get(py)?.call1((length,))?,
         };
         let mut hash = Hash::new(py, &algorithm, None)?;
-        hash.update_bytes(ikm)?;
-        hash.update_bytes(HPKE_VERSION)?;
-        hash.update_bytes(&self.hpke_suite_id)?;
-        hash.update_bytes(&label_len)?;
-        hash.update_bytes(label)?;
-        hash.update_bytes(&(length as u16).to_be_bytes())?;
-        hash.update_bytes(context)?;
+        hash.update_bytes(py, ikm)?;
+        hash.update_bytes(py, HPKE_VERSION)?;
+        hash.update_bytes(py, &self.hpke_suite_id)?;
+        hash.update_bytes(py, &label_len)?;
+        hash.update_bytes(py, label)?;
+        hash.update_bytes(py, &(length as u16).to_be_bytes())?;
+        hash.update_bytes(py, context)?;
         hash.finalize(py)
     }
 
@@ -1103,11 +1103,11 @@ fn hybrid_kem_combine<'p>(
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let algorithm = types::SHA3_256.get(py)?.call0()?;
     let mut hash = Hash::new(py, &algorithm, None)?;
-    hash.update_bytes(ss_pq)?;
-    hash.update_bytes(ss_t)?;
-    hash.update_bytes(ct_t)?;
-    hash.update_bytes(ek_t)?;
-    hash.update_bytes(label)?;
+    hash.update_bytes(py, ss_pq)?;
+    hash.update_bytes(py, ss_t)?;
+    hash.update_bytes(py, ct_t)?;
+    hash.update_bytes(py, ek_t)?;
+    hash.update_bytes(py, label)?;
     hash.finalize(py)
 }
 

@@ -103,13 +103,13 @@ pub(crate) fn symmetric_encrypt(
         ciphers::CipherContext::new(py, algorithm, mode, openssl::symm::Mode::Encrypt)?;
 
     let mut ciphertext = vec![0; data.len() + (block_size / 8 * 2)];
-    let n = cipher.update_into(data, &mut ciphertext)?;
+    let n = cipher.update_into(py, data, &mut ciphertext)?;
 
     let mut padder = PKCS7PaddingContext::new(block_size);
     assert!(padder.update(CffiBuf::from_bytes(py, data))?.is_none());
     let padding = padder.finalize(py)?;
 
-    let pad_n = cipher.update_into(padding.as_bytes(), &mut ciphertext[n..])?;
+    let pad_n = cipher.update_into(py, padding.as_bytes(), &mut ciphertext[n..])?;
     let final_block = cipher.finalize(py)?;
     assert!(final_block.as_bytes().is_empty());
     ciphertext.truncate(n + pad_n);
@@ -378,7 +378,7 @@ fn serialize_safebags<'p>(
     )?;
     let mac_digest = {
         let mut h = hmac::Hmac::new_bytes(py, &mac_key, &encryption_details.mac_algorithm)?;
-        h.update_bytes(&auth_safe_content)?;
+        h.update_bytes(py, &auth_safe_content)?;
         h.finalize(py)?
     };
     let mac_algorithm_identifier = crate::x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS
