@@ -8,6 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Deprecated Diffie-Hellman key exchange over finite fields (FFDH).
+  Everything FFDH is deprecated, including the types in
+  ``cryptography.hazmat.primitives.asymmetric.dh`` and loading FFDH keys or
+  parameters with the key loading APIs. Users should migrate to a more
+  modern key exchange algorithm.
 * Added ``xof()`` class methods to
   :class:`~cryptography.hazmat.primitives.hashes.SHAKE128` and
   :class:`~cryptography.hazmat.primitives.hashes.SHAKE256` for constructing

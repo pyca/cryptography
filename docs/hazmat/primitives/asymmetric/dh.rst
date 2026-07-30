@@ -5,6 +5,11 @@ Diffie-Hellman key exchange
 
 .. currentmodule:: cryptography.hazmat.primitives.asymmetric.dh
 
+.. deprecated:: 50.0.0
+    Diffie-Hellman over finite fields (FFDH) is deprecated and support will
+    be removed in a future release. Users should migrate to a more modern
+    key exchange algorithm.
+
 .. note::
     For security and performance reasons we suggest using
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH` instead of DH
