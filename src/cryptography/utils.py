@@ -43,6 +43,8 @@ def _check_bytes(name: str, value: bytes) -> None:
 
 
 def _check_byteslike(name: str, value: Buffer) -> None:
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        return
     try:
         memoryview(value)
     except TypeError:
