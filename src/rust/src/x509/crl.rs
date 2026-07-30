@@ -200,7 +200,7 @@ impl CertificateRevocationList {
         let data = self.public_bytes_der()?;
 
         let mut h = Hash::new(py, &algorithm, None)?;
-        h.update_bytes(&data)?;
+        h.update_bytes(py, &data)?;
         Ok(h.finalize(py)?)
     }
 

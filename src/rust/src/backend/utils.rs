@@ -326,7 +326,7 @@ pub(crate) fn calculate_digest_and_algorithm<'p>(
         // Potential optimization: rather than allocate a PyBytes in
         // `h.finalize()`, have a way to get the `DigestBytes` directly.
         let mut h = Hash::new(py, algorithm, None)?;
-        h.update_bytes(data)?;
+        h.update_bytes(py, data)?;
         (algorithm.clone(), BytesOrPyBytes::PyBytes(h.finalize(py)?))
     };
 

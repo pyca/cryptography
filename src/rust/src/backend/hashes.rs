@@ -72,8 +72,13 @@ fn hash_supported(py: pyo3::Python<'_>, algorithm: pyo3::Bound<'_, pyo3::PyAny>)
 }
 
 impl Hash {
-    pub(crate) fn update_bytes(&mut self, data: &[u8]) -> CryptographyResult<()> {
-        self.get_mut_ctx()?.update(data)?;
+    pub(crate) fn update_bytes(
+        &mut self,
+        py: pyo3::Python<'_>,
+        data: &[u8],
+    ) -> CryptographyResult<()> {
+        let ctx = self.get_mut_ctx()?;
+        crate::backend::run_with_gil_detached(py, data.len(), || ctx.update(data))?;
         Ok(())
     }
 }
@@ -99,10 +104,7 @@ impl Hash {
     }
 
     fn update(&mut self, py: pyo3::Python<'_>, data: CffiBuf<'_>) -> CryptographyResult<()> {
-        let data = data.as_bytes();
-        let ctx = self.get_mut_ctx()?;
-        crate::backend::run_with_gil_detached(py, data.len(), || ctx.update(data))?;
-        Ok(())
+        self.update_bytes(py, data.as_bytes())
     }
 
     pub(crate) fn finalize<'p>(

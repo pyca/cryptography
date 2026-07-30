@@ -113,7 +113,7 @@ impl Certificate {
         let serialized = asn1::write_single(self.raw.borrow_dependent())?;
 
         let mut h = hashes::Hash::new(py, algorithm, None)?;
-        h.update_bytes(&serialized)?;
+        h.update_bytes(py, &serialized)?;
         h.finalize(py)
     }
 

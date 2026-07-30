@@ -129,6 +129,6 @@ pub(crate) fn hash_data<'p>(
     data: &[u8],
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let mut h = Hash::new(py, py_hash_alg, None)?;
-    h.update_bytes(data)?;
+    h.update_bytes(py, data)?;
     Ok(h.finalize(py)?)
 }

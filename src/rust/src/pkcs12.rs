@@ -378,7 +378,7 @@ fn serialize_safebags<'p>(
     )?;
     let mac_digest = {
         let mut h = hmac::Hmac::new_bytes(py, &mac_key, &encryption_details.mac_algorithm)?;
-        h.update_bytes(&auth_safe_content)?;
+        h.update_bytes(py, &auth_safe_content)?;
         h.finalize(py)?
     };
     let mac_algorithm_identifier = crate::x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS
