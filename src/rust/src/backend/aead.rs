@@ -26,66 +26,40 @@ pub(crate) enum Aad<'a> {
     List(pyo3::Bound<'a, pyo3::types::PyList>),
 }
 
-/// Keeps the Python buffer objects backing an `ExtractedAad` alive and
-/// pinned; must outlive all uses of the corresponding slices.
-enum AadOwner<'a> {
-    None,
-    Single(#[allow(dead_code)] CffiBuf<'a>),
-    List(#[allow(dead_code)] Vec<CffiBuf<'a>>),
-}
-
-/// Length-checked raw AAD slices plus their total length. Contains no
-/// Python references, so it may be freely used while detached.
+/// AAD that has been extracted and length-checked while attached to the
+/// interpreter. `CffiBuf` holds no GIL-bound references, so this may be
+/// used from a detached region.
 enum ExtractedAad<'a> {
     None,
-    Single([&'a [u8]; 1], usize),
-    List(Vec<&'a [u8]>, usize),
+    Single(CffiBuf<'a>),
+    List(Vec<CffiBuf<'a>>),
 }
 
-impl<'a> ExtractedAad<'a> {
-    fn slices(&self) -> &[&'a [u8]] {
-        match self {
-            ExtractedAad::None => &[],
-            ExtractedAad::Single(slice, _) => slice,
-            ExtractedAad::List(slices, _) => slices,
-        }
-    }
-
+impl ExtractedAad<'_> {
     fn len(&self) -> usize {
         match self {
             ExtractedAad::None => 0,
-            ExtractedAad::Single(_, len) | ExtractedAad::List(_, len) => *len,
+            ExtractedAad::Single(buf) => buf.as_bytes().len(),
+            ExtractedAad::List(bufs) => bufs.iter().map(|b| b.as_bytes().len()).sum(),
         }
     }
 }
 
-/// Extracts and length-checks the AAD. This must happen while attached to
-/// the interpreter; the returned `AadOwner` keeps the underlying Python
-/// buffers alive for as long as the `ExtractedAad` slices are in use.
-fn extract_aad(aad: Option<Aad<'_>>) -> CryptographyResult<(AadOwner<'_>, ExtractedAad<'_>)> {
+fn extract_aad(aad: Option<Aad<'_>>) -> CryptographyResult<ExtractedAad<'_>> {
     match aad {
-        None => Ok((AadOwner::None, ExtractedAad::None)),
+        None => Ok(ExtractedAad::None),
         Some(Aad::Single(ad)) => {
-            let slice = ad.as_bytes_full();
-            check_length(slice)?;
-            Ok((
-                AadOwner::Single(ad),
-                ExtractedAad::Single([slice], slice.len()),
-            ))
+            check_length(ad.as_bytes())?;
+            Ok(ExtractedAad::Single(ad))
         }
         Some(Aad::List(ads)) => {
             let mut bufs = Vec::with_capacity(ads.len());
-            let mut slices = Vec::with_capacity(ads.len());
-            let mut len = 0;
             for ad in ads.iter() {
                 let buf = ad.extract::<CffiBuf<'_>>()?;
-                let slice = buf.as_bytes_full();
-                check_length(slice)?;
-                len += slice.len();
-                slices.push(slice);
+                check_length(buf.as_bytes())?;
                 bufs.push(buf);
             }
-            Ok((AadOwner::List(bufs), ExtractedAad::List(slices, len)))
+            Ok(ExtractedAad::List(bufs))
         }
     }
 }
@@ -162,8 +136,16 @@ impl EvpCipherAead {
         ctx: &mut openssl::cipher_ctx::CipherCtx,
         aad: &ExtractedAad<'_>,
     ) -> CryptographyResult<()> {
-        for ad in aad.slices() {
-            ctx.cipher_update(ad, None)?;
+        match aad {
+            ExtractedAad::None => {}
+            ExtractedAad::Single(ad) => {
+                ctx.cipher_update(ad.as_bytes(), None)?;
+            }
+            ExtractedAad::List(ads) => {
+                for ad in ads {
+                    ctx.cipher_update(ad.as_bytes(), None)?;
+                }
+            }
         }
 
         Ok(())
@@ -266,7 +248,7 @@ impl EvpCipherAead {
             (ciphertext, tag) = buf.split_at_mut(plaintext.len());
         }
 
-        let (_aad_owner, aad) = extract_aad(aad)?;
+        let aad = extract_aad(aad)?;
 
         let is_ccm = self.is_ccm;
         crate::backend::run_with_gil_detached(
@@ -331,7 +313,7 @@ impl EvpCipherAead {
             ctx.set_tag(tag)?;
         }
 
-        let (_aad_owner, aad) = extract_aad(aad)?;
+        let aad = extract_aad(aad)?;
 
         let is_ccm = self.is_ccm;
         crate::backend::run_with_gil_detached(

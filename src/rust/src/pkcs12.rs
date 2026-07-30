@@ -106,7 +106,7 @@ pub(crate) fn symmetric_encrypt(
     let n = cipher.update_into(py, data, &mut ciphertext)?;
 
     let mut padder = PKCS7PaddingContext::new(block_size);
-    assert!(padder.update(CffiBuf::from_bytes(py, data))?.is_none());
+    assert!(padder.update(py, CffiBuf::from_bytes(py, data))?.is_none());
     let padding = padder.finalize(py)?;
 
     let pad_n = cipher.update_into(py, padding.as_bytes(), &mut ciphertext[n..])?;
