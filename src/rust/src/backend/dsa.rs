@@ -54,8 +54,6 @@ pub(crate) fn public_key_from_pkey(
 
 #[pyo3::pyfunction]
 fn generate_parameters(py: pyo3::Python<'_>, key_size: u32) -> CryptographyResult<DsaParameters> {
-    // Parameter generation takes hundreds of milliseconds or more; let
-    // other threads run in the meantime.
     let dsa = py.detach(|| openssl::dsa::Dsa::generate_params(key_size))?;
     Ok(DsaParameters { dsa })
 }

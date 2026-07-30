@@ -55,8 +55,6 @@ fn generate_parameters(
         ));
     }
 
-    // Parameter generation runs for seconds to minutes at common key
-    // sizes; let other threads run in the meantime.
     let dh = py
         .detach(|| openssl::dh::Dh::generate_params(key_size, generator))
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Unable to generate DH parameters"))?;
