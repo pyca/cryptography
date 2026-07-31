@@ -3,10 +3,8 @@ Changelog
 
 .. _v50-0-0:
 
-50.0.0 - `main`_
-~~~~~~~~~~~~~~~~
-
-.. note:: This version is not yet released and is under active development.
+50.0.0 - 2026-07-31
+~~~~~~~~~~~~~~~~~~~
 
 * **SECURITY ISSUE**:
   :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_decrypt_der`
