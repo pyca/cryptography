@@ -4,7 +4,8 @@
 
 
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ed25519, padding
+from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
+from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 from cryptography.hazmat.primitives.ciphers import (
     BlockCipherAlgorithm,
     CipherAlgorithm,
@@ -85,4 +86,51 @@ class DummyEd25519PublicKey(ed25519.Ed25519PublicKey):
         raise NotImplementedError
 
     def __deepcopy__(self, memo: dict) -> ed25519.Ed25519PublicKey:
+        raise NotImplementedError
+
+
+class DummyRSAPrivateKey(rsa.RSAPrivateKey):
+    """
+    A fake RSAPrivateKey whose decrypt() raises a non-ValueError. Used for
+    testing that a failure originating outside of this library is not
+    mistaken for an attacker controlled decryption failure.
+    """
+
+    def decrypt(
+        self, ciphertext: bytes, padding: padding.AsymmetricPadding
+    ) -> bytes:
+        raise TypeError("the smartcard is unplugged")
+
+    @property
+    def key_size(self) -> int:
+        raise NotImplementedError
+
+    def public_key(self) -> rsa.RSAPublicKey:
+        raise NotImplementedError
+
+    def sign(
+        self,
+        data: bytes,
+        padding: padding.AsymmetricPadding,
+        algorithm: asym_utils.Prehashed
+        | hashes.HashAlgorithm
+        | asym_utils.NoDigestInfo,
+    ) -> bytes:
+        raise NotImplementedError
+
+    def private_numbers(self) -> rsa.RSAPrivateNumbers:
+        raise NotImplementedError
+
+    def private_bytes(
+        self,
+        encoding: serialization.Encoding,
+        format: serialization.PrivateFormat,
+        encryption_algorithm: serialization.KeySerializationEncryption,
+    ) -> bytes:
+        raise NotImplementedError
+
+    def __copy__(self) -> rsa.RSAPrivateKey:
+        raise NotImplementedError
+
+    def __deepcopy__(self, memo: dict) -> rsa.RSAPrivateKey:
         raise NotImplementedError

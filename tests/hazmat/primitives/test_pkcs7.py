@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
 from cryptography.hazmat.primitives.ciphers import algorithms
 from cryptography.hazmat.primitives.serialization import pkcs7
+from tests.doubles import DummyRSAPrivateKey
 from tests.x509.test_x509 import _generate_ca_and_leaf
 
 from ...hazmat.primitives.fixtures_rsa import (
@@ -1478,6 +1479,22 @@ class TestPKCS7Decrypt:
                 # caller gets garbage instead of an error. That is equally
                 # uninformative, so it is an acceptable outcome here.
                 assert str(exc) == "Invalid padding bytes."
+
+    def test_decrypt_key_error_is_not_swallowed(self, data, certificate):
+        # Only a ValueError from unwrapping the key is attacker controlled and
+        # therefore silenced. A private key implemented outside this library
+        # can fail in other ways, and those must still reach the caller.
+        enveloped = (
+            pkcs7.PKCS7EnvelopeBuilder()
+            .set_data(data)
+            .add_recipient(certificate)
+            .encrypt(serialization.Encoding.DER, [])
+        )
+
+        with pytest.raises(TypeError, match="the smartcard is unplugged"):
+            pkcs7.pkcs7_decrypt_der(
+                enveloped, certificate, DummyRSAPrivateKey(), []
+            )
 
 
 class TestPKCS7SerializeCerts:
