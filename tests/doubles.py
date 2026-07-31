@@ -100,7 +100,7 @@ class DummyRSAPrivateKey(rsa.RSAPrivateKey):
     def decrypt(
         self, ciphertext: bytes, padding: padding.AsymmetricPadding
     ) -> bytes:
-        raise TypeError("the smartcard is unplugged")
+        raise TypeError("TypeError for testing")
 
     @property
     def key_size(self) -> int:

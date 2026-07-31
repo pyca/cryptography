@@ -1491,7 +1491,7 @@ class TestPKCS7Decrypt:
             .encrypt(serialization.Encoding.DER, [])
         )
 
-        with pytest.raises(TypeError, match="the smartcard is unplugged"):
+        with pytest.raises(TypeError, match="TypeError for testing"):
             pkcs7.pkcs7_decrypt_der(
                 enveloped, certificate, DummyRSAPrivateKey(), []
             )
