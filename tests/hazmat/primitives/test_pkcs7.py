@@ -23,6 +23,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
 from cryptography.hazmat.primitives.ciphers import algorithms
 from cryptography.hazmat.primitives.serialization import pkcs7
+from tests.doubles import DummyRSAPrivateKey
 from tests.x509.test_x509 import _generate_ca_and_leaf
 
 from ...hazmat.primitives.fixtures_rsa import (
@@ -1432,6 +1433,67 @@ class TestPKCS7Decrypt:
         with pytest.raises(ValueError):
             pkcs7.pkcs7_decrypt_smime(
                 email_message.as_bytes(), certificate, private_key, []
+            )
+
+    def test_decrypt_encrypted_key_is_not_an_oracle(
+        self, data, certificate, private_key
+    ):
+        # An attacker who replaces the encryptedKey must not be able to tell
+        # the RSA decryption outcomes apart. Recovering an unusable key, or
+        # failing to recover one at all, has to look exactly like recovering
+        # a key of the right length that simply isn't the right key. See
+        # RFC 3218 and Bleichenbacher's '98 attack.
+        enveloped = (
+            pkcs7.PKCS7EnvelopeBuilder()
+            .set_data(data)
+            .add_recipient(certificate)
+        )
+        der = enveloped.encrypt(serialization.Encoding.DER, [])
+
+        public_key = certificate.public_key()
+        assert isinstance(public_key, rsa.RSAPublicKey)
+
+        # The encryptedKey is the only OCTET STRING in the structure as long
+        # as the RSA modulus, so it can be located by its DER header.
+        key_bytes = public_key.key_size // 8
+        marker = b"\x04\x82" + key_bytes.to_bytes(2, "big")
+        assert der.count(marker) == 1
+        offset = der.index(marker) + len(marker)
+
+        for encrypted_key in [
+            # Invalid PKCS#1 v1.5 padding.
+            b"\x00" * key_bytes,
+            # Valid padding concealing a key of the wrong length.
+            public_key.encrypt(b"A" * 15, padding.PKCS1v15()),
+            public_key.encrypt(b"A" * 17, padding.PKCS1v15()),
+            public_key.encrypt(b"A" * 32, padding.PKCS1v15()),
+            # Valid padding concealing a correctly sized but wrong key.
+            public_key.encrypt(b"A" * 16, padding.PKCS1v15()),
+        ]:
+            tampered = der[:offset] + encrypted_key + der[offset + key_bytes :]
+            try:
+                pkcs7.pkcs7_decrypt_der(tampered, certificate, private_key, [])
+            except ValueError as exc:
+                # Decrypting under a substituted random key leaves plausible
+                # PKCS#7 padding roughly one time in 256, in which case the
+                # caller gets garbage instead of an error. That is equally
+                # uninformative, so it is an acceptable outcome here.
+                assert str(exc) == "Invalid padding bytes."
+
+    def test_decrypt_key_error_is_not_swallowed(self, data, certificate):
+        # Only a ValueError from unwrapping the key is attacker controlled and
+        # therefore silenced. A private key implemented outside this library
+        # can fail in other ways, and those must still reach the caller.
+        enveloped = (
+            pkcs7.PKCS7EnvelopeBuilder()
+            .set_data(data)
+            .add_recipient(certificate)
+            .encrypt(serialization.Encoding.DER, [])
+        )
+
+        with pytest.raises(TypeError, match="TypeError for testing"):
+            pkcs7.pkcs7_decrypt_der(
+                enveloped, certificate, DummyRSAPrivateKey(), []
             )
 
 

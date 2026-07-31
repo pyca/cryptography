@@ -6,9 +6,10 @@ import copy
 
 import pytest
 
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding
 
-from .doubles import DummyEd25519PublicKey
+from .doubles import DummyEd25519PublicKey, DummyRSAPrivateKey
 
 
 class TestDummyEd25519PublicKey:
@@ -44,5 +45,51 @@ class TestDummyEd25519PublicKey:
 
     def test_deepcopy_not_implemented(self):
         key = DummyEd25519PublicKey(b"test data")
+        with pytest.raises(NotImplementedError):
+            copy.deepcopy(key)
+
+
+class TestDummyRSAPrivateKey:
+    def test_decrypt(self):
+        key = DummyRSAPrivateKey()
+        with pytest.raises(TypeError):
+            key.decrypt(b"ciphertext", padding.PKCS1v15())
+
+    def test_key_size_not_implemented(self):
+        key = DummyRSAPrivateKey()
+        with pytest.raises(NotImplementedError):
+            key.key_size
+
+    def test_public_key_not_implemented(self):
+        key = DummyRSAPrivateKey()
+        with pytest.raises(NotImplementedError):
+            key.public_key()
+
+    def test_sign_not_implemented(self):
+        key = DummyRSAPrivateKey()
+        with pytest.raises(NotImplementedError):
+            key.sign(b"data", padding.PKCS1v15(), hashes.SHA256())
+
+    def test_private_numbers_not_implemented(self):
+        key = DummyRSAPrivateKey()
+        with pytest.raises(NotImplementedError):
+            key.private_numbers()
+
+    def test_private_bytes_not_implemented(self):
+        key = DummyRSAPrivateKey()
+        with pytest.raises(NotImplementedError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.PKCS8,
+                serialization.NoEncryption(),
+            )
+
+    def test_copy_not_implemented(self):
+        key = DummyRSAPrivateKey()
+        with pytest.raises(NotImplementedError):
+            copy.copy(key)
+
+    def test_deepcopy_not_implemented(self):
+        key = DummyRSAPrivateKey()
         with pytest.raises(NotImplementedError):
             copy.deepcopy(key)

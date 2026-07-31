@@ -1445,6 +1445,15 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
     most of this implementation follows S/MIME 2.0 (RFC 2311). A small subset of :rfc:`2632`,
     also known as S/MIME version 3 is supported.
 
+    .. warning::
+
+        ``EnvelopedData`` does not authenticate its content. An application
+        that decrypts attacker-supplied messages and reveals whether
+        decryption succeeded -- through an error, a status code, or timing --
+        gives the attacker a CBC padding oracle sufficient to recover the
+        plaintext. This is a property of PKCS#7 and cannot be fixed here,
+        so avoid decrypting untrusted ``EnvelopedData``.
+
     :param data: The data, encoded in DER format.
     :type data: bytes
 
@@ -1501,6 +1510,12 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
     Deserialize and decrypt a PEM-encoded PKCS7 message. PKCS7 (or S/MIME) has multiple versions,
     most of this implementation follows S/MIME 2.0 (RFC 2311). A small subset of :rfc:`2632`,
     also known as S/MIME version 3 is supported.
+
+    .. warning::
+
+        The padding oracle described in
+        :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_decrypt_der`
+        applies equally here.
 
     :param data: The data, encoded in PEM format.
     :type data: bytes
@@ -1559,6 +1574,12 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
     Deserialize and decrypt a S/MIME-encoded PKCS7 message. PKCS7 (or S/MIME) has multiple versions,
     most of this implementation follows S/MIME 2.0 (RFC 2311). A small subset of :rfc:`2632`,
     also known as S/MIME version 3 is supported.
+
+    .. warning::
+
+        The padding oracle described in
+        :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_decrypt_der`
+        applies equally here.
 
     :param data: The data. It should be in S/MIME format, meaning MIME with content type
         ``application/pkcs7-mime`` or ``application/x-pkcs7-mime``.

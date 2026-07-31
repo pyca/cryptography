@@ -8,6 +8,13 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* **SECURITY ISSUE**:
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs7.pkcs7_decrypt_der`
+  and its PEM and S/MIME variants no longer expose distinguishable errors or
+  timing when unwrapping a ``RecipientInfo``'s ``encryptedKey``, which could
+  act as a Bleichenbacher oracle for callers that decrypt untrusted messages.
+  A random key is now substituted on failure, as described in :rfc:`3218`.
+  Credit to **@X1AOxiang** for reporting the issue
 * Deprecated Diffie-Hellman key exchange over finite fields (FFDH).
   Everything FFDH is deprecated, including the types in
   ``cryptography.hazmat.primitives.asymmetric.dh`` and loading FFDH keys or
