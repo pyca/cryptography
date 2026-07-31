@@ -2,6 +2,8 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 
 load_pem_private_key = rust_openssl.keys.load_pem_private_key
