@@ -17,7 +17,8 @@ jobs:
         with:
           # Needed so we can push back to the repo
           persist-credentials: true
-      - id: bump-x509-limbo
+      - name: Bump x509-limbo pin
+        id: bump-x509-limbo
         run: |
           python3 .github/bin/bump_dependency.py \
             --name "x509-limbo" \
@@ -27,7 +28,8 @@ jobs:
             --current-version-pattern 'X509_LIMBO_REF: "([a-f0-9]{40})" # x509-limbo-ref' \
             --update-pattern 'X509_LIMBO_REF: "{new_version}" # x509-limbo-ref' \
             --comment-pattern 'Latest commit on the x509-limbo main branch.*?\.'
-      - id: bump-wycheproof
+      - name: Bump wycheproof pin
+        id: bump-wycheproof
         run: |
           python3 .github/bin/bump_dependency.py \
             --name "wycheproof" \

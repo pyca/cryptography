@@ -17,7 +17,8 @@ jobs:
         with:
           # Needed so we can push back to the repo
           persist-credentials: true
-      - id: bump-boringssl
+      - name: Bump BoringSSL pin
+        id: bump-boringssl
         run: |
           python3 .github/bin/bump_dependency.py \
             --name "BoringSSL" \
@@ -29,7 +30,8 @@ jobs:
             --comment-pattern 'Latest commit on the BoringSSL main branch.*?\.' \
             --commit-url-template "{repo_url}/+/{version}" \
             --diff-url-template "{repo_url}/+/{old_version}..{new_version}"
-      - id: bump-openssl
+      - name: Bump OpenSSL pin
+        id: bump-openssl
         run: |
           python3 .github/bin/bump_dependency.py \
             --name "OpenSSL" \
@@ -39,7 +41,8 @@ jobs:
             --current-version-pattern 'TYPE: "openssl", VERSION: "([a-f0-9]{40})"' \
             --update-pattern 'TYPE: "openssl", VERSION: "{new_version}"' \
             --comment-pattern 'Latest commit on the OpenSSL master branch.*?\.'
-      - id: bump-awslc
+      - name: Bump AWS-LC pin
+        id: bump-awslc
         run: |
           python3 .github/bin/bump_dependency.py \
             --name "AWS-LC" \
