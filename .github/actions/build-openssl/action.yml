@@ -1,0 +1,84 @@
+name: Build custom OpenSSL
+description: |
+  Builds OpenSSL/LibreSSL/BoringSSL/AWS-LC from source, caching the
+  installed tree, and exports the environment variables needed to build
+  cryptography against it (OPENSSL_DIR, CFLAGS, RUSTFLAGS).
+
+  The cache is restored and saved with explicit steps rather than
+  actions/cache's post-job save, so a build is written to the cache as
+  soon as it finishes instead of at the end of the job.
+
+inputs:
+  type:
+    description: "openssl, libressl, boringssl, or aws-lc"
+    required: true
+  version:
+    description: "Version to build, or a git commit for openssl/boringssl"
+    required: true
+  config-flags:
+    description: "Extra configure flags, appended to the defaults"
+    required: false
+    default: ""
+
+outputs:
+  hash:
+    description: "Hash of the build inputs, for use in other cache keys"
+    value: ${{ steps.config.outputs.hash }}
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Compute config hash and set config vars
+      id: config
+      run: |
+        DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
+        CONFIG_FLAGS="$DEFAULT_CONFIG_FLAGS $CONFIG_FLAGS"
+        OPENSSL_HASH=$(echo "${TYPE}-${VERSION}-$CONFIG_FLAGS" | sha1sum | sed 's/ .*$//')
+        echo "hash=${OPENSSL_HASH}" >> $GITHUB_OUTPUT
+        # When altering the openssl build process you may need to increment
+        # the value on the end of this cache key so that you can prevent it
+        # from fetching the cache and skipping the build step.
+        echo "cache-key=${TYPE}-${VERSION}-${OPENSSL_HASH}-${SCRIPT_HASH}-0" >> $GITHUB_OUTPUT
+        echo "CONFIG_FLAGS=${CONFIG_FLAGS}" >> $GITHUB_ENV
+        echo "OPENSSL_HASH=${OPENSSL_HASH}" >> $GITHUB_ENV
+        echo "OSSL_INFO=${TYPE}-${VERSION}-${CONFIG_FLAGS}" >> $GITHUB_ENV
+        echo "OSSL_PATH=${GITHUB_WORKSPACE}/osslcache/${TYPE}-${VERSION}-${OPENSSL_HASH}" >> $GITHUB_ENV
+      env:
+        TYPE: ${{ inputs.type }}
+        VERSION: ${{ inputs.version }}
+        CONFIG_FLAGS: ${{ inputs.config-flags }}
+        SCRIPT_HASH: ${{ hashFiles('.github/bin/build_openssl.sh') }}
+      shell: bash
+
+    - name: Restore OpenSSL cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      id: ossl-cache
+      with:
+        path: ${{ github.workspace }}/osslcache
+        key: ${{ steps.config.outputs.cache-key }}
+
+    - name: Build custom OpenSSL/LibreSSL
+      run: .github/bin/build_openssl.sh
+      env:
+        TYPE: ${{ inputs.type }}
+        VERSION: ${{ inputs.version }}
+      shell: bash
+      if: steps.ossl-cache.outputs.cache-hit != 'true'
+
+    # Saving here, rather than letting actions/cache save in a post-job
+    # step, means the build survives a failure (or timeout) in any of the
+    # steps that follow.
+    - name: Save OpenSSL cache
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ github.workspace }}/osslcache
+        key: ${{ steps.config.outputs.cache-key }}
+      if: steps.ossl-cache.outputs.cache-hit != 'true'
+
+    - name: Set CFLAGS/LDFLAGS
+      run: |
+        echo "OPENSSL_DIR=${OSSL_PATH}" >> $GITHUB_ENV
+        echo "CFLAGS=${CFLAGS} -Werror=implicit-function-declaration" >> $GITHUB_ENV
+        echo "RUSTFLAGS=-Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib -Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib64" >> $GITHUB_ENV
+      shell: bash
