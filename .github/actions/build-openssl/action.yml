@@ -1,12 +1,5 @@
 name: Build custom OpenSSL
-description: |
-  Builds OpenSSL/LibreSSL/BoringSSL/AWS-LC from source, caching the
-  installed tree, and exports the environment variables needed to build
-  cryptography against it (OPENSSL_DIR, CFLAGS, RUSTFLAGS).
-
-  The cache is restored and saved with explicit steps rather than
-  actions/cache's post-job save, so a build is written to the cache as
-  soon as it finishes instead of at the end of the job.
+description: Builds OpenSSL/LibreSSL/BoringSSL/AWS-LC from source, with caching, and exports the environment variables needed to build cryptography against it
 
 inputs:
   type:
