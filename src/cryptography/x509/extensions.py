@@ -37,6 +37,7 @@ from cryptography.x509.general_name import (
 )
 from cryptography.x509.name import Name, RelativeDistinguishedName
 from cryptography.x509.oid import (
+    CertificatePoliciesOID,
     CRLEntryExtensionOID,
     ExtensionOID,
     ObjectIdentifier,
@@ -810,6 +811,52 @@ class PolicyConstraints(ExtensionType):
     @property
     def inhibit_policy_mapping(self) -> int | None:
         return self._inhibit_policy_mapping
+
+    def public_bytes(self) -> bytes:
+        return rust_x509.encode_extension_value(self)
+
+
+class PolicyMappings(ExtensionType):
+    oid = ExtensionOID.POLICY_MAPPINGS
+
+    def __init__(
+        self,
+        mappings: Iterable[tuple[ObjectIdentifier, ObjectIdentifier]],
+    ) -> None:
+        mappings = list(mappings)
+        if not mappings:
+            raise ValueError("mappings must be a non-empty list")
+        if not all(
+            isinstance(mapping, tuple)
+            and len(mapping) == 2
+            and all(isinstance(oid, ObjectIdentifier) for oid in mapping)
+            for mapping in mappings
+        ):
+            raise TypeError(
+                "Every item in the mappings list must be a 2-tuple of "
+                "ObjectIdentifier"
+            )
+        if any(
+            CertificatePoliciesOID.ANY_POLICY in mapping
+            for mapping in mappings
+        ):
+            raise ValueError("Policy mappings must not contain anyPolicy")
+
+        self._mappings = mappings
+
+    __len__, __iter__, __getitem__ = _make_sequence_methods("_mappings")
+
+    def __repr__(self) -> str:
+        return f"<PolicyMappings({self._mappings})>"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, PolicyMappings):
+            return NotImplemented
+
+        return self._mappings == other._mappings
+
+    def __hash__(self) -> int:
+        return hash(tuple(self._mappings))
 
     def public_bytes(self) -> bytes:
         return rust_x509.encode_extension_value(self)

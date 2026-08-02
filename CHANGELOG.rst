@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added support for the :class:`~cryptography.x509.PolicyMappings` extension.
+
 .. _v50-0-0:
 
 50.0.0 - 2026-07-31

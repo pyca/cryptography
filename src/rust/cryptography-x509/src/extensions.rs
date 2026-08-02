@@ -88,6 +88,14 @@ pub struct PolicyConstraints {
 }
 
 #[derive(asn1::Asn1Read, asn1::Asn1Write)]
+pub struct PolicyMapping {
+    pub issuer_domain_policy: asn1::ObjectIdentifier,
+    pub subject_domain_policy: asn1::ObjectIdentifier,
+}
+
+pub type PolicyMappings<'a, Op> = <Op as Asn1Operation>::SequenceOfVec<'a, PolicyMapping>;
+
+#[derive(asn1::Asn1Read, asn1::Asn1Write)]
 pub struct AccessDescription<'a> {
     pub access_method: asn1::ObjectIdentifier,
     pub access_location: name::GeneralName<'a>,
