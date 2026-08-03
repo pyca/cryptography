@@ -19,7 +19,7 @@ Changelog
   timing when unwrapping a ``RecipientInfo``'s ``encryptedKey``, which could
   act as a Bleichenbacher oracle for callers that decrypt untrusted messages.
   A random key is now substituted on failure, as described in :rfc:`3218`.
-  Credit to **@X1AOxiang** for reporting the issue
+  Credit to **@X1AOxiang** for reporting the issue. **CVE-2026-69247**
 * Deprecated Diffie-Hellman key exchange over finite fields (FFDH).
   Everything FFDH is deprecated, including the types in
   ``cryptography.hazmat.primitives.asymmetric.dh`` and loading FFDH keys or
