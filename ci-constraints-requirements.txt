@@ -122,13 +122,9 @@ pathspec==1.1.1
     #   check-sdist
     #   mypy
 platformdirs==4.4.0 ; python_full_version < '3.10'
-    # via
-    #   python-discovery
-    #   virtualenv
+    # via virtualenv
 platformdirs==4.11.0 ; python_full_version >= '3.10'
-    # via
-    #   python-discovery
-    #   virtualenv
+    # via virtualenv
 pluggy==1.6.0
     # via
     #   pytest
