@@ -40,6 +40,8 @@ pub(crate) fn public_key_from_pkey(
     }
 }
 
+// We don't reject all-zeros keys -- there's no threat model in which accepting
+// them is a risk.
 #[pyo3::pyfunction]
 fn from_private_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<Ed25519PrivateKey> {
     let pkey = openssl::pkey::PKey::private_key_from_raw_bytes(
