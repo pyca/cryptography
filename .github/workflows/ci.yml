@@ -96,40 +96,13 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/fetch-vectors
         if: matrix.PYTHON.NOXSESSION != 'flake' && matrix.PYTHON.NOXSESSION != 'docs' && matrix.PYTHON.NOXSESSION != 'rust'
-      - name: Compute config hash and set config vars
-        run: |
-          DEFAULT_CONFIG_FLAGS="shared no-ssl2 no-ssl3"
-          CONFIG_FLAGS="$DEFAULT_CONFIG_FLAGS $CONFIG_FLAGS"
-          OPENSSL_HASH=$(echo "${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-$CONFIG_FLAGS" | sha1sum | sed 's/ .*$//')
-          echo "CONFIG_FLAGS=${CONFIG_FLAGS}" >> $GITHUB_ENV
-          echo "OPENSSL_HASH=${OPENSSL_HASH}" >> $GITHUB_ENV
-          echo "OSSL_INFO=${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${CONFIG_FLAGS}" >> $GITHUB_ENV
-          echo "OSSL_PATH=${{ github.workspace }}/osslcache/${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${OPENSSL_HASH}" >> $GITHUB_ENV
-        env:
-          CONFIG_FLAGS: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
-        if: matrix.PYTHON.OPENSSL
-      - name: Load OpenSSL cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        id: ossl-cache
-        timeout-minutes: 2
-        with:
-          path: ${{ github.workspace }}/osslcache
-          # When altering the openssl build process you may need to increment
-          # the value on the end of this cache key so that you can prevent it
-          # from fetching the cache and skipping the build step.
-          key: "${{ matrix.PYTHON.OPENSSL.TYPE }}-${{ matrix.PYTHON.OPENSSL.VERSION }}-${{ env.OPENSSL_HASH }}-${{ hashFiles('.github/bin/build_openssl.sh') }}-0"
-        if: matrix.PYTHON.OPENSSL
       - name: Build custom OpenSSL/LibreSSL
-        run: .github/bin/build_openssl.sh
-        env:
-          TYPE: ${{ matrix.PYTHON.OPENSSL.TYPE }}
-          VERSION: ${{ matrix.PYTHON.OPENSSL.VERSION }}
-        if: matrix.PYTHON.OPENSSL && steps.ossl-cache.outputs.cache-hit != 'true'
-      - name: Set CFLAGS/LDFLAGS
-        run: |
-          echo "OPENSSL_DIR=${OSSL_PATH}" >> $GITHUB_ENV
-          echo "CFLAGS=${CFLAGS} -Werror=implicit-function-declaration" >> $GITHUB_ENV
-          echo "RUSTFLAGS=-Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib -Clink-arg=-Wl,-rpath=${OSSL_PATH}/lib64" >> $GITHUB_ENV
+        id: openssl
+        uses: ./.github/actions/build-openssl
+        with:
+          type: ${{ matrix.PYTHON.OPENSSL.TYPE }}
+          version: ${{ matrix.PYTHON.OPENSSL.VERSION }}
+          config-flags: ${{ matrix.PYTHON.OPENSSL.CONFIG_FLAGS }}
         if: matrix.PYTHON.OPENSSL
       - name: Cache rust and pip
         uses: ./.github/actions/cache
@@ -139,7 +112,7 @@ jobs:
           # setup-python step because the latter doesn't distinguish
           # different Python versions of PyPy that share the same PyPy
           # version number.
-          key: "${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ env.OPENSSL_HASH }}-0"
+          key: "${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ steps.openssl.outputs.hash }}-0"
       # This must run after the cache action: rust-cache prunes binaries
       # that already existed in ~/.cargo/bin before it ran, so installing
       # bindgen first means it never gets cached. When the cache is warm,
