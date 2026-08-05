@@ -551,6 +551,7 @@ impl<'cb, B: CryptoOps> ExtensionValidator<'cb, B> {
 }
 
 mod ee {
+    use cryptography_x509::common::AlgorithmParameters;
     use cryptography_x509::extensions::{BasicConstraints, ExtendedKeyUsage, Extension, KeyUsage};
 
     use crate::ops::{CryptoOps, VerificationCertificate};
@@ -629,7 +630,7 @@ mod ee {
 
     pub(crate) fn key_usage<'chain, B: CryptoOps>(
         _policy: &Policy<'_, B>,
-        _cert: &VerificationCertificate<'chain, B>,
+        cert: &VerificationCertificate<'chain, B>,
         extn: Option<&Extension<'_>>,
     ) -> ValidationResult<'chain, (), B> {
         if let Some(extn) = extn {
@@ -638,6 +639,20 @@ mod ee {
             if key_usage.key_cert_sign() {
                 return Err(ValidationError::new(ValidationErrorKind::Other(
                     "EE keyUsage must not assert keyCertSign".to_string(),
+                )));
+            }
+
+            let spki_params = &cert.certificate().tbs_cert.spki.algorithm.params;
+            if let AlgorithmParameters::Rsa(_) | AlgorithmParameters::RsaPss(_) = spki_params {
+                if !key_usage.digital_signature() && !key_usage.key_encipherment() {
+                    return Err(ValidationError::new(ValidationErrorKind::Other(
+                        "RSA EE keyUsage must assert digitalSignature or keyEncipherment"
+                            .to_string(),
+                    )));
+                }
+            } else if !key_usage.digital_signature() {
+                return Err(ValidationError::new(ValidationErrorKind::Other(
+                    "EE keyUsage must assert digitalSignature".to_string(),
                 )));
             }
         }
