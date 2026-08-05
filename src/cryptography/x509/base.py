@@ -183,6 +183,7 @@ class CertificateSigningRequestBuilder:
     def __init__(
         self,
         subject_name: Name | None = None,
+        public_key: CertificatePublicKeyTypes | None = None,
         extensions: list[Extension[ExtensionType]] = [],
         attributes: list[tuple[ObjectIdentifier, bytes, int | None]] = [],
     ):
@@ -190,6 +191,7 @@ class CertificateSigningRequestBuilder:
         Creates an empty X.509 certificate request (v1).
         """
         self._subject_name = subject_name
+        self._public_key = public_key
         self._extensions = extensions
         self._attributes = attributes
 
@@ -202,7 +204,45 @@ class CertificateSigningRequestBuilder:
         if self._subject_name is not None:
             raise ValueError("The subject name may only be set once.")
         return CertificateSigningRequestBuilder(
-            name, self._extensions, self._attributes
+            name, self._public_key, self._extensions, self._attributes
+        )
+
+    def public_key(
+        self,
+        public_key: CertificatePublicKeyTypes,
+    ) -> CertificateSigningRequestBuilder:
+        """
+        Sets the requestor's public key.
+        """
+        if not isinstance(
+            public_key,
+            (
+                dsa.DSAPublicKey,
+                rsa.RSAPublicKey,
+                ec.EllipticCurvePublicKey,
+                ed25519.Ed25519PublicKey,
+                ed448.Ed448PublicKey,
+                mldsa.MLDSA44PublicKey,
+                mldsa.MLDSA65PublicKey,
+                mldsa.MLDSA87PublicKey,
+                mlkem.MLKEM768PublicKey,
+                mlkem.MLKEM1024PublicKey,
+                x25519.X25519PublicKey,
+                x448.X448PublicKey,
+            ),
+        ):
+            raise TypeError(
+                "Expecting one of DSAPublicKey, RSAPublicKey,"
+                " EllipticCurvePublicKey, Ed25519PublicKey,"
+                " Ed448PublicKey, MLDSA44PublicKey, MLDSA65PublicKey,"
+                " MLDSA87PublicKey, MLKEM768PublicKey, MLKEM1024PublicKey,"
+                " X25519PublicKey or X448PublicKey."
+            )
+
+        if self._public_key is not None:
+            raise ValueError("The public key may only be set once.")
+        return CertificateSigningRequestBuilder(
+            self._subject_name, public_key, self._extensions, self._attributes
         )
 
     def add_extension(
@@ -219,6 +259,7 @@ class CertificateSigningRequestBuilder:
 
         return CertificateSigningRequestBuilder(
             self._subject_name,
+            self._public_key,
             [*self._extensions, extension],
             self._attributes,
         )
@@ -251,6 +292,7 @@ class CertificateSigningRequestBuilder:
 
         return CertificateSigningRequestBuilder(
             self._subject_name,
+            self._public_key,
             self._extensions,
             [*self._attributes, (oid, value, tag)],
         )
@@ -265,7 +307,9 @@ class CertificateSigningRequestBuilder:
         ecdsa_deterministic: bool | None = None,
     ) -> CertificateSigningRequest:
         """
-        Signs the request using the requestor's private key.
+        Signs the request using the requestor's private key. If no public key
+        was indicated, the public key associated with specified private key
+        will be included instead.
         """
         if self._subject_name is None:
             raise ValueError("A CertificateSigningRequest must have a subject")
