@@ -45,7 +45,15 @@ For full details see `the installation documentation`_.
 
 Discussion
 ~~~~~~~~~~
-
+>>> from cryptography.fernet import Fernet
+>>> # Put this somewhere safe!
+>>> key = Fernet.generate_key()
+>>> f = Fernet(key)
+>>> token = f.encrypt(b"A really secret message. Not for prying eyes.")
+>>> token
+b'...'
+>>> f.decrypt(token)
+b'A really secret message. Not for prying eyes.'
 If you run into bugs, you can file them in our `issue tracker`_.
 
 We maintain a `cryptography-dev`_ mailing list for development discussion.
@@ -55,7 +63,7 @@ involved.
 
 Security
 ~~~~~~~~
-
+$ pip install cryptography
 Need to report a security issue? Please consult our `security reporting`_
 documentation.
 
