@@ -54,6 +54,26 @@ def load_pyproject_toml() -> dict:
         return tomllib.load(f)
 
 
+def run_ty(session: nox.Session) -> None:
+    # ty rejects every `pytest.skip("...")` under pytest 8, the newest pytest
+    # supporting 3.9 (https://github.com/astral-sh/ty/issues/2797).
+    if sys.version_info < (3, 10):
+        session.log("Skipping ty: needs pytest 9, which needs Python 3.10+")
+        return
+
+    session.run(
+        "ty",
+        "check",
+        # ty targets `project.requires-python`, not the running interpreter.
+        f"--python-version={sys.version_info[0]}.{sys.version_info[1]}",
+        "src/cryptography/",
+        "vectors/cryptography_vectors/",
+        "tests/",
+        "release.py",
+        "noxfile.py",
+    )
+
+
 @nox.session
 @nox.session(name="tests-ssh")
 @nox.session(name="tests-randomorder")
@@ -232,6 +252,7 @@ def flake(session: nox.Session) -> None:
         "release.py",
         "noxfile.py",
     )
+    run_ty(session)
     session.run("check-sdist", "--no-isolation")
 
 
@@ -323,14 +344,8 @@ def local(session: nox.Session):
         external=True,
     )
 
-    session.run(
-        "mypy",
-        "src/cryptography/",
-        "vectors/cryptography_vectors/",
-        "tests/",
-        "release.py",
-        "noxfile.py",
-    )
+    # `local` runs ty instead of mypy; `flake` runs both.
+    run_ty(session)
 
     session.run(
         "maturin",

@@ -316,7 +316,7 @@ class TestCertificateRevocationList:
             x509.load_der_x509_crl,
         )
         with pytest.raises(TypeError):
-            crl1 < crl1  # type: ignore[operator]
+            crl1 < crl1  # type: ignore[operator]  # ty: ignore[unsupported-operator]
 
     def test_update_dates(self):
         crl = _load_cert(
@@ -1585,7 +1585,7 @@ class TestRSACertificate:
             x509.load_pem_x509_certificate,
         )
         with pytest.raises(TypeError, match="'>' not supported"):
-            cert > cert2  # type: ignore[operator]
+            cert > cert2  # type: ignore[operator]  # ty: ignore[unsupported-operator]
 
     def test_hash(self):
         cert1 = _load_cert(
@@ -2385,7 +2385,7 @@ class TestRSACertificateRequest:
             x509.load_pem_x509_csr,
         )
         with pytest.raises(TypeError, match="'>' not supported"):
-            csr > csr2  # type: ignore[operator]
+            csr > csr2  # type: ignore[operator]  # ty: ignore[unsupported-operator]
 
     def test_hash(self):
         request1 = _load_cert(
@@ -4921,7 +4921,7 @@ class TestCertificateBuilder:
         )
 
         with pytest.raises(TypeError):
-            builder.sign(None, None)  # type:ignore[arg-type]
+            builder.sign(None, None)  # type:ignore[arg-type]  # ty: ignore[invalid-argument-type]
 
     def test_build_unsigned_cert(self, rsa_key_2048: rsa.RSAPrivateKey):
         subject_private_key = rsa_key_2048
@@ -6697,7 +6697,7 @@ class TestObjectIdentifier:
         oid1 = x509.ObjectIdentifier("2.999.1")
         oid2 = x509.ObjectIdentifier("2.999.2")
         with pytest.raises(TypeError):
-            oid1 < oid2  # type: ignore[operator]
+            oid1 < oid2  # type: ignore[operator]  # ty: ignore[unsupported-operator]
 
     def test_repr(self):
         oid = x509.ObjectIdentifier("2.5.4.3")
