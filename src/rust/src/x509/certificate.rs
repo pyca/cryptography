@@ -893,10 +893,9 @@ pub fn parse_cert_ext<'p>(
             let mappings = ext.value::<PolicyMappings<'_, Asn1Read>>()?;
             let py_mappings = pyo3::types::PyList::empty(py);
             for mapping in mappings {
-                py_mappings.append((
-                    oid_to_py_oid(py, &mapping.issuer_domain_policy)?,
-                    oid_to_py_oid(py, &mapping.subject_domain_policy)?,
-                ))?;
+                let issuer_policy = oid_to_py_oid(py, &mapping.issuer_domain_policy)?;
+                let subject_policy = oid_to_py_oid(py, &mapping.subject_domain_policy)?;
+                py_mappings.append((issuer_policy, subject_policy))?;
             }
             Ok(Some(types::POLICY_MAPPINGS.get(py)?.call1((py_mappings,))?))
         }
