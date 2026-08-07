@@ -347,7 +347,9 @@ class TestKBKDFHMAC:
                 b"context",
                 None,
                 backend,
-                0,  # type: ignore[misc]
+                # Bare `type: ignore` because mypy <2.3 reports this as
+                # `misc` and mypy >=2.3 reports it as `call-arg`.
+                0,  # type: ignore
             )
 
     def test_invalid_break_location(self):
@@ -771,7 +773,9 @@ class TestKBKDFCMAC:
                 b"context",
                 None,
                 backend,
-                0,  # type: ignore[misc]
+                # Bare `type: ignore` because mypy <2.3 reports this as
+                # `misc` and mypy >=2.3 reports it as `call-arg`.
+                0,  # type: ignore
             )
 
     def test_invalid_break_location(self):

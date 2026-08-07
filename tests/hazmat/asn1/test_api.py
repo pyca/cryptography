@@ -249,14 +249,16 @@ class TestSequenceAPI:
         # The kw-only init is only enforced in Python >= 3.10, which is
         # when the parameter `kw_only` for `dataclasses.datalass` was
         # added.
+        # Bare `type: ignore` because mypy <2.3 reports this as `misc` and
+        # mypy >=2.3 reports it as `call-arg`.
         if sys.version_info < (3, 10):
-            assert Example(5).foo == 5  # type: ignore[misc]
+            assert Example(5).foo == 5  # type: ignore
         else:
             with pytest.raises(
                 TypeError,
                 match="takes 1 positional argument but 2 were given",
             ):
-                Example(5)  # type: ignore[misc]
+                Example(5)  # type: ignore
 
     def test_fail_malformed_root_type(self) -> None:
         @asn1.sequence
@@ -564,14 +566,16 @@ class TestSetAPI:
         # The kw-only init is only enforced in Python >= 3.10, which is
         # when the parameter `kw_only` for `dataclasses.datalass` was
         # added.
+        # Bare `type: ignore` because mypy <2.3 reports this as `misc` and
+        # mypy >=2.3 reports it as `call-arg`.
         if sys.version_info < (3, 10):
-            assert Example(5).foo == 5  # type: ignore[misc]
+            assert Example(5).foo == 5  # type: ignore
         else:
             with pytest.raises(
                 TypeError,
                 match="takes 1 positional argument but 2 were given",
             ):
-                Example(5)  # type: ignore[misc]
+                Example(5)  # type: ignore
 
     def test_fail_malformed_root_type(self) -> None:
         @asn1.set
