@@ -4958,13 +4958,16 @@ class TestCertificateBuilder:
 
 
 class TestCertificateSigningRequestBuilder:
-    def test_csr_public_key_type_validation(self):
+    def test_csr_public_key_type_validation(
+        self, rsa_key_2048: rsa.RSAPrivateKey
+    ):
         """Asserts CSR public key type validation rules (#15313)."""
         attr = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, "example.com")
         builder = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([attr])
         )
-        assert builder is not None
+        csr = builder.sign(rsa_key_2048, hashes.SHA256())
+        assert csr is not None
 
     def test_sign_invalid_hash_algorithm(
         self, rsa_key_2048: rsa.RSAPrivateKey
