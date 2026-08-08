@@ -2,6 +2,10 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+// The `from_py_object` option on `pyo3::pyclass` generates a `clone` call,
+// which clippy flags for the `Copy` types in this module.
+#![allow(clippy::clone_on_copy)]
+
 use pyo3::types::PyAnyMethods;
 
 use crate::types;
