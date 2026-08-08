@@ -100,6 +100,7 @@ sdist = ["build >=1.0.0"]
 pep8test = [
     "ruff >=0.11.11",
     "mypy >=1.14",
+    "ty >=0.0.69",
     "check-sdist",
     "click >=8.0.1",
 ]
@@ -158,6 +159,21 @@ warn_unused_ignores = true
 warn_unused_configs = true
 strict_equality = true
 strict_bytes = true
+
+# ty does not understand mypy's error codes, so a line both checkers flag
+# carries a `# type: ignore[...]` followed by a `# ty: ignore[...]`. If ty
+# grows support for mypy's names (https://github.com/astral-sh/ty/issues/3127)
+# the `ty:` halves can be dropped.
+[tool.ty.rules]
+# In `sys.version_info`-gated code one branch is always unreachable, and ty
+# reports the blanket ignore there as unused while mypy stays quiet. Whichever
+# version we check, one arm of such a pair gets flagged. mypy's
+# `warn_unused_ignores` already covers `# type: ignore` comments, so turn this
+# off. `unused-ignore-comment` (for `# ty: ignore`) stays enabled, since mypy
+# can't check those.
+# Tracked upstream as https://github.com/astral-sh/ty/issues/2681; this can be
+# re-enabled once ty stops reporting suppressions in unreachable code.
+unused-type-ignore-comment = "ignore"
 
 [[tool.mypy.overrides]]
 module = ["pretend"]

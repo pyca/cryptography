@@ -248,6 +248,8 @@ tomli==2.4.1 ; python_full_version <= '3.11'
     #   nox
     #   pytest
     #   sphinx
+ty==0.0.69
+    # via cryptography (pyproject.toml:dev)
 typing-extensions==4.16.0
     # via
     #   cryptography (pyproject.toml)
