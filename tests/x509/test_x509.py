@@ -4958,7 +4958,7 @@ class TestCertificateBuilder:
 
 
 class TestCertificateSigningRequestBuilder:
-        def test_csr_public_key_type_validation(self):
+    def test_csr_public_key_type_validation(self):
         """Asserts CSR public key type validation rules (#15313)."""
         attr = x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, "example.com")
         builder = x509.CertificateSigningRequestBuilder().subject_name(
