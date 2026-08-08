@@ -4961,7 +4961,7 @@ class TestCertificateSigningRequestBuilder:
     def test_csr_public_key_type_validation(self):
         """Asserts CSR public key type validation rules for encryption keys (#15313)."""
         builder = x509.CertificateSigningRequestBuilder().subject_name(
-            x509.Name([x509.NameAttribute(x509.NameOID.COMMON_NAME, "example.com")])
+            x509.Name([x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, "example.com")])
         )
         assert builder is not None
 
