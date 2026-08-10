@@ -31,6 +31,9 @@ fn main() {
         if version >= 0x3_05_00_00_0 {
             println!("cargo:rustc-cfg=CRYPTOGRAPHY_OPENSSL_350_OR_GREATER");
         }
+        if version >= 0x4_01_00_00_0 {
+            println!("cargo:rustc-cfg=CRYPTOGRAPHY_OPENSSL_410_OR_GREATER");
+        }
     }
 
     if env::var("DEP_OPENSSL_LIBRESSL_VERSION_NUMBER").is_ok() {
