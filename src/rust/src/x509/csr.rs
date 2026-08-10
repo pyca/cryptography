@@ -186,25 +186,22 @@ impl CertificateSigningRequest {
 
     #[getter]
     fn is_signature_valid(&self, py: pyo3::Python<'_>) -> CryptographyResult<bool> {
-        self.validate(py, None)
+        let public_key = self.public_key(py)?;
+        Ok(self.verify_directly_signed_by(py, public_key).is_ok())
     }
 
-    #[pyo3(signature = (public_key = None))]
-    fn validate<'p>(
+    fn verify_directly_signed_by<'p>(
         &self,
         py: pyo3::Python<'p>,
-        public_key: Option<pyo3::Bound<'p, pyo3::PyAny>>,
-    ) -> CryptographyResult<bool> {
-        let public_key = public_key.unwrap_or(self.public_key(py)?);
-
-        Ok(sign::verify_signature_with_signature_algorithm(
+        public_key: pyo3::Bound<'p, pyo3::PyAny>,
+    ) -> CryptographyResult<()> {
+        sign::verify_signature_with_signature_algorithm(
             py,
             public_key,
             &self.raw.borrow_dependent().signature_alg,
             self.raw.borrow_dependent().signature.as_bytes(),
             &asn1::write_single(&self.raw.borrow_dependent().csr_info)?,
         )
-        .is_ok())
     }
 }
 

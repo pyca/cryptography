@@ -6475,8 +6475,21 @@ class TestMLKEMCertificateRequest:
         ]
 
         assert not request.is_signature_valid
-        assert not request.validate()
-        assert request.validate(signing_key)
+        request.verify_directly_signed_by(signing_key)
+
+        with pytest.raises(TypeError):
+            unsupported_algorithm = request.public_key()
+            request.verify_directly_signed_by(unsupported_algorithm)
+
+        with pytest.raises(ValueError):
+            wrong_algorithm = ec.generate_private_key(
+                ec.SECP256R1()
+            ).public_key()
+            request.verify_directly_signed_by(wrong_algorithm)
+
+        with pytest.raises(InvalidSignature):
+            wrong_pub_key = mldsa.MLDSA65PrivateKey.generate().public_key()
+            request.verify_directly_signed_by(wrong_pub_key)
 
     @pytest.mark.supported(
         only_if=lambda backend: (
@@ -6536,8 +6549,7 @@ class TestMLKEMCertificateRequest:
         ]
 
         assert not request.is_signature_valid
-        assert not request.validate()
-        assert request.validate(signing_key.public_key())
+        request.verify_directly_signed_by(signing_key.public_key())
 
 
 class TestOtherCertificate:
