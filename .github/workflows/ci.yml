@@ -399,8 +399,8 @@ jobs:
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Aug 07, 2026.
-            REF: 41cc88afa1a5d17d01f6d9b04bfb461e8a0a4e9c
+            # Latest commit on the certbot main branch, as of Aug 11, 2026.
+            REF: be5a9966ac2a737243ddfc6198817a6331de543a
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -414,8 +414,8 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Aug 08, 2026.
-            REF: d8f7b272b1eb3e989920ba2a84bbae1a847660bd
+            # Latest commit on the scapy master branch, as of Aug 11, 2026.
+            REF: b1a979988a6517acc7c234902b408fb2f4d449b0
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
