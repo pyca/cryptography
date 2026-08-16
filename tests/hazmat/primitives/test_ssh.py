@@ -485,6 +485,31 @@ class TestOpenSSHSerialization:
         with pytest.raises(ValueError):
             load_ssh_private_key(data, None)
 
+    def test_load_ssh_private_key_missing_footer(self):
+        # An opening marker with no closing marker is rejected, in linear
+        # time.
+        data = self.make_file(footer=b"")
+        with pytest.raises(ValueError):
+            load_ssh_private_key(data, password=None)
+
+        # Many opening markers with no closing marker: the worst case for
+        # locating the markers.
+        data = b"-----BEGIN OPENSSH PRIVATE KEY-----" * 100000
+        with pytest.raises(ValueError):
+            load_ssh_private_key(data, password=None)
+
+    def test_load_ssh_private_key_surrounding_data(self):
+        # Data before the opening marker and after the closing marker is
+        # ignored.
+        body = self.make_file()
+        for wrapped in [
+            b"leading junk\n" + body,
+            body + b"trailing junk\n",
+            b"leading\n" + body + b"trailing\n",
+        ]:
+            key = load_ssh_private_key(wrapped, password=None)
+            assert isinstance(key, ec.EllipticCurvePrivateKey)
+
     def test_ssh_errors_bad_values(self):
         # bad curve
         data = self.make_file(pub_type=b"ecdsa-sha2-nistp444")
