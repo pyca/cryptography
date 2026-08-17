@@ -101,6 +101,7 @@ static const long X509_V_FLAG_EXPLICIT_POLICY;
 static const long X509_V_FLAG_INHIBIT_MAP;
 static const long X509_V_FLAG_CHECK_SS_SIGNATURE;
 static const long X509_V_FLAG_PARTIAL_CHAIN;
+static const long X509_V_FLAG_EXTENDED_CRL_SUPPORT;
 
 static const long X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT;
 static const long X509_CHECK_FLAG_NO_WILDCARDS;
