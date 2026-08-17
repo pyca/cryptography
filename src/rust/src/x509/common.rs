@@ -340,6 +340,17 @@ pub(crate) fn parse_general_names<'a>(
     py: pyo3::Python<'a>,
     gn_seq: &asn1::SequenceOf<'a, GeneralName<'a>>,
 ) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
+    // GeneralNames is defined as SEQUENCE SIZE (1..MAX) OF GeneralName in
+    // RFC 5280, so an empty sequence is malformed. The path validation engine
+    // represents a certificate with no subjectAltName using its own empty
+    // sequence and does not call this.
+    if gn_seq.clone().next().is_none() {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "GeneralNames must contain at least one GeneralName",
+            ),
+        ));
+    }
     let gns = pyo3::types::PyList::empty(py);
     for gn in gn_seq.clone() {
         let py_gn = parse_general_name(py, gn)?;
