@@ -81,9 +81,6 @@ _NONE = b"none"
 _DEFAULT_CIPHER = b"aes256-ctr"
 _DEFAULT_ROUNDS = 16
 
-# re is only way to work on bytes-like data
-_PEM_RC = re.compile(_SK_START + b"(.*?)" + _SK_END, re.DOTALL)
-
 # padding for max blocksize
 _PADDING = memoryview(bytearray(range(1, 1 + 16)))
 
@@ -684,11 +681,19 @@ def load_ssh_private_key(
     if password is not None:
         utils._check_bytes("password", password)
 
-    m = _PEM_RC.search(data)
-    if not m:
+    # The base64 body lies between the first opening marker and the first
+    # closing marker after it. Two linear scans find them; anchoring the
+    # second scan past the opening marker keeps the total work linear in the
+    # length of the input even when there is no closing marker to find.
+    # bytes.find does not accept a memoryview, which _check_byteslike permits.
+    buf = data if isinstance(data, (bytes, bytearray)) else bytes(data)
+    p1 = buf.find(_SK_START)
+    if p1 == -1:
         raise ValueError("Not OpenSSH private key format")
-    p1 = m.start(1)
-    p2 = m.end(1)
+    p1 += len(_SK_START)
+    p2 = buf.find(_SK_END, p1)
+    if p2 == -1:
+        raise ValueError("Not OpenSSH private key format")
     data = binascii.a2b_base64(memoryview(data)[p1:p2])
     if not data.startswith(_SK_MAGIC):
         raise ValueError("Not OpenSSH private key format")
