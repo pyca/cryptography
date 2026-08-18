@@ -285,8 +285,6 @@ mod _rust {
         const CRYPTOGRAPHY_OPENSSL_330_OR_GREATER: bool = cfg!(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER);
         #[pymodule_export]
         const CRYPTOGRAPHY_OPENSSL_350_OR_GREATER: bool = cfg!(CRYPTOGRAPHY_OPENSSL_350_OR_GREATER);
-        #[pymodule_export]
-        const CRYPTOGRAPHY_OPENSSL_410_OR_GREATER: bool = cfg!(CRYPTOGRAPHY_OPENSSL_410_OR_GREATER);
 
         #[pymodule_export]
         const CRYPTOGRAPHY_IS_LIBRESSL: bool = cfg!(CRYPTOGRAPHY_IS_LIBRESSL);
