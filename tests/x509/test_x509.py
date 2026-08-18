@@ -6425,7 +6425,7 @@ class TestOtherCertificate:
             x509.load_pem_x509_certificate,
         )
 
-        with pytest.raises(ValueError, match="at least one GeneralName"):
+        with pytest.raises(ValueError, match="InvalidSize"):
             cert.extensions.get_extension_for_class(
                 x509.SubjectAlternativeName
             )
@@ -6436,7 +6436,7 @@ class TestOtherCertificate:
             x509.load_pem_x509_certificate,
         )
 
-        with pytest.raises(ValueError, match="at least one GeneralName"):
+        with pytest.raises(ValueError, match="InvalidSize"):
             cert.extensions.get_extension_for_class(x509.IssuerAlternativeName)
 
 
