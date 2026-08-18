@@ -248,11 +248,7 @@ def test_rsa_oaep_encryption(backend, wycheproof):
     if wycheproof.valid or (
         wycheproof.acceptable
         and not (
-            (
-                rust_openssl.CRYPTOGRAPHY_IS_AWSLC
-                or rust_openssl.CRYPTOGRAPHY_OPENSSL_410_OR_GREATER
-                or backend._fips_enabled
-            )
+            (rust_openssl.CRYPTOGRAPHY_IS_AWSLC or backend._fips_enabled)
             and wycheproof.has_flag("SmallIntegerCiphertext")
         )
     ):
