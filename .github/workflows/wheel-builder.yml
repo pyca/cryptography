@@ -68,7 +68,7 @@ jobs:
           - { VERSION: "cp311-cp311", ABI_VERSION: 'abi3-py39' }
           - { VERSION: "cp311-cp311", ABI_VERSION: 'abi3-py311' }
           - { VERSION: "cp314-cp314t" }
-          - { VERSION: "cp315-cp315", ABI_VERSION: 'abi3t-py315' }
+          - { VERSION: "cp315-cp315t", ABI_VERSION: 'abi3t-py315' }
           - { VERSION: "pp311-pypy311_pp73" }
         MANYLINUX:
           - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest" }
@@ -202,10 +202,10 @@ jobs:
             DEPLOYMENT_TARGET: '11.0'
             ARCHFLAGS: '-arch arm64'
             _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
-          - VERSION: '3.15'
+          - VERSION: '3.15t'
             ABI_VERSION: 'abi3t-py315'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.15.0/python-3.15.0rc1-macos11.pkg'
-            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.15/bin/python3'
+            BIN_PATH: '/Library/Frameworks/PythonT.framework/Versions/3.15/bin/python3.15t'
             DEPLOYMENT_TARGET: '11.0'
             ARCHFLAGS: '-arch arm64'
             _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
@@ -226,6 +226,7 @@ jobs:
             ${{ env.BUILD_REQUIREMENTS_PATH }}
             ${{ env.UV_REQUIREMENTS_PATH }}
             .github/config/macos-pkg-choices-freethreaded.xml
+            .github/config/macos-pkg-choices-3.15-freethreaded.xml
             .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
       - name: Setup python
@@ -234,14 +235,21 @@ jobs:
           sudo installer -pkg python.pkg -target /
         env:
           PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
-        if: contains(matrix.PYTHON.VERSION, 'pypy') == false && matrix.PYTHON.VERSION != '3.14t'
-      - name: Setup free-threaded python
+        if: contains(matrix.PYTHON.VERSION, 'pypy') == false && matrix.PYTHON.VERSION != '3.14t' && matrix.PYTHON.VERSION != '3.15t'
+      - name: Setup free-threaded python 3.14
         run: |
           curl --max-time 30 --retry 5 "$PYTHON_DOWNLOAD_URL" -o python.pkg
           sudo installer -pkg python.pkg -applyChoiceChangesXML .github/config/macos-pkg-choices-freethreaded.xml -target /
         env:
           PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
         if: matrix.PYTHON.VERSION == '3.14t'
+      - name: Setup free-threaded python 3.15
+        run: |
+          curl --max-time 30 --retry 5 "$PYTHON_DOWNLOAD_URL" -o python.pkg
+          sudo installer -pkg python.pkg -applyChoiceChangesXML .github/config/macos-pkg-choices-3.15-freethreaded.xml -target /
+        env:
+          PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
+        if: matrix.PYTHON.VERSION == '3.15t'
       - name: Setup pypy
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -264,12 +272,18 @@ jobs:
           name: cryptography-sdist
 
       - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -r "${UV_REQUIREMENTS_PATH}"
-      - name: add free-threaded python tools directory to PATH
+      - name: add free-threaded python 3.14 tools directory to PATH
         # This can be deleted once the mac installer has a way to do this PATH
         # update automatically, like it does for the GIL-enabled build.
         # See https://github.com/python/cpython/issues/137450
         run: echo "/Library/Frameworks/PythonT.framework/Versions/3.14/bin" >> "$GITHUB_PATH"
         if: matrix.PYTHON.VERSION == '3.14t'
+      - name: add free-threaded python 3.15 tools directory to PATH
+        # This can be deleted once the mac installer has a way to do this PATH
+        # update automatically, like it does for the GIL-enabled build.
+        # See https://github.com/python/cpython/issues/137450
+        run: echo "/Library/Frameworks/PythonT.framework/Versions/3.15/bin" >> "$GITHUB_PATH"
+        if: matrix.PYTHON.VERSION == '3.15t'
       - run: mkdir wheelhouse
       - name: Build the wheel
         run: |
@@ -279,18 +293,16 @@ jobs:
 
           OPENSSL_DIR="$(readlink -f ../openssl-macos-arm64/)" \
               OPENSSL_STATIC=1 \
-              uv build --python "$PYTHON_BIN_PATH" --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API --config-settings=build-args=--sbom-include="$(readlink -f ../openssl-macos-arm64/sbom.json)" cryptography*.tar.gz -o wheelhouse/
+              uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API --config-settings=build-args=--sbom-include="$(readlink -f ../openssl-macos-arm64/sbom.json)" cryptography*.tar.gz -o wheelhouse/
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.PYTHON.DEPLOYMENT_TARGET }}
           ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
           _PYTHON_HOST_PLATFORM: ${{ matrix.PYTHON._PYTHON_HOST_PLATFORM }}
-          PYTHON_BIN_PATH: ${{ matrix.PYTHON.BIN_PATH }}
 
       - name: Smoketest
         uses: ./.github/actions/wheel-smoketest
         with:
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
-          python-path: ${{ matrix.PYTHON.BIN_PATH }}
 
       - run: |
           echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls wheelhouse/cryptography*.whl))" >> $GITHUB_ENV
@@ -312,7 +324,7 @@ jobs:
           - {VERSION: "3.14", "ABI_VERSION": "abi3-py39"}
           - {VERSION: "3.14", "ABI_VERSION": "abi3-py311"}
           - {VERSION: "3.14t"}
-          - {VERSION: "3.15.0-rc.1", "ABI_VERSION": "abi3t-py315"}
+          - {VERSION: "3.15t", "ABI_VERSION": "abi3t-py315"}
           - {VERSION: "pypy-3.11"}
         include:
           # Windows on ARM is in a stability validation period; the work
@@ -324,7 +336,7 @@ jobs:
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "3.14t"}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.15.0-rc.1", "ABI_VERSION": "abi3t-py315"}
+            PYTHON: {VERSION: "3.15t", "ABI_VERSION": "abi3t-py315"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - name: Get build-requirements.txt from repository
