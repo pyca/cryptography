@@ -506,7 +506,7 @@ class TestDH:
         assert key1 != object()
 
         with pytest.raises(TypeError):
-            key1 < key2  # type: ignore[operator]
+            key1 < key2  # type: ignore[operator]  # ty: ignore[unsupported-operator]
 
     def test_public_key_copy(self):
         key_bytes = load_vectors_from_file(

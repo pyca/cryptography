@@ -117,7 +117,7 @@ class TestHKDF:
         # This was DeprecatedIn47 but we can't raise a warning
         # because the scapy tests are fragile butterflies
         hkdf = HKDF(hashes.SHA256(), 32, salt=b"0", info=None)
-        prk = hkdf._extract(b"0")  # type:ignore[attr-defined]
+        prk = hkdf._extract(b"0")  # type:ignore[attr-defined]  # ty: ignore[unresolved-attribute]
         assert len(prk) == 32
 
     def test_buffer_protocol(self):
