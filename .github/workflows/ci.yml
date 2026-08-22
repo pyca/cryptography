@@ -379,8 +379,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Aug 06, 2026.
-            REF: 499f4245a1e4ba3d067b3257f0f3cd63fed59bd0
+            # Latest commit on the pyopenssl main branch, as of Aug 22, 2026.
+            REF: 06dd9cba948b694e8de1e79ce3a458a7775e8af5
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -409,8 +409,8 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Aug 21, 2026.
-            REF: 3f5265c17a5ad05969abcaf932248c6a08396d4b
+            # Latest commit on the mitmproxy main branch, as of Aug 22, 2026.
+            REF: 8fc25b3045934777b0796d8ec7958bbc257d7bb5
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
