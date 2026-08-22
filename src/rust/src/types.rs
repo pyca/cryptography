@@ -153,6 +153,8 @@ pub static INHIBIT_ANY_POLICY: LazyPyImport =
 pub static OCSP_NO_CHECK: LazyPyImport = LazyPyImport::new("cryptography.x509", &["OCSPNoCheck"]);
 pub static POLICY_CONSTRAINTS: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["PolicyConstraints"]);
+pub static POLICY_MAPPINGS: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["PolicyMappings"]);
 pub static CERTIFICATE_POLICIES: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["CertificatePolicies"]);
 pub static SUBJECT_INFORMATION_ACCESS: LazyPyImport =

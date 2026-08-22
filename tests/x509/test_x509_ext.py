@@ -28,6 +28,7 @@ from cryptography.x509.extensions import (
 )
 from cryptography.x509.oid import (
     AuthorityInformationAccessOID,
+    CertificatePoliciesOID,
     ExtendedKeyUsageOID,
     ExtensionOID,
     NameOID,
@@ -3122,6 +3123,73 @@ class TestPolicyConstraintsExtension:
             inhibit_policy_mapping=0,
         )
         assert ext.public_bytes() == b"\x30\x03\x81\x01\x00"
+
+
+class TestPolicyMappings:
+    issuer_policy = ObjectIdentifier("1.2.3.4")
+    subject_policy = ObjectIdentifier("1.2.3.5")
+    mapping = ((issuer_policy, subject_policy),)
+
+    def test_invalid_mappings(self):
+        with pytest.raises(TypeError):
+            x509.PolicyMappings(
+                [(self.issuer_policy, typing.cast(typing.Any, "invalid"))]
+            )
+        with pytest.raises(TypeError):
+            x509.PolicyMappings(
+                [typing.cast(typing.Any, (self.issuer_policy,))]
+            )
+
+    def test_empty_mappings(self):
+        with pytest.raises(ValueError):
+            x509.PolicyMappings([])
+
+    @pytest.mark.parametrize("position", [0, 1])
+    def test_any_policy(self, position):
+        mapping = list(self.mapping[0])
+        mapping[position] = CertificatePoliciesOID.ANY_POLICY
+        with pytest.raises(ValueError, match="must not contain anyPolicy"):
+            x509.PolicyMappings([tuple(mapping)])  # type: ignore[list-item]
+
+    def test_iter_len_index(self):
+        mappings = x509.PolicyMappings(self.mapping)
+        assert len(mappings) == 1
+        assert list(mappings) == list(self.mapping)
+
+    def test_repr(self):
+        assert repr(x509.PolicyMappings(self.mapping)) == (
+            "<PolicyMappings([(<ObjectIdentifier(oid=1.2.3.4, name=Unknown "
+            "OID)>, <ObjectIdentifier(oid=1.2.3.5, name=Unknown OID)>)])>"
+        )
+
+    def test_eq_hash(self):
+        iss_to_sub = [(self.issuer_policy, self.subject_policy)]
+        sub_to_iss = [(self.subject_policy, self.issuer_policy)]
+
+        mappings = x509.PolicyMappings(iss_to_sub)
+        mappings2 = x509.PolicyMappings(iss_to_sub)
+        mappings3 = x509.PolicyMappings(sub_to_iss)
+        assert mappings == mappings2
+        assert mappings != mappings3
+        assert mappings != object()
+        assert hash(mappings) == hash(mappings2)
+        assert hash(mappings) != hash(mappings3)
+
+    def test_public_bytes(self):
+        mappings = x509.PolicyMappings(self.mapping)
+        assert mappings.public_bytes() == (
+            b"\x30\x0c\x30\x0a\x06\x03\x2a\x03\x04\x06\x03\x2a\x03\x05"
+        )
+
+    def test_certbuilder(self, rsa_key_2048: rsa.RSAPrivateKey):
+        cert = (
+            _make_certbuilder(rsa_key_2048)
+            .add_extension(x509.PolicyMappings(self.mapping), critical=True)
+            .sign(rsa_key_2048, hashes.SHA256())
+        )
+        ext = cert.extensions.get_extension_for_class(x509.PolicyMappings)
+        assert ext.critical is True
+        assert list(ext.value) == list(self.mapping)
 
 
 class TestAuthorityInformationAccess:

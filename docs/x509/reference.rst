@@ -2986,6 +2986,26 @@ X.509 Extensions
         mapping may be processed in certificates issued by the subject of this
         certificate, but not in additional certificates in the chain.
 
+.. class:: PolicyMappings(mappings)
+    :canonical: cryptography.x509.extensions.PolicyMappings
+
+    .. versionadded:: 51.0.0
+
+    The policy mappings extension is used in CA certificates to map policy
+    identifiers in the issuer's policy domain to policy identifiers in the
+    subject's policy domain. For more information see :rfc:`5280`.
+
+    :param mappings: A non-empty iterable of 2-tuples. Each tuple contains an
+        issuer domain policy :class:`ObjectIdentifier` followed by a subject
+        domain policy :class:`ObjectIdentifier`.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns :attr:`~cryptography.x509.oid.ExtensionOID.POLICY_MAPPINGS`.
+
+
 .. class:: CRLNumber(crl_number)
     :canonical: cryptography.x509.extensions.CRLNumber
 

@@ -595,6 +595,18 @@ pub(crate) fn encode_extension(
             };
             Ok(Some(asn1::write_single(&pc)?))
         }
+        &oid::POLICY_MAPPINGS_OID => {
+            let mut mappings = vec![];
+            for py_mapping in ext.try_iter()? {
+                let py_mapping = py_mapping?;
+                mappings.push(extensions::PolicyMapping {
+                    issuer_domain_policy: py_oid_to_oid(py_mapping.get_item(0)?)?,
+                    subject_domain_policy: py_oid_to_oid(py_mapping.get_item(1)?)?,
+                });
+            }
+            let mappings = asn1::SequenceOfWriter::new(mappings);
+            Ok(Some(asn1::write_single(&mappings)?))
+        }
         &oid::NAME_CONSTRAINTS_OID => {
             let ka_bytes = cryptography_keepalive::KeepAlive::new();
             let ka_str = cryptography_keepalive::KeepAlive::new();
