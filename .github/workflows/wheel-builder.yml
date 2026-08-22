@@ -65,9 +65,10 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - { VERSION: "cp311-cp311", ABI_VERSION: 'py39' }
-          - { VERSION: "cp311-cp311", ABI_VERSION: 'py311' }
+          - { VERSION: "cp311-cp311", ABI_VERSION: 'abi3-py39' }
+          - { VERSION: "cp311-cp311", ABI_VERSION: 'abi3-py311' }
           - { VERSION: "cp314-cp314t" }
+          - { VERSION: "cp315-cp315", ABI_VERSION: 'abi3t-py315' }
           - { VERSION: "pp311-pypy311_pp73" }
         MANYLINUX:
           - { NAME: "manylinux2014_x86_64", CONTAINER: "cryptography-manylinux2014:x86_64", RUNNER: "ubuntu-latest" }
@@ -140,7 +141,7 @@ jobs:
       - name: Build the wheel
         run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
-              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
+              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/${{ matrix.PYTHON.ABI_VERSION }}"
           fi
 
           # The manylinux-entrypoint script accounts for uname issues, otherwise
@@ -182,14 +183,14 @@ jobs:
       matrix:
         PYTHON:
           - VERSION: '3.11'
-            ABI_VERSION: 'py39'
+            ABI_VERSION: 'abi3-py39'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.14/bin/python3'
             DEPLOYMENT_TARGET: '11.0'
             ARCHFLAGS: '-arch arm64'
             _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
           - VERSION: '3.14'
-            ABI_VERSION: 'py311'
+            ABI_VERSION: 'abi3-py311'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.14/bin/python3'
             DEPLOYMENT_TARGET: '11.0'
@@ -198,6 +199,13 @@ jobs:
           - VERSION: '3.14t'
             DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/PythonT.framework/Versions/3.14/bin/python3.14t'
+            DEPLOYMENT_TARGET: '11.0'
+            ARCHFLAGS: '-arch arm64'
+            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
+          - VERSION: '3.15'
+            ABI_VERSION: 'abi3t-py315'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.15.0/python-3.15.0rc1-macos11.pkg'
+            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.15/bin/python3'
             DEPLOYMENT_TARGET: '11.0'
             ARCHFLAGS: '-arch arm64'
             _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
@@ -266,21 +274,23 @@ jobs:
       - name: Build the wheel
         run: |
           if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
-              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
+              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/${{ matrix.PYTHON.ABI_VERSION }}"
           fi
 
           OPENSSL_DIR="$(readlink -f ../openssl-macos-arm64/)" \
               OPENSSL_STATIC=1 \
-              uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API --config-settings=build-args=--sbom-include="$(readlink -f ../openssl-macos-arm64/sbom.json)" cryptography*.tar.gz -o wheelhouse/
+              uv build --python "$PYTHON_BIN_PATH" --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API --config-settings=build-args=--sbom-include="$(readlink -f ../openssl-macos-arm64/sbom.json)" cryptography*.tar.gz -o wheelhouse/
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.PYTHON.DEPLOYMENT_TARGET }}
           ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
           _PYTHON_HOST_PLATFORM: ${{ matrix.PYTHON._PYTHON_HOST_PLATFORM }}
+          PYTHON_BIN_PATH: ${{ matrix.PYTHON.BIN_PATH }}
 
       - name: Smoketest
         uses: ./.github/actions/wheel-smoketest
         with:
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
+          python-path: ${{ matrix.PYTHON.BIN_PATH }}
 
       - run: |
           echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls wheelhouse/cryptography*.whl))" >> $GITHUB_ENV
@@ -299,9 +309,10 @@ jobs:
         WINDOWS:
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc', RUNNER: 'windows-latest'}
         PYTHON:
-          - {VERSION: "3.14", "ABI_VERSION": "py39"}
-          - {VERSION: "3.14", "ABI_VERSION": "py311"}
+          - {VERSION: "3.14", "ABI_VERSION": "abi3-py39"}
+          - {VERSION: "3.14", "ABI_VERSION": "abi3-py311"}
           - {VERSION: "3.14t"}
+          - {VERSION: "3.15.0-rc.1", "ABI_VERSION": "abi3t-py315"}
           - {VERSION: "pypy-3.11"}
         include:
           # Windows on ARM is in a stability validation period; the work
@@ -309,9 +320,11 @@ jobs:
           # failures don't block the release pipeline and no broken wheel
           # is uploaded.
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.14", "ABI_VERSION": "py311"}
+            PYTHON: {VERSION: "3.14", "ABI_VERSION": "abi3-py311"}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "3.14t"}
+          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
+            PYTHON: {VERSION: "3.15.0-rc.1", "ABI_VERSION": "abi3t-py315"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - name: Get build-requirements.txt from repository
