@@ -755,6 +755,12 @@ Custom X.509 Request Vectors
   attribute whose value's tag is encoded in the long form.
 * ``zero-element-attribute.pem`` - A certificate signing request containing an
   attribute whose value has zero elements.
+* ``mldsa-mlkem768.pem`` and ``mldsa-mlkem768-signing-pubkey.pem`` - A 
+  certificate signing request signed using an ML-DSA private key, and 
+  containing a ML-KEM-768 public key. 
+* ``mldsa-mlkem1024.pem`` and ``mldsa-mlkem1024-signing-pubkey.pem`` - A 
+  certificate signing request signed using an ML-DSA private key, and 
+  containing a ML-KEM-1024 public key. 
 
 Custom X.509 Certificate Revocation List Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
