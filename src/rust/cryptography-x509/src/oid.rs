@@ -60,6 +60,7 @@ pub const EC_SECP521R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 35);
 pub const EC_SECP256K1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 132, 0, 10);
 
 pub const EC_BRAINPOOLP256R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 36, 3, 3, 2, 8, 1, 1, 7);
+pub const EC_BRAINPOOLP320R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 36, 3, 3, 2, 8, 1, 1, 9);
 pub const EC_BRAINPOOLP384R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 36, 3, 3, 2, 8, 1, 1, 11);
 pub const EC_BRAINPOOLP512R1: asn1::ObjectIdentifier = asn1::oid!(1, 3, 36, 3, 3, 2, 8, 1, 1, 13);
 
