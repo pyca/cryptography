@@ -22,6 +22,11 @@ Serialization
     Deserialize a DER-encoded byte string into an instance of ``cls``.
 
     :param cls: The type object representing the ASN.1 class to decode.
+        Any type expression that is valid as the field type of a
+        :func:`sequence`-decorated class is accepted, including
+        parameterized generics such as ``list[T]`` (``SEQUENCE OF``) and
+        :class:`SetOf`\ ``[T]`` (``SET OF``), as well as type aliases of
+        these.
     :type cls: :class:`type`
     :param bytes data: The DER-encoded data.
     :returns: An instance of ``cls``.
@@ -40,6 +45,9 @@ Serialization
         1
         >>> point.y
         2
+        >>> points = asn1.decode_der(list[Point], b'0\x080\x06\x02\x01\x01\x02\x01\x02')
+        >>> points[0].x
+        1
 
 .. function:: encode_der(value)
 
@@ -47,11 +55,13 @@ Serialization
 
     :param value: The ASN.1 object to encode. Must be an instance of a
         class decorated with :func:`sequence`, :func:`set`, or
-        :func:`value_set`, or a primitive ASN.1 type
+        :func:`value_set`, a primitive ASN.1 type
         (``int``, ``bool``, ``bytes``, ``str``,
         :class:`~cryptography.x509.ObjectIdentifier`,
         :class:`PrintableString`, :class:`IA5String`, :class:`UTCTime`,
-        :class:`GeneralizedTime`, :class:`BitString`, :class:`Null`).
+        :class:`GeneralizedTime`, :class:`BitString`, :class:`Null`), or
+        a ``list`` (``SEQUENCE OF``) or :class:`SetOf` (``SET OF``) of
+        such values.
     :returns bytes: The DER-encoded data.
     :raises ValueError: If the value could not be encoded.
 

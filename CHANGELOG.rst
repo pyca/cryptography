@@ -8,6 +8,13 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* :func:`~cryptography.hazmat.asn1.decode_der` now supports decoding
+  top-level ``SEQUENCE OF`` and ``SET OF`` values via parameterized types
+  such as ``list[T]`` and :class:`~cryptography.hazmat.asn1.SetOf`\ ``[T]``
+  (including type aliases of these), and
+  :func:`~cryptography.hazmat.asn1.encode_der` now supports encoding
+  top-level ``list`` values as ``SEQUENCE OF``.
+
 .. _v50-0-0:
 
 50.0.0 - 2026-07-31

@@ -54,7 +54,17 @@ class Variant(typing.Generic[U, Tag]):
     tag: str
 
 
-decode_der = declarative_asn1.decode_der
+def decode_der(cls: type[U], data: bytes) -> U:
+    # `cls` can be a regular class (e.g. a class decorated with
+    # `@sequence`, or a builtin like `int`), but also a parameterized
+    # generic (e.g. `list[T]` or `SetOf[T]`), a PEP 695 type alias, or
+    # an `Annotated[...]` type. We normalize all of these into an
+    # `AnnotatedType` using the same logic used for the fields of
+    # decorated classes.
+    annotated_type = _normalize_field_type(cls, str(cls))
+    return declarative_asn1.decode_der(annotated_type, data)
+
+
 encode_der = declarative_asn1.encode_der
 
 

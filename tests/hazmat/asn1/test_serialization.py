@@ -1158,8 +1158,8 @@ class TestSet:
 
 
 class TestSetOf:
-    # A top-level `SetOf` can be passed directly to `encode_der`. It cannot
-    # be decoded, since `decode_der` requires a concrete element type.
+    # A top-level `SetOf` can be passed directly to `encode_der`, and a
+    # parameterized `SetOf[T]` can be passed to `decode_der`.
     def test_ok_encode_setof(self) -> None:
         assert (
             asn1.encode_der(asn1.SetOf([3, 1, 2]))
@@ -1168,6 +1168,90 @@ class TestSetOf:
 
     def test_ok_encode_empty_setof(self) -> None:
         assert asn1.encode_der(asn1.SetOf([])) == b"\x31\x00"
+
+    def test_ok_decode_setof(self) -> None:
+        decoded = asn1.decode_der(
+            asn1.SetOf[int], b"\x31\x09\x02\x01\x01\x02\x01\x02\x02\x01\x03"
+        )
+        assert isinstance(decoded, asn1.SetOf)
+        assert decoded.as_list() == [1, 2, 3]
+
+    def test_ok_decode_empty_setof(self) -> None:
+        decoded = asn1.decode_der(asn1.SetOf[int], b"\x31\x00")
+        assert isinstance(decoded, asn1.SetOf)
+        assert decoded.as_list() == []
+
+    def test_fail_decode_bare_setof(self) -> None:
+        # A bare (non-parameterized) `SetOf` has no element type to
+        # decode with.
+        with pytest.raises(TypeError, match="cannot handle type"):
+            asn1.decode_der(asn1.SetOf, b"\x31\x00")
+
+
+class TestTopLevelSequenceOf:
+    # A top-level `list` can be passed directly to `encode_der`, and a
+    # parameterized `list[T]` can be passed to `decode_der`.
+    def test_ok_roundtrip_simple_type(self) -> None:
+        encoded = asn1.encode_der([1, 2, 3])
+        assert encoded == b"\x30\x09\x02\x01\x01\x02\x01\x02\x02\x01\x03"
+        assert asn1.decode_der(list[int], encoded) == [1, 2, 3]
+
+    def test_ok_roundtrip_empty_list(self) -> None:
+        assert asn1.encode_der([]) == b"\x30\x00"
+        assert asn1.decode_der(list[int], b"\x30\x00") == []
+
+    def test_ok_decode_typing_list(self) -> None:
+        assert asn1.decode_der(
+            typing.List[int],  # noqa: UP006
+            b"\x30\x03\x02\x01\x09",
+        ) == [9]
+
+    def test_ok_roundtrip_sequence_of_sequence(self) -> None:
+        # PolicyMappings from RFC 5280 section 4.2.1.5, with the
+        # DER-encoded extension value from NIST PKITS test 4.10.1.
+        @asn1.sequence
+        @_comparable_dataclass
+        class PolicyMapping:
+            issuer_domain_policy: x509.ObjectIdentifier
+            subject_domain_policy: x509.ObjectIdentifier
+
+        encoded = bytes.fromhex(
+            "301a3018060a60864801650302013001060a60864801650302013002"
+        )
+        decoded = asn1.decode_der(list[PolicyMapping], encoded)
+        assert decoded == [
+            PolicyMapping(
+                issuer_domain_policy=x509.ObjectIdentifier(
+                    "2.16.840.1.101.3.2.1.48.1"
+                ),
+                subject_domain_policy=x509.ObjectIdentifier(
+                    "2.16.840.1.101.3.2.1.48.2"
+                ),
+            )
+        ]
+        assert asn1.encode_der(decoded) == encoded
+
+    def test_ok_decode_annotated_size(self) -> None:
+        size_annotated: typing.Any = Annotated[
+            list[int], asn1.Size(min=1, max=2)
+        ]
+        decoded = asn1.decode_der(size_annotated, b"\x30\x03\x02\x01\x09")
+        assert decoded == [9]
+
+        with pytest.raises(
+            ValueError,
+            match=re.escape("SEQUENCE OF has size 3, expected size in [1, 2]"),
+        ):
+            asn1.decode_der(
+                size_annotated,
+                b"\x30\x09\x02\x01\x01\x02\x01\x02\x02\x01\x03",
+            )
+
+    def test_fail_decode_bare_list(self) -> None:
+        # A bare (non-parameterized) `list` has no element type to
+        # decode with.
+        with pytest.raises(TypeError, match="cannot handle type"):
+            asn1.decode_der(list, b"\x30\x00")
 
 
 class TestSize:
@@ -2647,6 +2731,28 @@ class TestTypeAliases:
                 ),
             ]
         )
+
+    def test_decode_alias_of_list(self) -> None:
+        # A type alias of `list[T]` can be passed directly to
+        # `decode_der`.
+        namespace = self._exec(
+            """
+            @asn1.sequence
+            @_comparable_dataclass
+            class Point:
+                x: int
+                y: int
+
+            type Points = list[Point]
+            """
+        )
+        points_alias = namespace["Points"]
+        point_cls = namespace["Point"]
+
+        decoded = asn1.decode_der(
+            points_alias, b"\x30\x08\x30\x06\x02\x01\x01\x02\x01\x02"
+        )
+        assert decoded == [point_cls(x=1, y=2)]
 
     def test_fail_optional_alias_of_tlv(self) -> None:
         # Aliases are resolved before field type validation runs.
