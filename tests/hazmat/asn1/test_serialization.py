@@ -1212,8 +1212,6 @@ class TestSetOf:
         assert asn1.decode_der(
             asn1.SetOf[int], b"\x31\x09\x02\x01\x01\x02\x01\x02\x02\x01\x03"
         ) == asn1.SetOf([1, 2, 3])
-
-    def test_ok_decode_empty_setof(self) -> None:
         assert asn1.decode_der(asn1.SetOf[int], b"\x31\x00") == asn1.SetOf([])
 
 
