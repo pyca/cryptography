@@ -1165,45 +1165,10 @@ class TestSequenceOf:
         assert asn1.decode_der(
             list[int], b"\x30\x06\x02\x01\x01\x02\x01\x02"
         ) == [1, 2]
-
-    def test_ok_decode_empty_list(self) -> None:
         assert asn1.decode_der(list[int], b"\x30\x00") == []
-
-    def test_ok_decode_typing_list(self) -> None:
         assert asn1.decode_der(
-            typing.List[int],  # noqa: UP006
-            b"\x30\x06\x02\x01\x01\x02\x01\x02",
-        ) == [1, 2]
-
-    def test_ok_decode_nested_list(self) -> None:
-        assert asn1.decode_der(
-            list[list[int]],
-            b"\x30\x08\x30\x06\x02\x01\x01\x02\x01\x02",
+            list[list[int]], b"\x30\x08\x30\x06\x02\x01\x01\x02\x01\x02"
         ) == [[1, 2]]
-
-    def test_ok_decode_sequence_of_sequences(self) -> None:
-        # PolicyMappings from RFC 5280, using the DER encoding from
-        # NIST PKITS test case 4.10.1.
-        @asn1.sequence
-        @_comparable_dataclass
-        class PolicyMapping:
-            issuer_domain_policy: x509.ObjectIdentifier
-            subject_domain_policy: x509.ObjectIdentifier
-
-        data = bytes.fromhex(
-            "301a3018060a60864801650302013001060a60864801650302013002"
-        )
-        decoded = asn1.decode_der(list[PolicyMapping], data)
-        assert decoded == [
-            PolicyMapping(
-                issuer_domain_policy=x509.ObjectIdentifier(
-                    "2.16.840.1.101.3.2.1.48.1"
-                ),
-                subject_domain_policy=x509.ObjectIdentifier(
-                    "2.16.840.1.101.3.2.1.48.2"
-                ),
-            )
-        ]
 
     def test_fail_decode_bare_list(self) -> None:
         with pytest.raises(
@@ -2747,46 +2712,3 @@ class TestTypeAliases:
                     foo: MyTLV | None
                 """
             )
-
-    def test_alias_of_simple_type_as_top_level_type(self) -> None:
-        namespace = self._exec(
-            """
-            type MyInt = int
-            """
-        )
-        alias = namespace["MyInt"]
-
-        assert asn1.decode_der(alias, b"\x02\x01\x09") == 9
-
-    def test_alias_of_sequence_of_as_top_level_type(self) -> None:
-        namespace = self._exec(
-            """
-            @asn1.sequence
-            @_comparable_dataclass
-            class PolicyMapping:
-                issuer_domain_policy: int
-                subject_domain_policy: int
-
-            type PolicyMappings = list[PolicyMapping]
-            """
-        )
-        cls = namespace["PolicyMapping"]
-        alias = namespace["PolicyMappings"]
-
-        data = b"\x30\x08\x30\x06\x02\x01\x01\x02\x01\x02"
-        decoded = asn1.decode_der(alias, data)
-        assert decoded == [
-            cls(issuer_domain_policy=1, subject_domain_policy=2)
-        ]
-
-    def test_alias_of_set_of_as_top_level_type(self) -> None:
-        namespace = self._exec(
-            """
-            type MyInts = asn1.SetOf[int]
-            """
-        )
-        alias = namespace["MyInts"]
-
-        assert asn1.decode_der(
-            alias, b"\x31\x06\x02\x01\x01\x02\x01\x02"
-        ) == asn1.SetOf([1, 2])

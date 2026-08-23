@@ -21,9 +21,6 @@ pub(crate) fn encode_der<'p>(
     Ok(pyo3::types::PyBytes::new(py, &encoded_bytes))
 }
 
-// The type to decode is normalized into an `AnnotatedType` at the
-// Python level (`cryptography.hazmat.asn1`), using the same logic
-// used for sequence/set fields.
 #[pyo3::pyfunction]
 pub(crate) fn decode_der<'p>(
     py: pyo3::Python<'p>,

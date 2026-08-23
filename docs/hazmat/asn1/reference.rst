@@ -21,16 +21,7 @@ Serialization
 
     Deserialize a DER-encoded byte string into an instance of ``cls``.
 
-    .. versionchanged:: 51.0.0
-        Added support for decoding top-level ``SEQUENCE OF`` and
-        ``SET OF`` values by passing ``list[T]`` or :class:`SetOf`\ ``[T]``
-        as ``cls``.
-
-    :param cls: The type object representing the ASN.1 type to decode.
-        Any type usable as a sequence/set field type is supported,
-        including the ``list[T]`` (``SEQUENCE OF``) and
-        :class:`SetOf`\ ``[T]`` (``SET OF``) generic aliases and
-        :pep:`695` type aliases.
+    :param cls: The type object representing the ASN.1 class to decode.
     :type cls: :class:`type`
     :param bytes data: The DER-encoded data.
     :returns: An instance of ``cls``.
@@ -49,9 +40,6 @@ Serialization
         1
         >>> point.y
         2
-        >>> points = asn1.decode_der(list[Point], b'0\x080\x06\x02\x01\x01\x02\x01\x02')
-        >>> points[0].x
-        1
 
 .. function:: encode_der(value)
 

@@ -290,16 +290,6 @@ Use :class:`list`\[T] for ``SEQUENCE OF`` and :class:`~cryptography.hazmat.asn1.
     >>> decoded.values.as_list()
     [1, 2, 3]
 
-``SEQUENCE OF`` and ``SET OF`` values can also appear at the top level:
-pass ``list[T]`` or :class:`~cryptography.hazmat.asn1.SetOf`\[T] directly
-to :func:`~cryptography.hazmat.asn1.decode_der`:
-
-.. doctest::
-
-    >>> from cryptography.hazmat import asn1
-    >>> asn1.decode_der(list[int], b'0\x06\x02\x01\x01\x02\x01\x02')
-    [1, 2]
-
 Size constraints
 ----------------
 
