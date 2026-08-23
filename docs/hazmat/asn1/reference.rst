@@ -26,11 +26,11 @@ Serialization
         ``SET OF`` values by passing ``list[T]`` or :class:`SetOf`\ ``[T]``
         as ``cls``.
 
-    :param cls: The type object representing the ASN.1 class to decode.
-        In addition to classes, the ``list[T]`` and
-        :class:`SetOf`\ ``[T]`` generic aliases are supported for decoding
-        top-level ``SEQUENCE OF`` and ``SET OF`` values, as are :pep:`695`
-        type aliases of supported types.
+    :param cls: The type object representing the ASN.1 type to decode.
+        Any type usable as a sequence/set field type is supported,
+        including the ``list[T]`` (``SEQUENCE OF``) and
+        :class:`SetOf`\ ``[T]`` (``SET OF``) generic aliases and
+        :pep:`695` type aliases.
     :type cls: :class:`type`
     :param bytes data: The DER-encoded data.
     :returns: An instance of ``cls``.
@@ -57,20 +57,13 @@ Serialization
 
     Serialize an ASN.1 object into DER-encoded bytes.
 
-    .. versionchanged:: 51.0.0
-        Added support for encoding a top-level :class:`list` as a
-        ``SEQUENCE OF``.
-
     :param value: The ASN.1 object to encode. Must be an instance of a
         class decorated with :func:`sequence`, :func:`set`, or
         :func:`value_set`, or a primitive ASN.1 type
         (``int``, ``bool``, ``bytes``, ``str``,
         :class:`~cryptography.x509.ObjectIdentifier`,
         :class:`PrintableString`, :class:`IA5String`, :class:`UTCTime`,
-        :class:`GeneralizedTime`, :class:`BitString`, :class:`Null`), or a
-        :class:`list` (``SEQUENCE OF``) or :class:`SetOf` (``SET OF``) of
-        such values. The element type of a ``list`` or :class:`SetOf` is
-        inferred from its first element.
+        :class:`GeneralizedTime`, :class:`BitString`, :class:`Null`).
     :returns bytes: The DER-encoded data.
     :raises ValueError: If the value could not be encoded.
 
@@ -83,8 +76,6 @@ Serialization
         ...     y: int
         >>> asn1.encode_der(Point(x=1, y=2))
         b'0\x06\x02\x01\x01\x02\x01\x02'
-        >>> asn1.encode_der([Point(x=1, y=2)])
-        b'0\x080\x06\x02\x01\x01\x02\x01\x02'
 
 ASN.1 types
 -----------

@@ -1158,15 +1158,9 @@ class TestSet:
 
 
 class TestSequenceOf:
-    # A top-level `list` can be passed directly to `encode_der` (the
-    # element type is inferred from the first element), and DER data can
-    # be decoded into a `list` by passing `list[T]` to `decode_der`.
-    def test_ok_encode_list(self) -> None:
-        assert asn1.encode_der([1, 2]) == b"\x30\x06\x02\x01\x01\x02\x01\x02"
-
-    def test_ok_encode_empty_list(self) -> None:
-        assert asn1.encode_der([]) == b"\x30\x00"
-
+    # DER data can be decoded into a `list` by passing `list[T]` to
+    # `decode_der`, the same way `list[T]` is used for sequence/set
+    # fields.
     def test_ok_decode_list(self) -> None:
         assert asn1.decode_der(
             list[int], b"\x30\x06\x02\x01\x01\x02\x01\x02"
@@ -1187,7 +1181,7 @@ class TestSequenceOf:
             b"\x30\x08\x30\x06\x02\x01\x01\x02\x01\x02",
         ) == [[1, 2]]
 
-    def test_ok_roundtrip_sequence_of_sequences(self) -> None:
+    def test_ok_decode_sequence_of_sequences(self) -> None:
         # PolicyMappings from RFC 5280, using the DER encoding from
         # NIST PKITS test case 4.10.1.
         @asn1.sequence
@@ -1210,7 +1204,6 @@ class TestSequenceOf:
                 ),
             )
         ]
-        assert asn1.encode_der(decoded) == data
 
     def test_fail_decode_bare_list(self) -> None:
         with pytest.raises(
@@ -1228,13 +1221,13 @@ class TestSequenceOf:
         with pytest.raises(ValueError):
             asn1.decode_der(list[int], b"\x31\x00")
 
-    def test_fail_encode_nested_list(self) -> None:
-        # The element type of a top-level `list` is inferred from the
-        # first element, which does not itself support inference.
+    def test_fail_encode_list(self) -> None:
+        # Encoding a top-level `list` is not supported: `encode_der`
+        # has no element type to encode it with.
         with pytest.raises(
             TypeError, match="cannot handle type: <class 'list'>"
         ):
-            asn1.encode_der([[1, 2]])
+            asn1.encode_der([1, 2])
 
 
 class TestSetOf:
@@ -2785,7 +2778,6 @@ class TestTypeAliases:
         assert decoded == [
             cls(issuer_domain_policy=1, subject_domain_policy=2)
         ]
-        assert asn1.encode_der(decoded) == data
 
     def test_alias_of_set_of_as_top_level_type(self) -> None:
         namespace = self._exec(

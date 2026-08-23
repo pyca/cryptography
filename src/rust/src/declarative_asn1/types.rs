@@ -216,7 +216,8 @@ impl Tlv {
         py: pyo3::Python<'p>,
         class: &pyo3::Bound<'p, pyo3::types::PyType>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        crate::declarative_asn1::asn1::decode_der(py, class, self.full_data.as_bytes(py))
+        let annotated_type = python_class_to_annotated(py, class)?;
+        crate::declarative_asn1::asn1::decode_der(py, &annotated_type, self.full_data.as_bytes(py))
     }
 
     #[getter]
@@ -659,32 +660,6 @@ pub(crate) fn encode_value_to_annotated<'p>(
             py,
             AnnotatedType {
                 inner: pyo3::Py::new(py, Type::SetOf(inner.unbind()))?,
-                annotation: Annotation {
-                    default: None,
-                    encoding: None,
-                    size: None,
-                }
-                .into_pyobject(py)?
-                .unbind(),
-            },
-        );
-    }
-    if let Ok(list) = value.cast::<pyo3::types::PyList>() {
-        // SEQUENCE OF is homogeneous, so we infer the element type from
-        // the first element.
-        let inner = match list.iter().next() {
-            Some(first) => {
-                let class = first.get_type();
-                python_class_to_annotated(py, &class)?
-            }
-            // An empty SEQUENCE OF has no elements to encode, so the
-            // inner type is never used; any type works as a placeholder.
-            None => python_class_to_annotated(py, &Tlv::type_object(py))?,
-        };
-        return pyo3::Bound::new(
-            py,
-            AnnotatedType {
-                inner: pyo3::Py::new(py, Type::SequenceOf(inner.unbind()))?,
                 annotation: Annotation {
                     default: None,
                     encoding: None,

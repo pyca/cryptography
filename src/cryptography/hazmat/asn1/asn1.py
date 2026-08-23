@@ -55,20 +55,13 @@ class Variant(typing.Generic[U, Tag]):
 
 
 def decode_der(cls: type[U], data: bytes) -> U:
-    # Resolve PEP 695 (`type X = ...`) type aliases, so that aliases
-    # of supported types (e.g. `type PolicyMappings = list[PolicyMapping]`)
-    # can be passed directly to `decode_der`.
-    resolved = _resolve_type_aliases(cls)
-    if typing.get_origin(resolved) in (
-        builtins.list,
-        SetOf,
-    ) and typing.get_args(resolved):
-        # `list[T]` and `SetOf[T]` are generic aliases rather than
-        # classes, so they are normalized into an `AnnotatedType` here
-        # instead of in the Rust code.
-        annotated_type = _normalize_field_type(resolved, str(resolved))
-        return declarative_asn1.decode_der_annotated(annotated_type, data)
-    return declarative_asn1.decode_der(resolved, data)
+    # Top-level types go through the same normalization as sequence/set
+    # fields, so anything usable as a field type (classes, but also
+    # e.g. the `list[T]` and `SetOf[T]` generic aliases and PEP 695
+    # type aliases) can be decoded directly.
+    return declarative_asn1.decode_der(
+        _normalize_field_type(cls, str(cls)), data
+    )
 
 
 encode_der = declarative_asn1.encode_der

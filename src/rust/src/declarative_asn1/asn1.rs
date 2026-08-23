@@ -21,24 +21,11 @@ pub(crate) fn encode_der<'p>(
     Ok(pyo3::types::PyBytes::new(py, &encoded_bytes))
 }
 
+// The type to decode is normalized into an `AnnotatedType` at the
+// Python level (`cryptography.hazmat.asn1`), using the same logic
+// used for sequence/set fields.
 #[pyo3::pyfunction]
 pub(crate) fn decode_der<'p>(
-    py: pyo3::Python<'p>,
-    class: &pyo3::Bound<'p, pyo3::types::PyType>,
-    value: &'p [u8],
-) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    Ok(asn1::parse(value, |parser| {
-        let annotated_type = asn1_types::python_class_to_annotated(py, class)?;
-        decode_annotated_type(py, parser, annotated_type.get())
-    })?)
-}
-
-// Like `decode_der`, but takes an already-built `AnnotatedType` instead of a
-// Python class. Used for top-level types that are not classes (e.g. the
-// `list[T]` and `SetOf[T]` generic aliases), which are normalized into an
-// `AnnotatedType` at the Python level.
-#[pyo3::pyfunction]
-pub(crate) fn decode_der_annotated<'p>(
     py: pyo3::Python<'p>,
     annotated_type: &pyo3::Bound<'p, asn1_types::AnnotatedType>,
     value: &'p [u8],
