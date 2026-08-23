@@ -669,6 +669,32 @@ pub(crate) fn encode_value_to_annotated<'p>(
             },
         );
     }
+    if let Ok(list) = value.cast::<pyo3::types::PyList>() {
+        // SEQUENCE OF is homogeneous, so we infer the element type from
+        // the first element.
+        let inner = match list.iter().next() {
+            Some(first) => {
+                let class = first.get_type();
+                python_class_to_annotated(py, &class)?
+            }
+            // An empty SEQUENCE OF has no elements to encode, so the
+            // inner type is never used; any type works as a placeholder.
+            None => python_class_to_annotated(py, &Tlv::type_object(py))?,
+        };
+        return pyo3::Bound::new(
+            py,
+            AnnotatedType {
+                inner: pyo3::Py::new(py, Type::SequenceOf(inner.unbind()))?,
+                annotation: Annotation {
+                    default: None,
+                    encoding: None,
+                    size: None,
+                }
+                .into_pyobject(py)?
+                .unbind(),
+            },
+        );
+    }
     python_class_to_annotated(py, &value.get_type())
 }
 

@@ -8,6 +8,13 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added support for decoding top-level ``SEQUENCE OF`` and ``SET OF`` values
+  in the :doc:`/hazmat/asn1/index` module by passing ``list[T]`` or
+  :class:`~cryptography.hazmat.asn1.SetOf`\ ``[T]`` to
+  :func:`~cryptography.hazmat.asn1.decode_der`, and for encoding a top-level
+  ``list`` as a ``SEQUENCE OF`` with
+  :func:`~cryptography.hazmat.asn1.encode_der`.
+
 .. _v50-0-0:
 
 50.0.0 - 2026-07-31

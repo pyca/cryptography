@@ -32,3 +32,18 @@ pub(crate) fn decode_der<'p>(
         decode_annotated_type(py, parser, annotated_type.get())
     })?)
 }
+
+// Like `decode_der`, but takes an already-built `AnnotatedType` instead of a
+// Python class. Used for top-level types that are not classes (e.g. the
+// `list[T]` and `SetOf[T]` generic aliases), which are normalized into an
+// `AnnotatedType` at the Python level.
+#[pyo3::pyfunction]
+pub(crate) fn decode_der_annotated<'p>(
+    py: pyo3::Python<'p>,
+    annotated_type: &pyo3::Bound<'p, asn1_types::AnnotatedType>,
+    value: &'p [u8],
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    Ok(asn1::parse(value, |parser| {
+        decode_annotated_type(py, parser, annotated_type.get())
+    })?)
+}
