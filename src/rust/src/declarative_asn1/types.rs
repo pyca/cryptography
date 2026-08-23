@@ -216,7 +216,8 @@ impl Tlv {
         py: pyo3::Python<'p>,
         class: &pyo3::Bound<'p, pyo3::types::PyType>,
     ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-        crate::declarative_asn1::asn1::decode_der(py, class, self.full_data.as_bytes(py))
+        let annotated_type = python_class_to_annotated(py, class)?;
+        crate::declarative_asn1::asn1::decode_der(py, &annotated_type, self.full_data.as_bytes(py))
     }
 
     #[getter]

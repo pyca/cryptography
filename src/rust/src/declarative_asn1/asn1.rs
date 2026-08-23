@@ -24,11 +24,10 @@ pub(crate) fn encode_der<'p>(
 #[pyo3::pyfunction]
 pub(crate) fn decode_der<'p>(
     py: pyo3::Python<'p>,
-    class: &pyo3::Bound<'p, pyo3::types::PyType>,
+    annotated_type: &pyo3::Bound<'p, asn1_types::AnnotatedType>,
     value: &'p [u8],
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     Ok(asn1::parse(value, |parser| {
-        let annotated_type = asn1_types::python_class_to_annotated(py, class)?;
         decode_annotated_type(py, parser, annotated_type.get())
     })?)
 }

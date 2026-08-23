@@ -1157,9 +1157,48 @@ class TestSet:
         )
 
 
+class TestSequenceOf:
+    # DER data can be decoded into a `list` by passing `list[T]` to
+    # `decode_der`, the same way `list[T]` is used for sequence/set
+    # fields.
+    def test_ok_decode_list(self) -> None:
+        assert asn1.decode_der(
+            list[int], b"\x30\x06\x02\x01\x01\x02\x01\x02"
+        ) == [1, 2]
+        assert asn1.decode_der(list[int], b"\x30\x00") == []
+        assert asn1.decode_der(
+            list[list[int]], b"\x30\x08\x30\x06\x02\x01\x01\x02\x01\x02"
+        ) == [[1, 2]]
+
+    def test_fail_decode_bare_list(self) -> None:
+        with pytest.raises(
+            TypeError, match="cannot handle type: <class 'list'>"
+        ):
+            asn1.decode_der(list, b"\x30\x00")
+
+    def test_fail_decode_list_of_unsupported_type(self) -> None:
+        with pytest.raises(
+            TypeError, match="cannot handle type: <class 'float'>"
+        ):
+            asn1.decode_der(list[float], b"\x30\x00")
+
+    def test_fail_decode_list_with_wrong_tag(self) -> None:
+        with pytest.raises(ValueError):
+            asn1.decode_der(list[int], b"\x31\x00")
+
+    def test_fail_encode_list(self) -> None:
+        # Encoding a top-level `list` is not supported: `encode_der`
+        # has no element type to encode it with.
+        with pytest.raises(
+            TypeError, match="cannot handle type: <class 'list'>"
+        ):
+            asn1.encode_der([1, 2])
+
+
 class TestSetOf:
-    # A top-level `SetOf` can be passed directly to `encode_der`. It cannot
-    # be decoded, since `decode_der` requires a concrete element type.
+    # A top-level `SetOf` can be passed directly to `encode_der` (the
+    # element type is inferred from the first element), and DER data can
+    # be decoded into a `SetOf` by passing `SetOf[T]` to `decode_der`.
     def test_ok_encode_setof(self) -> None:
         assert (
             asn1.encode_der(asn1.SetOf([3, 1, 2]))
@@ -1168,6 +1207,12 @@ class TestSetOf:
 
     def test_ok_encode_empty_setof(self) -> None:
         assert asn1.encode_der(asn1.SetOf([])) == b"\x31\x00"
+
+    def test_ok_decode_setof(self) -> None:
+        assert asn1.decode_der(
+            asn1.SetOf[int], b"\x31\x09\x02\x01\x01\x02\x01\x02\x02\x01\x03"
+        ) == asn1.SetOf([1, 2, 3])
+        assert asn1.decode_der(asn1.SetOf[int], b"\x31\x00") == asn1.SetOf([])
 
 
 class TestSize:
