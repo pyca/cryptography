@@ -7,14 +7,21 @@ Two-factor authentication
 
 This module contains algorithms related to two-factor authentication.
 
-Currently, it contains an algorithm for generating and verifying
-one time password values based on Hash-based message authentication
-codes (HMAC).
+Currently, it contains an algorithm for generating and verifying one
+time password values based on Hash-based message authentication codes
+(HMAC), specifically the `HOTP`_ (:rfc:`4226`) algorithm and its
+time-based extension `TOTP`_ (:rfc:`6238`).
+
+.. _`HOTP`: https://en.wikipedia.org/wiki/HMAC-based_one-time_password
+.. _`TOTP`: https://en.wikipedia.org/wiki/Time-based_one-time_password
 
 .. class:: InvalidToken
 
     This is raised when the verify method of a one time password function's
     computed token does not match the expected token.
+
+HOTP
+----
 
 .. currentmodule:: cryptography.hazmat.primitives.twofactor.hotp
 
@@ -141,6 +148,9 @@ similar to the following code.
 
         return correct_counter
 
+TOTP
+----
+
 .. currentmodule:: cryptography.hazmat.primitives.twofactor.totp
 
 .. class:: TOTP(key, length, algorithm, time_step, *, enforce_key_length=True)
@@ -217,7 +227,7 @@ similar to the following code.
         :return: A URI string.
 
 Provisioning URI
-~~~~~~~~~~~~~~~~
+----------------
 
 The provisioning URI of HOTP and TOTP is a `feature of Google Authenticator`_
 and not actually part of the HOTP or TOTP RFCs. However, it is widely supported
