@@ -135,7 +135,9 @@ pluggy==1.6.0
     #   pytest-cov
 pretend==1.0.9
     # via cryptography (pyproject.toml:dev)
-py-cpuinfo==9.0.0
+py-cpuinfo==9.0.0 ; python_full_version < '3.10'
+    # via pytest-benchmark
+py-cpuinfo2==10.1.1 ; python_full_version >= '3.10'
     # via pytest-benchmark
 pyenchant==3.3.0
     # via
@@ -162,7 +164,9 @@ pytest==9.1.1 ; python_full_version >= '3.10'
     #   pytest-cov
     #   pytest-randomly
     #   pytest-xdist
-pytest-benchmark==5.2.3
+pytest-benchmark==5.2.3 ; python_full_version < '3.10'
+    # via cryptography (pyproject.toml:dev)
+pytest-benchmark==5.3.0 ; python_full_version >= '3.10'
     # via cryptography (pyproject.toml:dev)
 pytest-cov==7.1.0
     # via cryptography (pyproject.toml:dev)
