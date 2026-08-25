@@ -144,7 +144,7 @@ impl Budget {
 
 struct NameChain<'a, 'chain> {
     child: Option<&'a NameChain<'a, 'chain>>,
-    sans: SubjectAlternativeName<'chain>,
+    sans: Option<SubjectAlternativeName<'chain>>,
 }
 
 impl<'a, 'chain> NameChain<'a, 'chain> {
@@ -157,10 +157,8 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
             self_issued_intermediate,
             extensions.get_extension(&SUBJECT_ALTERNATIVE_NAME_OID),
         ) {
-            (false, Some(sans)) => sans.value::<SubjectAlternativeName<'chain>>()?,
-            // TODO: there really ought to be a better way to express an empty
-            // `asn1::SequenceOf`.
-            _ => asn1::parse_single(b"\x30\x00")?,
+            (false, Some(sans)) => Some(sans.value::<SubjectAlternativeName<'chain>>()?),
+            _ => None,
         };
 
         Ok(Self { child, sans })
@@ -253,7 +251,7 @@ impl<'a, 'chain> NameChain<'a, 'chain> {
             child.evaluate_constraints(constraints, budget)?;
         }
 
-        for san in self.sans.clone() {
+        for san in self.sans.iter().flat_map(|sans| sans.clone()) {
             // If there are no applicable constraints, the SAN is considered valid so the default is true.
             let mut permit = true;
             if let Some(permitted_subtrees) = &constraints.permitted_subtrees {

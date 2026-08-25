@@ -6419,6 +6419,26 @@ class TestOtherCertificate:
         with pytest.raises(ValueError, match="InvalidSize"):
             cert.extensions.get_extension_for_class(ExtendedKeyUsage)
 
+    def test_invalid_empty_subject_alternative_name(self):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "empty-san.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        with pytest.raises(ValueError, match="InvalidSize"):
+            cert.extensions.get_extension_for_class(
+                x509.SubjectAlternativeName
+            )
+
+    def test_invalid_empty_issuer_alternative_name(self):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "empty-ian.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        with pytest.raises(ValueError, match="InvalidSize"):
+            cert.extensions.get_extension_for_class(x509.IssuerAlternativeName)
+
 
 class TestNameAttribute:
     EXPECTED_TYPES: typing.ClassVar[

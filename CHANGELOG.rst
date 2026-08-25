@@ -8,6 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Parsing a ``subjectAltName`` or ``issuerAltName`` extension now rejects an
+  empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
+  RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
+  applied to ``extendedKeyUsage``.
+
 .. _v50-0-0:
 
 50.0.0 - 2026-07-31
