@@ -8,6 +8,13 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+.. _v50-0-1:
+
+50.0.1 - 2026-08-25
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 4.0.2.
+
 .. _v50-0-0:
 
 50.0.0 - 2026-07-31
