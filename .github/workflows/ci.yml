@@ -37,15 +37,15 @@ jobs:
           - {VERSION: "3.15-dev", NOXSESSION: "rust,tests"}
           - {VERSION: "3.15t-dev", NOXSESSION: "rust,tests"}
           - {VERSION: "pypy-3.11", NOXSESSION: "tests-nocoverage"}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "0"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.3"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.0.21"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.4.6"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.7"}}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1"}}
-          - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.3"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "0"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.4"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.0.22"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.4.7"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.8"}}
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2"}}
+          - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.4"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.1"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.3.2"}}
           # Latest commit on the BoringSSL main branch, as of Aug 25, 2026.
@@ -65,8 +65,8 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.14", NOXSESSION: "tests-rust-debug"}
           # Not actually an MSRV, just for coverage on this
-          - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.3"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.4"}}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
