@@ -81,7 +81,7 @@ idna==3.19
     # via requests
 imagesize==1.5.0 ; python_full_version < '3.10'
     # via sphinx
-imagesize==2.0.0 ; python_full_version >= '3.10'
+imagesize==2.0.1 ; python_full_version >= '3.10'
     # via sphinx
 importlib-metadata==8.7.1 ; python_full_version < '3.10'
     # via
