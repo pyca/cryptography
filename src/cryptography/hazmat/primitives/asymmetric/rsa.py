@@ -4,292 +4,529 @@
 
 from __future__ import annotations
 
-import abc
-import random
 import typing
-from math import gcd, lcm
 
-from cryptography.hazmat.bindings._rust import openssl as rust_openssl
-from cryptography.hazmat.primitives import _serialization, hashes
-from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
-from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
+from cryptography import utils
+from cryptography.exceptions import UnsupportedAlgorithm
+from cryptography.hazmat.primitives import _serialization
+from cryptography.hazmat.primitives.asymmetric import (
+    AsymmetricPadding,
+    AsymmetricSignatureContext,
+    AsymmetricVerificationContext,
+    utils as asymmetric_utils,
+)
+
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.backends.openssl import backend as openssl_backend
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import padding
 
 
-class RSAPrivateKey(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def decrypt(self, ciphertext: bytes, padding: AsymmetricPadding) -> bytes:
-        """
-        Decrypts the provided ciphertext.
-        """
-
+class RSAPrivateKey(typing.Generic[_RSAPrivateKey]):
     @property
-    @abc.abstractmethod
     def key_size(self) -> int:
-        """
-        The bit length of the public modulus.
-        """
+        raise NotImplementedError()
 
-    @abc.abstractmethod
-    def public_key(self) -> RSAPublicKey:
-        """
-        The RSAPublicKey associated with this private key.
-        """
-
-    @abc.abstractmethod
-    def sign(
+    def signer(
         self,
-        data: bytes,
         padding: AsymmetricPadding,
-        algorithm: asym_utils.Prehashed
-        | hashes.HashAlgorithm
-        | asym_utils.NoDigestInfo,
-    ) -> bytes:
-        """
-        Signs the data.
-        """
+        algorithm: typing.Union[hashes.HashAlgorithm, utils.Prehashed],
+    ) -> AsymmetricSignatureContext:
+        raise NotImplementedError()
 
-    @abc.abstractmethod
+    def decrypt(self, ciphertext: bytes, padding: AsymmetricPadding) -> bytes:
+        raise NotImplementedError()
+
     def private_numbers(self) -> RSAPrivateNumbers:
-        """
-        Returns an RSAPrivateNumbers.
-        """
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def private_bytes(
         self,
         encoding: _serialization.Encoding,
         format: _serialization.PrivateFormat,
         encryption_algorithm: _serialization.KeySerializationEncryption,
     ) -> bytes:
-        """
-        Returns the key serialized as bytes.
-        """
+        raise NotImplementedError()
 
-    @abc.abstractmethod
-    def __copy__(self) -> RSAPrivateKey:
-        """
-        Returns a copy.
-        """
-
-    @abc.abstractmethod
-    def __deepcopy__(self, memo: dict) -> RSAPrivateKey:
-        """
-        Returns a deep copy.
-        """
+    def public_key(self) -> RSAPublicKey:
+        raise NotImplementedError()
 
 
-RSAPrivateKeyWithSerialization = RSAPrivateKey
-RSAPrivateKey.register(rust_openssl.rsa.RSAPrivateKey)
-
-
-class RSAPublicKey(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def encrypt(self, plaintext: bytes, padding: AsymmetricPadding) -> bytes:
-        """
-        Encrypts the given plaintext.
-        """
-
+class RSAPublicKey(typing.Generic[_RSAPublicKey]):
     @property
-    @abc.abstractmethod
     def key_size(self) -> int:
-        """
-        The bit length of the public modulus.
-        """
+        raise NotImplementedError()
 
-    @abc.abstractmethod
+    def verifier(
+        self,
+        padding: AsymmetricPadding,
+        algorithm: typing.Union[hashes.HashAlgorithm, utils.Prehashed],
+    ) -> AsymmetricVerificationContext:
+        raise NotImplementedError()
+
+    def encrypt(self, plaintext: bytes, padding: AsymmetricPadding) -> bytes:
+        raise NotImplementedError()
+
     def public_numbers(self) -> RSAPublicNumbers:
-        """
-        Returns an RSAPublicNumbers
-        """
+        raise NotImplementedError()
 
-    @abc.abstractmethod
     def public_bytes(
         self,
         encoding: _serialization.Encoding,
         format: _serialization.PublicFormat,
     ) -> bytes:
-        """
-        Returns the key serialized as bytes.
-        """
+        raise NotImplementedError()
 
-    @abc.abstractmethod
-    def verify(
-        self,
-        signature: bytes,
-        data: bytes,
-        padding: AsymmetricPadding,
-        algorithm: asym_utils.Prehashed | hashes.HashAlgorithm,
-    ) -> None:
-        """
-        Verifies the signature of the data.
-        """
-
-    @abc.abstractmethod
     def recover_data_from_signature(
         self,
         signature: bytes,
         padding: AsymmetricPadding,
-        algorithm: hashes.HashAlgorithm | asym_utils.NoDigestInfo | None,
+        algorithm: typing.Union[hashes.HashAlgorithm, utils.Prehashed],
     ) -> bytes:
-        """
-        Recovers the original data from the signature.
-        """
+        raise NotImplementedError()
 
-    @abc.abstractmethod
+
+class RSAPrivateKeyWithSerialization(RSAPrivateKey[_RSAPrivateKey]):
+    def private_bytes(
+        self,
+        encoding: _serialization.Encoding,
+        format: _serialization.PrivateFormat,
+        encryption_algorithm: _serialization.KeySerializationEncryption,
+    ) -> bytes:
+        if not isinstance(encoding, _serialization.Encoding):
+            raise TypeError("encoding must be an item from the Encoding enum")
+
+        if not isinstance(format, _serialization.PrivateFormat):
+            raise TypeError("format must be an item from the PrivateFormat enum")
+
+        if not isinstance(
+            encryption_algorithm, _serialization.KeySerializationEncryption
+        ):
+            raise TypeError(
+                "encryption_algorithm must be an item from the "
+                "KeySerializationEncryption enum"
+            )
+
+        return self._private_bytes(
+            encoding, format, encryption_algorithm
+        )
+
+    def _private_bytes(
+        self,
+        encoding: _serialization.Encoding,
+        format: _serialization.PrivateFormat,
+        encryption_algorithm: _serialization.KeySerializationEncryption,
+    ) -> bytes:
+        raise NotImplementedError()
+
+
+class RSAPublicKeyWithSerialization(RSAPublicKey[_RSAPublicKey]):
+    def public_bytes(
+        self,
+        encoding: _serialization.Encoding,
+        format: _serialization.PublicFormat,
+    ) -> bytes:
+        if not isinstance(encoding, _serialization.Encoding):
+            raise TypeError("encoding must be an item from the Encoding enum")
+
+        if not isinstance(format, _serialization.PublicFormat):
+            raise TypeError("format must be an item from the PublicFormat enum")
+
+        return self._public_bytes(encoding, format)
+
+    def _public_bytes(
+        self,
+        encoding: _serialization.Encoding,
+        format: _serialization.PublicFormat,
+    ) -> bytes:
+        raise NotImplementedError()
+
+
+class RSAPrivateNumbers:
+    def __init__(
+        self,
+        p: int,
+        q: int,
+        d: int,
+        dmp1: int,
+        dmq1: int,
+        iqmp: int,
+        public_numbers: RSAPublicNumbers,
+    ):
+        self.p = p
+        self.q = q
+        self.d = d
+        self.dmp1 = dmp1
+        self.dmq1 = dmq1
+        self.iqmp = iqmp
+        self.public_numbers = public_numbers
+
     def __eq__(self, other: object) -> bool:
-        """
-        Checks equality.
-        """
+        if not isinstance(other, RSAPrivateNumbers):
+            return NotImplemented
 
-    @abc.abstractmethod
-    def __copy__(self) -> RSAPublicKey:
-        """
-        Returns a copy.
-        """
+        return (
+            self.p == other.p
+            and self.q == other.q
+            and self.d == other.d
+            and self.dmp1 == other.dmp1
+            and self.dmq1 == other.dmq1
+            and self.iqmp == other.iqmp
+            and self.public_numbers == other.public_numbers
+        )
 
-    @abc.abstractmethod
-    def __deepcopy__(self, memo: dict) -> RSAPublicKey:
-        """
-        Returns a deep copy.
-        """
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.p,
+                self.q,
+                self.d,
+                self.dmp1,
+                self.dmq1,
+                self.iqmp,
+                self.public_numbers,
+            )
+        )
+
+    def __repr__(self) -> str:
+        return (
+            f"RSAPrivateNumbers(p={self.p}, q={self.q}, d={self.d}, "
+            f"dmp1={self.dmp1}, dmq1={self.dmq1}, iqmp={self.iqmp}, "
+            f"public_numbers={self.public_numbers})"
+        )
+
+    def private_key(self, backend: typing.Any) -> RSAPrivateKey:
+        from cryptography.hazmat.backends.openssl import backend as openssl_backend
+
+        if not isinstance(backend, openssl_backend.Backend):
+            raise UnsupportedAlgorithm(
+                "Only OpenSSL backend is supported",
+                _Reasons.UNSUPPORTED_BACKEND,
+            )
+
+        return backend.load_rsa_private_numbers(self)
 
 
-RSAPublicKeyWithSerialization = RSAPublicKey
-RSAPublicKey.register(rust_openssl.rsa.RSAPublicKey)
+class RSAPublicNumbers:
+    def __init__(self, e: int, n: int):
+        self.e = e
+        self.n = n
 
-RSAPrivateNumbers = rust_openssl.rsa.RSAPrivateNumbers
-RSAPublicNumbers = rust_openssl.rsa.RSAPublicNumbers
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, RSAPublicNumbers):
+            return NotImplemented
+
+        return self.e == other.e and self.n == other.n
+
+    def __hash__(self) -> int:
+        return hash((self.e, self.n))
+
+    def __repr__(self) -> str:
+        return f"RSAPublicNumbers(e={self.e}, n={self.n})"
+
+    def public_key(self, backend: typing.Any) -> RSAPublicKey:
+        from cryptography.hazmat.backends.openssl import backend as openssl_backend
+
+        if not isinstance(backend, openssl_backend.Backend):
+            raise UnsupportedAlgorithm(
+                "Only OpenSSL backend is supported",
+                _Reasons.UNSUPPORTED_BACKEND,
+            )
+
+        return backend.load_rsa_public_numbers(self)
+
+
+class _Reasons:
+    UNSUPPORTED_BACKEND = "unsupported_backend"
+    UNSUPPORTED_PADDING = "unsupported_padding"
+    UNSUPPORTED_HASH = "unsupported_hash"
+    UNSUPPORTED_MGF = "unsupported_mgf"
+
+
+class _RSAPrivateKey:
+    pass
+
+
+class _RSAPublicKey:
+    pass
+
+
+def _verify_rsa_parameters(public_exponent: int, key_size: int) -> None:
+    if public_exponent not in (3, 65537):
+        raise ValueError("public_exponent must be 3 or 65537")
+    if key_size < 2048:
+        raise ValueError("key_size must be at least 2048-bits.")
+
+
+@utils.register_interface(RSAPrivateKey)
+class _RSAPrivateKeyImpl:
+    def __init__(self, backend: openssl_backend.Backend, rsa_cdata: typing.Any):
+        self._backend = backend
+        self._rsa_cdata = rsa_cdata
+
+    @property
+    def key_size(self) -> int:
+        return self._backend._rsa_key_size(self._rsa_cdata)
+
+    def signer(
+        self,
+        padding: AsymmetricPadding,
+        algorithm: typing.Union[hashes.HashAlgorithm, utils.Prehashed],
+    ) -> AsymmetricSignatureContext:
+        from cryptography.hazmat.primitives.asymmetric import padding as padding_mod
+
+        if isinstance(padding, padding_mod.PSS):
+            return _RSAPrivateKeyPSSContext(self._backend, self, padding, algorithm)
+        elif isinstance(padding, padding_mod.PKCS1v15):
+            return _RSAPrivateKeyPKCS1v15Context(
+                self._backend, self, padding, algorithm
+            )
+        else:
+            raise UnsupportedAlgorithm(
+                "Padding must be PSS or PKCS1v15",
+                _Reasons.UNSUPPORTED_PADDING,
+            )
+
+    def decrypt(self, ciphertext: bytes, padding: AsymmetricPadding) -> bytes:
+        from cryptography.hazmat.primitives.asymmetric import padding as padding_mod
+
+        if isinstance(padding, padding_mod.OAEP):
+            return self._backend._rsa_decrypt_oaep(self._rsa_cdata, ciphertext, padding)
+        elif isinstance(padding, padding_mod.PKCS1v15):
+            return self._backend._rsa_decrypt_pkcs1v15(self._rsa_cdata, ciphertext)
+        else:
+            raise UnsupportedAlgorithm(
+                "Padding must be OAEP or PKCS1v15",
+                _Reasons.UNSUPPORTED_PADDING,
+            )
+
+    def private_numbers(self) -> RSAPrivateNumbers:
+        return self._backend._rsa_private_numbers(self._rsa_cdata)
+
+    def private_bytes(
+        self,
+        encoding: _serialization.Encoding,
+        format: _serialization.PrivateFormat,
+        encryption_algorithm: _serialization.KeySerializationEncryption,
+    ) -> bytes:
+        return self._backend._rsa_private_bytes(
+            self._rsa_cdata, encoding, format, encryption_algorithm
+        )
+
+    def public_key(self) -> RSAPublicKey:
+        return self._backend._rsa_public_key(self._rsa_cdata)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, _RSAPrivateKeyImpl):
+            return NotImplemented
+
+        return self._backend._rsa_cmp(self._rsa_cdata, other._rsa_cdata)
+
+    def __hash__(self) -> int:
+        return hash(self._rsa_cdata)
+
+
+@utils.register_interface(RSAPublicKey)
+class _RSAPublicKeyImpl:
+    def __init__(self, backend: openssl_backend.Backend, rsa_cdata: typing.Any):
+        self._backend = backend
+        self._rsa_cdata = rsa_cdata
+
+    @property
+    def key_size(self) -> int:
+        return self._backend._rsa_key_size(self._rsa_cdata)
+
+    def verifier(
+        self,
+        padding: AsymmetricPadding,
+        algorithm: typing.Union[hashes.HashAlgorithm, utils.Prehashed],
+    ) -> AsymmetricVerificationContext:
+        from cryptography.hazmat.primitives.asymmetric import padding as padding_mod
+
+        if isinstance(padding, padding_mod.PSS):
+            return _RSAPublicKeyPSSContext(self._backend, self, padding, algorithm)
+        elif isinstance(padding, padding_mod.PKCS1v15):
+            return _RSAPublicKeyPKCS1v15Context(
+                self._backend, self, padding, algorithm
+            )
+        else:
+            raise UnsupportedAlgorithm(
+                "Padding must be PSS or PKCS1v15",
+                _Reasons.UNSUPPORTED_PADDING,
+            )
+
+    def encrypt(self, plaintext: bytes, padding: AsymmetricPadding) -> bytes:
+        from cryptography.hazmat.primitives.asymmetric import padding as padding_mod
+
+        if isinstance(padding, padding_mod.OAEP):
+            return self._backend._rsa_encrypt_oaep(self._rsa_cdata, plaintext, padding)
+        elif isinstance(padding, padding_mod.PKCS1v15):
+            return self._backend._rsa_encrypt_pkcs1v15(self._rsa_cdata, plaintext)
+        else:
+            raise UnsupportedAlgorithm(
+                "Padding must be OAEP or PKCS1v15",
+                _Reasons.UNSUPPORTED_PADDING,
+            )
+
+    def public_numbers(self) -> RSAPublicNumbers:
+        return self._backend._rsa_public_numbers(self._rsa_cdata)
+
+    def public_bytes(
+        self,
+        encoding: _serialization.Encoding,
+        format: _serialization.PublicFormat,
+    ) -> bytes:
+        return self._backend._rsa_public_bytes(self._rsa_cdata, encoding, format)
+
+    def recover_data_from_signature(
+        self,
+        signature: bytes,
+        padding: AsymmetricPadding,
+        algorithm: typing.Union[hashes.HashAlgorithm, utils.Prehashed],
+    ) -> bytes:
+        from cryptography.hazmat.primitives.asymmetric import padding as padding_mod
+
+        if isinstance(padding, padding_mod.PKCS1v15):
+            return self._backend._rsa_recover_pkcs1v15(
+                self._rsa_cdata, signature, algorithm
+            )
+        else:
+            raise UnsupportedAlgorithm(
+                "Padding must be PKCS1v15",
+                _Reasons.UNSUPPORTED_PADDING,
+            )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, _RSAPublicKeyImpl):
+            return NotImplemented
+
+        return self._backend._rsa_cmp(self._rsa_cdata, other._rsa_cdata)
+
+    def __hash__(self) -> int:
+        return hash(self._rsa_cdata)
+
+
+class _RSAPrivateKeyPSSContext(AsymmetricSignatureContext):
+    def __init__(
+        self,
+        backend: openssl_backend.Backend,
+        private_key: _RSAPrivateKeyImpl,
+        padding: padding.PSS,
+        algorithm: typing.Union[hashes.HashAlgorithm, utils.Prehashed],
+    ):
+        self._backend = backend
+        self._private_key = private_key
+        self._padding = padding
+        self._algorithm = algorithm
+
+    def update(self, data: bytes) -> None:
+        self._backend._rsa_sig_sign_setup(
+            self._private_key._rsa_cdata, self._padding, self._algorithm
+        )
+        self._backend._rsa_sig_sign_update(self._private_key._rsa_cdata, data)
+
+    def finalize(self) -> bytes:
+        return self._backend._rsa_sig_sign_finalize(self._private_key._rsa_cdata)
+
+    def verify(self, signature: bytes) -> None:
+        raise TypeError("verify() can only be called on a verification context")
+
+
+class _RSAPrivateKeyPKCS1v15Context(AsymmetricSignatureContext):
+    def __init__(
+        self,
+        backend: openssl_backend.Backend,
+        private_key: _RSAPrivateKeyImpl,
+        padding: padding.PKCS1v15,
+        algorithm: typing.Union[hashes.HashAlgorithm, utils.Prehashed],
+    ):
+        self._backend = backend
+        self._private_key = private_key
+        self._padding = padding
+        self._algorithm = algorithm
+
+    def update(self, data: bytes) -> None:
+        self._backend._rsa_sig_sign_setup(
+            self._private_key._rsa_cdata, self._padding, self._algorithm
+        )
+        self._backend._rsa_sig_sign_update(self._private_key._rsa_cdata, data)
+
+    def finalize(self) -> bytes:
+        return self._backend._rsa_sig_sign_finalize(self._private_key._rsa_cdata)
+
+    def verify(self, signature: bytes) -> None:
+        raise TypeError("verify() can only be called on a verification context")
+
+
+class _RSAPublicKeyPSSContext(AsymmetricVerificationContext):
+    def __init__(
+        self,
+        backend: openssl_backend.Backend,
+        public_key: _RSAPublicKeyImpl,
+        padding: padding.PSS,
+        algorithm: typing.Union[hashes.HashAlgorithm, utils.Prehashed],
+    ):
+        self._backend = backend
+        self._public_key = public_key
+        self._padding = padding
+        self._algorithm = algorithm
+
+    def update(self, data: bytes) -> None:
+        self._backend._rsa_sig_verify_setup(
+            self._public_key._rsa_cdata, self._padding, self._algorithm
+        )
+        self._backend._rsa_sig_verify_update(self._public_key._rsa_cdata, data)
+
+    def verify(self, signature: bytes) -> None:
+        self._backend._rsa_sig_verify_finalize(
+            self._public_key._rsa_cdata, signature
+        )
+
+    def finalize(self) -> bytes:
+        raise TypeError("finalize() can only be called on a signing context")
+
+
+class _RSAPublicKeyPKCS1v15Context(AsymmetricVerificationContext):
+    def __init__(
+        self,
+        backend: openssl_backend.Backend,
+        public_key: _RSAPublicKeyImpl,
+        padding: padding.PKCS1v15,
+        algorithm: typing.Union[hashes.HashAlgorithm, utils.Prehashed],
+    ):
+        self._backend = backend
+        self._public_key = public_key
+        self._padding = padding
+        self._algorithm = algorithm
+
+    def update(self, data: bytes) -> None:
+        self._backend._rsa_sig_verify_setup(
+            self._public_key._rsa_cdata, self._padding, self._algorithm
+        )
+        self._backend._rsa_sig_verify_update(self._public_key._rsa_cdata, data)
+
+    def verify(self, signature: bytes) -> None:
+        self._backend._rsa_sig_verify_finalize(
+            self._public_key._rsa_cdata, signature
+        )
+
+    def finalize(self) -> bytes:
+        raise TypeError("finalize() can only be called on a signing context")
 
 
 def generate_private_key(
     public_exponent: int,
     key_size: int,
-    backend: typing.Any = None,
+    backend: typing.Any,
 ) -> RSAPrivateKey:
+    from cryptography.hazmat.backends.openssl import backend as openssl_backend
+
     _verify_rsa_parameters(public_exponent, key_size)
-    return rust_openssl.rsa.generate_private_key(public_exponent, key_size)
 
-
-def _verify_rsa_parameters(public_exponent: int, key_size: int) -> None:
-    if public_exponent not in (3, 65537):
-        raise ValueError(
-            "public_exponent must be either 3 (for legacy compatibility) or "
-            "65537. Almost everyone should choose 65537 here!"
+    if not isinstance(backend, openssl_backend.Backend):
+        raise UnsupportedAlgorithm(
+            "Only OpenSSL backend is supported",
+            _Reasons.UNSUPPORTED_BACKEND,
         )
 
-    if key_size < 1024:
-        raise ValueError("key_size must be at least 1024-bits.")
-
-
-def _modinv(e: int, m: int) -> int:
-    """
-    Modular Multiplicative Inverse. Returns x such that: (x*e) mod m == 1
-    """
-    x1, x2 = 1, 0
-    a, b = e, m
-    while b > 0:
-        q, r = divmod(a, b)
-        xn = x1 - q * x2
-        a, b, x1, x2 = b, r, x2, xn
-    return x1 % m
-
-
-def rsa_crt_iqmp(p: int, q: int) -> int:
-    """
-    Compute the CRT (q ** -1) % p value from RSA primes p and q.
-    """
-    if p <= 1 or q <= 1:
-        raise ValueError("Values can't be <= 1")
-    return _modinv(q, p)
-
-
-def rsa_crt_dmp1(private_exponent: int, p: int) -> int:
-    """
-    Compute the CRT private_exponent % (p - 1) value from the RSA
-    private_exponent (d) and p.
-    """
-    if private_exponent <= 1 or p <= 1:
-        raise ValueError("Values can't be <= 1")
-    return private_exponent % (p - 1)
-
-
-def rsa_crt_dmq1(private_exponent: int, q: int) -> int:
-    """
-    Compute the CRT private_exponent % (q - 1) value from the RSA
-    private_exponent (d) and q.
-    """
-    if private_exponent <= 1 or q <= 1:
-        raise ValueError("Values can't be <= 1")
-    return private_exponent % (q - 1)
-
-
-def rsa_recover_private_exponent(e: int, p: int, q: int) -> int:
-    """
-    Compute the RSA private_exponent (d) given the public exponent (e)
-    and the RSA primes p and q.
-
-    This uses the Carmichael totient function to generate the
-    smallest possible working value of the private exponent.
-    """
-    # This lambda_n is the Carmichael totient function.
-    # The original RSA paper uses the Euler totient function
-    # here: phi_n = (p - 1) * (q - 1)
-    # Either version of the private exponent will work, but the
-    # one generated by the older formulation may be larger
-    # than necessary. (lambda_n always divides phi_n)
-    if e <= 1 or p <= 1 or q <= 1:
-        raise ValueError("Values can't be <= 1")
-    return _modinv(e, lcm(p - 1, q - 1))
-
-
-# Controls the number of iterations rsa_recover_prime_factors will perform
-# to obtain the prime factors.
-_MAX_RECOVERY_ATTEMPTS = 500
-
-
-def rsa_recover_prime_factors(n: int, e: int, d: int) -> tuple[int, int]:
-    """
-    Compute factors p and q from the private exponent d. We assume that n has
-    no more than two factors. This function is adapted from code in PyCrypto.
-    """
-    # reject invalid values early
-    if d <= 1 or e <= 1:
-        raise ValueError("d, e can't be <= 1")
-    if 17 != pow(17, e * d, n):
-        raise ValueError("n, d, e don't match")
-    # See 8.2.2(i) in Handbook of Applied Cryptography.
-    ktot = d * e - 1
-    # The quantity d*e-1 is a multiple of phi(n), even,
-    # and can be represented as t*2^s.
-    t = ktot
-    while t % 2 == 0:
-        t = t // 2
-    # Cycle through all multiplicative inverses in Zn.
-    # The algorithm is non-deterministic, but there is a 50% chance
-    # any candidate a leads to successful factoring.
-    # See "Digitalized Signatures and Public Key Functions as Intractable
-    # as Factorization", M. Rabin, 1979
-    spotted = False
-    tries = 0
-    while not spotted and tries < _MAX_RECOVERY_ATTEMPTS:
-        a = random.randint(2, n - 1)
-        tries += 1
-        k = t
-        # Cycle through all values a^{t*2^i}=a^k
-        while k < ktot:
-            cand = pow(a, k, n)
-            # Check if a^k is a non-trivial root of unity (mod n)
-            if cand != 1 and cand != (n - 1) and pow(cand, 2, n) == 1:
-                # We have found a number such that (cand-1)(cand+1)=0 (mod n).
-                # Either of the terms divides n.
-                p = gcd(cand + 1, n)
-                spotted = True
-                break
-            k *= 2
-    if not spotted:
-        raise ValueError("Unable to compute factors p and q from exponent d.")
-    # Found !
-    q, r = divmod(n, p)
-    assert r == 0
-    p, q = sorted((p, q), reverse=True)
-    return (p, q)
+    return backend.generate_rsa_private_key(public_exponent, key_size)
