@@ -415,7 +415,7 @@ jobs:
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
             # Latest commit on the scapy master branch, as of Aug 27, 2026.
-            REF: 966b1a17fc464bffab1e5776fda3b903c3285f09
+            REF: 23808d9ec3ee5eb7e2b003c9058c7ca2d873da94
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
