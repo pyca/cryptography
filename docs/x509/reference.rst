@@ -1623,7 +1623,10 @@ X.509 CSR (Certificate Signing Request) Builder Object
             :data:`~cryptography.hazmat.primitives.asymmetric.types.PublicKeyTypes`.
 
         Validates that the request is signed by the private key belonging to 
-        provided public key. 
+        provided public key. It is used to verify a CSR that was signed using 
+        a private key different from the one corresponding to the public key 
+        contained in the CSR. This is particularly relevant when the CSR contains 
+        a public key generated using a non-signature algorithm.
 
         :return: None
         :raise ValueError: If the signature algorithms of the request and 

@@ -212,7 +212,8 @@ class CertificateSigningRequestBuilder:
         public_key: CertificatePublicKeyTypes,
     ) -> CertificateSigningRequestBuilder:
         """
-        Sets the requestor's public key.
+        Sets the requestor's public key. This method may be used to include
+        a public key generated with a non-signature algorithm.
         """
         if not isinstance(
             public_key,
@@ -308,8 +309,8 @@ class CertificateSigningRequestBuilder:
     ) -> CertificateSigningRequest:
         """
         Signs the request using the requestor's private key. If no public key
-        was indicated, the public key associated with specified private key
-        will be included instead.
+        was previously explictly set using :meth:`public_key`, the public key
+        associated with specified private key will be included.
         """
         if self._subject_name is None:
             raise ValueError("A CertificateSigningRequest must have a subject")
