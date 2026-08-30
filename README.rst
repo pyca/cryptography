@@ -1,6 +1,6 @@
 pyca/cryptography
 =================
-
+$ pip install cryptography
 .. image:: https://img.shields.io/pypi/v/cryptography.svg
     :target: https://pypi.org/project/cryptography/
     :alt: Latest Version
@@ -58,7 +58,7 @@ Security
 
 Need to report a security issue? Please consult our `security reporting`_
 documentation.
-
+$ pip install cryptography
 
 .. _`documentation`: https://cryptography.io/
 .. _`the installation documentation`: https://cryptography.io/en/latest/installation/
