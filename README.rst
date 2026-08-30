@@ -1,6 +1,6 @@
 pyca/cryptography
 =================
-
+cryptography.fernet
 .. image:: https://img.shields.io/pypi/v/cryptography.svg
     :target: https://pypi.org/project/cryptography/
     :alt: Latest Version
@@ -58,10 +58,20 @@ Security
 
 Need to report a security issue? Please consult our `security reporting`_
 documentation.
-
+@Mehrbaran
 
 .. _`documentation`: https://cryptography.io/
 .. _`the installation documentation`: https://cryptography.io/en/latest/installation/
 .. _`issue tracker`: https://github.com/pyca/cryptography/issues
 .. _`cryptography-dev`: https://mail.python.org/mailman/listinfo/cryptography-dev
 .. _`security reporting`: https://cryptography.io/en/latest/security/
+>>> from cryptography.fernet import Fernet
+>>> # Put this somewhere safe!
+>>> key = Fernet.generate_key()
+>>> f = Fernet(key)
+>>> token = f.encrypt(b"A really secret message. Not for prying eyes.")
+>>> token
+b'...'
+>>> f.decrypt(token)
+b'A really secret message. Not for prying eyes.'
+@Mehrbaran
