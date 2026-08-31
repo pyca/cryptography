@@ -739,6 +739,32 @@ mod ca {
                 )));
             }
 
+            // `GeneralSubtrees ::= SEQUENCE SIZE (1..MAX) OF GeneralSubtree`,
+            // so a subtree field that is present must not be empty. This
+            // matters most for permittedSubtrees: RFC 5280 6.1.4 (g)(1)
+            // intersects it with its previous value, and 6.1.3 (b) requires
+            // each name to lie within it, so an empty permittedSubtrees admits
+            // no name at all. Accepting it here would instead permit every
+            // name, because the loop over the subtrees never runs.
+            if name_constraints
+                .permitted_subtrees
+                .as_ref()
+                .is_some_and(|pst| pst.is_empty())
+            {
+                return Err(ValidationError::new(ValidationErrorKind::Other(
+                    "nameConstraints permittedSubtrees must not be empty".to_string(),
+                )));
+            }
+            if name_constraints
+                .excluded_subtrees
+                .as_ref()
+                .is_some_and(|est| est.is_empty())
+            {
+                return Err(ValidationError::new(ValidationErrorKind::Other(
+                    "nameConstraints excludedSubtrees must not be empty".to_string(),
+                )));
+            }
+
             // NOTE: Both RFC 5280 and CABF require each `GeneralSubtree`
             // to have `minimum=0` and `maximum=NULL`, but experimentally
             // not many validators check for this.
@@ -798,9 +824,9 @@ mod tests {
 
     use asn1::{ObjectIdentifier, SimpleAsn1Writable};
     use cryptography_x509::extensions::{BasicConstraints, Extension};
-    use cryptography_x509::oid::BASIC_CONSTRAINTS_OID;
+    use cryptography_x509::oid::{BASIC_CONSTRAINTS_OID, NAME_CONSTRAINTS_OID};
 
-    use super::{Criticality, ExtensionValidator};
+    use super::{ca, Criticality, ExtensionValidator};
     use crate::certificate::tests::PublicKeyErrorOps;
     use crate::ops::tests::{cert, epoch, v1_cert_pem};
     use crate::ops::{CryptoOps, VerificationCertificate};
@@ -1055,5 +1081,99 @@ mod tests {
                 Some(&raw_ext)
             )
             .is_err());
+    }
+
+    fn name_constraints_policy() -> PolicyDefinition<'static, PublicKeyErrorOps> {
+        PolicyDefinition::server(
+            PublicKeyErrorOps {},
+            Subject::DNS(DNSName::new("example.com").unwrap()),
+            epoch(),
+            None,
+            None,
+            None,
+        )
+        .expect("failed to create policy definition")
+    }
+
+    #[test]
+    fn test_ca_name_constraints_empty_permitted_subtrees() {
+        // The certificate is not used by this validator, so which one we use
+        // does not matter.
+        let cert_pem = v1_cert_pem();
+        let cert = cert(&cert_pem);
+        let verification_cert = VerificationCertificate::new(&cert, ());
+        let policy_def = name_constraints_policy();
+        let policy = Policy::new(&policy_def, ());
+
+        // NameConstraints with a present-but-empty permittedSubtrees and a
+        // non-empty excludedSubtrees, written as raw DER because the empty
+        // sequence cannot be built through the writing API.
+        //
+        //   SEQUENCE {
+        //     [0] {}                                -- permittedSubtrees
+        //     [1] { SEQUENCE { [2] "bad.example" }} -- excludedSubtrees
+        //   }
+        let extn_value: &[u8] = &[
+            0x30, 0x13, 0xa0, 0x00, 0xa1, 0x0f, 0x30, 0x0d, 0x82, 0x0b, b'b', b'a', b'd', b'.',
+            b'e', b'x', b'a', b'm', b'p', b'l', b'e',
+        ];
+        let extn = Extension {
+            extn_id: NAME_CONSTRAINTS_OID,
+            critical: true,
+            extn_value,
+        };
+        assert!(ca::name_constraints(&policy, &verification_cert, Some(&extn)).is_err());
+    }
+
+    #[test]
+    fn test_ca_name_constraints_empty_excluded_subtrees() {
+        let cert_pem = v1_cert_pem();
+        let cert = cert(&cert_pem);
+        let verification_cert = VerificationCertificate::new(&cert, ());
+        let policy_def = name_constraints_policy();
+        let policy = Policy::new(&policy_def, ());
+
+        //   SEQUENCE {
+        //     [0] { SEQUENCE { [2] "ok.example" }}  -- permittedSubtrees
+        //     [1] {}                                -- excludedSubtrees
+        //   }
+        let extn_value: &[u8] = &[
+            0x30, 0x12, 0xa0, 0x0e, 0x30, 0x0c, 0x82, 0x0a, b'o', b'k', b'.', b'e', b'x', b'a',
+            b'm', b'p', b'l', b'e', 0xa1, 0x00,
+        ];
+        let extn = Extension {
+            extn_id: NAME_CONSTRAINTS_OID,
+            critical: true,
+            extn_value,
+        };
+        assert!(ca::name_constraints(&policy, &verification_cert, Some(&extn)).is_err());
+    }
+
+    #[test]
+    fn test_ca_name_constraints_non_empty_permitted_subtrees() {
+        let cert_pem = v1_cert_pem();
+        let cert = cert(&cert_pem);
+        let verification_cert = VerificationCertificate::new(&cert, ());
+        let policy_def = name_constraints_policy();
+        let policy = Policy::new(&policy_def, ());
+
+        // Control: the same shape with a non-empty permittedSubtrees is still
+        // accepted.
+        //
+        //   SEQUENCE {
+        //     [0] { SEQUENCE { [2] "ok.example" }}  -- permittedSubtrees
+        //     [1] { SEQUENCE { [2] "bad.example" }} -- excludedSubtrees
+        //   }
+        let extn_value: &[u8] = &[
+            0x30, 0x21, 0xa0, 0x0e, 0x30, 0x0c, 0x82, 0x0a, b'o', b'k', b'.', b'e', b'x', b'a',
+            b'm', b'p', b'l', b'e', 0xa1, 0x0f, 0x30, 0x0d, 0x82, 0x0b, b'b', b'a', b'd', b'.',
+            b'e', b'x', b'a', b'm', b'p', b'l', b'e',
+        ];
+        let extn = Extension {
+            extn_id: NAME_CONSTRAINTS_OID,
+            critical: true,
+            extn_value,
+        };
+        assert!(ca::name_constraints(&policy, &verification_cert, Some(&extn)).is_ok());
     }
 }
