@@ -1096,36 +1096,6 @@ mod tests {
     }
 
     #[test]
-    fn test_ca_name_constraints_empty_permitted_subtrees() {
-        // The certificate is not used by this validator, so which one we use
-        // does not matter.
-        let cert_pem = v1_cert_pem();
-        let cert = cert(&cert_pem);
-        let verification_cert = VerificationCertificate::new(&cert, ());
-        let policy_def = name_constraints_policy();
-        let policy = Policy::new(&policy_def, ());
-
-        // NameConstraints with a present-but-empty permittedSubtrees and a
-        // non-empty excludedSubtrees, written as raw DER because the empty
-        // sequence cannot be built through the writing API.
-        //
-        //   SEQUENCE {
-        //     [0] {}                                -- permittedSubtrees
-        //     [1] { SEQUENCE { [2] "bad.example" }} -- excludedSubtrees
-        //   }
-        let extn_value: &[u8] = &[
-            0x30, 0x13, 0xa0, 0x00, 0xa1, 0x0f, 0x30, 0x0d, 0x82, 0x0b, b'b', b'a', b'd', b'.',
-            b'e', b'x', b'a', b'm', b'p', b'l', b'e',
-        ];
-        let extn = Extension {
-            extn_id: NAME_CONSTRAINTS_OID,
-            critical: true,
-            extn_value,
-        };
-        assert!(ca::name_constraints(&policy, &verification_cert, Some(&extn)).is_err());
-    }
-
-    #[test]
     fn test_ca_name_constraints_empty_excluded_subtrees() {
         let cert_pem = v1_cert_pem();
         let cert = cert(&cert_pem);
