@@ -55,8 +55,6 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   git clone https://boringssl.googlesource.com/boringssl
   pushd boringssl
   git checkout "${VERSION}"
-  # install depends on all, which includes the (large) test suite unless
-  # BUILD_TESTING is off.
   cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   ninja -C build install
   # delete binaries we don't need
@@ -67,8 +65,6 @@ elif [[ "${TYPE}" == "aws-lc" ]]; then
   git clone https://github.com/aws/aws-lc.git
   pushd aws-lc
   git checkout "${VERSION}"
-  # install depends on all, which includes the (large) test suite unless
-  # BUILD_TESTING is off.
   cmake -GNinja -B build -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   ninja -C build install
   # delete binaries we don't need
