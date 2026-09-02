@@ -55,7 +55,10 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   git clone https://boringssl.googlesource.com/boringssl
   pushd boringssl
   git checkout "${VERSION}"
-  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  # Without a build type CMake passes no optimization flags at all.
+  # RelWithAsserts is Release with asserts kept, which is what BoringSSL's
+  # own CI uses.
+  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=RelWithAsserts -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   ninja -C build install
   # delete binaries we don't need
   rm -rf "${OSSL_PATH}/bin"
@@ -65,7 +68,8 @@ elif [[ "${TYPE}" == "aws-lc" ]]; then
   git clone https://github.com/aws/aws-lc.git
   pushd aws-lc
   git checkout "${VERSION}"
-  cmake -GNinja -B build -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  # See the BoringSSL build above for the build type.
+  cmake -GNinja -B build -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=RelWithAsserts -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   ninja -C build install
   # delete binaries we don't need
   rm -rf "${OSSL_PATH:?}/bin"
