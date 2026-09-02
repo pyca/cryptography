@@ -298,11 +298,11 @@ jobs:
           name: openssl-macos-arm64
           path: "../openssl-macos-arm64/"
       # Keyed on the resolved interpreter version (like the linux and
-      # windows jobs), not just the matrix name: the prerelease that an
-      # unreleased minor resolves to moves over time, and a cached
-      # maturin/pyo3 config built by an older one gets rewritten by
-      # maturin on every run, which re-dirties pyo3-ffi and recompiles it,
-      # pyo3, and every crate above them despite a warm cache.
+      # windows jobs), not just the matrix name: the alpha that a -dev
+      # entry resolves to moves over time, and a cached maturin/pyo3
+      # config built by an older alpha gets rewritten by maturin on every
+      # run, which re-dirties pyo3-ffi and recompiles it, pyo3, and every
+      # crate above them despite a warm cache.
       #
       # Also keyed on the OpenSSL artifact: its header mtimes are its
       # creation time, and a cargo cache older than the artifact would
