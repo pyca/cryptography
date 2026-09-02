@@ -19,7 +19,7 @@ runs:
         KEY: "${{ inputs.key }}"
     - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6  # v2.9.2
       with:
-        key: ${{ steps.normalized-key.outputs.key }}-5
+        key: ${{ steps.normalized-key.outputs.key }}-6
     # maturin writes the pyo3 config file to target/maturin/, and pyo3-ffi's
     # build script registers cargo:rerun-if-changed on it. rust-cache's
     # cleanup deletes target/maturin/ before saving, so the file was
@@ -30,7 +30,7 @@ runs:
     - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: target/maturin
-        key: "maturin-pyo3-config-${{ steps.normalized-key.outputs.key }}-0"
+        key: "maturin-pyo3-config-${{ steps.normalized-key.outputs.key }}-1"
     # Cargo's rerun-if-changed check compares the config file's mtime
     # against the .fingerprint timestamps from rust-cache. The two caches
     # can be saved on different runs, so pin the config to a fixed old

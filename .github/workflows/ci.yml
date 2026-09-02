@@ -68,6 +68,11 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2"}}
           - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.4"}}
     timeout-minutes: 15
+    env:
+      # bindgen-cli is only needed by the BoringSSL and AWS-LC jobs. The
+      # version is part of its cache key, so bump it here to pick up a new
+      # release.
+      BINDGEN_CLI_VERSION: "0.72.1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         timeout-minutes: 3
@@ -113,12 +118,21 @@ jobs:
           # different Python versions of PyPy that share the same PyPy
           # version number.
           key: "${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ steps.openssl.outputs.hash }}-0"
+      # bindgen gets its own cache, keyed only on its version and the
+      # runner platform. The rust cache above is keyed on the OpenSSL
+      # build hash, so every BoringSSL/AWS-LC bump used to start from a
+      # cold cargo cache and spend ~50s compiling bindgen from source.
       # This must run after the cache action: rust-cache prunes binaries
-      # that already existed in ~/.cargo/bin before it ran, so installing
-      # bindgen first means it never gets cached. When the cache is warm,
-      # cargo sees the binary is already installed and skips the build.
-      - run: rustup run stable cargo install bindgen-cli
+      # that already existed in ~/.cargo/bin before it ran.
+      - name: Cache bindgen-cli
+        id: bindgen-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cargo/bin/bindgen
+          key: bindgen-cli-${{ env.BINDGEN_CLI_VERSION }}-${{ runner.os }}-${{ runner.arch }}
         if: matrix.PYTHON.OPENSSL.TYPE == 'boringssl' || matrix.PYTHON.OPENSSL.TYPE == 'aws-lc'
+      - run: rustup run stable cargo install bindgen-cli --version "${BINDGEN_CLI_VERSION}"
+        if: (matrix.PYTHON.OPENSSL.TYPE == 'boringssl' || matrix.PYTHON.OPENSSL.TYPE == 'aws-lc') && steps.bindgen-cache.outputs.cache-hit != 'true'
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
       - name: Create nox environment
@@ -283,17 +297,32 @@ jobs:
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
         timeout-minutes: 3
+      # This runs before the cache step because the artifact id is part
+      # of the cache key, see below.
+      - name: Download OpenSSL
+        id: openssl
+        uses: ./.github/actions/fetch-openssl
+        with:
+          workflow: build-macos-openssl.yml
+          name: openssl-macos-arm64
+          path: "../openssl-macos-arm64/"
       # Keyed on the resolved interpreter version (like the linux and
       # windows jobs), not just the matrix name: the alpha that a -dev
       # entry resolves to moves over time, and a cached maturin/pyo3
       # config built by an older alpha gets rewritten by maturin on every
       # run, which re-dirties pyo3-ffi and recompiles it, pyo3, and every
       # crate above them despite a warm cache.
+      #
+      # Also keyed on the OpenSSL artifact: openssl-sys registers
+      # rerun-if-changed on the include directory, whose mtimes are pinned
+      # to the artifact's creation time. A cache saved before the artifact
+      # was rebuilt would otherwise see "newer" headers on every run and
+      # recompile openssl-sys, openssl, and everything above them.
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}
+          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ steps.openssl.outputs.artifact-id }}
       - run: rustup component add llvm-tools-preview
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
@@ -302,12 +331,6 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/fetch-vectors
 
-      - name: Download OpenSSL
-        uses: ./.github/actions/fetch-openssl
-        with:
-          workflow: build-macos-openssl.yml
-          name: openssl-macos-arm64
-          path: "../openssl-macos-arm64/"
       - name: Build nox environment
         run: |
           OPENSSL_DIR=$(readlink -f ../openssl-macos-arm64/) \

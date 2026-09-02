@@ -247,6 +247,13 @@ def rust(session: nox.Session) -> None:
         {
             "RUSTFLAGS": f"-Cinstrument-coverage  {rustflags}",
             "LLVM_PROFILE_FILE": str(prof_location / "cov-%p.profraw"),
+            # When pyo3-build-config locates the interpreter through
+            # VIRTUAL_ENV it registers cargo:rerun-if-changed on the venv's
+            # pyvenv.cfg. CI recreates this venv on every run, so the fresh
+            # mtime made cargo rerun pyo3-ffi's build script and recompile
+            # pyo3-ffi and pyo3 despite a warm cache. Naming the interpreter
+            # explicitly skips that lookup; this path is stable across runs.
+            "PYO3_PYTHON": str(pathlib.Path(session.bin) / f"python{BIN_EXT}"),
         }
     )
 

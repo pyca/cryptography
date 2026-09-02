@@ -34,14 +34,10 @@ runs:
     - run: rustup component add llvm-tools-preview
       shell: bash
       if: ${{ inputs.noxsession != 'tests-nocoverage' }}
-    - name: Cache rust and pip
-      uses: ./.github/actions/cache
-      with:
-        key: ${{ inputs.noxsession }}-${{ inputs.arch }}-${{ steps.setup-python.outputs.python-version }}
-    - run: python -m pip install -c ci-constraints-requirements.txt "nox[uv]" "tomli; python_version < '3.11'"
-      shell: bash
-
+    # This runs before the cache step because the artifact id is part of
+    # the cache key, see the macos job in ci.yml for why.
     - name: Download OpenSSL
+      id: openssl
       uses: ./.github/actions/fetch-openssl
       with:
         workflow: build-windows-openssl.yml
@@ -52,6 +48,12 @@ runs:
           echo "OPENSSL_DIR=C:/openssl-${OPENSSL_NAME}" >> $GITHUB_ENV
       env:
         OPENSSL_NAME: ${{ inputs.openssl-name }}
+      shell: bash
+    - name: Cache rust and pip
+      uses: ./.github/actions/cache
+      with:
+        key: ${{ inputs.noxsession }}-${{ inputs.arch }}-${{ steps.setup-python.outputs.python-version }}-${{ steps.openssl.outputs.artifact-id }}
+    - run: python -m pip install -c ci-constraints-requirements.txt "nox[uv]" "tomli; python_version < '3.11'"
       shell: bash
 
     - name: Clone test vectors
