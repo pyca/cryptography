@@ -48,19 +48,19 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.4"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.1"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.3.2"}}
-          # Latest commit on the BoringSSL main branch, as of Sep 01, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "e9b9cf00420f894cccb629af0ad9c9d410583fab"}}
+          # Latest commit on the BoringSSL main branch, as of Sep 02, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "36d3eb4b1ff8a8f33bf4f4999497cb0737c67b5a"}}
           # Latest tag of AWS-LC main branch, as of Sep 01, 2026.
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.7.0"}}
-          # Latest commit on the OpenSSL master branch, as of Sep 01, 2026.
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "862229aa7928a7ddd8404e38f0131a865c28c151"}}
+          # Latest commit on the OpenSSL master branch, as of Sep 02, 2026.
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "26d762a108e532bb0ca8d510e5d56ac9718dd02d"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # - 1.85: 2024 edition
           # - 1.95: cfg_select
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0"}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.7.0"}}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "e9b9cf00420f894cccb629af0ad9c9d410583fab"}}
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "36d3eb4b1ff8a8f33bf4f4999497cb0737c67b5a"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.14", NOXSESSION: "tests-rust-debug"}
@@ -351,30 +351,22 @@ jobs:
           - {VERSION: "3.15-dev", NOXSESSION: "tests"}
           - {VERSION: "3.15t-dev", NOXSESSION: "tests"}
         include:
-          # Windows on ARM is in a stability validation period; the work
-          # step uses `continue-on-error` only for this entry so transient
-          # failures don't block PR validation.
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "3.14", NOXSESSION: "tests-nocoverage"}
+          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
+            PYTHON: {VERSION: "3.15-dev", NOXSESSION: "tests-nocoverage"}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - id: tests
-        continue-on-error: ${{ matrix.WINDOWS.ARCH == 'arm64' }}
-        uses: ./.github/actions/windows-tests
+      - uses: ./.github/actions/windows-tests
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           noxsession: ${{ matrix.PYTHON.NOXSESSION }}
           arch: ${{ matrix.WINDOWS.ARCH }}
           openssl-name: ${{ matrix.WINDOWS.WINDOWS }}
-      - name: Report soft failure
-        if: always() && matrix.WINDOWS.ARCH == 'arm64' && steps.tests.outcome != 'success'
-        shell: bash
-        run: |
-          echo "::warning title=windows-arm64 soft failure::A step failed but the job is reported as success while Windows on ARM is in stability validation."
 
       - uses: ./.github/actions/upload-coverage
 
@@ -401,8 +393,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Sep 01, 2026.
-            REF: 792a468bf9a67fec0b4d2da6d64cd730be580d3d
+            # Latest commit on the twisted trunk branch, as of Sep 02, 2026.
+            REF: 1d06e930177a382d57b8bc034a032f683ca9eed5
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -411,8 +403,8 @@ jobs:
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Aug 26, 2026.
-            REF: 2b817be14620d65f5215460e0022b1a7eb6eefd1
+            # Latest commit on the certbot main branch, as of Sep 02, 2026.
+            REF: 56ee04928d677d82c6a375a7c7b48e8ce13bb6bc
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -426,8 +418,8 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Aug 31, 2026.
-            REF: 5f60db0959627e46d3be3f689aa58567a1deb1ac
+            # Latest commit on the scapy master branch, as of Sep 02, 2026.
+            REF: b3bbcc8a96f53388239a13bcc71a85f0015e3004
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
