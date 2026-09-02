@@ -83,6 +83,8 @@ jobs:
         timeout-minutes: 3
       - id: python-version
         run: echo "version=$(python -c 'import platform; print(platform.python_version())')" >> $GITHUB_OUTPUT
+      # The rust session's test binaries link libpython.
+      - run: echo "LD_LIBRARY_PATH=$(python -c 'import sysconfig; print(sysconfig.get_config_var("LIBDIR"))')" >> $GITHUB_ENV
       - name: Setup rust
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
         with:
