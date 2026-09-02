@@ -17,8 +17,7 @@ if [[ "${TYPE}" == "openssl" ]]; then
   # linker doesn't load the system one.
   sed -i "s/^SHLIB_VERSION=.*/SHLIB_VERSION=100/" VERSION.dat
 
-  # CONFIG_FLAGS is a global coming from a previous step. no-tests skips
-  # building the test programs, which are never run here.
+  # CONFIG_FLAGS is a global coming from a previous step
   ./config ${CONFIG_FLAGS} no-tests -fPIC --prefix="${OSSL_PATH}"
 
   make depend
