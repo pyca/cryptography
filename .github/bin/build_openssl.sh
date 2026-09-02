@@ -17,8 +17,9 @@ if [[ "${TYPE}" == "openssl" ]]; then
   # linker doesn't load the system one.
   sed -i "s/^SHLIB_VERSION=.*/SHLIB_VERSION=100/" VERSION.dat
 
-  # CONFIG_FLAGS is a global coming from a previous step
-  ./config ${CONFIG_FLAGS} -fPIC --prefix="${OSSL_PATH}"
+  # CONFIG_FLAGS is a global coming from a previous step. no-tests skips
+  # building the test programs, which are never run here.
+  ./config ${CONFIG_FLAGS} no-tests -fPIC --prefix="${OSSL_PATH}"
 
   make depend
   make -j"$(nproc)"
@@ -44,7 +45,7 @@ elif [[ "${TYPE}" == "libressl" ]]; then
   curl -LO "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${VERSION}.tar.gz"
   tar zxf "libressl-${VERSION}.tar.gz"
   pushd "libressl-${VERSION}"
-  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DLIBRESSL_TESTS=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   ninja -C build install
   # delete binaries, libtls, and docs we don't need. can't skip install/compile sadly
   rm -rf "${OSSL_PATH}/bin"
@@ -55,7 +56,9 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   git clone https://boringssl.googlesource.com/boringssl
   pushd boringssl
   git checkout "${VERSION}"
-  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  # install depends on all, which includes the (large) test suite unless
+  # BUILD_TESTING is off.
+  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   ninja -C build install
   # delete binaries we don't need
   rm -rf "${OSSL_PATH}/bin"
@@ -65,7 +68,9 @@ elif [[ "${TYPE}" == "aws-lc" ]]; then
   git clone https://github.com/aws/aws-lc.git
   pushd aws-lc
   git checkout "${VERSION}"
-  cmake -GNinja -B build -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  # install depends on all, which includes the (large) test suite unless
+  # BUILD_TESTING is off.
+  cmake -GNinja -B build -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   ninja -C build install
   # delete binaries we don't need
   rm -rf "${OSSL_PATH:?}/bin"
