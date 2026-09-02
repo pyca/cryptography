@@ -60,8 +60,10 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   pushd boringssl
   git checkout "${VERSION}"
   # install depends on all, which includes the (large) test suite unless
-  # BUILD_TESTING is off.
-  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  # BUILD_TESTING is off. Without a build type CMake passes no
+  # optimization flags at all; RelWithAsserts is Release with asserts
+  # kept, which is what BoringSSL's own CI uses.
+  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=RelWithAsserts -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   ninja -C build install
   # delete binaries we don't need
   rm -rf "${OSSL_PATH}/bin"
@@ -72,8 +74,9 @@ elif [[ "${TYPE}" == "aws-lc" ]]; then
   pushd aws-lc
   git checkout "${VERSION}"
   # install depends on all, which includes the (large) test suite and the
-  # bssl tool unless they're turned off.
-  cmake -GNinja -B build -DBUILD_TESTING=OFF -DBUILD_TOOL=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  # bssl tool unless they're turned off. See the BoringSSL build above
+  # for the build type.
+  cmake -GNinja -B build -DBUILD_TESTING=OFF -DBUILD_TOOL=OFF -DCMAKE_BUILD_TYPE=RelWithAsserts -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   ninja -C build install
   # delete binaries we don't need
   rm -rf "${OSSL_PATH:?}/bin"
