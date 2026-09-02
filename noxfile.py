@@ -82,14 +82,20 @@ def tests(session: nox.Session) -> None:
 
     install_spec = f".[{','.join(extras)}]"
     install(session, "-e", "./vectors")
+    # Build with this session's interpreter, not an isolated build env: its
+    # random temp path ends up in PYO3_PYTHON for non-abi3 builds, and
+    # pyo3-build-config reruns when that changes, defeating the cargo cache.
+    pyproject_data = load_pyproject_toml()
+    install(session, *pyproject_data["build-system"]["requires"])
     if session.name == "tests-rust-debug":
         install(
             session,
+            "--no-build-isolation",
             "--config-settings-package=cryptography:build-args=--profile=dev",
             install_spec,
         )
     else:
-        install(session, install_spec)
+        install(session, "--no-build-isolation", install_spec)
 
     install(
         session,
@@ -247,6 +253,10 @@ def rust(session: nox.Session) -> None:
         {
             "RUSTFLAGS": f"-Cinstrument-coverage  {rustflags}",
             "LLVM_PROFILE_FILE": str(prof_location / "cov-%p.profraw"),
+            # Without this pyo3-build-config finds the interpreter through
+            # VIRTUAL_ENV and reruns whenever the venv's pyvenv.cfg is
+            # newer, i.e. on every CI run, defeating the cargo cache.
+            "PYO3_PYTHON": str(pathlib.Path(session.bin) / f"python{BIN_EXT}"),
         }
     )
 
