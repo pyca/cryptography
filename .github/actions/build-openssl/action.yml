@@ -17,6 +17,9 @@ outputs:
   hash:
     description: "Hash of the build inputs, for use in other cache keys"
     value: ${{ steps.config.outputs.hash }}
+  cache-key:
+    description: "The key the build is cached under. Cache keys for things compiled against this build should include it, see the linux job in ci.yml"
+    value: ${{ steps.config.outputs.cache-key }}
 
 runs:
   using: "composite"
