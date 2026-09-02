@@ -113,11 +113,9 @@ jobs:
           # different Python versions of PyPy that share the same PyPy
           # version number.
           #
-          # The OpenSSL cache key (not just the config hash) is included
-          # because openssl-sys registers rerun-if-changed on the include
-          # directory: a cargo cache saved against an older build of the
-          # same configuration sees "newer" headers on every run and
-          # recompiles openssl-sys, openssl, and everything above them.
+          # openssl-sys reruns its build script when the include directory
+          # is newer than the cached fingerprint, so the key names the
+          # specific OpenSSL build, not just its configuration.
           key: "${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ steps.openssl.outputs.cache-key }}-0"
       # This must run after the cache action: rust-cache prunes binaries
       # that already existed in ~/.cargo/bin before it ran, so installing
@@ -289,8 +287,7 @@ jobs:
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
         timeout-minutes: 3
-      # This runs before the cache step because the artifact id is part
-      # of the cache key, see below.
+      # Before the cache step: the artifact id is part of its key.
       - name: Download OpenSSL
         id: openssl
         uses: ./.github/actions/fetch-openssl
@@ -305,11 +302,9 @@ jobs:
       # run, which re-dirties pyo3-ffi and recompiles it, pyo3, and every
       # crate above them despite a warm cache.
       #
-      # Also keyed on the OpenSSL artifact: openssl-sys registers
-      # rerun-if-changed on the include directory, whose mtimes are pinned
-      # to the artifact's creation time. A cache saved before the artifact
-      # was rebuilt would otherwise see "newer" headers on every run and
-      # recompile openssl-sys, openssl, and everything above them.
+      # Also keyed on the OpenSSL artifact: its header mtimes are its
+      # creation time, and a cargo cache older than the artifact would
+      # otherwise recompile openssl-sys and everything above it every run.
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2

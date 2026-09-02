@@ -20,7 +20,7 @@ inputs:
 
 outputs:
   artifact-id:
-    description: "The id of the downloaded artifact, for use in cache keys"
+    description: "The id of the downloaded artifact"
     value: ${{ fromJSON(steps.download.outputs.artifacts)[0].id }}
 
 runs:

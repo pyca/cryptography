@@ -34,8 +34,7 @@ runs:
     - run: rustup component add llvm-tools-preview
       shell: bash
       if: ${{ inputs.noxsession != 'tests-nocoverage' }}
-    # This runs before the cache step because the artifact id is part of
-    # the cache key, see the macos job in ci.yml for why.
+    # Before the cache step: the artifact id is part of its key.
     - name: Download OpenSSL
       id: openssl
       uses: ./.github/actions/fetch-openssl
