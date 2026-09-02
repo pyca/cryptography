@@ -15,6 +15,10 @@ concurrency:
 
 env:
   CARGO_INCREMENTAL: 0
+  # TEMPORARY, for the CI performance experiment: log why cargo considers
+  # a crate dirty, so warm-cache runs show any remaining unexpected
+  # recompiles. Remove before merging.
+  CARGO_LOG: cargo::core::compiler::fingerprint=info
   # Enable uv's debug output everywhere, minus its per-file cache/index
   # log lines. All directives must stay scoped to uv targets (no bare
   # level like `debug`) so other Rust binaries that read RUST_LOG are
