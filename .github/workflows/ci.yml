@@ -279,8 +279,6 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
-      # uv-managed Python rather than setup-python: the python.org pkg
-      # installer setup-python runs takes 30-50s per job.
       - name: Setup python
         uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
