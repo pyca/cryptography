@@ -82,14 +82,24 @@ def tests(session: nox.Session) -> None:
 
     install_spec = f".[{','.join(extras)}]"
     install(session, "-e", "./vectors")
+    # Build cryptography with this session's interpreter rather than in an
+    # isolated build environment. The build environment lives in a
+    # temporary directory with a fresh random name, and for non-abi3
+    # builds (free-threaded interpreters) maturin passes that interpreter
+    # to pyo3-build-config as PYO3_PYTHON, which registers
+    # rerun-if-env-changed on it: every CI run recompiled pyo3-ffi and
+    # pyo3 despite a warm cache. The session venv's path is stable.
+    pyproject_data = load_pyproject_toml()
+    install(session, *pyproject_data["build-system"]["requires"])
     if session.name == "tests-rust-debug":
         install(
             session,
+            "--no-build-isolation",
             "--config-settings-package=cryptography:build-args=--profile=dev",
             install_spec,
         )
     else:
-        install(session, install_spec)
+        install(session, "--no-build-isolation", install_spec)
 
     install(
         session,

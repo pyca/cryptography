@@ -19,7 +19,7 @@ runs:
         KEY: "${{ inputs.key }}"
     - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6  # v2.9.2
       with:
-        key: ${{ steps.normalized-key.outputs.key }}-6
+        key: ${{ steps.normalized-key.outputs.key }}-7
     # maturin writes the pyo3 config file to target/maturin/, and pyo3-ffi's
     # build script registers cargo:rerun-if-changed on it. rust-cache's
     # cleanup deletes target/maturin/ before saving, so the file was
