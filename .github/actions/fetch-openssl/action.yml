@@ -18,6 +18,11 @@ inputs:
     description: "The directory to extract the artifact to"
     required: true
 
+outputs:
+  artifact-id:
+    description: "The id of the downloaded artifact"
+    value: ${{ fromJSON(steps.download.outputs.artifacts)[0].id }}
+
 runs:
   using: "composite"
 
