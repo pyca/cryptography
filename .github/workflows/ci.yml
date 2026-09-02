@@ -15,10 +15,6 @@ concurrency:
 
 env:
   CARGO_INCREMENTAL: 0
-  # TEMPORARY, for the CI performance experiment: log why cargo considers
-  # a crate dirty, so warm-cache runs show any remaining unexpected
-  # recompiles. Remove before merging.
-  CARGO_LOG: cargo::core::compiler::fingerprint=info
   # Enable uv's debug output everywhere, minus its per-file cache/index
   # log lines. All directives must stay scoped to uv targets (no bare
   # level like `debug`) so other Rust binaries that read RUST_LOG are
@@ -146,6 +142,10 @@ jobs:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           # Needed until https://github.com/PyO3/pyo3/issues/5093
           PYO3_USE_ABI3_FORWARD_COMPATIBILITY: 1
+          # TEMPORARY, for the CI performance experiment: log why cargo
+          # considers a crate dirty. Only on the build step: the rust
+          # session parses cargo's JSON output and this would break it.
+          CARGO_LOG: cargo::core::compiler::fingerprint=info
       - name: Tests
         run: |
             nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo ${{ matrix.PYTHON.NOXARGS }}
@@ -344,6 +344,8 @@ jobs:
         env:
           NOXSESSION: ${{ matrix.PYTHON.NOXSESSION }}
           MACOSX_DEPLOYMENT_TARGET: "11.0"
+          # TEMPORARY, see the linux job.
+          CARGO_LOG: cargo::core::compiler::fingerprint=info
       - name: Tests
         run: nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo
         env:

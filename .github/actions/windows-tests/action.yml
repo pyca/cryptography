@@ -63,6 +63,8 @@ runs:
       run: nox -v --install-only
       env:
         NOXSESSION: ${{ inputs.noxsession }}
+        # TEMPORARY, see the linux job in ci.yml.
+        CARGO_LOG: cargo::core::compiler::fingerprint=info
       shell: bash
     - name: Tests
       run: nox --no-install --  --color=yes --wycheproof-root=wycheproof --x509-limbo-root=x509-limbo
