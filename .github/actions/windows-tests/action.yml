@@ -21,11 +21,12 @@ runs:
   using: "composite"
 
   steps:
+    # uv picks x86_64 interpreters on Windows arm64 unless asked for aarch64.
     - name: Setup python
       uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
       with:
         version-file: ci-constraints-requirements.txt
-        python-version: ${{ inputs.python-version }}
+        python-version: ${{ inputs.arch == 'arm64' && format('cpython-{0}-windows-aarch64-none', inputs.python-version) || inputs.python-version }}
         activate-environment: true
         cache-dependency-glob: ci-constraints-requirements.txt
     - id: python-version
