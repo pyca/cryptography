@@ -271,22 +271,26 @@ jobs:
           - {VERSION: "3.9", NOXSESSION: "tests"}
           - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
-          - {VERSION: "3.15-dev", NOXSESSION: "tests"}
-          - {VERSION: "3.15t-dev", NOXSESSION: "tests"}
+          - {VERSION: "3.15", NOXSESSION: "tests"}
+          - {VERSION: "3.15t", NOXSESSION: "tests"}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         timeout-minutes: 3
         with:
           persist-credentials: false
+      # uv-managed Python rather than setup-python: the python.org pkg
+      # installer setup-python runs takes 30-50s per job.
       - name: Setup python
-        id: setup-python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
+          version-file: ci-constraints-requirements.txt
           python-version: ${{ matrix.PYTHON.VERSION }}
-          cache: pip
-          cache-dependency-path: ci-constraints-requirements.txt
+          activate-environment: true
+          cache-dependency-glob: ci-constraints-requirements.txt
         timeout-minutes: 3
+      - id: python-version
+        run: echo "version=$(python -c 'import platform; print(platform.python_version())')" >> $GITHUB_OUTPUT
       # Before the cache step: the artifact id is part of its key.
       - name: Download OpenSSL
         id: openssl
@@ -296,11 +300,11 @@ jobs:
           name: openssl-macos-arm64
           path: "../openssl-macos-arm64/"
       # Keyed on the resolved interpreter version (like the linux and
-      # windows jobs), not just the matrix name: the alpha that a -dev
-      # entry resolves to moves over time, and a cached maturin/pyo3
-      # config built by an older alpha gets rewritten by maturin on every
-      # run, which re-dirties pyo3-ffi and recompiles it, pyo3, and every
-      # crate above them despite a warm cache.
+      # windows jobs), not just the matrix name: the prerelease that an
+      # unreleased minor resolves to moves over time, and a cached
+      # maturin/pyo3 config built by an older one gets rewritten by
+      # maturin on every run, which re-dirties pyo3-ffi and recompiles it,
+      # pyo3, and every crate above them despite a warm cache.
       #
       # Also keyed on the OpenSSL artifact: its header mtimes are its
       # creation time, and a cargo cache older than the artifact would
@@ -309,10 +313,10 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ steps.openssl.outputs.artifact-id }}
+          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}-${{ steps.python-version.outputs.version }}-${{ steps.openssl.outputs.artifact-id }}
       - run: rustup component add llvm-tools-preview
 
-      - run: python -m pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
+      - run: uv pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
 
       - name: Clone test vectors
         timeout-minutes: 2
