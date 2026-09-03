@@ -4,6 +4,11 @@
 
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 
+// Not called directly, but `build.rs` needs `DEP_OPENSSL_INCLUDE`, which
+// Cargo only exposes to immediate dependents of `openssl-sys`. This `use`
+// keeps `cargo::unused_dependencies` from flagging it.
+use openssl_sys as _;
+
 #[cfg(python_implementation = "PyPy")]
 extern "C" {
     fn Cryptography_make_openssl_module() -> std::os::raw::c_int;
