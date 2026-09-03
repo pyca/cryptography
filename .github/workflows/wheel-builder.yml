@@ -324,7 +324,7 @@ jobs:
           - {VERSION: "3.14", "ABI_VERSION": "abi3-py39", FREETHREADED: false}
           - {VERSION: "3.14", "ABI_VERSION": "abi3-py311", FREETHREADED: false}
           - {VERSION: "3.14t", FREETHREADED: true}
-          - {VERSION: "3.15.0-rc.1", "ABI_VERSION": "abi3t-py315", FREETHREADED: true}
+          - {VERSION: "3.15.0-rc.2", "ABI_VERSION": "abi3t-py315", FREETHREADED: true}
           - {VERSION: "pypy-3.11", FREETHREADED: false}
         include:
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
