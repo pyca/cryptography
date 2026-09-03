@@ -255,7 +255,7 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
         if: contains(matrix.PYTHON.VERSION, 'pypy')
-      - uses: dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151 # v21
+      - uses: dawidd6/action-download-artifact@d63b86af1b34672e53c440b1b83979861906bad7 # v24
         with:
           repo: pyca/infra
           workflow: build-macos-openssl.yml
@@ -327,16 +327,12 @@ jobs:
           - {VERSION: "3.15.0-rc.1", "ABI_VERSION": "abi3t-py315", FREETHREADED: true}
           - {VERSION: "pypy-3.11", FREETHREADED: false}
         include:
-          # Windows on ARM is in a stability validation period; the work
-          # step uses `continue-on-error` only for these entries so transient
-          # failures don't block the release pipeline and no broken wheel
-          # is uploaded.
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "3.14", "ABI_VERSION": "abi3-py311", FREETHREADED: false}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "3.14t", FREETHREADED: true}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.15.0-rc.1", "ABI_VERSION": "abi3t-py315", FREETHREADED: true}
+            PYTHON: {VERSION: "3.15.0-rc.2", "ABI_VERSION": "abi3t-py315", FREETHREADED: true}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - name: Get build-requirements.txt from repository
@@ -352,9 +348,7 @@ jobs:
             .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
 
-      - id: build
-        continue-on-error: ${{ matrix.WINDOWS.ARCH == 'arm64' }}
-        uses: ./.github/actions/windows-wheel
+      - uses: ./.github/actions/windows-wheel
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           abi-version: ${{ matrix.PYTHON.ABI_VERSION }}
@@ -365,8 +359,3 @@ jobs:
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
           uv-requirements-path: ${{ env.UV_REQUIREMENTS_PATH }}
           wheel-artifact-name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
-      - name: Report soft failure
-        if: always() && matrix.WINDOWS.ARCH == 'arm64' && steps.build.outcome != 'success'
-        shell: bash
-        run: |
-          echo "::warning title=windows-arm64 soft failure::A step failed but the job is reported as success while Windows on ARM is in stability validation."

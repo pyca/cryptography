@@ -54,7 +54,12 @@ class Variant(typing.Generic[U, Tag]):
     tag: str
 
 
-decode_der = declarative_asn1.decode_der
+def decode_der(cls: type[U], data: bytes) -> U:
+    return declarative_asn1.decode_der(
+        _normalize_field_type(cls, str(cls)), data
+    )
+
+
 encode_der = declarative_asn1.encode_der
 
 

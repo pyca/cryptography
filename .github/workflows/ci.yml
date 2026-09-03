@@ -37,36 +37,36 @@ jobs:
           - {VERSION: "3.15-dev", NOXSESSION: "rust,tests"}
           - {VERSION: "3.15t-dev", NOXSESSION: "rust,tests"}
           - {VERSION: "pypy-3.11", NOXSESSION: "tests-nocoverage"}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "0"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.3"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.0.21"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.4.6"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.7"}}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1"}}
-          - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.3"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "0"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.4"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.0.22"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.4.7"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.8"}}
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2"}}
+          - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.4"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.1"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.3.2"}}
-          # Latest commit on the BoringSSL main branch, as of Aug 22, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "a0689af29e8e460f1e5380e0fb74cef1b342e810"}}
-          # Latest tag of AWS-LC main branch, as of Aug 06, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.5.0"}}
-          # Latest commit on the OpenSSL master branch, as of Aug 22, 2026.
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "b64f68a94e61fa2363c598c75444482b48056697"}}
+          # Latest commit on the BoringSSL main branch, as of Sep 02, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "36d3eb4b1ff8a8f33bf4f4999497cb0737c67b5a"}}
+          # Latest tag of AWS-LC main branch, as of Sep 01, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.7.0"}}
+          # Latest commit on the OpenSSL master branch, as of Sep 02, 2026.
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "26d762a108e532bb0ca8d510e5d56ac9718dd02d"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # - 1.85: 2024 edition
           # - 1.95: cfg_select
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0"}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.5.0"}}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "a0689af29e8e460f1e5380e0fb74cef1b342e810"}}
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.7.0"}}
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "36d3eb4b1ff8a8f33bf4f4999497cb0737c67b5a"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.14", NOXSESSION: "tests-rust-debug"}
           # Not actually an MSRV, just for coverage on this
-          - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.3"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2"}}
+          - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.4"}}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -112,7 +112,11 @@ jobs:
           # setup-python step because the latter doesn't distinguish
           # different Python versions of PyPy that share the same PyPy
           # version number.
-          key: "${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ steps.openssl.outputs.hash }}-0"
+          #
+          # openssl-sys reruns its build script when the include directory
+          # is newer than the cached fingerprint, so the key names the
+          # specific OpenSSL build, not just its configuration.
+          key: "${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ steps.openssl.outputs.cache-key }}-0"
       # This must run after the cache action: rust-cache prunes binaries
       # that already existed in ~/.cargo/bin before it ran, so installing
       # bindgen first means it never gets cached. When the cache is warm,
@@ -283,17 +287,29 @@ jobs:
           cache: pip
           cache-dependency-path: ci-constraints-requirements.txt
         timeout-minutes: 3
+      # Before the cache step: the artifact id is part of its key.
+      - name: Download OpenSSL
+        id: openssl
+        uses: ./.github/actions/fetch-openssl
+        with:
+          workflow: build-macos-openssl.yml
+          name: openssl-macos-arm64
+          path: "../openssl-macos-arm64/"
       # Keyed on the resolved interpreter version (like the linux and
       # windows jobs), not just the matrix name: the alpha that a -dev
       # entry resolves to moves over time, and a cached maturin/pyo3
       # config built by an older alpha gets rewritten by maturin on every
       # run, which re-dirties pyo3-ffi and recompiles it, pyo3, and every
       # crate above them despite a warm cache.
+      #
+      # Also keyed on the OpenSSL artifact: its header mtimes are its
+      # creation time, and a cargo cache older than the artifact would
+      # otherwise recompile openssl-sys and everything above it every run.
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}
+          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}-${{ steps.setup-python.outputs.python-version }}-${{ steps.openssl.outputs.artifact-id }}
       - run: rustup component add llvm-tools-preview
 
       - run: python -m pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
@@ -302,12 +318,6 @@ jobs:
         timeout-minutes: 2
         uses: ./.github/actions/fetch-vectors
 
-      - name: Download OpenSSL
-        uses: ./.github/actions/fetch-openssl
-        with:
-          workflow: build-macos-openssl.yml
-          name: openssl-macos-arm64
-          path: "../openssl-macos-arm64/"
       - name: Build nox environment
         run: |
           OPENSSL_DIR=$(readlink -f ../openssl-macos-arm64/) \
@@ -339,30 +349,22 @@ jobs:
           - {VERSION: "3.15-dev", NOXSESSION: "tests"}
           - {VERSION: "3.15t-dev", NOXSESSION: "tests"}
         include:
-          # Windows on ARM is in a stability validation period; the work
-          # step uses `continue-on-error` only for this entry so transient
-          # failures don't block PR validation.
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "3.14", NOXSESSION: "tests-nocoverage"}
+          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
+            PYTHON: {VERSION: "3.15-dev", NOXSESSION: "tests-nocoverage"}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         timeout-minutes: 3
         with:
           persist-credentials: false
-      - id: tests
-        continue-on-error: ${{ matrix.WINDOWS.ARCH == 'arm64' }}
-        uses: ./.github/actions/windows-tests
+      - uses: ./.github/actions/windows-tests
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           noxsession: ${{ matrix.PYTHON.NOXSESSION }}
           arch: ${{ matrix.WINDOWS.ARCH }}
           openssl-name: ${{ matrix.WINDOWS.WINDOWS }}
-      - name: Report soft failure
-        if: always() && matrix.WINDOWS.ARCH == 'arm64' && steps.tests.outcome != 'success'
-        shell: bash
-        run: |
-          echo "::warning title=windows-arm64 soft failure::A step failed but the job is reported as success while Windows on ARM is in stability validation."
 
       - uses: ./.github/actions/upload-coverage
 
@@ -374,13 +376,13 @@ jobs:
         include:
           - DOWNSTREAM: paramiko
             REPO: paramiko/paramiko
-            # Latest commit on the paramiko main branch, as of May 10, 2026.
-            REF: d60d5c17d78f344b51ed651e796d2931133a9b22
+            # Latest commit on the paramiko main branch, as of Aug 30, 2026.
+            REF: 142f593e40ad767c5e3556cbace66dc84589620c
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Aug 22, 2026.
-            REF: 06dd9cba948b694e8de1e79ce3a458a7775e8af5
+            # Latest commit on the pyopenssl main branch, as of Sep 01, 2026.
+            REF: f1e029800e8568e76180dbe1d8b79dc798ba2610
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -389,33 +391,33 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Aug 20, 2026.
-            REF: 945f5c083abed3bf4e6636fa781eacfe24ee0750
+            # Latest commit on the twisted trunk branch, as of Sep 02, 2026.
+            REF: 1d06e930177a382d57b8bc034a032f683ca9eed5
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
-            # Latest commit on the aws-encryption-sdk-python master branch, as of Jul 07, 2026.
-            REF: 2c0200b5a91c3f08eb72f9cd9f6f0ad19efe3cc5
+            # Latest commit on the aws-encryption-sdk-python master branch, as of Aug 29, 2026.
+            REF: 0697b5637a2c7559bc71981b84aca6ab8015e731
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Aug 19, 2026.
-            REF: abf9d1b2e143c51fe1a2209a3b8be33e6a24267f
+            # Latest commit on the certbot main branch, as of Sep 02, 2026.
+            REF: 56ee04928d677d82c6a375a7c7b48e8ce13bb6bc
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
-            # Latest commit on the certbot-josepy main branch, as of Aug 07, 2026.
-            REF: 5f45068267e215989208bf38d9eaea72bb396052
+            # Latest commit on the certbot-josepy main branch, as of Sep 01, 2026.
+            REF: a0d183548ba4ee720864a4b863cf698187c114a6
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Aug 22, 2026.
-            REF: 8fc25b3045934777b0796d8ec7958bbc257d7bb5
+            # Latest commit on the mitmproxy main branch, as of Aug 26, 2026.
+            REF: 2ac5b089d953585c66026a53f678270e094e48e5
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Aug 19, 2026.
-            REF: 1f870205baae8baf1718bc20700d0d9ffc0e4324
+            # Latest commit on the scapy master branch, as of Sep 02, 2026.
+            REF: b3bbcc8a96f53388239a13bcc71a85f0015e3004
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
@@ -485,7 +487,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Decide whether the needed jobs succeeded or failed
-        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # v1.2.2
+        uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
         with:
           jobs: ${{ toJSON(needs) }}
       - run: pip install -c ci-constraints-requirements.txt coverage[toml]
