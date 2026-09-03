@@ -9,7 +9,6 @@ license.workspace = true
 
 [dependencies]
 pyo3.workspace = true
-openssl-sys.workspace = true
 
 [build-dependencies]
 cc.workspace = true
