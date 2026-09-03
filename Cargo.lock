@@ -56,7 +56,6 @@ name = "cryptography-cffi"
 version = "0.51.0-dev1"
 dependencies = [
  "cc",
- "openssl-sys",
  "pyo3",
  "pyo3-build-config",
 ]
