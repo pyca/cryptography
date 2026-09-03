@@ -204,7 +204,7 @@ jobs:
             _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
           - VERSION: '3.15t'
             ABI_VERSION: 'abi3t-py315'
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.15.0/python-3.15.0rc1-macos11.pkg'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.15.0/python-3.15.0rc2-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/PythonT.framework/Versions/3.15/bin/python3.15t'
             DEPLOYMENT_TARGET: '11.0'
             ARCHFLAGS: '-arch arm64'
