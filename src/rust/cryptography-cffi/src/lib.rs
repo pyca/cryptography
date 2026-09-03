@@ -4,6 +4,14 @@
 
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 
+// This crate never calls into `openssl-sys` directly, but it must depend on
+// it: Cargo only exposes a `links` crate's build metadata (here
+// `DEP_OPENSSL_INCLUDE`, which `build.rs` uses to compile the CFFI-generated
+// C code against the right OpenSSL headers) to its immediate dependents. This
+// `use` marks the dependency as intentional so `cargo::unused_dependencies`
+// doesn't flag it.
+use openssl_sys as _;
+
 #[cfg(python_implementation = "PyPy")]
 extern "C" {
     fn Cryptography_make_openssl_module() -> std::os::raw::c_int;
