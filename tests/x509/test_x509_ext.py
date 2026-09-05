@@ -11,7 +11,7 @@ import typing
 
 import pytest
 
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.hazmat._oid import _OID_NAMES
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import hashes
@@ -1747,7 +1747,9 @@ class TestSubjectKeyIdentifierExtension:
         ext = cert.extensions.get_extension_for_oid(
             ExtensionOID.SUBJECT_KEY_IDENTIFIER
         )
-        ski = x509.SubjectKeyIdentifier.from_public_key(cert.public_key())
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = cert.public_key()
+        ski = x509.SubjectKeyIdentifier.from_public_key(public_key)
         assert ext.value == ski
 
     def test_invalid_bit_string_padding_from_public_key(self):

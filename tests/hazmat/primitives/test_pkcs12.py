@@ -6,11 +6,12 @@
 import contextlib
 import os
 import typing
+import warnings
 from datetime import datetime, timezone
 
 import pytest
 
-from cryptography import x509
+from cryptography import utils, x509
 from cryptography.hazmat.decrepit.ciphers.algorithms import RC2
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -39,6 +40,21 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
 
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_vectors_from_file
+
+# Accessing attributes of the dsa module emits the DSA deprecation warning;
+# these are evaluated at collection time, so suppress it there. Loading the
+# DSA key back out of the PKCS#12 blob also warns, hence the mark.
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", utils.DeprecatedIn51)
+    _DSA_KEY_TYPE_PARAM = pytest.param(
+        dsa.generate_private_key,
+        dsa.DSAPrivateKey,
+        [1024],
+        marks=pytest.mark.filterwarnings(
+            "ignore:DSA is deprecated"
+            ":cryptography.utils.CryptographyDeprecationWarning"
+        ),
+    )
 
 
 def _skip_curve_unsupported(backend, curve):
@@ -313,7 +329,7 @@ class TestPKCS12Creation:
                 [],
             ),
             (rsa.generate_private_key, rsa.RSAPrivateKey, [65537, 1024]),
-            (dsa.generate_private_key, dsa.DSAPrivateKey, [1024]),
+            _DSA_KEY_TYPE_PARAM,
         ]
         + [
             pytest.param(

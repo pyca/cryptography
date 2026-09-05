@@ -29,6 +29,14 @@ from ...utils import (
 from .fixtures_dsa import DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
 from .utils import skip_fips_traditional_openssl
 
+# Accessing any attribute of the dsa module and loading any DSA key emits the
+# DSA deprecation warning. Ignore it module-wide rather than wrapping every
+# call site.
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:DSA is deprecated"
+    ":cryptography.utils.CryptographyDeprecationWarning"
+)
+
 _ALGORITHMS_DICT: dict[str, hashes.HashAlgorithm] = {
     "SHA1": hashes.SHA1(),
     "SHA224": hashes.SHA224(),
@@ -55,6 +63,55 @@ def _skip_if_dsa_not_supported(
 def test_skip_if_dsa_not_supported(backend):
     with pytest.raises(pytest.skip.Exception):
         _skip_if_dsa_not_supported(backend, DummyHashAlgorithm(), 1, 1, 1)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.dsa_supported(),
+    skip_message="Does not support DSA.",
+)
+class TestDSADeprecation:
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "generate_parameters",
+            "generate_private_key",
+            "DSAParameterNumbers",
+            "DSAPublicNumbers",
+            "DSAPrivateNumbers",
+            "DSAParameters",
+            "DSAParametersWithNumbers",
+            "DSAPrivateKey",
+            "DSAPrivateKeyWithSerialization",
+            "DSAPublicKey",
+            "DSAPublicKeyWithSerialization",
+        ],
+    )
+    def test_module_attribute_deprecated(self, name):
+        with pytest.warns(utils.DeprecatedIn51):
+            getattr(dsa, name)
+
+    def test_load_private_key_deprecated(self):
+        key = DSA_KEY_2048.private_key()
+        data = key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        )
+        with pytest.warns(utils.DeprecatedIn51):
+            loaded = serialization.load_pem_private_key(data, None)
+            assert isinstance(loaded, dsa.DSAPrivateKey)
+        assert loaded.private_numbers() == key.private_numbers()
+
+    def test_load_public_key_deprecated(self):
+        key = DSA_KEY_2048.private_key().public_key()
+        data = key.public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        with pytest.warns(utils.DeprecatedIn51):
+            loaded = serialization.load_der_public_key(data)
+            assert isinstance(loaded, dsa.DSAPublicKey)
+        assert loaded == key
 
 
 @pytest.mark.supported(

@@ -5,6 +5,12 @@ DSA
 
 .. module:: cryptography.hazmat.primitives.asymmetric.dsa
 
+.. deprecated:: 51.0.0
+    DSA is deprecated and support will be removed in a future release. Users
+    should migrate to a more modern signature algorithm such as
+    :doc:`EdDSA using curve25519</hazmat/primitives/asymmetric/ed25519>` or
+    :doc:`ECDSA</hazmat/primitives/asymmetric/ec>`.
+
 .. note::
 
     DSA is a **legacy algorithm** and should generally be avoided in favor of
