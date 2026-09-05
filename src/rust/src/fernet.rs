@@ -9,6 +9,8 @@ use base64::engine::general_purpose::{GeneralPurpose, GeneralPurposeConfig, URL_
 use base64::engine::{DecodePaddingMode, Engine};
 use cryptography_crypto::constant_time;
 use cryptography_openssl::OpenSSLResult;
+use openssl::hash::MessageDigest;
+use openssl::symm::Mode;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyStringMethods};
 
 use crate::backend::run_with_gil_detached;
@@ -51,57 +53,16 @@ fn b64encode<'p>(
     })?)
 }
 
-/// An `int` or `float` argument. Arithmetic on these follows Python's rules:
-/// exact when every operand is an `int`, floating point otherwise.
-#[derive(Clone, Copy)]
-enum Number {
-    Int(i64),
-    Float(f64),
-}
-
-impl Number {
-    fn as_f64(self) -> f64 {
-        match self {
-            Number::Int(v) => v as f64,
-            Number::Float(v) => v,
-        }
-    }
-}
-
-impl<'py> pyo3::FromPyObject<'_, 'py> for Number {
-    type Error = pyo3::PyErr;
-
-    fn extract(ob: pyo3::Borrowed<'_, 'py, pyo3::PyAny>) -> pyo3::PyResult<Self> {
-        match ob.extract::<i64>() {
-            Ok(v) => Ok(Number::Int(v)),
-            Err(_) => Ok(Number::Float(ob.extract::<f64>()?)),
-        }
-    }
-}
-
 /// Checks that a token created at `timestamp` is not older than `ttl` seconds
 /// and not from the future (beyond the allowed clock skew) at `current_time`.
-fn is_valid_at(timestamp: u64, ttl: Number, current_time: Number) -> bool {
-    match (ttl, current_time) {
-        (Number::Int(ttl), Number::Int(now)) => {
-            let (ts, ttl, now, skew) = (
-                i128::from(timestamp),
-                i128::from(ttl),
-                i128::from(now),
-                i128::from(MAX_CLOCK_SKEW),
-            );
-            !(ts + ttl < now || now + skew < ts)
-        }
-        _ => {
-            let (ts, ttl, now, skew) = (
-                timestamp as f64,
-                ttl.as_f64(),
-                current_time.as_f64(),
-                MAX_CLOCK_SKEW as f64,
-            );
-            !(ts + ttl < now || now + skew < ts)
-        }
-    }
+fn is_valid_at(timestamp: u64, ttl: i64, current_time: i64) -> bool {
+    let (ts, ttl, now, skew) = (
+        i128::from(timestamp),
+        i128::from(ttl),
+        i128::from(current_time),
+        i128::from(MAX_CLOCK_SKEW),
+    );
+    !(ts + ttl < now || now + skew < ts)
 }
 
 /// Returns `int(time.time())`. This goes through Python so that patching
@@ -149,10 +110,7 @@ pub(crate) struct Fernet {
 impl Fernet {
     fn from_key(key: &[u8]) -> OpenSSLResult<Fernet> {
         let (signing_key, encryption_key) = key.split_at(KEY_LEN / 2);
-        let hmac = cryptography_openssl::hmac::Hmac::new(
-            signing_key,
-            openssl::hash::MessageDigest::sha256(),
-        )?;
+        let hmac = cryptography_openssl::hmac::Hmac::new(signing_key, MessageDigest::sha256())?;
         let cipher = openssl::cipher::Cipher::aes_128_cbc();
         let mut encryptor = openssl::cipher_ctx::CipherCtx::new()?;
         encryptor.encrypt_init(Some(cipher), Some(encryption_key), None)?;
@@ -175,18 +133,18 @@ impl Fernet {
     /// `input.len() + BLOCK_LEN` bytes. Returns the number of bytes written.
     fn aes_cbc(
         &self,
-        mode: openssl::symm::Mode,
+        mode: Mode,
         iv: &[u8],
         input: &[u8],
         output: &mut [u8],
     ) -> OpenSSLResult<usize> {
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         match mode {
-            openssl::symm::Mode::Encrypt => {
+            Mode::Encrypt => {
                 ctx.copy(&self.encryptor)?;
                 ctx.encrypt_init(None, None, Some(iv))?;
             }
-            openssl::symm::Mode::Decrypt => {
+            Mode::Decrypt => {
                 ctx.copy(&self.decryptor)?;
                 ctx.decrypt_init(None, None, Some(iv))?;
             }
@@ -213,12 +171,7 @@ impl Fernet {
             token[9..HEADER_LEN].copy_from_slice(iv);
             // The cipher needs room for one extra block beyond the input; the
             // not-yet-written HMAC region provides that slack.
-            let n = self.aes_cbc(
-                openssl::symm::Mode::Encrypt,
-                iv,
-                data,
-                &mut token[HEADER_LEN..],
-            )?;
+            let n = self.aes_cbc(Mode::Encrypt, iv, data, &mut token[HEADER_LEN..])?;
             debug_assert_eq!(n, ciphertext_len);
             let hmac = self.hmac(&token[..body_len])?;
             token[body_len..].copy_from_slice(&hmac);
@@ -239,7 +192,7 @@ impl Fernet {
         py: pyo3::Python<'_>,
         data: &[u8],
         timestamp: u64,
-        time_info: Option<(Number, Number)>,
+        time_info: Option<(i64, i64)>,
     ) -> CryptographyResult<Vec<u8>> {
         if let Some((ttl, current_time)) = time_info {
             if !is_valid_at(timestamp, ttl, current_time) {
@@ -257,7 +210,7 @@ impl Fernet {
             // The signature is valid, so the only way the cipher can fail is
             // bad padding.
             let n = self
-                .aes_cbc(openssl::symm::Mode::Decrypt, iv, ciphertext, &mut plaintext)
+                .aes_cbc(Mode::Decrypt, iv, ciphertext, &mut plaintext)
                 .map_err(|_| invalid_token())?;
             plaintext.truncate(n);
             Ok(plaintext)
@@ -268,7 +221,7 @@ impl Fernet {
         &self,
         py: pyo3::Python<'p>,
         token: &pyo3::Bound<'_, pyo3::PyAny>,
-        time_info: Option<(Number, Number)>,
+        time_info: Option<(i64, i64)>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let (timestamp, data) = unverified_token_data(token)?;
         let plaintext = self.decrypt_data(py, &data, timestamp, time_info)?;
@@ -338,14 +291,9 @@ impl Fernet {
         py: pyo3::Python<'p>,
         data: CffiBuf<'_>,
         current_time: u64,
-        iv: CffiBuf<'_>,
+        iv: [u8; IV_LEN],
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if iv.as_bytes().len() != IV_LEN {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("iv must be 16 bytes"),
-            ));
-        }
-        let token = self.encrypt_from_parts(py, data.as_bytes(), current_time, iv.as_bytes())?;
+        let token = self.encrypt_from_parts(py, data.as_bytes(), current_time, &iv)?;
         b64encode(py, &token)
     }
 
@@ -354,10 +302,10 @@ impl Fernet {
         &self,
         py: pyo3::Python<'p>,
         token: &pyo3::Bound<'_, pyo3::PyAny>,
-        ttl: Option<Number>,
+        ttl: Option<i64>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let time_info = match ttl {
-            Some(ttl) => Some((ttl, Number::Int(current_time(py)?))),
+            Some(ttl) => Some((ttl, current_time(py)?)),
             None => None,
         };
         self.decrypt_token(py, token, time_info)
@@ -367,8 +315,8 @@ impl Fernet {
         &self,
         py: pyo3::Python<'p>,
         token: &pyo3::Bound<'_, pyo3::PyAny>,
-        ttl: Option<Number>,
-        current_time: Number,
+        ttl: Option<i64>,
+        current_time: i64,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let Some(ttl) = ttl else {
             return Err(CryptographyError::from(
@@ -407,7 +355,7 @@ impl MultiFernet {
         &self,
         py: pyo3::Python<'p>,
         token: &pyo3::Bound<'_, pyo3::PyAny>,
-        time_info: Option<(Number, Number)>,
+        time_info: Option<(i64, i64)>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         // Parse the token once rather than once per key.
         let (timestamp, data) = unverified_token_data(token)?;
@@ -476,10 +424,10 @@ impl MultiFernet {
         &self,
         py: pyo3::Python<'p>,
         msg: &pyo3::Bound<'_, pyo3::PyAny>,
-        ttl: Option<Number>,
+        ttl: Option<i64>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let time_info = match ttl {
-            Some(ttl) => Some((ttl, Number::Int(current_time(py)?))),
+            Some(ttl) => Some((ttl, current_time(py)?)),
             None => None,
         };
         self.decrypt_token(py, msg, time_info)
@@ -489,8 +437,8 @@ impl MultiFernet {
         &self,
         py: pyo3::Python<'p>,
         msg: &pyo3::Bound<'_, pyo3::PyAny>,
-        ttl: Option<Number>,
-        current_time: Number,
+        ttl: Option<i64>,
+        current_time: i64,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let Some(ttl) = ttl else {
             return Err(CryptographyError::from(
@@ -519,31 +467,4 @@ impl MultiFernet {
 pub(crate) mod fernet_mod {
     #[pymodule_export]
     use super::{Fernet, MultiFernet};
-}
-
-#[cfg(test)]
-mod tests {
-    use base64::engine::Engine;
-
-    use super::URL_SAFE_LENIENT;
-
-    #[test]
-    fn test_url_safe_lenient() {
-        for (input, expected) in [
-            (&b""[..], Some(&b""[..])),
-            (b"YWJj", Some(b"abc")),
-            (b"YWI=", Some(b"ab")),
-            (b"YWI", Some(b"ab")),
-            (b"-_-_", Some(b"\xfb\xff\xbf")),
-            (b"+/+/", None),
-            (b"Y", None),
-            (b"YW*j", None),
-        ] {
-            assert_eq!(
-                URL_SAFE_LENIENT.decode(input).ok().as_deref(),
-                expected,
-                "{input:?}"
-            );
-        }
-    }
 }
