@@ -1615,6 +1615,26 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequest`.
 
+    .. method:: verify_directly_signed_by(public_key)
+
+        .. versionadded:: 51.0.0
+
+        :param public_key: One of
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.PublicKeyTypes`.
+
+        Validates that the request is signed by the private key belonging to 
+        provided public key. It is used to verify a CSR that was signed using 
+        a private key different from the one corresponding to the public key 
+        contained in the CSR. This is particularly relevant when the CSR contains 
+        a public key generated using a non-signature algorithm.
+
+        :return: None
+        :raise ValueError: If the signature algorithms of the request and 
+            provided public key do not match. 
+        :raise TypeError: If the signer does not have a supported public
+            key type.
+        :raise cryptography.exceptions.InvalidSignature: If the
+            signature fails to verify.
 
 .. class:: Name
     :canonical: cryptography.x509.name.Name

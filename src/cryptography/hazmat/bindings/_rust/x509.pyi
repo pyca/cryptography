@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives.asymmetric.types import (
     CertificateIssuerPublicKeyTypes,
     CertificatePublicKeyTypes,
     PrivateKeyTypes,
+    PublicKeyTypes,
 )
 from cryptography.x509 import certificate_transparency
 
@@ -210,6 +211,10 @@ class CertificateSigningRequest:
     def tbs_certrequest_bytes(self) -> bytes: ...
     @property
     def is_signature_valid(self) -> bool: ...
+    def verify_directly_signed_by(
+        self,
+        public_key: PublicKeyTypes,
+    ) -> None: ...
 
 class PolicyBuilder:
     def time(self, time: datetime.datetime) -> PolicyBuilder: ...

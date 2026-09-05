@@ -2037,6 +2037,29 @@ class TestRSACertificate:
         assert ext.value == x509.Admissions(authority=None, admissions=[])
 
 
+class TestCertificateRequest:
+    def test_public_key_must_be_public_key(
+        self, rsa_key_2048: rsa.RSAPrivateKey
+    ):
+        private_key = rsa_key_2048
+        builder = x509.CertificateSigningRequestBuilder()
+
+        with pytest.raises(TypeError):
+            builder.public_key(typing.cast(typing.Any, private_key))
+
+    def test_public_key_may_only_be_set_once(
+        self, rsa_key_2048: rsa.RSAPrivateKey
+    ):
+        private_key = rsa_key_2048
+        public_key = private_key.public_key()
+        builder = x509.CertificateSigningRequestBuilder().public_key(
+            public_key
+        )
+
+        with pytest.raises(ValueError):
+            builder.public_key(public_key)
+
+
 class TestRSACertificateRequest:
     @pytest.mark.parametrize(
         ("path", "loader_func"),
@@ -6389,6 +6412,144 @@ class TestECDSACertificateRequest:
             request.tbs_certrequest_bytes,
             ec.ECDSA(request.signature_hash_algorithm),
         )
+
+
+class TestMLKEMCertificateRequest:
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            backend.mldsa_supported() and backend.mlkem_supported()
+        ),
+        skip_message="Does not support ML-DSA and/or ML-KEM",
+    )
+    @pytest.mark.parametrize(
+        (
+            "enclosed_key_path",
+            "enclosed_pub_key_cls",
+            "signing_pub_key_path",
+            "signing_pub_key_cls",
+            "signature_algorithm_oid",
+        ),
+        [
+            (
+                os.path.join("x509", "requests", "mldsa-mlkem768.pem"),
+                mlkem.MLKEM768PublicKey,
+                os.path.join(
+                    "x509", "requests", "mldsa-mlkem768-signing-pubkey.pem"
+                ),
+                mldsa.MLDSA65PublicKey,
+                SignatureAlgorithmOID.ML_DSA_65,
+            ),
+            (
+                os.path.join("x509", "requests", "mldsa-mlkem1024.pem"),
+                mlkem.MLKEM1024PublicKey,
+                os.path.join(
+                    "x509", "requests", "mldsa-mlkem1024-signing-pubkey.pem"
+                ),
+                mldsa.MLDSA65PublicKey,
+                SignatureAlgorithmOID.ML_DSA_65,
+            ),
+        ],
+    )
+    def test_load_request_mldsa_mlkem(
+        self,
+        enclosed_key_path,
+        enclosed_pub_key_cls,
+        signing_pub_key_path,
+        signing_pub_key_cls,
+        signature_algorithm_oid,
+    ):
+        request = _load_cert(enclosed_key_path, x509.load_pem_x509_csr)
+
+        signing_key = _load_cert(
+            signing_pub_key_path, serialization.load_pem_public_key
+        )
+
+        assert isinstance(request.public_key(), enclosed_pub_key_cls)
+        assert isinstance(signing_key, signing_pub_key_cls)
+
+        assert request.signature_algorithm_oid == signature_algorithm_oid
+
+        assert isinstance(request.subject, x509.Name)
+        assert list(request.subject) == [
+            x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+        ]
+
+        assert not request.is_signature_valid
+        request.verify_directly_signed_by(signing_key)
+
+        with pytest.raises(TypeError):
+            unsupported_algorithm = request.public_key()
+            request.verify_directly_signed_by(unsupported_algorithm)
+
+        with pytest.raises(ValueError):
+            wrong_algorithm = ec.generate_private_key(
+                ec.SECP256R1()
+            ).public_key()
+            request.verify_directly_signed_by(wrong_algorithm)
+
+        with pytest.raises(InvalidSignature):
+            wrong_pub_key = mldsa.MLDSA65PrivateKey.generate().public_key()
+            request.verify_directly_signed_by(wrong_pub_key)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            backend.mldsa_supported() and backend.mlkem_supported()
+        ),
+        skip_message="Does not support ML-DSA and/or ML-KEM",
+    )
+    @pytest.mark.parametrize(
+        (
+            "enclosed_key_cls",
+            "enclosed_pub_key_cls",
+            "signing_key_cls",
+            "signature_algorithm_oid",
+        ),
+        [
+            (
+                mlkem.MLKEM768PrivateKey,
+                mlkem.MLKEM768PublicKey,
+                mldsa.MLDSA65PrivateKey,
+                SignatureAlgorithmOID.ML_DSA_65,
+            ),
+            (
+                mlkem.MLKEM1024PrivateKey,
+                mlkem.MLKEM1024PublicKey,
+                mldsa.MLDSA65PrivateKey,
+                SignatureAlgorithmOID.ML_DSA_65,
+            ),
+        ],
+    )
+    def test_build_request_mldsa_mlkem(
+        self,
+        enclosed_key_cls,
+        enclosed_pub_key_cls,
+        signing_key_cls,
+        signature_algorithm_oid,
+    ):
+        enclosed_key = enclosed_key_cls.generate()
+        signing_key = signing_key_cls.generate()
+
+        request = (
+            x509.CertificateSigningRequestBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
+            )
+            .public_key(enclosed_key.public_key())
+            .sign(signing_key, None)
+        )
+
+        public_key = request.public_key()
+        assert isinstance(public_key, enclosed_pub_key_cls)
+
+        assert request.signature_algorithm_oid == signature_algorithm_oid
+
+        assert isinstance(request.subject, x509.Name)
+        assert list(request.subject) == [
+            x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
+        ]
+
+        assert not request.is_signature_valid
+        request.verify_directly_signed_by(signing_key.public_key())
 
 
 class TestOtherCertificate:
