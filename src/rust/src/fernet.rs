@@ -32,33 +32,11 @@ fn invalid_token() -> CryptographyError {
     CryptographyError::from(InvalidToken::new_err(()))
 }
 
-// `base64.urlsafe_b64decode` neither requires padding nor checks the unused
-// trailing bits.
+// Padding is optional when decoding.
 const URL_SAFE_LENIENT: GeneralPurpose = GeneralPurpose::new(
     &base64::alphabet::URL_SAFE,
-    GeneralPurposeConfig::new()
-        .with_decode_allow_trailing_bits(true)
-        .with_decode_padding_mode(DecodePaddingMode::Indifferent),
+    GeneralPurposeConfig::new().with_decode_padding_mode(DecodePaddingMode::Indifferent),
 );
-
-fn b64decode(data: &[u8]) -> Option<Vec<u8>> {
-    // Fast path for canonical input, which is what `encrypt` produces.
-    if let Ok(out) = URL_SAFE.decode(data) {
-        return Some(out);
-    }
-    // `base64.urlsafe_b64decode` also ignores whitespace and accepts the
-    // standard alphabet.
-    let cleaned: Vec<u8> = data
-        .iter()
-        .filter(|c| !c.is_ascii_whitespace())
-        .map(|c| match c {
-            b'+' => b'-',
-            b'/' => b'_',
-            c => *c,
-        })
-        .collect();
-    URL_SAFE_LENIENT.decode(cleaned).ok()
-}
 
 fn b64encode<'p>(
     py: pyo3::Python<'p>,
@@ -143,9 +121,9 @@ fn unverified_token_data(
     token: &pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<(u64, Vec<u8>)> {
     let data = if let Ok(s) = token.cast::<pyo3::types::PyString>() {
-        b64decode(s.to_cow()?.as_bytes())
+        URL_SAFE_LENIENT.decode(s.to_cow()?.as_bytes()).ok()
     } else if let Ok(b) = token.cast::<pyo3::types::PyBytes>() {
-        b64decode(b.as_bytes())
+        URL_SAFE_LENIENT.decode(b.as_bytes()).ok()
     } else {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err("token must be bytes or str"),
@@ -313,9 +291,11 @@ impl Fernet {
             ))
         };
         let key = if let Ok(s) = key.cast::<pyo3::types::PyString>() {
-            b64decode(s.to_cow()?.as_bytes())
+            URL_SAFE_LENIENT.decode(s.to_cow()?.as_bytes()).ok()
         } else {
-            b64decode(key.extract::<CffiBuf<'_>>()?.as_bytes())
+            URL_SAFE_LENIENT
+                .decode(key.extract::<CffiBuf<'_>>()?.as_bytes())
+                .ok()
         };
         let key = key.ok_or_else(invalid_key)?;
         if key.len() != KEY_LEN {
@@ -543,23 +523,27 @@ pub(crate) mod fernet_mod {
 
 #[cfg(test)]
 mod tests {
-    use super::b64decode;
+    use base64::engine::Engine;
+
+    use super::URL_SAFE_LENIENT;
 
     #[test]
-    fn test_b64decode() {
+    fn test_url_safe_lenient() {
         for (input, expected) in [
             (&b""[..], Some(&b""[..])),
             (b"YWJj", Some(b"abc")),
             (b"YWI=", Some(b"ab")),
-            (b"YQ==", Some(b"a")),
             (b"YWI", Some(b"ab")),
-            (b"YW Jj\n", Some(b"abc")),
             (b"-_-_", Some(b"\xfb\xff\xbf")),
-            (b"+/+/", Some(b"\xfb\xff\xbf")),
+            (b"+/+/", None),
             (b"Y", None),
             (b"YW*j", None),
         ] {
-            assert_eq!(b64decode(input).as_deref(), expected, "{input:?}");
+            assert_eq!(
+                URL_SAFE_LENIENT.decode(input).ok().as_deref(),
+                expected,
+                "{input:?}"
+            );
         }
     }
 }
