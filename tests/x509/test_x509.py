@@ -3624,8 +3624,9 @@ class TestCertificateBuilder:
 
         assert cert.version is x509.Version.v3
         assert cert.signature_algorithm_oid == hashalg_oid
-        public_key = cert.public_key()
-        assert isinstance(public_key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = cert.public_key()
+            assert isinstance(public_key, dsa.DSAPublicKey)
         assert cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.DSA
         _check_cert_times(
             cert,
@@ -5422,8 +5423,9 @@ class TestCertificateSigningRequestBuilder:
         )
 
         assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
-        public_key = request.public_key()
-        assert isinstance(public_key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = request.public_key()
+            assert isinstance(public_key, dsa.DSAPublicKey)
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
@@ -5902,8 +5904,9 @@ class TestDSACertificate:
             x509.load_pem_x509_certificate,
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
-        public_key = cert.public_key()
-        assert isinstance(public_key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = cert.public_key()
+            assert isinstance(public_key, dsa.DSAPublicKey)
         assert cert.signature_algorithm_parameters is None
         num = public_key.public_numbers()
         assert num.y == int(
@@ -6022,8 +6025,9 @@ class TestDSACertificate:
             b"0b2142f86300c0603551d13040530030101ff"
         )
         assert cert.signature_hash_algorithm is not None
-        public_key = cert.public_key()
-        assert isinstance(public_key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = cert.public_key()
+            assert isinstance(public_key, dsa.DSAPublicKey)
         public_key.verify(
             cert.signature,
             cert.tbs_certificate_bytes,
@@ -6036,7 +6040,8 @@ class TestDSACertificate:
         ca, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
         )
-        cert.verify_directly_issued_by(ca)
+        with pytest.warns(utils.DeprecatedIn51):
+            cert.verify_directly_issued_by(ca)
 
     def test_verify_directly_issued_by_dsa_bad_sig(self):
         issuer_private_key = DSA_KEY_3072.private_key()
@@ -6046,7 +6051,8 @@ class TestDSACertificate:
         )
         cert_bad_sig = _break_cert_sig(cert)
         with pytest.raises(InvalidSignature):
-            cert_bad_sig.verify_directly_issued_by(ca)
+            with pytest.warns(utils.DeprecatedIn51):
+                cert_bad_sig.verify_directly_issued_by(ca)
 
 
 @pytest.mark.supported(
@@ -6074,8 +6080,9 @@ class TestDSACertificateRequest:
     def test_load_dsa_request(self, path, loader_func):
         request = _load_cert(path, loader_func)
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
-        public_key = request.public_key()
-        assert isinstance(public_key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = request.public_key()
+            assert isinstance(public_key, dsa.DSAPublicKey)
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
@@ -6121,8 +6128,9 @@ class TestDSACertificateRequest:
             b"fa140342bc4a3bba16bd0681c8a6a2dbbb7efe6ce2b8463b170ba000"
         )
         assert request.signature_hash_algorithm is not None
-        public_key = request.public_key()
-        assert isinstance(public_key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = request.public_key()
+            assert isinstance(public_key, dsa.DSAPublicKey)
         public_key.verify(
             request.signature,
             request.tbs_certrequest_bytes,

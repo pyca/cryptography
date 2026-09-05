@@ -33,7 +33,7 @@ __all__ = [
 
 PKCS12PrivateKeyTypes = typing.Union[
     rsa.RSAPrivateKey,
-    dsa.DSAPrivateKey,
+    dsa._DSAPrivateKey,
     ec.EllipticCurvePrivateKey,
     ed25519.Ed25519PrivateKey,
     ed448.Ed448PrivateKey,
@@ -54,7 +54,7 @@ class PKCS12KeyAndCertificates:
             key,
             (
                 rsa.RSAPrivateKey,
-                dsa.DSAPrivateKey,
+                dsa._DSAPrivateKey,
                 ec.EllipticCurvePrivateKey,
                 ed25519.Ed25519PrivateKey,
                 ed448.Ed448PrivateKey,
@@ -149,7 +149,7 @@ def serialize_key_and_certificates(
         key,
         (
             rsa.RSAPrivateKey,
-            dsa.DSAPrivateKey,
+            dsa._DSAPrivateKey,
             ec.EllipticCurvePrivateKey,
             ed25519.Ed25519PrivateKey,
             ed448.Ed448PrivateKey,

@@ -19,11 +19,11 @@ from cryptography.hazmat.primitives.asymmetric import (
     x25519,
 )
 
-# Every asymmetric key type. These use the private DH aliases so that
-# importing this module doesn't trigger the FFDH deprecation warning.
+# Every asymmetric key type. These use the private DH and DSA aliases so that
+# importing this module doesn't trigger the FFDH or DSA deprecation warnings.
 PublicKeyTypes = typing.Union[
     dh._DHPublicKey,
-    dsa.DSAPublicKey,
+    dsa._DSAPublicKey,
     rsa.RSAPublicKey,
     ec.EllipticCurvePublicKey,
     ed25519.Ed25519PublicKey,
@@ -47,7 +47,7 @@ PrivateKeyTypes = typing.Union[
     mlkem.MLKEM768PrivateKey,
     mlkem.MLKEM1024PrivateKey,
     rsa.RSAPrivateKey,
-    dsa.DSAPrivateKey,
+    dsa._DSAPrivateKey,
     ec.EllipticCurvePrivateKey,
     x25519.X25519PrivateKey,
     x448.X448PrivateKey,
@@ -58,7 +58,7 @@ CertificateIssuerPrivateKeyTypes = typing.Union[
     ed25519.Ed25519PrivateKey,
     ed448.Ed448PrivateKey,
     rsa.RSAPrivateKey,
-    dsa.DSAPrivateKey,
+    dsa._DSAPrivateKey,
     ec.EllipticCurvePrivateKey,
     mldsa.MLDSA44PrivateKey,
     mldsa.MLDSA65PrivateKey,
@@ -67,7 +67,7 @@ CertificateIssuerPrivateKeyTypes = typing.Union[
 # Just the key types we allow to be used for x509 signing. This mirrors
 # the certificate private key types
 CertificateIssuerPublicKeyTypes = typing.Union[
-    dsa.DSAPublicKey,
+    dsa._DSAPublicKey,
     rsa.RSAPublicKey,
     ec.EllipticCurvePublicKey,
     ed25519.Ed25519PublicKey,
@@ -79,7 +79,7 @@ CertificateIssuerPublicKeyTypes = typing.Union[
 # This type removes DHPublicKey. x448/x25519/mlkem can be a public key
 # but cannot be used in signing so they are allowed here.
 CertificatePublicKeyTypes = typing.Union[
-    dsa.DSAPublicKey,
+    dsa._DSAPublicKey,
     rsa.RSAPublicKey,
     ec.EllipticCurvePublicKey,
     ed25519.Ed25519PublicKey,

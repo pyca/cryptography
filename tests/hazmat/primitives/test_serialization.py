@@ -162,13 +162,14 @@ class TestDERSerialization:
         ],
     )
     def test_load_der_dsa_private_key(self, key_path, password):
-        key = load_vectors_from_file(
-            os.path.join("asymmetric", *key_path),
-            lambda derfile: load_der_private_key(derfile.read(), password),
-            mode="rb",
-        )
-        assert key
-        assert isinstance(key, dsa.DSAPrivateKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            key = load_vectors_from_file(
+                os.path.join("asymmetric", *key_path),
+                lambda derfile: load_der_private_key(derfile.read(), password),
+                mode="rb",
+            )
+            assert key
+            assert isinstance(key, dsa.DSAPrivateKey)
         _check_dsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
@@ -393,13 +394,14 @@ class TestDERSerialization:
         ],
     )
     def test_load_der_dsa_public_key(self, key_file):
-        key = load_vectors_from_file(
-            key_file,
-            lambda derfile: load_der_public_key(derfile.read()),
-            mode="rb",
-        )
-        assert key
-        assert isinstance(key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            key = load_vectors_from_file(
+                key_file,
+                lambda derfile: load_der_public_key(derfile.read()),
+                mode="rb",
+            )
+            assert key
+            assert isinstance(key, dsa.DSAPublicKey)
 
     def test_load_ec_public_key(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -691,14 +693,15 @@ class TestPEMSerialization:
     )
     def test_load_dsa_private_key(self, key_path, password, backend):
         _skip_fips_format(key_path, password, backend)
-        key = load_vectors_from_file(
-            os.path.join("asymmetric", *key_path),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), password, backend
-            ),
-        )
-        assert key
-        assert isinstance(key, dsa.DSAPrivateKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            key = load_vectors_from_file(
+                os.path.join("asymmetric", *key_path),
+                lambda pemfile: load_pem_private_key(
+                    pemfile.read().encode(), password, backend
+                ),
+            )
+            assert key
+            assert isinstance(key, dsa.DSAPrivateKey)
         _check_dsa_private_numbers(key.private_numbers())
 
     @pytest.mark.parametrize(
@@ -789,12 +792,13 @@ class TestPEMSerialization:
         ],
     )
     def test_load_pem_dsa_public_key(self, key_file):
-        key = load_vectors_from_file(
-            key_file,
-            lambda pemfile: load_pem_public_key(pemfile.read().encode()),
-        )
-        assert key
-        assert isinstance(key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            key = load_vectors_from_file(
+                key_file,
+                lambda pemfile: load_pem_public_key(pemfile.read().encode()),
+            )
+            assert key
+            assert isinstance(key, dsa.DSAPublicKey)
 
     def test_load_ec_public_key(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
@@ -1218,17 +1222,18 @@ class TestPEMSerialization:
         skip_message="Does not support DSA.",
     )
     def test_load_pem_dsa_private_key(self):
-        key = load_vectors_from_file(
-            os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
-            lambda pemfile: load_pem_private_key(
-                pemfile.read().encode(), None
-            ),
-        )
-        assert key
-        assert isinstance(key, dsa.DSAPrivateKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            key = load_vectors_from_file(
+                os.path.join("asymmetric", "PKCS8", "unenc-dsa-pkcs8.pem"),
+                lambda pemfile: load_pem_private_key(
+                    pemfile.read().encode(), None
+                ),
+            )
+            assert key
+            assert isinstance(key, dsa.DSAPrivateKey)
 
-        params = key.parameters()
-        assert isinstance(params, dsa.DSAParameters)
+            params = key.parameters()
+            assert isinstance(params, dsa.DSAParameters)
 
         num = key.private_numbers()
         pub = num.public_numbers
