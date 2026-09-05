@@ -271,8 +271,7 @@ Specifically it uses:
   :class:`~cryptography.hazmat.primitives.padding.PKCS7` padding.
 * :class:`~cryptography.hazmat.primitives.hmac.HMAC` using
   :class:`~cryptography.hazmat.primitives.hashes.SHA256` for authentication.
-* Initialization vectors are generated using the cryptographically secure
-  random number generator of the underlying OpenSSL library.
+* Initialization vectors are generated using a CSPRNG.
 
 For complete details consult the `specification`_.
 
