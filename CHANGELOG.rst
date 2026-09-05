@@ -8,6 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* :class:`~cryptography.fernet.Fernet` and
+  :class:`~cryptography.fernet.MultiFernet` are now implemented in Rust,
+  making them significantly faster. :meth:`~cryptography.fernet.Fernet.encrypt`
+  now accepts any :term:`bytes-like` object, not just ``bytes``.
+
 .. _v50-0-1:
 
 50.0.1 - 2026-08-25
