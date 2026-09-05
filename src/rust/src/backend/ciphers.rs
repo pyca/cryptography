@@ -233,12 +233,16 @@ impl CipherContext {
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut out_buf = vec![0; self.ctx.block_size()];
-        let n = self.ctx.cipher_final(&mut out_buf).or_else(|e| {
-            if e.errors().is_empty()
-                && self
-                    .py_mode
-                    .bind(py)
-                    .is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get(py)?)?
+        let n = self.ctx.cipher_final(&mut out_buf).or_else(|_| {
+            // For authenticated modes, the only way finalize can fail is a
+            // tag mismatch. Older OpenSSL versions (and BoringSSL, AWS-LC,
+            // and LibreSSL) leave the error queue empty in that case, while
+            // OpenSSL >= 4.1 pushes PROV_R_BAD_DECRYPT, so we can't key on
+            // the error queue.
+            if self
+                .py_mode
+                .bind(py)
+                .is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get(py)?)?
             {
                 return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
             }
