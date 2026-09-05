@@ -8,9 +8,12 @@ inputs:
     description: "Python version to build for (e.g. 3.14, 3.14t, pypy-3.11)"
     required: true
   abi-version:
-    description: "Optional limited-API ABI version (e.g. py39, py311)"
+    description: "Optional limited-API ABI version (e.g. abi3-py39, abi3-py311, abi3t-py315)"
     required: false
     default: ""
+  freethreaded:
+    description: "actions/setup-python freethreaded"
+    required: true
   arch:
     description: "actions/setup-python architecture (x86, x64, arm64)"
     required: true
@@ -43,6 +46,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         architecture: ${{ inputs.arch }}
+        freethreaded: ${{ inputs.freethreaded }}
     - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
       with:
         toolchain: stable
@@ -73,7 +77,7 @@ runs:
       shell: bash
     - run: |
         if [ -n "${ABI_VERSION}" ]; then
-            PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${ABI_VERSION}"
+            PY_LIMITED_API="--config-settings=build-args=--features=pyo3/${ABI_VERSION}"
         fi
 
         uv build --wheel --require-hashes --build-constraint="${BUILD_REQUIREMENTS_PATH}" cryptography*.tar.gz $PY_LIMITED_API --config-settings=build-args=--sbom-include="C:/openssl-${OPENSSL_NAME}/sbom.json" -o wheelhouse/
