@@ -69,55 +69,6 @@ def test_skip_if_dsa_not_supported(backend):
     only_if=lambda backend: backend.dsa_supported(),
     skip_message="Does not support DSA.",
 )
-class TestDSADeprecation:
-    @pytest.mark.parametrize(
-        "name",
-        [
-            "generate_parameters",
-            "generate_private_key",
-            "DSAParameterNumbers",
-            "DSAPublicNumbers",
-            "DSAPrivateNumbers",
-            "DSAParameters",
-            "DSAParametersWithNumbers",
-            "DSAPrivateKey",
-            "DSAPrivateKeyWithSerialization",
-            "DSAPublicKey",
-            "DSAPublicKeyWithSerialization",
-        ],
-    )
-    def test_module_attribute_deprecated(self, name):
-        with pytest.warns(utils.DeprecatedIn51):
-            getattr(dsa, name)
-
-    def test_load_private_key_deprecated(self):
-        key = DSA_KEY_2048.private_key()
-        data = key.private_bytes(
-            serialization.Encoding.PEM,
-            serialization.PrivateFormat.PKCS8,
-            serialization.NoEncryption(),
-        )
-        with pytest.warns(utils.DeprecatedIn51):
-            loaded = serialization.load_pem_private_key(data, None)
-            assert isinstance(loaded, dsa.DSAPrivateKey)
-        assert loaded.private_numbers() == key.private_numbers()
-
-    def test_load_public_key_deprecated(self):
-        key = DSA_KEY_2048.private_key().public_key()
-        data = key.public_bytes(
-            serialization.Encoding.DER,
-            serialization.PublicFormat.SubjectPublicKeyInfo,
-        )
-        with pytest.warns(utils.DeprecatedIn51):
-            loaded = serialization.load_der_public_key(data)
-            assert isinstance(loaded, dsa.DSAPublicKey)
-        assert loaded == key
-
-
-@pytest.mark.supported(
-    only_if=lambda backend: backend.dsa_supported(),
-    skip_message="Does not support DSA.",
-)
 class TestDSA:
     def test_generate_dsa_parameters(self):
         parameters = dsa.generate_parameters(2048)

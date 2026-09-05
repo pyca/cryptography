@@ -8,8 +8,7 @@ DSA
 .. deprecated:: 51.0.0
     DSA is deprecated and support will be removed in a future release. Users
     should migrate to a more modern signature algorithm such as
-    :doc:`EdDSA using curve25519</hazmat/primitives/asymmetric/ed25519>` or
-    :doc:`ECDSA</hazmat/primitives/asymmetric/ec>`.
+    :doc:`ML-DSA</hazmat/primitives/asymmetric/mldsa>`.
 
 .. note::
 
