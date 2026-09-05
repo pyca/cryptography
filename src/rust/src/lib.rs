@@ -38,6 +38,7 @@ mod cobblestone;
 mod declarative_asn1;
 mod error;
 mod exceptions;
+mod fernet;
 pub(crate) mod oid;
 mod padding;
 mod pkcs12;
@@ -136,6 +137,8 @@ mod _rust {
     use crate::cobblestone::cobblestone_mod;
     #[pymodule_export]
     use crate::exceptions::exceptions;
+    #[pymodule_export]
+    use crate::fernet::fernet_mod;
     #[pymodule_export]
     use crate::oid::ObjectIdentifier;
     #[pymodule_export]
