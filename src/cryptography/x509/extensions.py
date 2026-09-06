@@ -123,8 +123,8 @@ class CustomExtensionType(ExtensionType, typing.Generic[_ValueT]):
     Subclasses must parameterize this class with the ASN.1 type of the
     extension's value and define ``oid``::
 
-        class PolicyMappings(CustomExtensionType[list[PolicyMapping]]):
-            oid = ExtensionOID.POLICY_MAPPINGS
+        class MyExtension(CustomExtensionType[MyValue]):
+            oid = ObjectIdentifier("1.2.3.4")
     """
 
     _asn1_type: typing.ClassVar[typing.Any]
@@ -132,9 +132,8 @@ class CustomExtensionType(ExtensionType, typing.Generic[_ValueT]):
     def __init_subclass__(cls, **kwargs: typing.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        # Record the ASN.1 type this class was parameterized with, e.g.
-        # `list[PolicyMapping]` for `CustomExtensionType[list[PolicyMapping]]`.
-        # Subclasses of an already-parameterized class inherit it.
+        # Record the ASN.1 type this class was parameterized with. Subclasses
+        # of an already-parameterized class inherit it.
         for base in cls.__dict__.get("__orig_bases__", ()):
             if typing.get_origin(base) is CustomExtensionType:
                 (asn1_type,) = typing.get_args(base)
@@ -145,8 +144,7 @@ class CustomExtensionType(ExtensionType, typing.Generic[_ValueT]):
         if not hasattr(cls, "_asn1_type"):
             raise TypeError(
                 f"{cls.__name__} must subclass CustomExtensionType "
-                "parameterized with the ASN.1 type of the extension's value, "
-                "e.g. CustomExtensionType[list[PolicyMapping]]"
+                "parameterized with the ASN.1 type of the extension's value"
             )
         if not isinstance(getattr(cls, "oid", None), ObjectIdentifier):
             raise TypeError(
@@ -209,16 +207,16 @@ class Extensions:
         for ext in self:
             if isinstance(ext.value, extclass):
                 return ext
-
-        if issubclass(extclass, CustomExtensionType):
             # Custom extension types are not known to the parser, so their
-            # extensions are present as `UnrecognizedExtension` (or, if the
-            # OID is one we do parse, as the built-in type). Re-parse the
+            # extensions are present as `UnrecognizedExtension`. Parse the
             # DER value with the custom type.
-            for ext in self:
-                if ext.oid == extclass.oid:
-                    value = extclass._from_der(ext.value.public_bytes())
-                    return Extension(ext.oid, ext.critical, value)
+            if (
+                issubclass(extclass, CustomExtensionType)
+                and isinstance(ext.value, UnrecognizedExtension)
+                and ext.oid == extclass.oid
+            ):
+                value = extclass._from_der(ext.value.value)
+                return Extension(ext.oid, ext.critical, value)
 
         raise ExtensionNotFound(
             f"No {extclass} extension was found", extclass.oid

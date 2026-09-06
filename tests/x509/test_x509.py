@@ -4904,19 +4904,13 @@ class TestCertificateBuilder:
 
     def test_custom_extension(self, rsa_key_2048: rsa.RSAPrivateKey):
         @asn1.sequence
-        class PolicyMapping:
-            issuer_domain_policy: x509.ObjectIdentifier
-            subject_domain_policy: x509.ObjectIdentifier
+        class Point:
+            x: int
+            y: int
 
-        class SinglePolicyMapping(x509.CustomExtensionType[PolicyMapping]):
+        class PointExtension(x509.CustomExtensionType[Point]):
             oid = x509.ObjectIdentifier("1.2.3.4")
 
-        mapping = SinglePolicyMapping(
-            PolicyMapping(
-                issuer_domain_policy=x509.ObjectIdentifier("1.2.3"),
-                subject_domain_policy=x509.ObjectIdentifier("1.2.4"),
-            )
-        )
         private_key = rsa_key_2048
 
         cert = (
@@ -4931,7 +4925,7 @@ class TestCertificateBuilder:
             .not_valid_after(datetime.datetime(2030, 12, 31, 8, 30))
             .public_key(private_key.public_key())
             .serial_number(123)
-            .add_extension(mapping, critical=True)
+            .add_extension(PointExtension(Point(x=1, y=2)), critical=True)
             .sign(private_key, hashes.SHA256())
         )
 
@@ -4940,19 +4934,12 @@ class TestCertificateBuilder:
         )
         assert ext.critical is True
         assert isinstance(ext.value, x509.UnrecognizedExtension)
-        assert ext.value.value == (b"\x30\x08\x06\x02\x2a\x03\x06\x02\x2a\x04")
+        assert ext.value.value == b"\x30\x06\x02\x01\x01\x02\x01\x02"
 
-        custom = cert.extensions.get_extension_for_class(SinglePolicyMapping)
+        custom = cert.extensions.get_extension_for_class(PointExtension)
         assert custom.critical is True
-        assert isinstance(custom.value, SinglePolicyMapping)
-        # `asn1.sequence` classes don't define `__eq__`, so compare fields.
-        assert custom.value.value.issuer_domain_policy == (
-            x509.ObjectIdentifier("1.2.3")
-        )
-        assert custom.value.value.subject_domain_policy == (
-            x509.ObjectIdentifier("1.2.4")
-        )
-        assert custom.value.public_bytes() == mapping.public_bytes()
+        assert isinstance(custom.value, PointExtension)
+        assert (custom.value.value.x, custom.value.value.y) == (1, 2)
 
     def test_sign_without_private_key(self, rsa_key_2048: rsa.RSAPrivateKey):
         subject_private_key = rsa_key_2048
