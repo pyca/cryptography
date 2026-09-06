@@ -12,8 +12,8 @@ import typing
 from collections.abc import Iterable, Iterator
 
 from cryptography import utils
-from cryptography.hazmat.asn1.asn1 import _encode_der_with_type
 from cryptography.hazmat.asn1.asn1 import decode_der as _decode_der
+from cryptography.hazmat.asn1.asn1 import encode_der as _encode_der
 from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import _serialization, constant_time
@@ -180,7 +180,7 @@ class CustomExtensionType(ExtensionType, typing.Generic[_ValueT]):
         return hash((self.__class__, self.value))
 
     def public_bytes(self) -> bytes:
-        return _encode_der_with_type(self._asn1_type, self.value)
+        return _encode_der(self.value)
 
 
 class Extensions:

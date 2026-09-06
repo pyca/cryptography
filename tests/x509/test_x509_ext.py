@@ -323,14 +323,12 @@ class TestCustomExtensionType:
         assert ext.value == [_POLICY_MAPPING]
 
     def test_public_bytes(self):
-        ext = _PolicyMappings([_POLICY_MAPPING])
-        assert ext.public_bytes() == _POLICY_MAPPINGS_DER
-        assert _RawExtension(b"abc").public_bytes() == b"\x04\x03abc"
+        class _SinglePolicyMapping(x509.CustomExtensionType[_PolicyMapping]):
+            oid = x509.ObjectIdentifier("1.2.3.4")
 
-    def test_public_bytes_wrong_value_type(self):
-        ext = _RawExtension(typing.cast(typing.Any, 42))
-        with pytest.raises(TypeError):
-            ext.public_bytes()
+        ext = _SinglePolicyMapping(_POLICY_MAPPING)
+        assert ext.public_bytes() == _POLICY_MAPPINGS_DER[2:]
+        assert _RawExtension(b"abc").public_bytes() == b"\x04\x03abc"
 
     def test_eq(self):
         ext1 = _PolicyMappings([_POLICY_MAPPING])
@@ -396,7 +394,6 @@ class TestCustomExtensionType:
         assert _policy_mapping_oids(ext.value) == [
             (x509.ObjectIdentifier("1.2.3"), x509.ObjectIdentifier("1.2.4"))
         ]
-        assert ext.value.public_bytes() == _POLICY_MAPPINGS_DER
 
     def test_get_extension_for_class(self):
         unrecognized = x509.UnrecognizedExtension(
@@ -424,7 +421,6 @@ class TestCustomExtensionType:
         assert _policy_mapping_oids(ext.value) == [
             (x509.ObjectIdentifier("1.2.3"), x509.ObjectIdentifier("1.2.4"))
         ]
-        assert ext.value.public_bytes() == _POLICY_MAPPINGS_DER
         # The Extensions object itself is unchanged.
         assert (
             exts.get_extension_for_oid(ExtensionOID.POLICY_MAPPINGS).value

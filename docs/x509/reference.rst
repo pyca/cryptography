@@ -2109,7 +2109,8 @@ X.509 Extensions
     :meth:`Extensions.get_extension_for_class`, which parses the matching
     extension's DER value into the custom class. Instances can also be passed
     to the ``add_extension`` method of the certificate, CRL, CSR, and OCSP
-    builders, which serialize the value to DER.
+    builders, which serialize the value to DER with
+    :func:`~cryptography.hazmat.asn1.encode_der`.
 
     .. code-block:: python
 
@@ -2128,16 +2129,6 @@ X.509 Extensions
         ext = cert.extensions.get_extension_for_class(PolicyMappings)
         for mapping in ext.value.value:
             print(mapping.issuer_domain_policy, mapping.subject_domain_policy)
-
-        builder = builder.add_extension(
-            PolicyMappings([
-                PolicyMapping(
-                    issuer_domain_policy=x509.ObjectIdentifier("1.2.3"),
-                    subject_domain_policy=x509.ObjectIdentifier("1.2.4"),
-                )
-            ]),
-            critical=False,
-        )
 
     :param value: The extension's value, an instance of the ASN.1 type the
         class was parameterized with.

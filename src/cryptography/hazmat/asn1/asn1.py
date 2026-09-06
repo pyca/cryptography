@@ -63,17 +63,6 @@ def decode_der(cls: type[U], data: bytes) -> U:
 encode_der = declarative_asn1.encode_der
 
 
-def _encode_der_with_type(cls: type[U], value: U) -> bytes:
-    """
-    Encode ``value`` as DER using ``cls`` as the ASN.1 type, rather than
-    inferring the type from the value. This allows encoding values whose
-    type can't be inferred, such as a top-level ``list[T]``.
-    """
-    return declarative_asn1.encode_der_with_type(
-        _normalize_field_type(cls, str(cls)), value
-    )
-
-
 _X509_TYPES = (
     rust_x509.Certificate,
     rust_x509.CertificateSigningRequest,

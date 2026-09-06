@@ -4908,16 +4908,14 @@ class TestCertificateBuilder:
             issuer_domain_policy: x509.ObjectIdentifier
             subject_domain_policy: x509.ObjectIdentifier
 
-        class PolicyMappings(x509.CustomExtensionType[list[PolicyMapping]]):
-            oid = ExtensionOID.POLICY_MAPPINGS
+        class SinglePolicyMapping(x509.CustomExtensionType[PolicyMapping]):
+            oid = x509.ObjectIdentifier("1.2.3.4")
 
-        mappings = PolicyMappings(
-            [
-                PolicyMapping(
-                    issuer_domain_policy=x509.ObjectIdentifier("1.2.3"),
-                    subject_domain_policy=x509.ObjectIdentifier("1.2.4"),
-                )
-            ]
+        mapping = SinglePolicyMapping(
+            PolicyMapping(
+                issuer_domain_policy=x509.ObjectIdentifier("1.2.3"),
+                subject_domain_policy=x509.ObjectIdentifier("1.2.4"),
+            )
         )
         private_key = rsa_key_2048
 
@@ -4933,27 +4931,28 @@ class TestCertificateBuilder:
             .not_valid_after(datetime.datetime(2030, 12, 31, 8, 30))
             .public_key(private_key.public_key())
             .serial_number(123)
-            .add_extension(mappings, critical=True)
+            .add_extension(mapping, critical=True)
             .sign(private_key, hashes.SHA256())
         )
 
         ext = cert.extensions.get_extension_for_oid(
-            ExtensionOID.POLICY_MAPPINGS
+            x509.ObjectIdentifier("1.2.3.4")
         )
         assert ext.critical is True
         assert isinstance(ext.value, x509.UnrecognizedExtension)
-        assert ext.value.value == (
-            b"\x30\x0a\x30\x08\x06\x02\x2a\x03\x06\x02\x2a\x04"
-        )
+        assert ext.value.value == (b"\x30\x08\x06\x02\x2a\x03\x06\x02\x2a\x04")
 
-        custom = cert.extensions.get_extension_for_class(PolicyMappings)
+        custom = cert.extensions.get_extension_for_class(SinglePolicyMapping)
         assert custom.critical is True
-        assert isinstance(custom.value, PolicyMappings)
+        assert isinstance(custom.value, SinglePolicyMapping)
         # `asn1.sequence` classes don't define `__eq__`, so compare fields.
-        [mapping] = custom.value.value
-        assert mapping.issuer_domain_policy == x509.ObjectIdentifier("1.2.3")
-        assert mapping.subject_domain_policy == x509.ObjectIdentifier("1.2.4")
-        assert custom.value.public_bytes() == mappings.public_bytes()
+        assert custom.value.value.issuer_domain_policy == (
+            x509.ObjectIdentifier("1.2.3")
+        )
+        assert custom.value.value.subject_domain_policy == (
+            x509.ObjectIdentifier("1.2.4")
+        )
+        assert custom.value.public_bytes() == mapping.public_bytes()
 
     def test_sign_without_private_key(self, rsa_key_2048: rsa.RSAPrivateKey):
         subject_private_key = rsa_key_2048
