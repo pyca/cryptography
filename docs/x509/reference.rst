@@ -2094,8 +2094,8 @@ X.509 Extensions
 
     .. versionadded:: 51.0.0
 
-    A base class for defining extension types that ``cryptography`` does not
-    natively support. Subclasses must be parameterized with the ASN.1 type of
+    A base class for defining extension types that are not built into
+    ``cryptography``. Subclasses must be parameterized with the ASN.1 type of
     the extension's value, using the types supported by
     :mod:`cryptography.hazmat.asn1`, and must define an ``oid`` class
     attribute.
