@@ -351,6 +351,15 @@ class TestCustomExtensionType:
             class _Bad(x509.CustomExtensionType[T]):
                 oid = x509.ObjectIdentifier("1.2.3.4")
 
+    def test_subclass_multiple_inheritance(self):
+        class _Mixin:
+            pass
+
+        with pytest.raises(TypeError, match="multiple inheritance"):
+
+            class _Bad(_Mixin, x509.CustomExtensionType[bytes]):
+                oid = x509.ObjectIdentifier("1.2.3.4")
+
     def test_subclass_without_oid(self):
         with pytest.raises(TypeError, match="oid"):
 

@@ -132,14 +132,19 @@ class CustomExtensionType(ExtensionType, typing.Generic[_ValueT]):
     def __init_subclass__(cls, **kwargs: typing.Any) -> None:
         super().__init_subclass__(**kwargs)
 
+        if len(cls.__bases__) != 1:
+            raise TypeError(
+                "CustomExtensionType subclasses cannot use multiple "
+                "inheritance"
+            )
+
         # Record the ASN.1 type this class was parameterized with. Subclasses
         # of an already-parameterized class inherit it.
-        for base in cls.__dict__.get("__orig_bases__", ()):
-            if typing.get_origin(base) is CustomExtensionType:
-                (asn1_type,) = typing.get_args(base)
-                if not isinstance(asn1_type, typing.TypeVar):
-                    cls._asn1_type = asn1_type
-                break
+        (base,) = cls.__dict__.get("__orig_bases__", cls.__bases__)
+        if typing.get_origin(base) is CustomExtensionType:
+            (asn1_type,) = typing.get_args(base)
+            if not isinstance(asn1_type, typing.TypeVar):
+                cls._asn1_type = asn1_type
 
         if not hasattr(cls, "_asn1_type"):
             raise TypeError(
