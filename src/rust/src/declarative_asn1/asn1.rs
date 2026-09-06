@@ -13,6 +13,15 @@ pub(crate) fn encode_der<'p>(
     value: &pyo3::Bound<'p, pyo3::types::PyAny>,
 ) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let annotated_type = asn1_types::encode_value_to_annotated(py, value)?;
+    encode_der_with_type(py, &annotated_type, value)
+}
+
+#[pyo3::pyfunction]
+pub(crate) fn encode_der_with_type<'p>(
+    py: pyo3::Python<'p>,
+    annotated_type: &pyo3::Bound<'p, asn1_types::AnnotatedType>,
+    value: &pyo3::Bound<'p, pyo3::types::PyAny>,
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let object = asn1_types::AnnotatedTypeObject {
         annotated_type: annotated_type.get(),
         value: value.clone(),

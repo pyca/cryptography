@@ -12,6 +12,7 @@ import typing
 import pytest
 
 from cryptography import utils, x509
+from cryptography.hazmat import asn1
 from cryptography.hazmat._oid import _OID_NAMES
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import hashes
@@ -283,6 +284,213 @@ class TestUnrecognizedExtension:
             x509.oid.ExtensionOID.BASIC_CONSTRAINTS, b"\x03\x02\x01"
         )
         assert ext2.public_bytes() == b"\x03\x02\x01"
+
+
+@asn1.sequence
+class _PolicyMapping:
+    issuer_domain_policy: x509.ObjectIdentifier
+    subject_domain_policy: x509.ObjectIdentifier
+
+
+class _PolicyMappings(x509.CustomExtensionType[list[_PolicyMapping]]):
+    oid = ExtensionOID.POLICY_MAPPINGS
+
+
+class _RawExtension(x509.CustomExtensionType[bytes]):
+    oid = x509.ObjectIdentifier("1.2.3.4")
+
+
+_POLICY_MAPPING = _PolicyMapping(
+    issuer_domain_policy=x509.ObjectIdentifier("1.2.3"),
+    subject_domain_policy=x509.ObjectIdentifier("1.2.4"),
+)
+_POLICY_MAPPINGS_DER = b"\x30\x0a\x30\x08\x06\x02\x2a\x03\x06\x02\x2a\x04"
+
+
+def _policy_mapping_oids(
+    ext: _PolicyMappings,
+) -> list[tuple[x509.ObjectIdentifier, x509.ObjectIdentifier]]:
+    # `asn1.sequence` classes don't define `__eq__`, so compare fields.
+    return [
+        (m.issuer_domain_policy, m.subject_domain_policy) for m in ext.value
+    ]
+
+
+class TestCustomExtensionType:
+    def test_value(self):
+        ext = _PolicyMappings([_POLICY_MAPPING])
+        assert ext.oid == ExtensionOID.POLICY_MAPPINGS
+        assert ext.value == [_POLICY_MAPPING]
+
+    def test_public_bytes(self):
+        ext = _PolicyMappings([_POLICY_MAPPING])
+        assert ext.public_bytes() == _POLICY_MAPPINGS_DER
+        assert _RawExtension(b"abc").public_bytes() == b"\x04\x03abc"
+
+    def test_public_bytes_wrong_value_type(self):
+        ext = _RawExtension(typing.cast(typing.Any, 42))
+        with pytest.raises(TypeError):
+            ext.public_bytes()
+
+    def test_eq(self):
+        ext1 = _PolicyMappings([_POLICY_MAPPING])
+        ext2 = _PolicyMappings([_POLICY_MAPPING])
+        assert ext1 == ext2
+        assert _RawExtension(b"abc") == _RawExtension(b"abc")
+
+    def test_ne(self):
+        class _OtherRawExtension(x509.CustomExtensionType[bytes]):
+            oid = x509.ObjectIdentifier("1.2.3.4")
+
+        ext = _RawExtension(b"abc")
+        assert ext != _RawExtension(b"abd")
+        assert ext != _OtherRawExtension(b"abc")
+        assert ext != x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.4"), b"\x04\x03abc"
+        )
+        assert ext != object()
+
+    def test_hash(self):
+        assert hash(_RawExtension(b"abc")) == hash(_RawExtension(b"abc"))
+        assert hash(_RawExtension(b"abc")) != hash(_RawExtension(b"abd"))
+
+    def test_repr(self):
+        assert repr(_RawExtension(b"abc")) == "<_RawExtension(value=b'abc')>"
+
+    def test_subclass_without_type_parameter(self):
+        with pytest.raises(TypeError, match="parameterized"):
+
+            class _Bad(x509.CustomExtensionType):
+                oid = x509.ObjectIdentifier("1.2.3.4")
+
+    def test_subclass_with_type_variable(self):
+        T = typing.TypeVar("T")
+        with pytest.raises(TypeError, match="parameterized"):
+
+            class _Bad(x509.CustomExtensionType[T]):
+                oid = x509.ObjectIdentifier("1.2.3.4")
+
+    def test_subclass_without_oid(self):
+        with pytest.raises(TypeError, match="oid"):
+
+            class _Bad(x509.CustomExtensionType[bytes]):
+                pass
+
+    def test_subclass_of_subclass(self):
+        class _Sub(_PolicyMappings):
+            pass
+
+        exts = x509.Extensions(
+            [
+                x509.Extension(
+                    ExtensionOID.POLICY_MAPPINGS,
+                    False,
+                    x509.UnrecognizedExtension(
+                        ExtensionOID.POLICY_MAPPINGS, _POLICY_MAPPINGS_DER
+                    ),
+                )
+            ]
+        )
+        ext = exts.get_extension_for_class(_Sub)
+        assert isinstance(ext.value, _Sub)
+        assert _policy_mapping_oids(ext.value) == [
+            (x509.ObjectIdentifier("1.2.3"), x509.ObjectIdentifier("1.2.4"))
+        ]
+        assert ext.value.public_bytes() == _POLICY_MAPPINGS_DER
+
+    def test_get_extension_for_class(self):
+        unrecognized = x509.UnrecognizedExtension(
+            ExtensionOID.POLICY_MAPPINGS, _POLICY_MAPPINGS_DER
+        )
+        exts = x509.Extensions(
+            [
+                x509.Extension(
+                    x509.ObjectIdentifier("1.2.3.4"),
+                    False,
+                    x509.UnrecognizedExtension(
+                        x509.ObjectIdentifier("1.2.3.4"), b"\x04\x03abc"
+                    ),
+                ),
+                x509.Extension(
+                    ExtensionOID.POLICY_MAPPINGS, True, unrecognized
+                ),
+            ]
+        )
+
+        ext = exts.get_extension_for_class(_PolicyMappings)
+        assert ext.oid == ExtensionOID.POLICY_MAPPINGS
+        assert ext.critical is True
+        assert isinstance(ext.value, _PolicyMappings)
+        assert _policy_mapping_oids(ext.value) == [
+            (x509.ObjectIdentifier("1.2.3"), x509.ObjectIdentifier("1.2.4"))
+        ]
+        assert ext.value.public_bytes() == _POLICY_MAPPINGS_DER
+        # The Extensions object itself is unchanged.
+        assert (
+            exts.get_extension_for_oid(ExtensionOID.POLICY_MAPPINGS).value
+            == unrecognized
+        )
+
+        raw = exts.get_extension_for_class(_RawExtension)
+        assert raw.oid == x509.ObjectIdentifier("1.2.3.4")
+        assert raw.critical is False
+        assert raw.value == _RawExtension(b"abc")
+
+    def test_get_extension_for_class_existing_instance(self):
+        ext = x509.Extension(
+            ExtensionOID.POLICY_MAPPINGS,
+            False,
+            _PolicyMappings([_POLICY_MAPPING]),
+        )
+        exts = x509.Extensions([ext])
+        assert exts.get_extension_for_class(_PolicyMappings) is ext
+
+    def test_get_extension_for_class_not_found(self):
+        exts = x509.Extensions(
+            [
+                x509.Extension(
+                    x509.ObjectIdentifier("1.2.3.4"),
+                    False,
+                    x509.UnrecognizedExtension(
+                        x509.ObjectIdentifier("1.2.3.4"), b"\x04\x03abc"
+                    ),
+                )
+            ]
+        )
+        with pytest.raises(x509.ExtensionNotFound) as exc:
+            exts.get_extension_for_class(_PolicyMappings)
+
+        assert exc.value.oid == ExtensionOID.POLICY_MAPPINGS
+
+    def test_get_extension_for_class_invalid_der(self):
+        exts = x509.Extensions(
+            [
+                x509.Extension(
+                    ExtensionOID.POLICY_MAPPINGS,
+                    False,
+                    x509.UnrecognizedExtension(
+                        ExtensionOID.POLICY_MAPPINGS, b"\x04\x03abc"
+                    ),
+                )
+            ]
+        )
+        with pytest.raises(ValueError):
+            exts.get_extension_for_class(_PolicyMappings)
+
+    def test_get_extension_for_class_reparses_native_extension(self):
+        class _RawSubjectKeyIdentifier(x509.CustomExtensionType[bytes]):
+            oid = ExtensionOID.SUBJECT_KEY_IDENTIFIER
+
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+        )
+        ski = cert.extensions.get_extension_for_class(
+            x509.SubjectKeyIdentifier
+        )
+        raw = cert.extensions.get_extension_for_class(_RawSubjectKeyIdentifier)
+        assert raw.critical == ski.critical
+        assert raw.value.value == ski.value.digest
 
 
 class TestCertificateIssuer:

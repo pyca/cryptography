@@ -2043,6 +2043,11 @@ X.509 Extensions
             >>> cert.extensions.get_extension_for_class(x509.BasicConstraints)
             <Extension(oid=<ObjectIdentifier(oid=2.5.29.19, name=basicConstraints)>, critical=True, value=<BasicConstraints(ca=True, path_length=None)>)>
 
+        .. versionchanged:: 51.0.0
+            ``extclass`` may also be a subclass of
+            :class:`CustomExtensionType`, in which case the extension with
+            the matching OID is parsed into that class.
+
 .. class:: Extension
     :canonical: cryptography.x509.extensions.Extension
 
@@ -2084,6 +2089,74 @@ X.509 Extensions
     .. method:: public_bytes()
 
         .. versionadded:: 36.0.0
+
+        :return bytes:
+
+            A bytes string representing the extension's DER encoded value.
+
+.. class:: CustomExtensionType(value)
+    :canonical: cryptography.x509.extensions.CustomExtensionType
+
+    .. versionadded:: 51.0.0
+
+    A base class for defining extension types that ``cryptography`` does not
+    natively support. Subclasses must be parameterized with the ASN.1 type of
+    the extension's value, using the types supported by
+    :mod:`cryptography.hazmat.asn1`, and must define an ``oid`` class
+    attribute.
+
+    Custom extension classes can be passed to
+    :meth:`Extensions.get_extension_for_class`, which parses the matching
+    extension's DER value into the custom class. Instances can also be passed
+    to the ``add_extension`` method of the certificate, CRL, CSR, and OCSP
+    builders, which serialize the value to DER.
+
+    .. code-block:: python
+
+        from cryptography import x509
+        from cryptography.hazmat import asn1
+        from cryptography.x509.oid import ExtensionOID
+
+        @asn1.sequence
+        class PolicyMapping:
+            issuer_domain_policy: x509.ObjectIdentifier
+            subject_domain_policy: x509.ObjectIdentifier
+
+        class PolicyMappings(x509.CustomExtensionType[list[PolicyMapping]]):
+            oid = ExtensionOID.POLICY_MAPPINGS
+
+        ext = cert.extensions.get_extension_for_class(PolicyMappings)
+        for mapping in ext.value.value:
+            print(mapping.issuer_domain_policy, mapping.subject_domain_policy)
+
+        builder = builder.add_extension(
+            PolicyMappings([
+                PolicyMapping(
+                    issuer_domain_policy=x509.ObjectIdentifier("1.2.3"),
+                    subject_domain_policy=x509.ObjectIdentifier("1.2.4"),
+                )
+            ]),
+            critical=False,
+        )
+
+    :param value: The extension's value, an instance of the ASN.1 type the
+        class was parameterized with.
+
+    :raises TypeError: When subclassing, if the class is not parameterized
+        with a concrete ASN.1 type or does not define ``oid``.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the OID associated with this extension, as defined by the
+        subclass.
+
+    .. attribute:: value
+
+        The parsed value of the extension.
+
+    .. method:: public_bytes()
 
         :return bytes:
 

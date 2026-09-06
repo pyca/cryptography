@@ -14,6 +14,7 @@ import pytest
 
 from cryptography import utils, x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
+from cryptography.hazmat import asn1
 from cryptography.hazmat.bindings._rust import test_support
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -4900,6 +4901,59 @@ class TestCertificateBuilder:
         ext = cert.extensions.get_extension_for_oid(unrecognized.oid)
 
         assert ext.value == unrecognized
+
+    def test_custom_extension(self, rsa_key_2048: rsa.RSAPrivateKey):
+        @asn1.sequence
+        class PolicyMapping:
+            issuer_domain_policy: x509.ObjectIdentifier
+            subject_domain_policy: x509.ObjectIdentifier
+
+        class PolicyMappings(x509.CustomExtensionType[list[PolicyMapping]]):
+            oid = ExtensionOID.POLICY_MAPPINGS
+
+        mappings = PolicyMappings(
+            [
+                PolicyMapping(
+                    issuer_domain_policy=x509.ObjectIdentifier("1.2.3"),
+                    subject_domain_policy=x509.ObjectIdentifier("1.2.4"),
+                )
+            ]
+        )
+        private_key = rsa_key_2048
+
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, "US")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, "US")])
+            )
+            .not_valid_before(datetime.datetime(2002, 1, 1, 12, 1))
+            .not_valid_after(datetime.datetime(2030, 12, 31, 8, 30))
+            .public_key(private_key.public_key())
+            .serial_number(123)
+            .add_extension(mappings, critical=True)
+            .sign(private_key, hashes.SHA256())
+        )
+
+        ext = cert.extensions.get_extension_for_oid(
+            ExtensionOID.POLICY_MAPPINGS
+        )
+        assert ext.critical is True
+        assert isinstance(ext.value, x509.UnrecognizedExtension)
+        assert ext.value.value == (
+            b"\x30\x0a\x30\x08\x06\x02\x2a\x03\x06\x02\x2a\x04"
+        )
+
+        custom = cert.extensions.get_extension_for_class(PolicyMappings)
+        assert custom.critical is True
+        assert isinstance(custom.value, PolicyMappings)
+        # `asn1.sequence` classes don't define `__eq__`, so compare fields.
+        [mapping] = custom.value.value
+        assert mapping.issuer_domain_policy == x509.ObjectIdentifier("1.2.3")
+        assert mapping.subject_domain_policy == x509.ObjectIdentifier("1.2.4")
+        assert custom.value.public_bytes() == mappings.public_bytes()
 
     def test_sign_without_private_key(self, rsa_key_2048: rsa.RSAPrivateKey):
         subject_private_key = rsa_key_2048
