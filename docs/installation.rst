@@ -110,7 +110,7 @@ available<installation:Rust>`.
 
     .. warning::
 
-        The Rust available by default in Alpine < 3.21 is older than the
+        The Rust available by default in Alpine < 3.22 is older than the
         minimum supported version. See the :ref:`Rust installation instructions
         <installation:Rust>` for information about installing a newer Rust.
 
