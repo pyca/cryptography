@@ -381,8 +381,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Sep 01, 2026.
-            REF: f1e029800e8568e76180dbe1d8b79dc798ba2610
+            # Latest commit on the pyopenssl main branch, as of Sep 07, 2026.
+            REF: 07c8f27cab7df87b1c77dde416b23800d23f0819
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -391,8 +391,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Sep 03, 2026.
-            REF: 9e9922df02ab8a57d4efb3af6756c7bc3353cd8c
+            # Latest commit on the twisted trunk branch, as of Sep 07, 2026.
+            REF: ac919a6d1b2f91b7dea806bacfae99abab5291d4
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
