@@ -87,8 +87,15 @@ impl std::ops::Deref for AeadCipher {
 pub(crate) struct EvpCipherAead {
     cipher: AeadCipher,
     key: pyo3::Py<pyo3::PyAny>,
-    base_encryption_ctx: openssl::cipher_ctx::CipherCtx,
-    base_decryption_ctx: openssl::cipher_ctx::CipherCtx,
+    // A context with the cipher and key set, but no per-operation state.
+    // Each operation copies it and then sets the direction and nonce on the
+    // copy, so the key schedule is computed only once at construction time.
+    base_ctx: openssl::cipher_ctx::CipherCtx,
+    // Most AEADs only use the forward block cipher, so a context keyed for
+    // encryption can be switched to decryption. OCB, however, chooses its
+    // hardware stream routine at key-setup time based on the direction, so
+    // it needs a separate pre-keyed decryption context.
+    base_decryption_ctx: Option<openssl::cipher_ctx::CipherCtx>,
     tag_len: usize,
     tag_first: bool,
     is_ccm: bool,
@@ -102,23 +109,28 @@ impl EvpCipherAead {
         tag_len: usize,
         tag_first: bool,
         is_ccm: bool,
+        key_schedule_per_direction: bool,
     ) -> CryptographyResult<EvpCipherAead> {
-        let mut base_encryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        let mut base_decryption_ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        let mut base_ctx = openssl::cipher_ctx::CipherCtx::new()?;
+        let mut base_decryption_ctx = None;
         // CCM requires the IV and tag lengths to be set before the key, so
-        // contexts can't be pre-keyed. The base contexts are left
+        // the context can't be pre-keyed. The base context is left
         // uninitialized and every operation initializes a context from
         // scratch.
         if !is_ccm {
             let key_buf = key.extract::<CffiBuf<'_>>(py)?;
-            base_encryption_ctx.encrypt_init(Some(&cipher), Some(key_buf.as_bytes()), None)?;
-            base_decryption_ctx.decrypt_init(Some(&cipher), Some(key_buf.as_bytes()), None)?;
+            base_ctx.encrypt_init(Some(&cipher), Some(key_buf.as_bytes()), None)?;
+            if key_schedule_per_direction {
+                let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
+                ctx.decrypt_init(Some(&cipher), Some(key_buf.as_bytes()), None)?;
+                base_decryption_ctx = Some(ctx);
+            }
         }
 
         Ok(EvpCipherAead {
             cipher,
             key,
-            base_encryption_ctx,
+            base_ctx,
             base_decryption_ctx,
             tag_len,
             tag_first,
@@ -208,9 +220,9 @@ impl EvpCipherAead {
         check_length(plaintext)?;
 
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        if self.is_ccm || ctx.copy(&self.base_encryption_ctx).is_err() {
+        if self.is_ccm || ctx.copy(&self.base_ctx).is_err() {
             // Copying the pre-keyed context isn't possible: either this is
-            // CCM (whose base contexts are uninitialized), or this OpenSSL
+            // CCM (whose base context is uninitialized), or this OpenSSL
             // doesn't support copying AEAD contexts (providers prior to
             // OpenSSL 3.2). Initialize a new context from scratch.
             ctx = openssl::cipher_ctx::CipherCtx::new()?;
@@ -279,9 +291,10 @@ impl EvpCipherAead {
         }
 
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        if self.is_ccm || ctx.copy(&self.base_decryption_ctx).is_err() {
+        let base_ctx = self.base_decryption_ctx.as_ref().unwrap_or(&self.base_ctx);
+        if self.is_ccm || ctx.copy(base_ctx).is_err() {
             // Copying the pre-keyed context isn't possible: either this is
-            // CCM (whose base contexts are uninitialized), or this OpenSSL
+            // CCM (whose base context is uninitialized), or this OpenSSL
             // doesn't support copying AEAD contexts (providers prior to
             // OpenSSL 3.2). Initialize a new context from scratch.
             ctx = openssl::cipher_ctx::CipherCtx::new()?;
@@ -303,6 +316,9 @@ impl EvpCipherAead {
                 ctx.set_iv_length(nonce.len())?;
             }
 
+            // If the copied context was keyed for encryption,
+            // re-initializing with no cipher or key switches it to
+            // decryption while retaining the key schedule.
             ctx.decrypt_init(None, None, nonce)?;
             ctx.set_tag(tag)?;
         }
@@ -437,6 +453,7 @@ impl ChaCha20Poly1305 {
                         AeadCipher::Static(openssl::cipher::Cipher::chacha20_poly1305()),
                         key,
                         16,
+                        false,
                         false,
                         false,
                     )?,
@@ -610,7 +627,7 @@ impl AesGcm {
         };
 
         Ok(AesGcm {
-            ctx: EvpCipherAead::new(py, AeadCipher::Static(cipher), key, 16, false, false)?,
+            ctx: EvpCipherAead::new(py, AeadCipher::Static(cipher), key, 16, false, false, false)?,
         })
     }
 
@@ -819,6 +836,7 @@ impl AesCcm {
                         tag_length,
                         false,
                         true,
+                        false,
                     )?,
                     tag_length
                 })
@@ -1041,6 +1059,7 @@ impl AesSiv {
                         16,
                         true,
                         false,
+                        false,
                     )?,
                 })
             } else {
@@ -1238,6 +1257,8 @@ impl AesOcb3 {
                         16,
                         false,
                         false,
+                        // OCB's key setup is direction-specific.
+                        true,
                     )?,
                 })
             }
@@ -1460,6 +1481,7 @@ impl AesGcmSiv {
                         AeadCipher::Fetched(cipher),
                         key,
                         16,
+                        false,
                         false,
                         false,
                     )?,
