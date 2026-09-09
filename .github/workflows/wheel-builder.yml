@@ -204,7 +204,7 @@ jobs:
             _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
           - VERSION: '3.15t'
             ABI_VERSION: 'abi3t-py315'
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.15.0/python-3.15.0rc2-macos11.pkg'
+            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.15.0/python-3.15.0-macos11.pkg'
             BIN_PATH: '/Library/Frameworks/PythonT.framework/Versions/3.15/bin/python3.15t'
             DEPLOYMENT_TARGET: '11.0'
             ARCHFLAGS: '-arch arm64'
@@ -321,18 +321,18 @@ jobs:
         WINDOWS:
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc', RUNNER: 'windows-latest'}
         PYTHON:
-          - {VERSION: "3.14", "ABI_VERSION": "abi3-py39", FREETHREADED: false}
-          - {VERSION: "3.14", "ABI_VERSION": "abi3-py311", FREETHREADED: false}
-          - {VERSION: "3.14t", FREETHREADED: true}
-          - {VERSION: "3.15.0-rc.2", "ABI_VERSION": "abi3t-py315", FREETHREADED: true}
-          - {VERSION: "pypy-3.11", FREETHREADED: false}
+          - {VERSION: "3.14", "ABI_VERSION": "abi3-py39"}
+          - {VERSION: "3.14", "ABI_VERSION": "abi3-py311"}
+          - {VERSION: "3.14t"}
+          - {VERSION: "3.15t", "ABI_VERSION": "abi3t-py315"}
+          - {VERSION: "pypy-3.11"}
         include:
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.14", "ABI_VERSION": "abi3-py311", FREETHREADED: false}
+            PYTHON: {VERSION: "3.14", "ABI_VERSION": "abi3-py311"}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.14t", FREETHREADED: true}
+            PYTHON: {VERSION: "3.14t"}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.15.0-rc.2", "ABI_VERSION": "abi3t-py315", FREETHREADED: true}
+            PYTHON: {VERSION: "3.15t", "ABI_VERSION": "abi3t-py315"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
       - name: Get build-requirements.txt from repository
@@ -352,7 +352,6 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           abi-version: ${{ matrix.PYTHON.ABI_VERSION }}
-          freethreaded: ${{ matrix.PYTHON.FREETHREADED }}
           arch: ${{ matrix.WINDOWS.ARCH }}
           rust-triple: ${{ matrix.WINDOWS.RUST_TRIPLE }}
           openssl-name: ${{ matrix.WINDOWS.WINDOWS }}
