@@ -87,7 +87,6 @@ impl std::ops::Deref for AeadCipher {
 /// Describes how a cipher's key schedule relates to the direction of
 /// operation. This determines how many contexts we pre-key at construction
 /// time.
-#[derive(Clone, Copy)]
 pub(crate) enum KeySchedule {
     /// Key setup doesn't depend on direction (the cipher only uses the
     /// forward block cipher, or sets up both at once). A single keyed
@@ -95,7 +94,13 @@ pub(crate) enum KeySchedule {
     DirectionIndependent,
     /// Key setup depends on direction. OpenSSL's OCB chooses its hardware
     /// stream routine at key-setup time based on it, so a context keyed for
-    /// one direction cannot be used for the other.
+    /// one direction cannot be used for the other. (OCB is the only user,
+    /// and it's unsupported on the other backends.)
+    #[cfg(not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    )))]
     PerDirection,
 }
 
@@ -109,6 +114,11 @@ enum BaseCtxs {
     /// from scratch.
     None,
     Shared(openssl::cipher_ctx::CipherCtx),
+    #[cfg(not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    )))]
     PerDirection {
         encrypt: openssl::cipher_ctx::CipherCtx,
         decrypt: openssl::cipher_ctx::CipherCtx,
@@ -116,12 +126,29 @@ enum BaseCtxs {
 }
 
 impl BaseCtxs {
-    fn get(&self, encrypt: bool) -> Option<&openssl::cipher_ctx::CipherCtx> {
+    fn for_encryption(&self) -> Option<&openssl::cipher_ctx::CipherCtx> {
         match self {
             BaseCtxs::None => None,
             BaseCtxs::Shared(ctx) => Some(ctx),
-            BaseCtxs::PerDirection { encrypt: ctx, .. } if encrypt => Some(ctx),
-            BaseCtxs::PerDirection { decrypt: ctx, .. } => Some(ctx),
+            #[cfg(not(any(
+                CRYPTOGRAPHY_IS_LIBRESSL,
+                CRYPTOGRAPHY_IS_BORINGSSL,
+                CRYPTOGRAPHY_IS_AWSLC
+            )))]
+            BaseCtxs::PerDirection { encrypt, .. } => Some(encrypt),
+        }
+    }
+
+    fn for_decryption(&self) -> Option<&openssl::cipher_ctx::CipherCtx> {
+        match self {
+            BaseCtxs::None => None,
+            BaseCtxs::Shared(ctx) => Some(ctx),
+            #[cfg(not(any(
+                CRYPTOGRAPHY_IS_LIBRESSL,
+                CRYPTOGRAPHY_IS_BORINGSSL,
+                CRYPTOGRAPHY_IS_AWSLC
+            )))]
+            BaseCtxs::PerDirection { decrypt, .. } => Some(decrypt),
         }
     }
 }
@@ -157,6 +184,11 @@ impl EvpCipherAead {
                     ctx.encrypt_init(Some(&cipher), Some(key_buf.as_bytes()), None)?;
                     BaseCtxs::Shared(ctx)
                 }
+                #[cfg(not(any(
+                    CRYPTOGRAPHY_IS_LIBRESSL,
+                    CRYPTOGRAPHY_IS_BORINGSSL,
+                    CRYPTOGRAPHY_IS_AWSLC
+                )))]
                 KeySchedule::PerDirection => {
                     let mut encrypt = openssl::cipher_ctx::CipherCtx::new()?;
                     encrypt.encrypt_init(Some(&cipher), Some(key_buf.as_bytes()), None)?;
@@ -259,7 +291,7 @@ impl EvpCipherAead {
         check_length(plaintext)?;
 
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        let copied = match self.base_ctxs.get(true) {
+        let copied = match self.base_ctxs.for_encryption() {
             Some(base) => ctx.copy(base).is_ok(),
             None => false,
         };
@@ -334,7 +366,7 @@ impl EvpCipherAead {
         }
 
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        let copied = match self.base_ctxs.get(false) {
+        let copied = match self.base_ctxs.for_decryption() {
             Some(base) => ctx.copy(base).is_ok(),
             None => false,
         };
