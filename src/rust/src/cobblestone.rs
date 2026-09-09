@@ -71,6 +71,38 @@ fn check_key_length(params: &AeadParams, key: &[u8]) -> CryptographyResult<()> {
     Ok(())
 }
 
+fn truncated_error() -> CryptographyError {
+    CryptographyError::from(exceptions::InvalidTag::new_err(()))
+}
+
+// Reads up to `want` bytes at byte offset `offset` from a reader, by calling
+// its `read_at(offset, length)` method. The read is positional: the reader
+// holds no cursor, so a single reader can serve concurrent range requests.
+// Returns fewer than `want` bytes only at the end of the ciphertext.
+fn range_read(
+    py: pyo3::Python<'_>,
+    reader: &pyo3::Bound<'_, pyo3::PyAny>,
+    offset: u64,
+    want: usize,
+) -> CryptographyResult<Vec<u8>> {
+    let mut out = Vec::with_capacity(want);
+    while out.len() < want {
+        let result = reader.call_method1(
+            pyo3::intern!(py, "read_at"),
+            (offset + out.len() as u64, want - out.len()),
+        )?;
+        let read = result.extract::<CffiBuf<'_>>()?;
+        let read_bytes = read.as_bytes();
+        // A short read means the end of the ciphertext was reached.
+        if read_bytes.is_empty() {
+            break;
+        }
+        let take = std::cmp::min(read_bytes.len(), want - out.len());
+        out.extend_from_slice(&read_bytes[..take]);
+    }
+    Ok(out)
+}
+
 struct DerivedKeys<'p> {
     key: pyo3::Bound<'p, pyo3::types::PyBytes>,
     base_nonce: [u8; NONCE_LEN],
@@ -131,15 +163,22 @@ impl ChunkNonces {
         Ok(())
     }
 
-    fn next(&mut self) -> CryptographyResult<[u8; NONCE_LEN]> {
-        self.check_capacity(1)?;
+    // The nonce for an arbitrary chunk index: the base nonce XOR'd with the
+    // index as a big-endian integer. This is stateless, so it serves both the
+    // sequential streaming path (via `next`) and random-access decryption.
+    fn nonce_for(&self, index: u64) -> CryptographyResult<[u8; NONCE_LEN]> {
+        if index >= MAX_CHUNK_COUNT {
+            return Err(message_too_large_error());
+        }
         let mut nonce = self.base_nonce;
-        for (n, c) in nonce[NONCE_LEN - 8..]
-            .iter_mut()
-            .zip(self.counter.to_be_bytes())
-        {
+        for (n, c) in nonce[NONCE_LEN - 8..].iter_mut().zip(index.to_be_bytes()) {
             *n ^= c;
         }
+        Ok(nonce)
+    }
+
+    fn next(&mut self) -> CryptographyResult<[u8; NONCE_LEN]> {
+        let nonce = self.nonce_for(self.counter)?;
         self.counter += 1;
         Ok(nonce)
     }
@@ -181,6 +220,29 @@ impl ChunkCipher {
             py,
             CffiBuf::from_bytes(py, &nonce),
             CffiBuf::from_bytes(py, plaintext),
+            None,
+            CffiMutBuf::from_bytes(py, out),
+        )?;
+        Ok(())
+    }
+
+    // Decrypts the chunk at an explicit `index`, without advancing the
+    // sequential counter, for random-access decryption. `ciphertext` includes
+    // the trailing tag; `out` must be exactly `ciphertext.len() - self.tag_len`
+    // bytes. Returns InvalidTag if the chunk does not authenticate (e.g. it was
+    // tampered with, or belongs at a different index).
+    fn decrypt_chunk_at(
+        &self,
+        py: pyo3::Python<'_>,
+        index: u64,
+        ciphertext: &[u8],
+        out: &mut [u8],
+    ) -> CryptographyResult<()> {
+        let nonce = self.nonces.nonce_for(index)?;
+        self.aead.decrypt_into(
+            py,
+            CffiBuf::from_bytes(py, &nonce),
+            CffiBuf::from_bytes(py, ciphertext),
             None,
             CffiMutBuf::from_bytes(py, out),
         )?;
@@ -547,6 +609,146 @@ impl ChunkedDecryptor {
     }
 }
 
+// Random-access decryption of a single message. Unlike ChunkedDecryptor this
+// holds no per-message stream state: each call reads, authenticates, and
+// returns an independent range.
+struct RangeDecryptor {
+    params: &'static AeadParams,
+    key: Vec<u8>,
+    context: Vec<u8>,
+    // The derived cipher, cached alongside the header it came from so that
+    // repeated ranges of one message skip the key derivation while a reader
+    // for a *different* message is still handled correctly.
+    cached: Option<([u8; HEADER_LEN], ChunkCipher)>,
+}
+
+impl RangeDecryptor {
+    fn new(params: &'static AeadParams, key: &[u8], context: &[u8]) -> CryptographyResult<Self> {
+        check_key_length(params, key)?;
+        Ok(RangeDecryptor {
+            params,
+            key: key.to_vec(),
+            context: context.to_vec(),
+            cached: None,
+        })
+    }
+
+    // Derives the message's keys from `header` and verifies the commitment,
+    // reusing the cached cipher when the header is unchanged.
+    fn ensure_cipher(
+        &mut self,
+        py: pyo3::Python<'_>,
+        header: &[u8],
+    ) -> CryptographyResult<&ChunkCipher> {
+        let fresh = match &self.cached {
+            Some((cached_header, _)) => cached_header != header,
+            None => true,
+        };
+        if fresh {
+            let (salt, commitment) = header.split_at(SALT_LEN);
+            let keys = derive_keys(py, self.params, &self.key, salt, &self.context)?;
+            // The commitment is checked before any plaintext is produced.
+            if !cryptography_crypto::constant_time::bytes_eq(&keys.commitment, commitment) {
+                return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
+            }
+            let cipher = ChunkCipher::new(py, self.params, &keys)?;
+            let mut owned = [0; HEADER_LEN];
+            owned.copy_from_slice(header);
+            self.cached = Some((owned, cipher));
+        }
+        Ok(&self.cached.as_ref().expect("just populated").1)
+    }
+
+    // Returns the authenticated plaintext bytes in `[offset, offset + length)`.
+    //
+    // The requested range is silently widened to whole chunk boundaries so that
+    // every chunk it touches is authenticated by its AEAD tag; only then is the
+    // requested sub-range sliced out. Unauthenticated bytes are never returned.
+    //
+    // Note: a range read authenticates the bytes it returns, but not the
+    // message as a whole. It cannot detect truncation of chunks beyond the
+    // requested range, so the total plaintext length must come from a trusted
+    // source, not be inferred from the ciphertext.
+    fn decrypt_range<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        reader: &pyo3::Bound<'p, pyo3::PyAny>,
+        offset: u64,
+        length: usize,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if length == 0 {
+            return Ok(pyo3::types::PyBytes::new(py, &[]));
+        }
+
+        let params = self.params;
+        let wire = params.wire_chunk_size();
+        let first_chunk = offset / CHUNK_SIZE as u64;
+        // Bound the range to the maximum message length (which also guards
+        // against `offset + length` overflowing for a hostile offset). This
+        // keeps every chunk index below MAX_CHUNK_COUNT.
+        let last_byte = offset
+            .checked_add(length as u64)
+            .filter(|end| *end <= MAX_CHUNK_COUNT * CHUNK_SIZE as u64)
+            .ok_or_else(message_too_large_error)?
+            - 1;
+        let last_chunk = last_byte / CHUNK_SIZE as u64;
+        let n_chunks = (last_chunk - first_chunk + 1) as usize;
+
+        // The header is re-read on every call: it is what binds the returned
+        // plaintext to this particular message.
+        let header = range_read(py, reader, 0, HEADER_LEN)?;
+        if header.len() < HEADER_LEN {
+            return Err(truncated_error());
+        }
+        let cipher = self.ensure_cipher(py, &header)?;
+
+        // Read the contiguous ciphertext window covering the requested chunks
+        // in one request, so a multi-chunk range is a single round trip.
+        let ct_start = HEADER_LEN as u64 + first_chunk * wire as u64;
+        let data = range_read(py, reader, ct_start, n_chunks * wire)?;
+
+        // Decrypt whole chunks, releasing plaintext only for those that
+        // authenticate. Any trailing partial wire chunk is the message's short
+        // final chunk.
+        let mut plaintext = Vec::with_capacity(n_chunks * CHUNK_SIZE);
+        let mut consumed = 0;
+        let mut index = first_chunk;
+        while consumed + wire <= data.len() {
+            let start = plaintext.len();
+            plaintext.resize(start + CHUNK_SIZE, 0);
+            cipher.decrypt_chunk_at(
+                py,
+                index,
+                &data[consumed..consumed + wire],
+                &mut plaintext[start..],
+            )?;
+            consumed += wire;
+            index += 1;
+        }
+        let remainder = data.len() - consumed;
+        if remainder > 0 {
+            if remainder < params.tag_len {
+                // Too short to be a valid chunk: the message is truncated.
+                return Err(truncated_error());
+            }
+            let start = plaintext.len();
+            plaintext.resize(start + remainder - params.tag_len, 0);
+            cipher.decrypt_chunk_at(py, index, &data[consumed..], &mut plaintext[start..])?;
+        }
+
+        // Slice out the requested range. If the authenticated plaintext does
+        // not reach `offset + length`, the message is shorter than the request
+        // (truncated, or the caller read past the end); either way there are no
+        // authenticated bytes to return there.
+        let intra = (offset - first_chunk * CHUNK_SIZE as u64) as usize;
+        let end = intra + length;
+        if end > plaintext.len() {
+            return Err(truncated_error());
+        }
+        Ok(pyo3::types::PyBytes::new(py, &plaintext[intra..end]))
+    }
+}
+
 #[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.cobblestone")]
 pub(crate) struct Cobblestone128Encryptor {
     inner: ChunkedEncryptor,
@@ -729,13 +931,63 @@ impl Cobblestone256Decryptor {
     }
 }
 
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.cobblestone")]
+pub(crate) struct Cobblestone128RangeDecryptor {
+    inner: RangeDecryptor,
+}
+
+#[pyo3::pymethods]
+impl Cobblestone128RangeDecryptor {
+    #[new]
+    fn new(key: CffiBuf<'_>, context: CffiBuf<'_>) -> CryptographyResult<Self> {
+        Ok(Cobblestone128RangeDecryptor {
+            inner: RangeDecryptor::new(&AES_128_GCM, key.as_bytes(), context.as_bytes())?,
+        })
+    }
+
+    fn decrypt_range<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        reader: pyo3::Bound<'p, pyo3::PyAny>,
+        offset: u64,
+        length: usize,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        self.inner.decrypt_range(py, &reader, offset, length)
+    }
+}
+
+#[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.cobblestone")]
+pub(crate) struct Cobblestone256RangeDecryptor {
+    inner: RangeDecryptor,
+}
+
+#[pyo3::pymethods]
+impl Cobblestone256RangeDecryptor {
+    #[new]
+    fn new(key: CffiBuf<'_>, context: CffiBuf<'_>) -> CryptographyResult<Self> {
+        Ok(Cobblestone256RangeDecryptor {
+            inner: RangeDecryptor::new(&AES_256_GCM, key.as_bytes(), context.as_bytes())?,
+        })
+    }
+
+    fn decrypt_range<'p>(
+        &mut self,
+        py: pyo3::Python<'p>,
+        reader: pyo3::Bound<'p, pyo3::PyAny>,
+        offset: u64,
+        length: usize,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        self.inner.decrypt_range(py, &reader, offset, length)
+    }
+}
+
 #[pyo3::pymodule(gil_used = false)]
 #[pyo3(name = "cobblestone")]
 pub(crate) mod cobblestone_mod {
     #[pymodule_export]
     use super::{
-        Cobblestone128Decryptor, Cobblestone128Encryptor, Cobblestone256Decryptor,
-        Cobblestone256Encryptor,
+        Cobblestone128Decryptor, Cobblestone128Encryptor, Cobblestone128RangeDecryptor,
+        Cobblestone256Decryptor, Cobblestone256Encryptor, Cobblestone256RangeDecryptor,
     };
 }
 
