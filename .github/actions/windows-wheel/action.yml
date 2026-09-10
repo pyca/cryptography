@@ -5,17 +5,14 @@ description: |
 
 inputs:
   python-version:
-    description: "Python version to build for (e.g. 3.14, 3.14t, pypy-3.11)"
+    description: "Python version to build for (e.g. 3.14, 3.14t, pypy3.11)"
     required: true
   abi-version:
     description: "Optional limited-API ABI version (e.g. abi3-py39, abi3-py311, abi3t-py315)"
     required: false
     default: ""
-  freethreaded:
-    description: "actions/setup-python freethreaded"
-    required: true
   arch:
-    description: "actions/setup-python architecture (x86, x64, arm64)"
+    description: "x64 or arm64"
     required: true
   rust-triple:
     description: "Rust target triple"
@@ -27,7 +24,7 @@ inputs:
     description: "Path to build-requirements.txt"
     required: true
   uv-requirements-path:
-    description: "Path to uv-requirements.txt"
+    description: "Path to uv-requirements.txt, which pins the uv version"
     required: true
   wheel-artifact-name:
     description: "Name of the uploaded wheel artifact"
@@ -41,12 +38,14 @@ runs:
       with:
         name: cryptography-sdist
 
+    # On Windows arm64 a bare version request gets uv the x86_64
+    # (emulated) interpreter, so ask for the aarch64 one by name.
     - name: Setup python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
       with:
-        python-version: ${{ inputs.python-version }}
-        architecture: ${{ inputs.arch }}
-        freethreaded: ${{ inputs.freethreaded }}
+        version-file: ${{ inputs.uv-requirements-path }}
+        python-version: ${{ inputs.arch == 'arm64' && format('cpython-{0}-windows-aarch64-none', inputs.python-version) || inputs.python-version }}
+        enable-cache: false
     - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
       with:
         toolchain: stable
@@ -69,10 +68,6 @@ runs:
         OPENSSL_NAME: ${{ inputs.openssl-name }}
       shell: bash
 
-    - run: pip install -r "${UV_REQUIREMENTS_PATH}"
-      env:
-        UV_REQUIREMENTS_PATH: ${{ inputs.uv-requirements-path }}
-      shell: bash
     - run: mkdir wheelhouse
       shell: bash
     - run: |

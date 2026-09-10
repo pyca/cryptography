@@ -27,6 +27,10 @@ jobs:
   sdist:
     runs-on: ubuntu-latest
     name: sdists
+    # Always build with uv's python-build-standalone interpreter, not
+    # whichever Python the runner image happens to ship.
+    env:
+      UV_PYTHON_PREFERENCE: only-managed
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -34,11 +38,12 @@ jobs:
           ref: ${{ github.event.inputs.version || github.ref }}
           persist-credentials: false
 
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
+          version-file: ${{ env.UV_REQUIREMENTS_PATH }}
           python-version: "3.14"
+          enable-cache: false
         timeout-minutes: 3
-      - run: python -m pip install -r $UV_REQUIREMENTS_PATH
 
       - name: Make sdist (cryptography)
         run: uv build --build-constraint=$BUILD_REQUIREMENTS_PATH --require-hashes --sdist
@@ -182,39 +187,16 @@ jobs:
       fail-fast: false
       matrix:
         PYTHON:
-          - VERSION: '3.11'
-            ABI_VERSION: 'abi3-py39'
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
-            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.14/bin/python3'
-            DEPLOYMENT_TARGET: '11.0'
-            ARCHFLAGS: '-arch arm64'
-            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
-          - VERSION: '3.14'
-            ABI_VERSION: 'abi3-py311'
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
-            BIN_PATH: '/Library/Frameworks/Python.framework/Versions/3.14/bin/python3'
-            DEPLOYMENT_TARGET: '11.0'
-            ARCHFLAGS: '-arch arm64'
-            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
-          - VERSION: '3.14t'
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.14.0/python-3.14.0-macos11.pkg'
-            BIN_PATH: '/Library/Frameworks/PythonT.framework/Versions/3.14/bin/python3.14t'
-            DEPLOYMENT_TARGET: '11.0'
-            ARCHFLAGS: '-arch arm64'
-            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
-          - VERSION: '3.15t'
-            ABI_VERSION: 'abi3t-py315'
-            DOWNLOAD_URL: 'https://www.python.org/ftp/python/3.15.0/python-3.15.0rc2-macos11.pkg'
-            BIN_PATH: '/Library/Frameworks/PythonT.framework/Versions/3.15/bin/python3.15t'
-            DEPLOYMENT_TARGET: '11.0'
-            ARCHFLAGS: '-arch arm64'
-            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
-          - VERSION: 'pypy-3.11'
-            BIN_PATH: 'pypy3'
-            DEPLOYMENT_TARGET: '11.0'
-            _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
-            ARCHFLAGS: '-arch arm64'
-    name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS ${{ matrix.PYTHON.ARCHFLAGS }}"
+          - {VERSION: '3.14', ABI_VERSION: 'abi3-py39'}
+          - {VERSION: '3.14', ABI_VERSION: 'abi3-py311'}
+          - {VERSION: '3.14t'}
+          - {VERSION: '3.15t', ABI_VERSION: 'abi3t-py315'}
+          - {VERSION: 'pypy3.11'}
+    name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS -arch arm64"
+    # Always build with uv's python-build-standalone interpreter, not
+    # whichever Python the runner image happens to ship.
+    env:
+      UV_PYTHON_PREFERENCE: only-managed
     steps:
       - name: Get build-requirements.txt from repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -225,36 +207,15 @@ jobs:
           sparse-checkout: |
             ${{ env.BUILD_REQUIREMENTS_PATH }}
             ${{ env.UV_REQUIREMENTS_PATH }}
-            .github/config/macos-pkg-choices-freethreaded.xml
-            .github/config/macos-pkg-choices-3.15-freethreaded.xml
             .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
       - name: Setup python
-        run: |
-          curl --max-time 30 --retry 5 "$PYTHON_DOWNLOAD_URL" -o python.pkg
-          sudo installer -pkg python.pkg -target /
-        env:
-          PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
-        if: contains(matrix.PYTHON.VERSION, 'pypy') == false && matrix.PYTHON.VERSION != '3.14t' && matrix.PYTHON.VERSION != '3.15t'
-      - name: Setup free-threaded python 3.14
-        run: |
-          curl --max-time 30 --retry 5 "$PYTHON_DOWNLOAD_URL" -o python.pkg
-          sudo installer -pkg python.pkg -applyChoiceChangesXML .github/config/macos-pkg-choices-freethreaded.xml -target /
-        env:
-          PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
-        if: matrix.PYTHON.VERSION == '3.14t'
-      - name: Setup free-threaded python 3.15
-        run: |
-          curl --max-time 30 --retry 5 "$PYTHON_DOWNLOAD_URL" -o python.pkg
-          sudo installer -pkg python.pkg -applyChoiceChangesXML .github/config/macos-pkg-choices-3.15-freethreaded.xml -target /
-        env:
-          PYTHON_DOWNLOAD_URL: ${{ matrix.PYTHON.DOWNLOAD_URL }}
-        if: matrix.PYTHON.VERSION == '3.15t'
-      - name: Setup pypy
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
+          version-file: ${{ env.UV_REQUIREMENTS_PATH }}
           python-version: ${{ matrix.PYTHON.VERSION }}
-        if: contains(matrix.PYTHON.VERSION, 'pypy')
+          enable-cache: false
+        timeout-minutes: 3
       - uses: dawidd6/action-download-artifact@d63b86af1b34672e53c440b1b83979861906bad7 # v24
         with:
           repo: pyca/infra
@@ -271,19 +232,6 @@ jobs:
         with:
           name: cryptography-sdist
 
-      - run: ${{ matrix.PYTHON.BIN_PATH }} -m pip install -r "${UV_REQUIREMENTS_PATH}"
-      - name: add free-threaded python 3.14 tools directory to PATH
-        # This can be deleted once the mac installer has a way to do this PATH
-        # update automatically, like it does for the GIL-enabled build.
-        # See https://github.com/python/cpython/issues/137450
-        run: echo "/Library/Frameworks/PythonT.framework/Versions/3.14/bin" >> "$GITHUB_PATH"
-        if: matrix.PYTHON.VERSION == '3.14t'
-      - name: add free-threaded python 3.15 tools directory to PATH
-        # This can be deleted once the mac installer has a way to do this PATH
-        # update automatically, like it does for the GIL-enabled build.
-        # See https://github.com/python/cpython/issues/137450
-        run: echo "/Library/Frameworks/PythonT.framework/Versions/3.15/bin" >> "$GITHUB_PATH"
-        if: matrix.PYTHON.VERSION == '3.15t'
       - run: mkdir wheelhouse
       - name: Build the wheel
         run: |
@@ -295,9 +243,9 @@ jobs:
               OPENSSL_STATIC=1 \
               uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH $PY_LIMITED_API --config-settings=build-args=--sbom-include="$(readlink -f ../openssl-macos-arm64/sbom.json)" cryptography*.tar.gz -o wheelhouse/
         env:
-          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.PYTHON.DEPLOYMENT_TARGET }}
-          ARCHFLAGS: ${{ matrix.PYTHON.ARCHFLAGS }}
-          _PYTHON_HOST_PLATFORM: ${{ matrix.PYTHON._PYTHON_HOST_PLATFORM }}
+          MACOSX_DEPLOYMENT_TARGET: '11.0'
+          ARCHFLAGS: '-arch arm64'
+          _PYTHON_HOST_PLATFORM: 'macosx-11.0-arm64'
 
       - name: Smoketest
         uses: ./.github/actions/wheel-smoketest
@@ -321,19 +269,23 @@ jobs:
         WINDOWS:
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc', RUNNER: 'windows-latest'}
         PYTHON:
-          - {VERSION: "3.14", "ABI_VERSION": "abi3-py39", FREETHREADED: false}
-          - {VERSION: "3.14", "ABI_VERSION": "abi3-py311", FREETHREADED: false}
-          - {VERSION: "3.14t", FREETHREADED: true}
-          - {VERSION: "3.15.0-rc.2", "ABI_VERSION": "abi3t-py315", FREETHREADED: true}
-          - {VERSION: "pypy-3.11", FREETHREADED: false}
+          - {VERSION: "3.14", "ABI_VERSION": "abi3-py39"}
+          - {VERSION: "3.14", "ABI_VERSION": "abi3-py311"}
+          - {VERSION: "3.14t"}
+          - {VERSION: "3.15t", "ABI_VERSION": "abi3t-py315"}
+          - {VERSION: "pypy3.11"}
         include:
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.14", "ABI_VERSION": "abi3-py311", FREETHREADED: false}
+            PYTHON: {VERSION: "3.14", "ABI_VERSION": "abi3-py311"}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.14t", FREETHREADED: true}
+            PYTHON: {VERSION: "3.14t"}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.15.0-rc.2", "ABI_VERSION": "abi3t-py315", FREETHREADED: true}
+            PYTHON: {VERSION: "3.15t", "ABI_VERSION": "abi3t-py315"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
+    # Always build with uv's python-build-standalone interpreter, not
+    # whichever Python the runner image happens to ship.
+    env:
+      UV_PYTHON_PREFERENCE: only-managed
     steps:
       - name: Get build-requirements.txt from repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -352,7 +304,6 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           abi-version: ${{ matrix.PYTHON.ABI_VERSION }}
-          freethreaded: ${{ matrix.PYTHON.FREETHREADED }}
           arch: ${{ matrix.WINDOWS.ARCH }}
           rust-triple: ${{ matrix.WINDOWS.RUST_TRIPLE }}
           openssl-name: ${{ matrix.WINDOWS.WINDOWS }}
