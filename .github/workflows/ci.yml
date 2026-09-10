@@ -74,15 +74,14 @@ jobs:
         with:
           persist-credentials: false
       - name: Setup python
-        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        id: setup-python
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version-file: ci-constraints-requirements.txt
           python-version: ${{ matrix.PYTHON.VERSION }}
           activate-environment: true
           cache-dependency-glob: ci-constraints-requirements.txt
         timeout-minutes: 3
-      - id: python-version
-        run: echo "version=$(python -c 'import platform; print(platform.python_version())')" >> $GITHUB_OUTPUT
       # The rust session's test binaries link libpython.
       - run: echo "LD_LIBRARY_PATH=$(python -c 'import sysconfig; print(sysconfig.get_config_var("LIBDIR"))')" >> $GITHUB_ENV
       - name: Setup rust
@@ -112,15 +111,10 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          # We have both the Python version from the matrix and from the
-          # interpreter because the latter doesn't distinguish different
-          # Python versions of PyPy that share the same PyPy version
-          # number.
-          #
           # openssl-sys reruns its build script when the include directory
           # is newer than the cached fingerprint, so the key names the
           # specific OpenSSL build, not just its configuration.
-          key: "${{ matrix.PYTHON.VERSION }}-${{ steps.python-version.outputs.version }}-${{ matrix.PYTHON.NOXSESSION }}-${{ steps.openssl.outputs.cache-key }}-0"
+          key: "${{ steps.setup-python.outputs.python-runtime-id }}-${{ matrix.PYTHON.NOXSESSION }}-${{ steps.openssl.outputs.cache-key }}-0"
       # This must run after the cache action: rust-cache prunes binaries
       # that already existed in ~/.cargo/bin before it ran, so installing
       # bindgen first means it never gets cached. When the cache is warm,
@@ -284,15 +278,14 @@ jobs:
         with:
           persist-credentials: false
       - name: Setup python
-        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        id: setup-python
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version-file: ci-constraints-requirements.txt
           python-version: ${{ matrix.PYTHON.VERSION }}
           activate-environment: true
           cache-dependency-glob: ci-constraints-requirements.txt
         timeout-minutes: 3
-      - id: python-version
-        run: echo "version=$(python -c 'import platform; print(platform.python_version())')" >> $GITHUB_OUTPUT
       # Before the cache step: the artifact id is part of its key.
       - name: Download OpenSSL
         id: openssl
@@ -315,7 +308,7 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ matrix.PYTHON.VERSION }}-${{ steps.python-version.outputs.version }}-${{ steps.openssl.outputs.artifact-id }}
+          key: ${{ matrix.PYTHON.NOXSESSION }}-${{ steps.setup-python.outputs.python-runtime-id }}-${{ steps.openssl.outputs.artifact-id }}
       - run: rustup component add llvm-tools-preview
 
       - run: uv pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
@@ -449,10 +442,10 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
       - name: Setup python
-        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version-file: ci-constraints-requirements.txt
-          python-version: "3.14"
+          python-version: '3.14'
           cache-dependency-glob: ci-constraints-requirements.txt
         timeout-minutes: 3
 
