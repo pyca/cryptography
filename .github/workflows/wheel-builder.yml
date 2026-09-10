@@ -21,7 +21,8 @@ on:
 
 env:
   BUILD_REQUIREMENTS_PATH: .github/requirements/build-requirements.txt
-  UV_REQUIREMENTS_PATH: .github/requirements/uv-requirements.txt
+  # Pins the uv version; dependabot keeps it current.
+  UV_VERSION_FILE: ci-constraints-requirements.txt
 
 jobs:
   sdist:
@@ -40,7 +41,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
-          version-file: ${{ env.UV_REQUIREMENTS_PATH }}
+          version-file: ${{ env.UV_VERSION_FILE }}
           python-version: "3.14"
           enable-cache: false
         timeout-minutes: 3
@@ -190,7 +191,7 @@ jobs:
           - {VERSION: '3.14', ABI_VERSION: 'abi3-py39'}
           - {VERSION: '3.14', ABI_VERSION: 'abi3-py311'}
           - {VERSION: '3.14t'}
-          - {VERSION: '3.15t', ABI_VERSION: 'abi3t-py315'}
+          - {VERSION: '3.15.0rc2t', ABI_VERSION: 'abi3t-py315'}
           - {VERSION: 'pypy3.11'}
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS -arch arm64"
     # Always build with uv's python-build-standalone interpreter, not
@@ -206,13 +207,13 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             ${{ env.BUILD_REQUIREMENTS_PATH }}
-            ${{ env.UV_REQUIREMENTS_PATH }}
+            ${{ env.UV_VERSION_FILE }}
             .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
       - name: Setup python
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
-          version-file: ${{ env.UV_REQUIREMENTS_PATH }}
+          version-file: ${{ env.UV_VERSION_FILE }}
           python-version: ${{ matrix.PYTHON.VERSION }}
           enable-cache: false
         timeout-minutes: 3
@@ -272,7 +273,7 @@ jobs:
           - {VERSION: "3.14", "ABI_VERSION": "abi3-py39"}
           - {VERSION: "3.14", "ABI_VERSION": "abi3-py311"}
           - {VERSION: "3.14t"}
-          - {VERSION: "3.15t", "ABI_VERSION": "abi3t-py315"}
+          - {VERSION: "3.15.0rc2t", "ABI_VERSION": "abi3t-py315"}
           - {VERSION: "pypy3.11"}
         include:
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
@@ -280,7 +281,7 @@ jobs:
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "3.14t"}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.15t", "ABI_VERSION": "abi3t-py315"}
+            PYTHON: {VERSION: "3.15.0rc2t", "ABI_VERSION": "abi3t-py315"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     # Always build with uv's python-build-standalone interpreter, not
     # whichever Python the runner image happens to ship.
@@ -295,7 +296,7 @@ jobs:
           persist-credentials: false
           sparse-checkout: |
             ${{ env.BUILD_REQUIREMENTS_PATH }}
-            ${{ env.UV_REQUIREMENTS_PATH }}
+            ${{ env.UV_VERSION_FILE }}
             .github/actions/windows-wheel/
             .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
@@ -308,5 +309,5 @@ jobs:
           rust-triple: ${{ matrix.WINDOWS.RUST_TRIPLE }}
           openssl-name: ${{ matrix.WINDOWS.WINDOWS }}
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
-          uv-requirements-path: ${{ env.UV_REQUIREMENTS_PATH }}
+          uv-version-file: ${{ env.UV_VERSION_FILE }}
           wheel-artifact-name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"

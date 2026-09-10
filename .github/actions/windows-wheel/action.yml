@@ -23,8 +23,8 @@ inputs:
   build-requirements-path:
     description: "Path to build-requirements.txt"
     required: true
-  uv-requirements-path:
-    description: "Path to uv-requirements.txt, which pins the uv version"
+  uv-version-file:
+    description: "Requirements file that pins the uv version"
     required: true
   wheel-artifact-name:
     description: "Name of the uploaded wheel artifact"
@@ -43,7 +43,7 @@ runs:
     - name: Setup python
       uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
       with:
-        version-file: ${{ inputs.uv-requirements-path }}
+        version-file: ${{ inputs.uv-version-file }}
         python-version: ${{ inputs.arch == 'arm64' && format('cpython-{0}-windows-aarch64-none', inputs.python-version) || inputs.python-version }}
         enable-cache: false
     - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
