@@ -8,6 +8,12 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Deprecated DSA. Everything DSA is deprecated, including the types in
+  ``cryptography.hazmat.primitives.asymmetric.dsa`` and loading DSA keys with
+  the key loading APIs (including from X.509 certificates and certificate
+  signing requests). Users should migrate to a more modern signature
+  algorithm.
+
 .. _v50-0-1:
 
 50.0.1 - 2026-08-25

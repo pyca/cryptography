@@ -8,7 +8,7 @@ argcomplete==3.7.0 ; python_full_version < '3.10'
     # via nox
 argcomplete==3.7.2 ; python_full_version >= '3.10'
     # via nox
-ast-serialize==0.8.0 ; python_full_version >= '3.10'
+ast-serialize==0.11.1 ; python_full_version >= '3.10'
     # via mypy
 attrs==26.1.0
     # via nox
@@ -18,7 +18,7 @@ build==1.4.4 ; python_full_version < '3.10'
     # via
     #   cryptography (pyproject.toml:dev)
     #   check-sdist
-build==1.6.0 ; python_full_version >= '3.10'
+build==1.6.1 ; python_full_version >= '3.10'
     # via
     #   cryptography (pyproject.toml:dev)
     #   check-sdist
@@ -69,7 +69,7 @@ filelock==3.19.1 ; python_full_version < '3.10'
     # via
     #   python-discovery
     #   virtualenv
-filelock==3.32.5 ; python_full_version >= '3.10'
+filelock==3.32.6 ; python_full_version >= '3.10'
     # via
     #   python-discovery
     #   virtualenv
@@ -125,7 +125,7 @@ pathspec==1.1.1
     #   mypy
 platformdirs==4.4.0 ; python_full_version < '3.10'
     # via virtualenv
-platformdirs==4.11.7 ; python_full_version >= '3.10'
+platformdirs==4.11.8 ; python_full_version >= '3.10'
     # via
     #   nox
     #   virtualenv
@@ -192,7 +192,7 @@ requests==2.34.2 ; python_full_version >= '3.10'
     #   sphinxcontrib-spelling
 roman-numerals==4.1.0 ; python_full_version >= '3.11'
     # via sphinx
-ruff==0.16.5
+ruff==0.16.6
     # via cryptography (pyproject.toml:dev)
 snowballstemmer==3.1.1
     # via sphinx
@@ -266,9 +266,9 @@ urllib3==2.6.3 ; python_full_version < '3.10'
     # via requests
 urllib3==2.7.0 ; python_full_version >= '3.10'
     # via requests
-uv==0.12.9
+uv==0.12.12
     # via nox
-virtualenv==21.7.8
+virtualenv==21.7.9
     # via nox
 zipp==3.23.1 ; python_full_version < '3.10'
     # via importlib-metadata

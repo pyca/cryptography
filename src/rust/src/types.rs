@@ -37,6 +37,7 @@ pub static DATETIME_TIMEZONE_UTC: LazyPyImport =
     LazyPyImport::new("datetime", &["timezone", "utc"]);
 pub static IPADDRESS_IPADDRESS: LazyPyImport = LazyPyImport::new("ipaddress", &["ip_address"]);
 pub static IPADDRESS_IPNETWORK: LazyPyImport = LazyPyImport::new("ipaddress", &["ip_network"]);
+pub static TIME: LazyPyImport = LazyPyImport::new("time", &[]);
 
 pub static DEPRECATED_IN_36: LazyPyImport =
     LazyPyImport::new("cryptography.utils", &["DeprecatedIn36"]);
@@ -48,6 +49,8 @@ pub static DEPRECATED_IN_43: LazyPyImport =
     LazyPyImport::new("cryptography.utils", &["DeprecatedIn43"]);
 pub static DEPRECATED_IN_50: LazyPyImport =
     LazyPyImport::new("cryptography.utils", &["DeprecatedIn50"]);
+pub static DEPRECATED_IN_51: LazyPyImport =
+    LazyPyImport::new("cryptography.utils", &["DeprecatedIn51"]);
 
 pub static KEY_SERIALIZATION_ENCRYPTION_BUILDER: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives._serialization",
@@ -477,13 +480,15 @@ pub static MLDSA87_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
     &["MLDSA87PublicKey"],
 );
 
+// These use the private aliases so that looking them up doesn't emit the
+// DSA deprecation warning.
 pub static DSA_PRIVATE_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.dsa",
-    &["DSAPrivateKey"],
+    &["_DSAPrivateKey"],
 );
 pub static DSA_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.asymmetric.dsa",
-    &["DSAPublicKey"],
+    &["_DSAPublicKey"],
 );
 
 #[cfg(not(Py_3_11))]

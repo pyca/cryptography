@@ -365,7 +365,7 @@ class CertificateBuilder:
         if not isinstance(
             key,
             (
-                dsa.DSAPublicKey,
+                dsa._DSAPublicKey,
                 rsa.RSAPublicKey,
                 ec.EllipticCurvePublicKey,
                 ed25519.Ed25519PublicKey,

@@ -29,6 +29,14 @@ from ...utils import (
 from .fixtures_dsa import DSA_KEY_1024, DSA_KEY_2048, DSA_KEY_3072
 from .utils import skip_fips_traditional_openssl
 
+# Accessing any attribute of the dsa module and loading any DSA key emits the
+# DSA deprecation warning. Ignore it module-wide rather than wrapping every
+# call site.
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:DSA is deprecated"
+    ":cryptography.utils.CryptographyDeprecationWarning"
+)
+
 _ALGORITHMS_DICT: dict[str, hashes.HashAlgorithm] = {
     "SHA1": hashes.SHA1(),
     "SHA224": hashes.SHA224(),

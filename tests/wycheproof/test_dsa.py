@@ -6,6 +6,7 @@ import binascii
 
 import pytest
 
+from cryptography import utils
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa
@@ -30,10 +31,11 @@ _DIGESTS = {
     "dsa_3072_256_sha256_test.json",
 )
 def test_dsa_signature(backend, wycheproof):
-    key = serialization.load_der_public_key(
-        binascii.unhexlify(wycheproof.testgroup["publicKeyDer"]), backend
-    )
-    assert isinstance(key, dsa.DSAPublicKey)
+    with pytest.warns(utils.DeprecatedIn51):
+        key = serialization.load_der_public_key(
+            binascii.unhexlify(wycheproof.testgroup["publicKeyDer"]), backend
+        )
+        assert isinstance(key, dsa.DSAPublicKey)
     digest = _DIGESTS[wycheproof.testgroup["sha"]]
 
     if wycheproof.valid or (

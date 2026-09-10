@@ -750,12 +750,13 @@ class TestOpenSSHSerialization:
         ],
     )
     def test_dsa_private_key_sizes(self, key_path, supported):
-        key = load_vectors_from_file(
-            os.path.join("asymmetric", *key_path),
-            lambda pemfile: load_pem_private_key(pemfile.read(), None),
-            mode="rb",
-        )
-        assert isinstance(key, dsa.DSAPrivateKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            key = load_vectors_from_file(
+                os.path.join("asymmetric", *key_path),
+                lambda pemfile: load_pem_private_key(pemfile.read(), None),
+                mode="rb",
+            )
+            assert isinstance(key, dsa.DSAPrivateKey)
         if supported:
             with pytest.warns(utils.DeprecatedIn40):
                 res = key.private_bytes(
@@ -970,7 +971,8 @@ class TestDSSSSHSerialization:
             key = load_ssh_public_key(ssh_key)
 
         assert key is not None
-        assert isinstance(key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            assert isinstance(key, dsa.DSAPublicKey)
 
         numbers = key.public_numbers()
 
@@ -999,10 +1001,11 @@ class TestDSSSSHSerialization:
             "b656",
             16,
         )
-        expected = dsa.DSAPublicNumbers(
-            expected_y,
-            dsa.DSAParameterNumbers(expected_p, expected_q, expected_g),
-        )
+        with pytest.warns(utils.DeprecatedIn51):
+            expected = dsa.DSAPublicNumbers(
+                expected_y,
+                dsa.DSAParameterNumbers(expected_p, expected_q, expected_g),
+            )
 
         assert numbers == expected
 
