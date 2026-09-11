@@ -42,19 +42,17 @@ jobs:
           echo "PYPI_URL=https://test.pypi.org/legacy/" >> $GITHUB_ENV
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'testpypi'
 
-      - name: Setup python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: '3.14'
-        timeout-minutes: 3
-
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: ci-constraints-requirements.txt
           sparse-checkout-cone-mode: false
           persist-credentials: false
-
-      - run: python -m pip install -c ci-constraints-requirements.txt 'uv'
+      - name: Setup uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version-file: ci-constraints-requirements.txt
+          enable-cache: false
+        timeout-minutes: 3
 
       - uses: dawidd6/action-download-artifact@d63b86af1b34672e53c440b1b83979861906bad7 # v24
         with:
