@@ -14,7 +14,10 @@ import pytest
 from cryptography import x509
 from cryptography.hazmat._oid import ExtendedKeyUsageOID
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric import ec, rsa
+from cryptography.hazmat.primitives.asymmetric.types import (
+    CertificatePublicKeyTypes,
+)
 from cryptography.x509 import ExtensionType
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.oid import NameOID
@@ -260,6 +263,165 @@ class TestServerVerifier:
             match=r"<Certificate\(subject=.*?CN=www.cryptography.io.*?\)>",
         ):
             verifier.verify(leaf, [])
+
+
+def _key_usage(
+    *,
+    digital_signature=False,
+    key_encipherment=False,
+    key_cert_sign=False,
+    crl_sign=False,
+) -> x509.KeyUsage:
+    return x509.KeyUsage(
+        digital_signature=digital_signature,
+        content_commitment=False,
+        key_encipherment=key_encipherment,
+        data_encipherment=False,
+        key_agreement=False,
+        key_cert_sign=key_cert_sign,
+        crl_sign=crl_sign,
+        encipher_only=False,
+        decipher_only=False,
+    )
+
+
+def _chain_with_leaf_key_usage(
+    key_usage: Optional[x509.KeyUsage],
+    *,
+    rsa_leaf=False,
+):
+    ca_key = ec.generate_private_key(ec.SECP256R1())
+    leaf_public_key: CertificatePublicKeyTypes
+    if rsa_leaf:
+        leaf_public_key = rsa.generate_private_key(
+            public_exponent=65537, key_size=2048
+        ).public_key()
+    else:
+        leaf_public_key = ec.generate_private_key(ec.SECP256R1()).public_key()
+
+    not_before = datetime.datetime(2024, 1, 1)
+    not_after = datetime.datetime(2034, 1, 1)
+    validation_time = datetime.datetime(2025, 1, 1)
+
+    ca_name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "Test CA")])
+    ca = (
+        x509.CertificateBuilder()
+        .subject_name(ca_name)
+        .issuer_name(ca_name)
+        .public_key(ca_key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(not_before)
+        .not_valid_after(not_after)
+        .add_extension(
+            x509.BasicConstraints(ca=True, path_length=None),
+            critical=True,
+        )
+        .add_extension(
+            _key_usage(key_cert_sign=True, crl_sign=True),
+            critical=True,
+        )
+        .sign(ca_key, hashes.SHA256())
+    )
+
+    leaf_name = x509.Name(
+        [x509.NameAttribute(NameOID.COMMON_NAME, "example.com")]
+    )
+    leaf_builder = (
+        x509.CertificateBuilder()
+        .subject_name(leaf_name)
+        .issuer_name(ca_name)
+        .public_key(leaf_public_key)
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(not_before)
+        .not_valid_after(not_after)
+        .add_extension(
+            x509.SubjectAlternativeName([x509.DNSName("example.com")]),
+            critical=False,
+        )
+        .add_extension(
+            x509.AuthorityKeyIdentifier.from_issuer_public_key(
+                ca_key.public_key()
+            ),
+            critical=False,
+        )
+    )
+    if key_usage is not None:
+        leaf_builder = leaf_builder.add_extension(key_usage, critical=True)
+
+    return ca, leaf_builder.sign(ca_key, hashes.SHA256()), validation_time
+
+
+@pytest.mark.parametrize("verifier_kind", ["server", "client"])
+@pytest.mark.parametrize(
+    ("rsa_leaf", "key_usage", "error"),
+    [
+        (False, None, None),
+        (False, _key_usage(digital_signature=True), None),
+        (
+            False,
+            _key_usage(key_encipherment=True),
+            "EE keyUsage must assert digitalSignature",
+        ),
+        (
+            False,
+            _key_usage(digital_signature=True, key_cert_sign=True),
+            "EE keyUsage must not assert keyCertSign",
+        ),
+        (True, None, None),
+        (True, _key_usage(digital_signature=True), None),
+        (True, _key_usage(key_encipherment=True), None),
+        (
+            True,
+            _key_usage(),
+            "RSA EE keyUsage must assert digitalSignature or keyEncipherment",
+        ),
+        (
+            True,
+            _key_usage(key_encipherment=True, key_cert_sign=True),
+            "EE keyUsage must not assert keyCertSign",
+        ),
+    ],
+)
+def test_default_ee_key_usage(verifier_kind, rsa_leaf, key_usage, error):
+    ca, leaf, validation_time = _chain_with_leaf_key_usage(
+        key_usage, rsa_leaf=rsa_leaf
+    )
+    builder = PolicyBuilder().store(Store([ca])).time(validation_time)
+
+    def verify_leaf():
+        if verifier_kind == "server":
+            builder.build_server_verifier(x509.DNSName("example.com")).verify(
+                leaf, []
+            )
+        else:
+            builder.build_client_verifier().verify(leaf, [])
+
+    if error is None:
+        verify_leaf()
+    else:
+        with pytest.raises(VerificationError, match=error):
+            verify_leaf()
+
+
+def test_default_ee_key_usage_can_be_overridden():
+    ca, leaf, validation_time = _chain_with_leaf_key_usage(
+        _key_usage(key_encipherment=True)
+    )
+    ee_policy = ExtensionPolicy.webpki_defaults_ee().may_be_present(
+        x509.KeyUsage, Criticality.AGNOSTIC, None
+    )
+    builder = (
+        PolicyBuilder()
+        .store(Store([ca]))
+        .time(validation_time)
+        .extension_policies(
+            ca_policy=ExtensionPolicy.webpki_defaults_ca(),
+            ee_policy=ee_policy,
+        )
+    )
+
+    verifier = builder.build_server_verifier(x509.DNSName("example.com"))
+    verifier.verify(leaf, [])
 
 
 SUPPORTED_EXTENSION_TYPES = (
