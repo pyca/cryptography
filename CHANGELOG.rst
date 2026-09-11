@@ -13,6 +13,8 @@ Changelog
   the key loading APIs (including from X.509 certificates and certificate
   signing requests). Users should migrate to a more modern signature
   algorithm.
+* Added :class:`~cryptography.x509.CustomExtensionType` which can be used to
+  parse and generate X.509 extensions using :mod:`cryptography.hazmat.asn1`.
 
 .. _v50-0-1:
 

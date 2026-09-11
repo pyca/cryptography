@@ -460,11 +460,20 @@ pub(crate) fn encode_extensions<
         let oid = py_oid_to_oid(py_oid)?;
 
         let ext_val = py_ext.getattr(pyo3::intern!(py, "value"))?;
-        if ext_val.is_instance(&types::UNRECOGNIZED_EXTENSION.get(py)?)? {
+        if ext_val.is_instance(&types::UNRECOGNIZED_EXTENSION.get(py)?)?
+            || ext_val.is_instance(&types::CUSTOM_EXTENSION_TYPE.get(py)?)?
+        {
+            // Both of these carry their own DER encoding: as raw bytes for
+            // UnrecognizedExtension, and via the declarative ASN.1 encoder
+            // for CustomExtensionType subclasses.
             exts.push(Extension {
                 extn_id: oid,
                 critical: py_ext.getattr(pyo3::intern!(py, "critical"))?.extract()?,
-                extn_value: ka_bytes.add(ext_val.getattr(pyo3::intern!(py, "value"))?.extract()?),
+                extn_value: ka_bytes.add(
+                    ext_val
+                        .call_method0(pyo3::intern!(py, "public_bytes"))?
+                        .extract()?,
+                ),
             });
             continue;
         }
