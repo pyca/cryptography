@@ -290,7 +290,7 @@ def aead_exception_test(cipher_factory, mode_factory):
     with pytest.raises(AlreadyUpdated):
         decryptor.authenticate_additional_data(b"b" * 16)
     with pytest.raises(AttributeError):
-        decryptor.tag  # type: ignore[attr-defined]
+        decryptor.tag  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
 
 
 def generate_aead_tag_exception_test(cipher_factory, mode_factory):

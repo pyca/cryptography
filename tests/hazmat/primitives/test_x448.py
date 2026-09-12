@@ -291,7 +291,7 @@ def test_public_key_equality():
     assert key1 != key3
     assert key1 != object()
     with pytest.raises(TypeError):
-        key1 < key2  # type: ignore[operator]
+        key1 < key2  # type: ignore[operator]  # ty: ignore[unsupported-operator]
 
 
 @pytest.mark.supported(
