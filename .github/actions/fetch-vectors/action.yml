@@ -30,5 +30,5 @@ runs:
       env:
         # Latest commit on the wycheproof main branch, as of Sep 03, 2026.
         WYCHEPROOF_REF: "3fa63dd0344abb611f1fb1d77e119938603ea230" # wycheproof-ref
-        # Latest commit on the x509-limbo main branch, as of Sep 03, 2026.
-        X509_LIMBO_REF: "3f8cba420e90322223486086054401189b7b320e" # x509-limbo-ref
+        # Latest commit on the x509-limbo main branch, as of Sep 13, 2026.
+        X509_LIMBO_REF: "3893be8cc6449835124339f46ccf9a561d488841" # x509-limbo-ref
