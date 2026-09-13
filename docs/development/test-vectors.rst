@@ -251,6 +251,50 @@ Custom asymmetric vectors
   PEM with a ``secp256r1`` OID and an invalid (very large) private scalar.
 * ``asymmetric/PKCS8/invalid-version.der`` - Contains a PKCS8 encoded DER with
   an invalid version field.
+* ``asymmetric/PKCS8/ec-v2.der`` - Contains a ``secp256r1`` key encoded as an
+  :rfc:`5958` ``OneAsymmetricKey`` with version ``v2`` and no ``publicKey``.
+* ``asymmetric/PKCS8/ed25519-v2.der`` - Contains an Ed25519 key encoded as an
+  :rfc:`5958` ``OneAsymmetricKey`` with version ``v2`` and no ``publicKey``.
+* ``asymmetric/PKCS8/ec-v1-with-public-key.der`` - Contains a ``secp256r1``
+  key encoded as an :rfc:`5958` ``OneAsymmetricKey`` with version ``v1`` but
+  with the ``publicKey`` field present, which is not permitted.
+* ``asymmetric/PKCS8/rsa-v2-with-public-key.der``,
+  ``asymmetric/PKCS8/ec-v2-with-public-key.der``,
+  ``asymmetric/PKCS8/dsa-v2-with-public-key.der``,
+  ``asymmetric/PKCS8/dh-pkcs3-v2-with-public-key.der``,
+  ``asymmetric/PKCS8/dh-x942-v2-with-public-key.der``,
+  ``asymmetric/PKCS8/x25519-v2-with-public-key.der``,
+  ``asymmetric/PKCS8/x448-v2-with-public-key.der``,
+  ``asymmetric/PKCS8/ed25519-v2-with-public-key.der``,
+  ``asymmetric/PKCS8/ed448-v2-with-public-key.der``,
+  ``asymmetric/PKCS8/mlkem768-v2-with-public-key.der``, and
+  ``asymmetric/PKCS8/mldsa44-v2-with-public-key.der`` - Contain private keys
+  encoded as :rfc:`5958` ``OneAsymmetricKey`` with version ``v2`` and the
+  ``publicKey`` field present and matching the private key. The RSA, DSA, DH,
+  X25519, X448, Ed25519, Ed448, ML-KEM-768, and ML-DSA-44 keys are the same as
+  those in ``asymmetric/PKCS8/unenc-rsa-pkcs8.pem``,
+  ``asymmetric/PKCS8/unenc-dsa-pkcs8.pem``, ``asymmetric/DH/dhkey.pem``,
+  ``asymmetric/DH/dhkey_rfc5114_2.pem``, ``asymmetric/X25519/x25519-pkcs8.der``,
+  ``asymmetric/X448/x448-pkcs8.der``, ``asymmetric/Ed25519/ed25519-pkcs8.der``,
+  ``asymmetric/Ed448/ed448-pkcs8.der``, ``asymmetric/MLKEM/mlkem768.der``, and
+  ``asymmetric/MLDSA/mldsa44_priv.der`` respectively.
+* ``asymmetric/PKCS8/ec-v2-with-compressed-public-key.der`` - The same key as
+  ``asymmetric/PKCS8/ec-v2-with-public-key.der``, but with the ``publicKey``
+  encoded as a compressed point.
+* ``asymmetric/PKCS8/rsa-v2-with-wrong-public-key.der``,
+  ``asymmetric/PKCS8/ec-v2-with-wrong-public-key.der``,
+  ``asymmetric/PKCS8/dsa-v2-with-wrong-public-key.der``,
+  ``asymmetric/PKCS8/dh-pkcs3-v2-with-wrong-public-key.der``,
+  ``asymmetric/PKCS8/dh-x942-v2-with-wrong-public-key.der``,
+  ``asymmetric/PKCS8/x25519-v2-with-wrong-public-key.der``,
+  ``asymmetric/PKCS8/x448-v2-with-wrong-public-key.der``,
+  ``asymmetric/PKCS8/ed25519-v2-with-wrong-public-key.der``,
+  ``asymmetric/PKCS8/ed448-v2-with-wrong-public-key.der``,
+  ``asymmetric/PKCS8/mlkem768-v2-with-wrong-public-key.der``, and
+  ``asymmetric/PKCS8/mldsa44-v2-with-wrong-public-key.der`` - The same private
+  keys as above, encoded as :rfc:`5958` ``OneAsymmetricKey`` with version
+  ``v2``, but with a ``publicKey`` field that does not correspond to the
+  private key.
 * ``asymmetric/PKCS8/unknown-oid.der`` - Contains a PKCS8 encoded DER with an
   unknown OID.
 * ``asymmetric/Traditional_OpenSSL_Serialization/rsa-wrong-version.pem`` - An
