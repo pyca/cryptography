@@ -8,6 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
+  and :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
+  now accept :rfc:`5958` ``OneAsymmetricKey`` (PKCS8 version 2) encoded
+  private keys again. This was a regression in 45.0.0. If the optional
+  ``publicKey`` field is present, it must correspond to the private key.
 * Deprecated DSA. Everything DSA is deprecated, including the types in
   ``cryptography.hazmat.primitives.asymmetric.dsa`` and loading DSA keys with
   the key loading APIs (including from X.509 certificates and certificate

@@ -4,6 +4,7 @@
 
 
 import base64
+import contextlib
 import itertools
 import os
 import sys
@@ -18,10 +19,13 @@ from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.decrepit.ciphers.algorithms import _DES, ARC4, RC2
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import (
+    dh,
     dsa,
     ec,
     ed448,
     ed25519,
+    mldsa,
+    mlkem,
     rsa,
     x448,
     x25519,
@@ -430,6 +434,147 @@ class TestDERSerialization:
     def test_load_pkcs8_private_key_invalid_version(self):
         data = load_vectors_from_file(
             os.path.join("asymmetric", "PKCS8", "invalid-version.der"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_der_private_key(data, password=None)
+
+    def test_load_pkcs8_private_key_v2(self):
+        # RFC 5958 OneAsymmetricKey with version v2 and no public key.
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "ec-v2.der"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        key = load_der_private_key(data, password=None)
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
+        assert isinstance(key.curve, ec.SECP256R1)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.ed25519_supported(),
+        skip_message="Requires OpenSSL with Ed25519 support",
+    )
+    def test_load_pkcs8_ed25519_private_key_v2(self):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "ed25519-v2.der"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        key = load_der_private_key(data, password=None)
+        assert isinstance(key, ed25519.Ed25519PrivateKey)
+        assert key.private_bytes_raw() == b"55AA" * 8
+
+    def test_load_pkcs8_private_key_v2_with_compressed_public_key(self):
+        # The public key is decoded, not compared byte-for-byte, so a
+        # compressed point is accepted.
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", "ec-v2-with-compressed-public-key.der"
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        key = load_der_private_key(data, password=None)
+        assert isinstance(key, ec.EllipticCurvePrivateKey)
+
+    def test_load_pkcs8_private_key_v1_with_public_key(self):
+        # RFC 5958 requires version v2 when a public key is present.
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "PKCS8", "ec-v1-with-public-key.der"),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_der_private_key(data, password=None)
+
+    @pytest.mark.parametrize(
+        ("name", "key_type", "supported", "warning"),
+        [
+            ("rsa", rsa.RSAPrivateKey, lambda backend: True, None),
+            ("ec", ec.EllipticCurvePrivateKey, lambda backend: True, None),
+            (
+                "dsa",
+                dsa._DSAPrivateKey,
+                lambda backend: True,
+                utils.DeprecatedIn51,
+            ),
+            (
+                "dh-pkcs3",
+                dh._DHPrivateKey,
+                lambda backend: backend.dh_supported(),
+                utils.DeprecatedIn50,
+            ),
+            (
+                "dh-x942",
+                dh._DHPrivateKey,
+                lambda backend: backend.dh_supported(),
+                utils.DeprecatedIn50,
+            ),
+            (
+                "x25519",
+                x25519.X25519PrivateKey,
+                lambda backend: backend.x25519_supported(),
+                None,
+            ),
+            (
+                "x448",
+                x448.X448PrivateKey,
+                lambda backend: backend.x448_supported(),
+                None,
+            ),
+            (
+                "ed25519",
+                ed25519.Ed25519PrivateKey,
+                lambda backend: backend.ed25519_supported(),
+                None,
+            ),
+            (
+                "ed448",
+                ed448.Ed448PrivateKey,
+                lambda backend: backend.ed448_supported(),
+                None,
+            ),
+            (
+                "mlkem768",
+                mlkem.MLKEM768PrivateKey,
+                lambda backend: backend.mlkem_supported(),
+                None,
+            ),
+            (
+                "mldsa44",
+                mldsa.MLDSA44PrivateKey,
+                lambda backend: backend.mldsa_supported(),
+                None,
+            ),
+        ],
+    )
+    def test_load_pkcs8_private_key_v2_with_public_key(
+        self, name, key_type, supported, warning, backend
+    ):
+        # RFC 5958 OneAsymmetricKey with version v2 and a public key.
+        if not supported(backend):
+            pytest.skip(f"{name} is not supported by this backend")
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", f"{name}-v2-with-public-key.der"
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with (
+            pytest.warns(warning)
+            if warning is not None
+            else contextlib.nullcontext()
+        ):
+            key = load_der_private_key(data, password=None)
+        assert isinstance(key, key_type)
+
+        # A public key that does not match the private key is rejected.
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "PKCS8", f"{name}-v2-with-wrong-public-key.der"
+            ),
             lambda f: f.read(),
             mode="rb",
         )

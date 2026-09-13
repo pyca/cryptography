@@ -11,7 +11,12 @@ use crate::{KeyParsingError, KeyParsingResult, KeySerializationResult, ParsedPub
 
 pub fn parse_public_key(data: &[u8]) -> KeyParsingResult<ParsedPublicKey> {
     let k = asn1::parse_single::<SubjectPublicKeyInfo<'_>>(data)?;
+    parse_public_key_info(k)
+}
 
+pub(crate) fn parse_public_key_info(
+    k: SubjectPublicKeyInfo<'_>,
+) -> KeyParsingResult<ParsedPublicKey> {
     // The subjectPublicKey BIT STRING wraps whole octets for every key type
     // we support, so a non-zero unused-bits count is a malformed encoding.
     // `parse_spki_for_data` already rejects this; do the same here.
