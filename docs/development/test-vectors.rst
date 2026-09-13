@@ -278,6 +278,9 @@ Custom asymmetric vectors
   ``asymmetric/X448/x448-pkcs8.der``, ``asymmetric/Ed25519/ed25519-pkcs8.der``,
   ``asymmetric/Ed448/ed448-pkcs8.der``, ``asymmetric/MLKEM/mlkem768.der``, and
   ``asymmetric/MLDSA/mldsa44_priv.der`` respectively.
+* ``asymmetric/PKCS8/ec-v2-with-compressed-public-key.der`` - The same key as
+  ``asymmetric/PKCS8/ec-v2-with-public-key.der``, but with the ``publicKey``
+  encoded as a compressed point.
 * ``asymmetric/PKCS8/rsa-v2-with-wrong-public-key.der``,
   ``asymmetric/PKCS8/ec-v2-with-wrong-public-key.der``,
   ``asymmetric/PKCS8/dsa-v2-with-wrong-public-key.der``,
