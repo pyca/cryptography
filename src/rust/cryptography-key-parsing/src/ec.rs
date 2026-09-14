@@ -29,13 +29,13 @@ pub(crate) fn group_to_curve_oid(
         openssl::nid::Nid::SECP384R1 => Some(cryptography_x509::oid::EC_SECP384R1),
         openssl::nid::Nid::SECP521R1 => Some(cryptography_x509::oid::EC_SECP521R1),
         openssl::nid::Nid::SECP256K1 => Some(cryptography_x509::oid::EC_SECP256K1),
-        #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         openssl::nid::Nid::BRAINPOOL_P256R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP256R1),
-        #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         openssl::nid::Nid::BRAINPOOL_P320R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP320R1),
-        #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         openssl::nid::Nid::BRAINPOOL_P384R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP384R1),
-        #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         openssl::nid::Nid::BRAINPOOL_P512R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP512R1),
         _ => None,
     }
@@ -55,13 +55,13 @@ pub(crate) fn ec_params_to_group(
 
                 &cryptography_x509::oid::EC_SECP256K1 => openssl::nid::Nid::SECP256K1,
 
-                #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
                 &cryptography_x509::oid::EC_BRAINPOOLP256R1 => openssl::nid::Nid::BRAINPOOL_P256R1,
-                #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
                 &cryptography_x509::oid::EC_BRAINPOOLP320R1 => openssl::nid::Nid::BRAINPOOL_P320R1,
-                #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
                 &cryptography_x509::oid::EC_BRAINPOOLP384R1 => openssl::nid::Nid::BRAINPOOL_P384R1,
-                #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
                 &cryptography_x509::oid::EC_BRAINPOOLP512R1 => openssl::nid::Nid::BRAINPOOL_P512R1,
 
                 _ => return Err(KeyParsingError::UnsupportedEllipticCurve(curve_oid.clone())),
