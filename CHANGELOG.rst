@@ -16,6 +16,14 @@ Changelog
   the key loading APIs (including from X.509 certificates and certificate
   signing requests). Users should migrate to a more modern signature
   algorithm.
+* Moved Diffie-Hellman key exchange over finite fields (FFDH), which was
+  deprecated in 50.0.0, into :doc:`/hazmat/decrepit/index` as
+  :mod:`cryptography.hazmat.decrepit.asymmetric.dh`. The types in
+  ``cryptography.hazmat.primitives.asymmetric.dh`` remain deprecated, as do
+  ``load_pem_parameters`` and ``load_der_parameters`` in
+  ``cryptography.hazmat.primitives.serialization`` and loading FFDH keys with
+  the key loading APIs. Starting in 53.0.0, FFDH will only be available from
+  the decrepit module.
 
 .. _v50-0-1:
 

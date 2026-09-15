@@ -1,23 +1,35 @@
 .. hazmat::
 
-Diffie-Hellman key exchange
-===========================
+Decrepit Diffie-Hellman key exchange
+====================================
 
-.. currentmodule:: cryptography.hazmat.primitives.asymmetric.dh
+.. module:: cryptography.hazmat.decrepit.asymmetric.dh
 
-.. warning::
+.. testsetup::
 
-    Diffie-Hellman over finite fields (FFDH) has been deprecated and moved to
-    the :doc:`/hazmat/decrepit/index` module as
-    :mod:`cryptography.hazmat.decrepit.asymmetric.dh`. If you need to
-    continue using it then update your code to use the new module path.
-    Starting in 53.0.0 it will only be available from that module. Users
-    should migrate to a more modern key exchange algorithm such as
-    :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH`,
-    :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`,
-    or :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PrivateKey`
-    where possible.
+    import base64
 
+    parameters_pem_data = b"""
+    -----BEGIN DH PARAMETERS-----
+    MIGHAoGBALsrWt44U1ojqTy88o0wfjysBE51V6Vtarjm2+5BslQK/RtlndHde3gx
+    +ccNs+InANszcuJFI8AHt4743kGRzy5XSlul4q4dDJENOHoyqYxueFuFVJELEwLQ
+    XrX/McKw+hS6GPVQnw6tZhgGo9apdNdYgeLQeQded8Bum8jqzP3rAgEC
+    -----END DH PARAMETERS-----
+    """.strip()
+
+    parameters_der_data = base64.b64decode(
+        b"MIGHAoGBALsrWt44U1ojqTy88o0wfjysBE51V6Vtarjm2+5BslQK/RtlndHde3gx+ccNs+In"
+        b"ANsz\ncuJFI8AHt4743kGRzy5XSlul4q4dDJENOHoyqYxueFuFVJELEwLQXrX/McKw+hS6GP"
+        b"VQnw6tZhgG\no9apdNdYgeLQeQded8Bum8jqzP3rAgEC"
+    )
+
+This module contains Diffie-Hellman key exchange over finite fields (FFDH).
+FFDH should not be used unless necessary for backwards compatibility or
+interoperability with legacy systems. Its use is **strongly discouraged**;
+use :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH`,
+:class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`,
+or :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PrivateKey`
+instead where possible.
 
 `Diffie-Hellman key exchange`_ (D–H) is a method that allows two parties
 to jointly agree on a shared secret using an insecure channel.
@@ -40,7 +52,7 @@ present.
 .. code-block:: pycon
 
     >>> from cryptography.hazmat.primitives import hashes
-    >>> from cryptography.hazmat.primitives.asymmetric import dh
+    >>> from cryptography.hazmat.decrepit.asymmetric import dh
     >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
     >>> # Generate some parameters. These can be reused.
     >>> parameters = dh.generate_parameters(generator=2, key_size=2048)
@@ -80,7 +92,7 @@ example of the ephemeral form:
 .. code-block:: pycon
 
     >>> from cryptography.hazmat.primitives import hashes
-    >>> from cryptography.hazmat.primitives.asymmetric import dh
+    >>> from cryptography.hazmat.decrepit.asymmetric import dh
     >>> from cryptography.hazmat.primitives.kdf.hkdf import HKDF
     >>> # Generate some parameters. These can be reused.
     >>> parameters = dh.generate_parameters(generator=2, key_size=2048)
@@ -128,7 +140,7 @@ Group parameters
 
 .. function:: generate_parameters(generator, key_size)
 
-    .. versionadded:: 1.7
+    .. versionadded:: 51.0.0
 
     Generate a new DH parameter group.
 
@@ -138,15 +150,14 @@ Group parameters
     :param key_size: The bit length of the prime modulus to generate.
 
     :returns: DH parameters as a new instance of
-        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
+        :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHParameters`.
 
     :raises ValueError: If ``key_size`` is not at least 512.
 
 
 .. class:: DHParameters
 
-    .. versionadded:: 1.7
-
+    .. versionadded:: 51.0.0
 
     .. method:: generate_private_key()
 
@@ -154,17 +165,15 @@ Group parameters
         new private keys from a single set of parameters.
 
         :return: An instance of
-            :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
+            :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateKey`.
 
     .. method:: parameter_numbers()
 
         Return the numbers that make up this set of parameters.
 
-        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
+        :return: A :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHParameterNumbers`.
 
     .. method:: parameter_bytes(encoding, format)
-
-        .. versionadded:: 2.0
 
         Allows serialization of the parameters to bytes. Encoding (
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
@@ -182,12 +191,64 @@ Group parameters
 
         :return bytes: Serialized parameters.
 
+Parameter serialization
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. function:: load_pem_parameters(data)
+
+    .. versionadded:: 51.0.0
+
+    Deserialize parameters from PEM encoded data.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.decrepit.asymmetric import dh
+        >>> parameters = dh.load_pem_parameters(parameters_pem_data)
+        >>> isinstance(parameters, dh.DHParameters)
+        True
+
+    :param bytes data: The PEM encoded parameters data.
+
+    :returns: An instance of :class:`DHParameters`.
+
+    :raises ValueError: If the PEM data's structure could not be decoded
+        successfully.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized
+        parameters type is not supported by the OpenSSL version
+        ``cryptography`` is using.
+
+.. function:: load_der_parameters(data)
+
+    .. versionadded:: 51.0.0
+
+    Deserialize parameters from DER encoded data.
+
+    .. doctest::
+
+        >>> from cryptography.hazmat.decrepit.asymmetric import dh
+        >>> parameters = dh.load_der_parameters(parameters_der_data)
+        >>> isinstance(parameters, dh.DHParameters)
+        True
+
+    :param bytes data: The DER encoded parameters data.
+
+    :returns: An instance of :class:`DHParameters`.
+
+    :raises ValueError: If the DER data's structure could not be decoded
+        successfully.
+
+    :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized
+        parameters type is not supported by the OpenSSL version
+        ``cryptography`` is using.
+
+
 Key interfaces
 ~~~~~~~~~~~~~~
 
 .. class:: DHPrivateKey
 
-    .. versionadded:: 1.7
+    .. versionadded:: 51.0.0
 
     .. attribute:: key_size
 
@@ -197,17 +258,15 @@ Key interfaces
 
         Return the public key associated with this private key.
 
-        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`.
+        :return: A :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPublicKey`.
 
     .. method:: parameters()
 
         Return the parameters associated with this private key.
 
-        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
+        :return: A :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHParameters`.
 
     .. method:: exchange(peer_public_key)
-
-        .. versionadded:: 1.7
 
         :param DHPublicKey peer_public_key: The public key for
             the peer.
@@ -218,11 +277,9 @@ Key interfaces
 
         Return the numbers that make up this private key.
 
-        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateNumbers`.
+        :return: A :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateNumbers`.
 
     .. method:: private_bytes(encoding, format, encryption_algorithm)
-
-        .. versionadded:: 1.8
 
         Allows serialization of the key to bytes. Encoding (
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
@@ -250,7 +307,7 @@ Key interfaces
 
 .. class:: DHPublicKey
 
-    .. versionadded:: 1.7
+    .. versionadded:: 51.0.0
 
     .. attribute:: key_size
 
@@ -260,17 +317,15 @@ Key interfaces
 
         Return the parameters associated with this private key.
 
-        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
+        :return: A :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHParameters`.
 
     .. method:: public_numbers()
 
         Return the numbers that make up this public key.
 
-        :return: A :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`.
+        :return: A :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPublicNumbers`.
 
     .. method:: public_bytes(encoding, format)
-
-        .. versionadded:: 1.8
 
         Allows serialization of the key to bytes. Encoding (
         :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
@@ -292,7 +347,7 @@ Numbers
 
 .. class:: DHParameterNumbers(p, g, q=None)
 
-    .. versionadded:: 0.8
+    .. versionadded:: 51.0.0
 
     The collection of integers that define a Diffie-Hellman group.
 
@@ -310,15 +365,11 @@ Numbers
 
     .. attribute:: q
 
-        .. versionadded:: 1.8
-
         :type: int
 
         p subgroup order value.
 
     .. method:: parameters()
-
-        .. versionadded:: 1.7
 
         :returns: A new instance of :class:`DHParameters`.
 
@@ -326,13 +377,13 @@ Numbers
 
 .. class:: DHPrivateNumbers(x, public_numbers)
 
-    .. versionadded:: 0.8
+    .. versionadded:: 51.0.0
 
     The collection of integers that make up a Diffie-Hellman private key.
 
     .. attribute:: public_numbers
 
-        :type: :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicNumbers`
+        :type: :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPublicNumbers`
 
         The :class:`DHPublicNumbers` which makes up the DH public
         key associated with this DH private key.
@@ -345,20 +396,18 @@ Numbers
 
     .. method:: private_key()
 
-        .. versionadded:: 1.7
-
         :returns: A new instance of :class:`DHPrivateKey`.
 
 
 .. class:: DHPublicNumbers(y, parameter_numbers)
 
-    .. versionadded:: 0.8
+    .. versionadded:: 51.0.0
 
     The collection of integers that make up a Diffie-Hellman public key.
 
      .. attribute:: parameter_numbers
 
-        :type: :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`
+        :type: :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHParameterNumbers`
 
         The parameters for this DH group.
 
@@ -369,8 +418,6 @@ Numbers
         The public value.
 
     .. method:: public_key()
-
-        .. versionadded:: 1.7
 
         :returns: A new instance of :class:`DHPublicKey`.
 
