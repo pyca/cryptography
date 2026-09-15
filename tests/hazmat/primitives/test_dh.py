@@ -1109,6 +1109,10 @@ class TestFFDHDeprecation:
         # isinstance checks against either module path continue to work.
         assert value is getattr(dh, name.replace("WithSerialization", ""))
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dh_supported(),
+        skip_message="DH not supported",
+    )
     @pytest.mark.parametrize(
         ("name", "encoding"),
         [
@@ -1129,11 +1133,15 @@ class TestFFDHDeprecation:
         loaded = loader(serialized)
         assert loaded.parameter_numbers() == parameters.parameter_numbers()
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dh_supported(),
+        skip_message="DH not supported",
+    )
     @pytest.mark.filterwarnings(
         "error::cryptography.utils.CryptographyDeprecationWarning"
     )
     def test_decrepit_module_does_not_warn(self):
-        parameters = dh.generate_parameters(generator=2, key_size=512)
+        parameters = FFDH3072_P.parameters()
         private_key = parameters.generate_private_key()
         public_key = private_key.public_key()
         assert isinstance(parameters, dh.DHParameters)
@@ -1148,6 +1156,10 @@ class TestFFDHDeprecation:
         loaded = dh.load_pem_parameters(serialized)
         assert loaded.parameter_numbers() == parameters.parameter_numbers()
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dh_supported(),
+        skip_message="DH not supported",
+    )
     def test_loading_dh_keys_deprecated(self):
         key = FFDH3072_P.parameters().generate_private_key()
         private_bytes = key.private_bytes(
