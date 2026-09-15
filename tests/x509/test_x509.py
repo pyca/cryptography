@@ -14,6 +14,7 @@ import pytest
 
 from cryptography import utils, x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
+from cryptography.hazmat import asn1
 from cryptography.hazmat.bindings._rust import test_support
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -4900,6 +4901,45 @@ class TestCertificateBuilder:
         ext = cert.extensions.get_extension_for_oid(unrecognized.oid)
 
         assert ext.value == unrecognized
+
+    def test_custom_extension(self, rsa_key_2048: rsa.RSAPrivateKey):
+        @asn1.sequence
+        class Point:
+            x: int
+            y: int
+
+        class PointExtension(x509.CustomExtensionType[Point]):
+            oid = x509.ObjectIdentifier("1.2.3.4")
+
+        private_key = rsa_key_2048
+
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, "US")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(x509.OID_COUNTRY_NAME, "US")])
+            )
+            .not_valid_before(datetime.datetime(2002, 1, 1, 12, 1))
+            .not_valid_after(datetime.datetime(2030, 12, 31, 8, 30))
+            .public_key(private_key.public_key())
+            .serial_number(123)
+            .add_extension(PointExtension(Point(x=1, y=2)), critical=True)
+            .sign(private_key, hashes.SHA256())
+        )
+
+        ext = cert.extensions.get_extension_for_oid(
+            x509.ObjectIdentifier("1.2.3.4")
+        )
+        assert ext.critical is True
+        assert isinstance(ext.value, x509.UnrecognizedExtension)
+        assert ext.value.value == b"\x30\x06\x02\x01\x01\x02\x01\x02"
+
+        custom = cert.extensions.get_extension_for_class(PointExtension)
+        assert custom.critical is True
+        assert isinstance(custom.value, PointExtension)
+        assert (custom.value.value.x, custom.value.value.y) == (1, 2)
 
     def test_sign_without_private_key(self, rsa_key_2048: rsa.RSAPrivateKey):
         subject_private_key = rsa_key_2048

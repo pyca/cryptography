@@ -12,6 +12,7 @@ import typing
 import pytest
 
 from cryptography import utils, x509
+from cryptography.hazmat import asn1
 from cryptography.hazmat._oid import _OID_NAMES
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import hashes
@@ -283,6 +284,196 @@ class TestUnrecognizedExtension:
             x509.oid.ExtensionOID.BASIC_CONSTRAINTS, b"\x03\x02\x01"
         )
         assert ext2.public_bytes() == b"\x03\x02\x01"
+
+
+@asn1.sequence
+class _Point:
+    x: int
+    y: int
+
+
+class _PointExtension(x509.CustomExtensionType[_Point]):
+    oid = x509.ObjectIdentifier("1.2.3.4")
+
+
+class _RawExtension(x509.CustomExtensionType[bytes]):
+    oid = x509.ObjectIdentifier("1.2.3.5")
+
+
+_POINT_DER = b"\x30\x06\x02\x01\x01\x02\x01\x02"
+
+
+class TestCustomExtensionType:
+    def test_value(self):
+        point = _Point(x=1, y=2)
+        ext = _PointExtension(point)
+        assert ext.oid == x509.ObjectIdentifier("1.2.3.4")
+        assert ext.value is point
+
+    def test_public_bytes(self):
+        assert _PointExtension(_Point(x=1, y=2)).public_bytes() == _POINT_DER
+        assert _RawExtension(b"abc").public_bytes() == b"\x04\x03abc"
+
+    def test_eq(self):
+        point = _Point(x=1, y=2)
+        assert _PointExtension(point) == _PointExtension(point)
+        assert _RawExtension(b"abc") == _RawExtension(b"abc")
+
+    def test_ne(self):
+        class _OtherRawExtension(x509.CustomExtensionType[bytes]):
+            oid = x509.ObjectIdentifier("1.2.3.5")
+
+        ext = _RawExtension(b"abc")
+        assert ext != _RawExtension(b"abd")
+        assert ext != _OtherRawExtension(b"abc")
+        assert ext != x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.5"), b"\x04\x03abc"
+        )
+        assert ext != object()
+
+    def test_hash(self):
+        assert hash(_RawExtension(b"abc")) == hash(_RawExtension(b"abc"))
+        assert hash(_RawExtension(b"abc")) != hash(_RawExtension(b"abd"))
+
+    def test_repr(self):
+        assert repr(_RawExtension(b"abc")) == "<_RawExtension(value=b'abc')>"
+
+    def test_subclass_without_type_parameter(self):
+        with pytest.raises(TypeError, match="parameterized"):
+
+            class _Bad(x509.CustomExtensionType):
+                oid = x509.ObjectIdentifier("1.2.3.4")
+
+    def test_subclass_with_type_variable(self):
+        T = typing.TypeVar("T")
+        with pytest.raises(TypeError, match="parameterized"):
+
+            class _Bad(x509.CustomExtensionType[T]):
+                oid = x509.ObjectIdentifier("1.2.3.4")
+
+    def test_subclass_multiple_inheritance(self):
+        class _Mixin:
+            pass
+
+        with pytest.raises(TypeError, match="multiple inheritance"):
+
+            class _Bad(_Mixin, x509.CustomExtensionType[bytes]):
+                oid = x509.ObjectIdentifier("1.2.3.4")
+
+    def test_subclass_without_oid(self):
+        with pytest.raises(TypeError, match="oid"):
+
+            class _Bad(x509.CustomExtensionType[bytes]):
+                pass
+
+    def test_subclass_of_subclass(self):
+        class _Sub(_PointExtension):
+            pass
+
+        exts = x509.Extensions(
+            [
+                x509.Extension(
+                    x509.ObjectIdentifier("1.2.3.4"),
+                    False,
+                    x509.UnrecognizedExtension(
+                        x509.ObjectIdentifier("1.2.3.4"), _POINT_DER
+                    ),
+                )
+            ]
+        )
+        ext = exts.get_extension_for_class(_Sub)
+        assert isinstance(ext.value, _Sub)
+        assert (ext.value.value.x, ext.value.value.y) == (1, 2)
+
+    def test_get_extension_for_class(self):
+        unrecognized = x509.UnrecognizedExtension(
+            x509.ObjectIdentifier("1.2.3.4"), _POINT_DER
+        )
+        exts = x509.Extensions(
+            [
+                x509.Extension(
+                    x509.ObjectIdentifier("1.2.3.5"),
+                    False,
+                    x509.UnrecognizedExtension(
+                        x509.ObjectIdentifier("1.2.3.5"), b"\x04\x03abc"
+                    ),
+                ),
+                x509.Extension(
+                    x509.ObjectIdentifier("1.2.3.4"), True, unrecognized
+                ),
+            ]
+        )
+
+        ext = exts.get_extension_for_class(_PointExtension)
+        assert ext.oid == x509.ObjectIdentifier("1.2.3.4")
+        assert ext.critical is True
+        assert isinstance(ext.value, _PointExtension)
+        assert (ext.value.value.x, ext.value.value.y) == (1, 2)
+        # The Extensions object itself is unchanged.
+        assert (
+            exts.get_extension_for_oid(x509.ObjectIdentifier("1.2.3.4")).value
+            == unrecognized
+        )
+
+        raw = exts.get_extension_for_class(_RawExtension)
+        assert raw.oid == x509.ObjectIdentifier("1.2.3.5")
+        assert raw.critical is False
+        assert raw.value == _RawExtension(b"abc")
+
+    def test_get_extension_for_class_existing_instance(self):
+        ext = x509.Extension(
+            x509.ObjectIdentifier("1.2.3.4"),
+            False,
+            _PointExtension(_Point(x=1, y=2)),
+        )
+        exts = x509.Extensions([ext])
+        assert exts.get_extension_for_class(_PointExtension) is ext
+
+    def test_get_extension_for_class_not_found(self):
+        exts = x509.Extensions(
+            [
+                x509.Extension(
+                    x509.ObjectIdentifier("1.2.3.5"),
+                    False,
+                    x509.UnrecognizedExtension(
+                        x509.ObjectIdentifier("1.2.3.5"), b"\x04\x03abc"
+                    ),
+                )
+            ]
+        )
+        with pytest.raises(x509.ExtensionNotFound) as exc:
+            exts.get_extension_for_class(_PointExtension)
+
+        assert exc.value.oid == x509.ObjectIdentifier("1.2.3.4")
+
+    def test_get_extension_for_class_invalid_der(self):
+        exts = x509.Extensions(
+            [
+                x509.Extension(
+                    x509.ObjectIdentifier("1.2.3.4"),
+                    False,
+                    x509.UnrecognizedExtension(
+                        x509.ObjectIdentifier("1.2.3.4"), b"\x04\x03abc"
+                    ),
+                )
+            ]
+        )
+        with pytest.raises(ValueError):
+            exts.get_extension_for_class(_PointExtension)
+
+    def test_get_extension_for_class_only_parses_unrecognized(self):
+        # A custom class whose OID is one we parse natively doesn't match
+        # the natively parsed extension.
+        class _RawSubjectKeyIdentifier(x509.CustomExtensionType[bytes]):
+            oid = ExtensionOID.SUBJECT_KEY_IDENTIFIER
+
+        cert = _load_cert(
+            os.path.join("x509", "PKITS_data", "certs", "GoodCACert.crt"),
+            x509.load_der_x509_certificate,
+        )
+        cert.extensions.get_extension_for_class(x509.SubjectKeyIdentifier)
+        with pytest.raises(x509.ExtensionNotFound):
+            cert.extensions.get_extension_for_class(_RawSubjectKeyIdentifier)
 
 
 class TestCertificateIssuer:

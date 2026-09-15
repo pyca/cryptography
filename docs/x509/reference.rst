@@ -2089,6 +2089,64 @@ X.509 Extensions
 
             A bytes string representing the extension's DER encoded value.
 
+.. class:: CustomExtensionType(value)
+    :canonical: cryptography.x509.extensions.CustomExtensionType
+
+    .. versionadded:: 51.0.0
+
+    A base class for defining extension types that are not built into
+    ``cryptography``. Subclasses must be parameterized with the ASN.1 type of
+    the extension's value, using the types supported by
+    :mod:`cryptography.hazmat.asn1`, and must define an ``oid`` class
+    attribute.
+
+    Custom extension classes can be passed to
+    :meth:`Extensions.get_extension_for_class`, which parses the matching
+    extension's DER value into the custom class. Instances can also be passed
+    to the ``add_extension`` method of the certificate, CRL, CSR, and OCSP
+    builders, which serialize the value to DER with
+    :func:`~cryptography.hazmat.asn1.encode_der`.
+
+    .. code-block:: python
+
+        from cryptography import x509
+        from cryptography.hazmat import asn1
+
+        @asn1.sequence
+        class Point:
+            x: int
+            y: int
+
+        class PointExtension(x509.CustomExtensionType[Point]):
+            oid = x509.ObjectIdentifier("1.2.3.4")
+
+        ext = cert.extensions.get_extension_for_class(PointExtension)
+        print(ext.value.value.x, ext.value.value.y)
+
+        builder = builder.add_extension(
+            PointExtension(Point(x=1, y=2)), critical=False
+        )
+
+    :param value: The extension's value, an instance of the ASN.1 type the
+        class was parameterized with.
+
+    .. attribute:: oid
+
+        :type: :class:`ObjectIdentifier`
+
+        Returns the OID associated with this extension, as defined by the
+        subclass.
+
+    .. attribute:: value
+
+        The parsed value of the extension.
+
+    .. method:: public_bytes()
+
+        :return bytes:
+
+            A bytes string representing the extension's DER encoded value.
+
 .. class:: KeyUsage(digital_signature, content_commitment, key_encipherment, data_encipherment, key_agreement, key_cert_sign, crl_sign, encipher_only, decipher_only)
     :canonical: cryptography.x509.extensions.KeyUsage
 
