@@ -26,8 +26,9 @@ Decrepit Diffie-Hellman key exchange
 This module contains Diffie-Hellman key exchange over finite fields (FFDH).
 FFDH should not be used unless necessary for backwards compatibility or
 interoperability with legacy systems. Its use is **strongly discouraged**;
-use :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH` or
-:class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`
+use :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH`,
+:class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`,
+or :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PrivateKey`
 instead where possible.
 
 `Diffie-Hellman key exchange`_ (D–H) is a method that allows two parties

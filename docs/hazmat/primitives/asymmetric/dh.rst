@@ -13,8 +13,10 @@ Diffie-Hellman key exchange
     continue using it then update your code to use the new module path.
     Starting in 53.0.0 it will only be available from that module. Users
     should migrate to a more modern key exchange algorithm such as
-    :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH` where
-    possible.
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.ECDH`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PrivateKey`,
+    or :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PrivateKey`
+    where possible.
 
 
 `Diffie-Hellman key exchange`_ (D–H) is a method that allows two parties
