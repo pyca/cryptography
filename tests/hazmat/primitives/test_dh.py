@@ -13,16 +13,17 @@ import pytest
 
 from cryptography import utils
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+from cryptography.hazmat.decrepit.asymmetric import dh
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import dh
+from cryptography.hazmat.primitives.asymmetric import dh as deprecated_dh
 
 from ...doubles import DummyKeySerializationEncryption
 from ...utils import load_nist_vectors, load_vectors_from_file
 from .fixtures_dh import FFDH3072_P
 
-# Accessing any attribute of the dh module and loading any DH key or
-# parameters emits the FFDH deprecation warning. Ignore it module-wide
-# rather than wrapping every call site.
+# Loading a DH key with the generic key loading APIs emits the FFDH
+# deprecation warning. Ignore it module-wide rather than wrapping every call
+# site; the deprecation itself is tested in TestFFDHDeprecation.
 pytestmark = pytest.mark.filterwarnings(
     "ignore:Diffie-Hellman over finite fields"
     ":cryptography.utils.CryptographyDeprecationWarning"
@@ -924,11 +925,9 @@ class TestDHParameterSerialization:
             encoding, serialization.ParameterFormat.PKCS3
         )
         if encoding is serialization.Encoding.PEM:
-            with pytest.warns(utils.DeprecatedIn50):
-                loaded_key = serialization.load_pem_parameters(serialized)
+            loaded_key = dh.load_pem_parameters(serialized)
         else:
-            with pytest.warns(utils.DeprecatedIn50):
-                loaded_key = serialization.load_der_parameters(serialized)
+            loaded_key = dh.load_der_parameters(serialized)
         loaded_param_num = loaded_key.parameter_numbers()
         assert loaded_param_num == parameters.parameter_numbers()
 
@@ -965,15 +964,9 @@ class TestDHParameterSerialization:
             param_path, lambda pemfile: pemfile.read(), mode="rb"
         )
         if encoding is serialization.Encoding.PEM:
-            with pytest.warns(utils.DeprecatedIn50):
-                parameters = serialization.load_pem_parameters(
-                    param_bytes, backend
-                )
+            parameters = dh.load_pem_parameters(param_bytes, backend)
         else:
-            with pytest.warns(utils.DeprecatedIn50):
-                parameters = serialization.load_der_parameters(
-                    param_bytes, backend
-                )
+            parameters = dh.load_der_parameters(param_bytes, backend)
         serialized = parameters.parameter_bytes(
             encoding,
             serialization.ParameterFormat.PKCS3,
@@ -1011,11 +1004,9 @@ class TestDHParameterSerialization:
         )
         vec = load_vectors_from_file(vec_path, load_nist_vectors)[0]
         if encoding is serialization.Encoding.PEM:
-            with pytest.warns(utils.DeprecatedIn50):
-                parameters = serialization.load_pem_parameters(key_bytes)
+            parameters = dh.load_pem_parameters(key_bytes)
         else:
-            with pytest.warns(utils.DeprecatedIn50):
-                parameters = serialization.load_der_parameters(key_bytes)
+            parameters = dh.load_der_parameters(key_bytes)
         parameter_numbers = parameters.parameter_numbers()
         assert parameter_numbers.g == int(vec["g"], 16)
         assert parameter_numbers.p == int(vec["p"], 16)
@@ -1033,8 +1024,7 @@ class TestDHParameterSerialization:
             lambda pemfile: pemfile.read(),
             mode="rb",
         )
-        with pytest.warns(utils.DeprecatedIn50):
-            parameters = serialization.load_pem_parameters(param_bytes)
+        parameters = dh.load_pem_parameters(param_bytes)
         parameter_numbers = parameters.parameter_numbers()
         assert parameter_numbers.g == 2
         assert parameter_numbers.q is None
@@ -1091,3 +1081,95 @@ class TestDHParameterSerialization:
                 serialization.Encoding.OpenSSH,
                 serialization.ParameterFormat.PKCS3,
             )
+
+
+class TestFFDHDeprecation:
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "generate_parameters",
+            "DHParameterNumbers",
+            "DHPublicNumbers",
+            "DHPrivateNumbers",
+            "DHParameters",
+            "DHParametersWithSerialization",
+            "DHPublicKey",
+            "DHPublicKeyWithSerialization",
+            "DHPrivateKey",
+            "DHPrivateKeyWithSerialization",
+        ],
+    )
+    def test_primitives_module_deprecated(self, name):
+        with pytest.warns(
+            utils.DeprecatedIn51,
+            match="cryptography.hazmat.decrepit.asymmetric.dh",
+        ):
+            value = getattr(deprecated_dh, name)
+        # The deprecated names are the same objects as the decrepit ones, so
+        # isinstance checks against either module path continue to work.
+        assert value is getattr(dh, name.replace("WithSerialization", ""))
+
+    @pytest.mark.parametrize(
+        ("name", "encoding"),
+        [
+            ("load_pem_parameters", serialization.Encoding.PEM),
+            ("load_der_parameters", serialization.Encoding.DER),
+        ],
+    )
+    def test_serialization_parameter_loaders_deprecated(self, name, encoding):
+        parameters = FFDH3072_P.parameters()
+        serialized = parameters.parameter_bytes(
+            encoding, serialization.ParameterFormat.PKCS3
+        )
+        with pytest.warns(
+            utils.DeprecatedIn51,
+            match=f"cryptography.hazmat.decrepit.asymmetric.dh.{name}",
+        ):
+            loader = getattr(serialization, name)
+        loaded = loader(serialized)
+        assert loaded.parameter_numbers() == parameters.parameter_numbers()
+
+    @pytest.mark.filterwarnings(
+        "error::cryptography.utils.CryptographyDeprecationWarning"
+    )
+    def test_decrepit_module_does_not_warn(self):
+        parameters = dh.generate_parameters(generator=2, key_size=512)
+        private_key = parameters.generate_private_key()
+        public_key = private_key.public_key()
+        assert isinstance(parameters, dh.DHParameters)
+        assert isinstance(private_key, dh.DHPrivateKey)
+        assert isinstance(public_key, dh.DHPublicKey)
+        numbers = public_key.public_numbers()
+        assert isinstance(numbers, dh.DHPublicNumbers)
+        assert numbers.public_key() == public_key
+        serialized = parameters.parameter_bytes(
+            serialization.Encoding.PEM, serialization.ParameterFormat.PKCS3
+        )
+        loaded = dh.load_pem_parameters(serialized)
+        assert loaded.parameter_numbers() == parameters.parameter_numbers()
+
+    def test_loading_dh_keys_deprecated(self):
+        key = FFDH3072_P.parameters().generate_private_key()
+        private_bytes = key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        )
+        public_bytes = key.public_key().public_bytes(
+            serialization.Encoding.PEM,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        with pytest.warns(
+            utils.DeprecatedIn51,
+            match="cryptography.hazmat.decrepit.asymmetric.dh",
+        ):
+            loaded_private = serialization.load_pem_private_key(
+                private_bytes, None
+            )
+        assert isinstance(loaded_private, dh.DHPrivateKey)
+        with pytest.warns(
+            utils.DeprecatedIn51,
+            match="cryptography.hazmat.decrepit.asymmetric.dh",
+        ):
+            loaded_public = serialization.load_pem_public_key(public_bytes)
+        assert isinstance(loaded_public, dh.DHPublicKey)

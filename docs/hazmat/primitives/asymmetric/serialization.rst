@@ -163,7 +163,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PrivateKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`,
+        :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateKey`,
         or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
         depending on the contents of ``data``.
@@ -202,7 +202,7 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
         :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`,
+        :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPublicKey`,
         or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
         depending on the contents of ``data``.
@@ -216,25 +216,18 @@ all begin with ``-----BEGIN {format}-----`` and end with ``-----END
 .. function:: load_pem_parameters(data)
     .. versionadded:: 2.0
 
-    .. deprecated:: 50.0.0
-        Diffie-Hellman over finite fields (FFDH) is deprecated and support
-        will be removed in a future release.
+    .. deprecated:: 51.0.0
+        This function has been moved to
+        :func:`cryptography.hazmat.decrepit.asymmetric.dh.load_pem_parameters`
+        and will be removed from this module in 53.0.0.
 
     Deserialize parameters from PEM encoded data to one of the supported
     asymmetric parameters types.
 
-    .. doctest::
-
-        >>> from cryptography.hazmat.primitives.serialization import load_pem_parameters
-        >>> from cryptography.hazmat.primitives.asymmetric import dh
-        >>> parameters = load_pem_parameters(parameters_pem_data)
-        >>> isinstance(parameters, dh.DHParameters)
-        True
-
     :param bytes data: The PEM encoded parameters data.
 
     :returns: Currently only
-        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
+        :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHParameters`
         supported.
 
     :raises ValueError: If the PEM data's structure could not be decoded
@@ -285,7 +278,7 @@ the rest.
         :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PrivateKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`,
+        :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateKey`,
         or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
         depending on the contents of ``data``.
@@ -325,7 +318,7 @@ the rest.
         :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
         :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`,
+        :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPublicKey`,
         or
         :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
         depending on the contents of ``data``.
@@ -348,9 +341,10 @@ the rest.
 
     .. versionadded:: 2.0
 
-    .. deprecated:: 50.0.0
-        Diffie-Hellman over finite fields (FFDH) is deprecated and support
-        will be removed in a future release.
+    .. deprecated:: 51.0.0
+        This function has been moved to
+        :func:`cryptography.hazmat.decrepit.asymmetric.dh.load_der_parameters`
+        and will be removed from this module in 53.0.0.
 
     Deserialize parameters from DER encoded data to one of the supported
     asymmetric parameters types.
@@ -358,7 +352,7 @@ the rest.
     :param bytes data: The DER encoded parameters data.
 
     :returns: Currently only
-        :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`
+        :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHParameters`
         supported.
 
     :raises ValueError: If the DER data's structure could not be decoded
@@ -366,14 +360,6 @@ the rest.
 
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized key
         type is not supported by the OpenSSL version ``cryptography`` is using.
-
-    .. doctest::
-
-        >>> from cryptography.hazmat.primitives.asymmetric import dh
-        >>> from cryptography.hazmat.primitives.serialization import load_der_parameters
-        >>> parameters = load_der_parameters(parameters_der_data)
-        >>> isinstance(parameters, dh.DHParameters)
-        True
 
 
 OpenSSH Public Key
@@ -1681,7 +1667,7 @@ Serialization Formats
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
-    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`
+    , :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateKey`
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
 
@@ -1791,7 +1777,7 @@ Serialization Formats
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
-    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`
+    , :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPublicKey`
     , and
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`.
 
@@ -1855,7 +1841,7 @@ Serialization Formats
 
     An enumeration for parameters formats. Used with the ``parameter_bytes``
     method available on
-    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters`.
+    :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHParameters`.
 
     .. attribute:: PKCS3
 
@@ -1872,13 +1858,13 @@ Serialization Encodings
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
-    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`,
+    , :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PrivateKey`
     as well as ``public_bytes`` on
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
-    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`,
+    :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPublicKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.x448.X448PublicKey`.
@@ -1936,7 +1922,7 @@ Serialization Encryption Types
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`
     ,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
-    , :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`
+    , :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateKey`
     and
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`.
     All other classes in this section represent the available choices for
