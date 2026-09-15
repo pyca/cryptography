@@ -368,7 +368,7 @@ jobs:
       - uses: ./.github/actions/upload-coverage
 
   linux-downstream:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
