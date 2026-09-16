@@ -264,7 +264,7 @@ typing-extensions==4.16.0
     #   virtualenv
 urllib3==2.6.3 ; python_full_version < '3.10'
     # via requests
-urllib3==2.7.0 ; python_full_version >= '3.10'
+urllib3==2.8.0 ; python_full_version >= '3.10'
     # via requests
 uv==0.12.15
     # via nox
