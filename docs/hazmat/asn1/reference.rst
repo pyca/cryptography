@@ -323,7 +323,8 @@ that have no direct Python equivalent:
 .. class:: SetOf(values)
 
     Represents an ASN.1 ``SET OF``, an unordered collection of elements of a
-    single type.
+    single type. Two ``SetOf`` instances compare equal if they contain the
+    same elements, regardless of order.
 
     :param list values: The list of values.
 

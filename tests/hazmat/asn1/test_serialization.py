@@ -1214,6 +1214,43 @@ class TestSetOf:
         ) == asn1.SetOf([1, 2, 3])
         assert asn1.decode_der(asn1.SetOf[int], b"\x31\x00") == asn1.SetOf([])
 
+    def test_setof_default(self) -> None:
+        @asn1.sequence
+        class Example:
+            values: Annotated[
+                asn1.SetOf[int], asn1.Default(asn1.SetOf([3, 1, 2]))
+            ]
+            data: bytes
+
+        # A value equal to the DEFAULT is omitted, whatever order its
+        # elements are listed in.
+        for values in ([3, 1, 2], [1, 2, 3], [2, 3, 1]):
+            assert (
+                asn1.encode_der(Example(values=asn1.SetOf(values), data=b"x"))
+                == b"\x30\x03\x04\x01\x78"
+            )
+        decoded = asn1.decode_der(Example, b"\x30\x03\x04\x01\x78")
+        assert decoded.values == asn1.SetOf([1, 2, 3])
+        assert decoded.data == b"x"
+
+        encoded = asn1.encode_der(
+            Example(values=asn1.SetOf([2, 1]), data=b"x")
+        )
+        assert encoded == (
+            b"\x30\x0b\x31\x06\x02\x01\x01\x02\x01\x02\x04\x01\x78"
+        )
+        assert asn1.decode_der(Example, encoded).values == asn1.SetOf([1, 2])
+
+        # Explicitly encoding the DEFAULT is not valid DER.
+        with pytest.raises(
+            ValueError, match="DEFAULT value was explicitly encoded"
+        ):
+            asn1.decode_der(
+                Example,
+                b"\x30\x0e\x31\x09\x02\x01\x01\x02\x01\x02\x02\x01\x03"
+                b"\x04\x01\x78",
+            )
+
 
 class TestSize:
     def test_ok_sequenceof_size_restriction(self) -> None:

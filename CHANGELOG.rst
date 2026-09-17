@@ -16,6 +16,12 @@ Changelog
   the key loading APIs (including from X.509 certificates and certificate
   signing requests). Users should migrate to a more modern signature
   algorithm.
+* :class:`~cryptography.hazmat.asn1.SetOf` equality no longer depends on
+  element order. Previously, a ``SET OF`` field with a ``DEFAULT`` could be
+  explicitly encoded by :func:`~cryptography.hazmat.asn1.encode_der` (which
+  is not valid DER) or accepted by
+  :func:`~cryptography.hazmat.asn1.decode_der` when the value's elements
+  were listed in a different order than the default's.
 
 .. _v50-0-1:
 
