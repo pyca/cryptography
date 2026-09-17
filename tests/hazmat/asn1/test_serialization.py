@@ -1232,14 +1232,14 @@ class TestSetOf:
                     b"\x30\x03\x04\x01\x78",
                 ),
                 (
+                    Example(values=asn1.SetOf([3, 1, 2]), data=b"x"),
+                    b"\x30\x03\x04\x01\x78",
+                ),
+                (
                     Example(values=asn1.SetOf([1, 2]), data=b"x"),
                     b"\x30\x0b\x31\x06\x02\x01\x01\x02\x01\x02\x04\x01\x78",
                 ),
             ]
-        )
-        assert (
-            asn1.encode_der(Example(values=asn1.SetOf([3, 1, 2]), data=b"x"))
-            == b"\x30\x03\x04\x01\x78"
         )
 
         # Explicitly encoding the DEFAULT is not valid DER.
