@@ -329,6 +329,26 @@ fn decode_choice_with_encoding<'a>(
     }
 }
 
+// Decoding an OPTIONAL or DEFAULT element that isn't present returns a value
+// without consuming any input, so a collection of them would never make
+// progress. The Python layer rejects such types when the schema is defined;
+// this guards `AnnotatedType`s constructed by other means.
+fn check_collection_element_type(
+    element_type: &AnnotatedType,
+    collection_name: &str,
+) -> ParseResult<()> {
+    if matches!(element_type.inner.get(), Type::Option(_))
+        || element_type.annotation.get().default.is_some()
+    {
+        return Err(CryptographyError::Py(
+            pyo3::exceptions::PyValueError::new_err(format!(
+                "invalid type definition: {collection_name} elements cannot be optional or have a DEFAULT"
+            )),
+        ));
+    }
+    Ok(())
+}
+
 pub(crate) fn decode_annotated_type<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -368,6 +388,7 @@ pub(crate) fn decode_annotated_type<'a>(
 
             seqof_parse_result.parse(|d| -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
                 let inner_ann_type = cls.get();
+                check_collection_element_type(inner_ann_type, "SEQUENCE OF")?;
                 let list = pyo3::types::PyList::empty(py);
                 while !d.is_empty() {
                     let val = decode_annotated_type(py, d, inner_ann_type)?;
@@ -397,6 +418,7 @@ pub(crate) fn decode_annotated_type<'a>(
 
             setof_parse_result.parse(|d| -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
                 let inner_ann_type = cls.get();
+                check_collection_element_type(inner_ann_type, "SET OF")?;
                 let list = pyo3::types::PyList::empty(py);
                 while !d.is_empty() {
                     let val = decode_annotated_type(py, d, inner_ann_type)?;
@@ -512,6 +534,61 @@ mod tests {
             assert!(format!("{error}")
                 .contains("invalid type definition: CHOICE fields cannot be implicitly encoded"));
         });
+    }
+
+    #[test]
+    fn test_decode_sequence_of_optional_element() {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| {
+            let empty_annotation = || {
+                pyo3::Py::new(
+                    py,
+                    Annotation {
+                        default: None,
+                        encoding: None,
+                        size: None,
+                    },
+                )
+            };
+            let optional_element = || -> pyo3::PyResult<pyo3::Py<AnnotatedType>> {
+                let element = AnnotatedType {
+                    inner: pyo3::Py::new(py, Type::PyInt())?,
+                    annotation: empty_annotation()?,
+                };
+                pyo3::Py::new(
+                    py,
+                    AnnotatedType {
+                        inner: pyo3::Py::new(py, Type::Option(pyo3::Py::new(py, element)?))?,
+                        annotation: empty_annotation()?,
+                    },
+                )
+            };
+            for (ty, name) in [
+                (Type::SequenceOf(optional_element()?), "SEQUENCE OF"),
+                (Type::SetOf(optional_element()?), "SET OF"),
+            ] {
+                let ann_type = AnnotatedType {
+                    inner: pyo3::Py::new(py, ty)?,
+                    annotation: empty_annotation()?,
+                };
+                // An element with a tag that doesn't match the inner type,
+                // which would previously never be consumed.
+                let data = if name == "SEQUENCE OF" {
+                    b"\x30\x03\x04\x01\x00"
+                } else {
+                    b"\x31\x03\x04\x01\x00"
+                };
+                let result = asn1::parse(data, |parser| {
+                    super::decode_annotated_type(py, parser, &ann_type)
+                });
+                let error = result.unwrap_err();
+                assert!(format!("{error}").contains(&format!(
+                    "invalid type definition: {name} elements cannot be optional or have a DEFAULT"
+                )));
+            }
+            Ok::<_, pyo3::PyErr>(())
+        })
+        .unwrap();
     }
 
     #[test]

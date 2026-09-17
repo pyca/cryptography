@@ -16,6 +16,11 @@ Changelog
   the key loading APIs (including from X.509 certificates and certificate
   signing requests). Users should migrate to a more modern signature
   algorithm.
+* :mod:`cryptography.hazmat.asn1` now rejects ``SEQUENCE OF`` and ``SET OF``
+  types whose elements are optional (``X | None``) or have a ``DEFAULT``
+  annotation, which have no meaning in ASN.1. Previously,
+  :func:`~cryptography.hazmat.asn1.decode_der` would loop forever when
+  decoding an element whose tag did not match such a type.
 
 .. _v50-0-1:
 
