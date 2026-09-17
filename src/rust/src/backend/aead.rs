@@ -328,6 +328,10 @@ impl EvpCipherAead {
         } else {
             (ciphertext, tag) = buf.split_at_mut(plaintext.len());
         }
+        // OpenSSL only supports the input and output either being disjoint
+        // or aliasing exactly; any other overlap silently produces incorrect
+        // (but validly tagged) output.
+        crate::buf::check_no_partial_overlap(plaintext, ciphertext)?;
 
         let (aad, aad_len) = extract_aad(aad)?;
 
@@ -364,6 +368,8 @@ impl EvpCipherAead {
         } else {
             (ciphertext_data, tag) = ciphertext.split_at(ciphertext.len() - self.tag_len);
         }
+        // See the equivalent check in `encrypt_into`.
+        crate::buf::check_no_partial_overlap(ciphertext_data, buf)?;
 
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         let copied = match self.base_ctxs.for_decryption() {
@@ -447,6 +453,9 @@ impl EvpAead {
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
         check_length(plaintext)?;
+        // EVP_AEAD_CTX_seal requires the input and output to either be
+        // disjoint or alias exactly.
+        crate::buf::check_no_partial_overlap(plaintext, &buf[..plaintext.len()])?;
 
         let ad = if let Some(Aad::Single(ad)) = &aad {
             check_length(ad.as_bytes())?;
@@ -469,6 +478,10 @@ impl EvpAead {
         nonce: Option<&[u8]>,
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
+        // EVP_AEAD_CTX_open requires the input and output to either be
+        // disjoint or alias exactly.
+        crate::buf::check_no_partial_overlap(&ciphertext[..buf.len()], buf)?;
+
         let ad = if let Some(Aad::Single(ad)) = &aad {
             check_length(ad.as_bytes())?;
             ad.as_bytes()

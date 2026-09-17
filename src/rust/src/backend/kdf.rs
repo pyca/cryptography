@@ -1397,7 +1397,16 @@ impl X963Kdf {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+        // `key_material` is hashed again for every output block, so it must
+        // not be clobbered by blocks already written when it overlaps `buf`.
+        let copied;
+        let key_material = if crate::buf::overlaps(key_material.as_bytes(), buf.as_mut_bytes()) {
+            copied = key_material.as_bytes().to_vec();
+            copied.as_slice()
+        } else {
+            key_material.as_bytes()
+        };
+        self.derive_into_buffer(py, key_material, buf.as_mut_bytes())
     }
 
     fn derive<'p>(
@@ -1534,7 +1543,16 @@ impl ConcatKdfHash {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+        // `key_material` is hashed again for every output block, so it must
+        // not be clobbered by blocks already written when it overlaps `buf`.
+        let copied;
+        let key_material = if crate::buf::overlaps(key_material.as_bytes(), buf.as_mut_bytes()) {
+            copied = key_material.as_bytes().to_vec();
+            copied.as_slice()
+        } else {
+            key_material.as_bytes()
+        };
+        self.derive_into_buffer(py, key_material, buf.as_mut_bytes())
     }
 
     fn derive<'p>(
@@ -1694,7 +1712,16 @@ impl ConcatKdfHmac {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+        // `key_material` is hashed again for every output block, so it must
+        // not be clobbered by blocks already written when it overlaps `buf`.
+        let copied;
+        let key_material = if crate::buf::overlaps(key_material.as_bytes(), buf.as_mut_bytes()) {
+            copied = key_material.as_bytes().to_vec();
+            copied.as_slice()
+        } else {
+            key_material.as_bytes()
+        };
+        self.derive_into_buffer(py, key_material, buf.as_mut_bytes())
     }
 
     fn derive<'p>(

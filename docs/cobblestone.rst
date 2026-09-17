@@ -78,7 +78,7 @@ that mandate 256-bit keys).
         :type data: :term:`bytes-like`
         :param buf: A writable buffer to write the ciphertext into. A
             buffer of ``len(data) + len(data) // 1024 + 16456`` bytes
-            is always large enough.
+            is always large enough. ``buf`` may overlap ``data``.
         :type buf: :term:`bytes-like`
         :return int: The number of bytes written to ``buf``.
         :raises ValueError: If ``buf`` is too small.
@@ -142,7 +142,7 @@ that mandate 256-bit keys).
         :type data: :term:`bytes-like`
         :param buf: A writable buffer to write the plaintext into. A
             buffer of ``len(data) + 16400`` bytes is always large
-            enough.
+            enough. ``buf`` may overlap ``data``.
         :type buf: :term:`bytes-like`
         :return int: The number of bytes written to ``buf``.
         :raises ValueError: If ``buf`` is too small.
