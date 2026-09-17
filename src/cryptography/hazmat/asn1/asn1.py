@@ -308,16 +308,38 @@ def _normalize_field_type(
         inner_type = _normalize_field_type(
             typing.get_args(field_type)[0], field_name
         )
+        _check_collection_element_type(inner_type, field_name, "list")
         rust_field_type = declarative_asn1.Type.SequenceOf(inner_type)
     elif typing.get_origin(field_type) is SetOf:
         inner_type = _normalize_field_type(
             typing.get_args(field_type)[0], field_name
         )
+        _check_collection_element_type(inner_type, field_name, "SetOf")
         rust_field_type = declarative_asn1.Type.SetOf(inner_type)
     else:
         rust_field_type = declarative_asn1.non_root_python_to_rust(field_type)
 
     return declarative_asn1.AnnotatedType(rust_field_type, annotation)
+
+
+# The element type of a `SEQUENCE OF` / `SET OF` cannot be OPTIONAL or have
+# a DEFAULT: `list[X | None]` and `SetOf[X | None]` are not valid (the
+# collection as a whole can be, as `list[X] | None`). Such an element would
+# also decode to a value without consuming any input, so decoding could never
+# make progress.
+def _check_collection_element_type(
+    element_type: declarative_asn1.AnnotatedType,
+    field_name: str,
+    collection_name: str,
+) -> None:
+    if (
+        isinstance(element_type.inner, declarative_asn1.Type.Option)
+        or element_type.annotation.default is not None
+    ):
+        raise TypeError(
+            f"field '{field_name}': the element type of a `{collection_name}`"
+            " cannot be optional (`X | None`) or have a DEFAULT annotation"
+        )
 
 
 # Convert a type to a Variant. Used with types inside Union

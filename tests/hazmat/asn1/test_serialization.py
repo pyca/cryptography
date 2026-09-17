@@ -1215,47 +1215,6 @@ class TestSetOf:
         assert asn1.decode_der(asn1.SetOf[int], b"\x31\x00") == asn1.SetOf([])
 
 
-class TestCollectionOfOptional:
-    # OPTIONAL and DEFAULT element types decode to a value without consuming
-    # input when the tag doesn't match; that must fail the decode rather than
-    # stall it.
-    @pytest.mark.parametrize(
-        ("element_type", "kind"),
-        [
-            (typing.Union[int, None], "SEQUENCE OF"),
-            (typing.Union[int, bool, None], "SEQUENCE OF"),
-            (Annotated[int, asn1.Default(0)], "SEQUENCE OF"),
-        ],
-    )
-    def test_sequenceof_element_tag_mismatch(
-        self, element_type: typing.Any, kind: str
-    ) -> None:
-        @asn1.sequence
-        class Example:
-            items: list[element_type]
-
-        assert asn1.decode_der(
-            Example, b"\x30\x05\x30\x03\x02\x01\x05"
-        ).items == [5]
-        with pytest.raises(
-            ValueError, match="unexpected tag for SEQUENCE OF element"
-        ):
-            asn1.decode_der(Example, b"\x30\x05\x30\x03\x04\x01\x00")
-
-    def test_setof_element_tag_mismatch(self) -> None:
-        @asn1.sequence
-        class Example:
-            items: asn1.SetOf[typing.Union[int, None]]
-
-        assert asn1.decode_der(
-            Example, b"\x30\x05\x31\x03\x02\x01\x05"
-        ).items == asn1.SetOf([5])
-        with pytest.raises(
-            ValueError, match="unexpected tag for SET OF element"
-        ):
-            asn1.decode_der(Example, b"\x30\x05\x31\x03\x04\x01\x00")
-
-
 class TestSize:
     def test_ok_sequenceof_size_restriction(self) -> None:
         @asn1.sequence

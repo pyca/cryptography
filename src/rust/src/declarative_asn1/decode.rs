@@ -329,30 +329,6 @@ fn decode_choice_with_encoding<'a>(
     }
 }
 
-// Decodes one element of a SEQUENCE OF or SET OF from its own TLV. An
-// OPTIONAL or DEFAULT element type decodes to a value without consuming
-// anything when the next tag isn't one it accepts, so parsing straight from
-// the collection's parser would never make progress on such an element.
-fn decode_collection_element<'a>(
-    py: pyo3::Python<'a>,
-    parser: &mut Parser<'a>,
-    element_type: &AnnotatedType,
-    collection_name: &str,
-) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
-    let tlv = parser.read_element::<asn1::Tlv<'a>>()?;
-    asn1::parse(tlv.full_data(), |p| {
-        let value = decode_annotated_type(py, p, element_type)?;
-        if !p.is_empty() {
-            return Err(CryptographyError::Py(
-                pyo3::exceptions::PyValueError::new_err(format!(
-                    "invalid DER: unexpected tag for {collection_name} element"
-                )),
-            ));
-        }
-        Ok(value)
-    })
-}
-
 pub(crate) fn decode_annotated_type<'a>(
     py: pyo3::Python<'a>,
     parser: &mut Parser<'a>,
@@ -394,7 +370,7 @@ pub(crate) fn decode_annotated_type<'a>(
                 let inner_ann_type = cls.get();
                 let list = pyo3::types::PyList::empty(py);
                 while !d.is_empty() {
-                    let val = decode_collection_element(py, d, inner_ann_type, "SEQUENCE OF")?;
+                    let val = decode_annotated_type(py, d, inner_ann_type)?;
                     list.append(val)?;
                 }
                 check_size_constraint(&annotation.size, || list.len(), "SEQUENCE OF")?;
@@ -423,7 +399,7 @@ pub(crate) fn decode_annotated_type<'a>(
                 let inner_ann_type = cls.get();
                 let list = pyo3::types::PyList::empty(py);
                 while !d.is_empty() {
-                    let val = decode_collection_element(py, d, inner_ann_type, "SET OF")?;
+                    let val = decode_annotated_type(py, d, inner_ann_type)?;
                     list.append(val)?;
                 }
                 check_size_constraint(&annotation.size, || list.len(), "SET OF")?;
