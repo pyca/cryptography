@@ -16,6 +16,11 @@ Changelog
   the key loading APIs (including from X.509 certificates and certificate
   signing requests). Users should migrate to a more modern signature
   algorithm.
+* Serializing a
+  :class:`~cryptography.x509.PrecertificateSignedCertificateTimestamps` or
+  :class:`~cryptography.x509.SignedCertificateTimestamps` extension whose
+  SCTs total more than 65535 bytes now raises ``ValueError`` instead of
+  silently producing an invalid encoding.
 
 .. _v50-0-1:
 
