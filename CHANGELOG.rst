@@ -16,6 +16,10 @@ Changelog
   the key loading APIs (including from X.509 certificates and certificate
   signing requests). Users should migrate to a more modern signature
   algorithm.
+* :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_pkcs12`
+  and
+  :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_key_and_certificates`
+  now release the GIL while OpenSSL parses and decrypts the bundle.
 
 .. _v50-0-1:
 
