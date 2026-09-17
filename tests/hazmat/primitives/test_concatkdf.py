@@ -144,22 +144,12 @@ class TestConcatKDFHash:
             ckdf.derive_into(b"key", buf)
 
     def test_derive_into_overlapping_buffer(self):
-        # Two SHA-256 blocks of output, so the key material is hashed again
-        # after the first block has been written.
-        z = bytes(range(48))
-        expected = ConcatKDFHash(hashes.SHA256(), 48, b"info").derive(z)
-
-        buf = bytearray(z)
-        ckdf = ConcatKDFHash(hashes.SHA256(), 48, b"info")
-        assert ckdf.derive_into(buf, buf) == 48
-        assert buf == expected
-
         buf = bytearray(48)
-        buf[:32] = z[:32]
-        expected = ConcatKDFHash(hashes.SHA256(), 48, b"info").derive(z[:32])
         ckdf = ConcatKDFHash(hashes.SHA256(), 48, b"info")
-        assert ckdf.derive_into(memoryview(buf)[:32], buf) == 48
-        assert buf == expected
+        with pytest.raises(ValueError, match="must not overlap"):
+            ckdf.derive_into(buf, buf)
+        with pytest.raises(ValueError, match="must not overlap"):
+            ckdf.derive_into(memoryview(buf)[:32], buf)
 
     def test_derive_into_already_finalized(self):
         ckdf = ConcatKDFHash(hashes.SHA256(), 16, None)
@@ -354,14 +344,10 @@ class TestConcatKDFHMAC:
             ckdf.derive_into(b"key", buf)
 
     def test_derive_into_overlapping_buffer(self):
-        z = bytes(range(48))
-        expected = ConcatKDFHMAC(hashes.SHA256(), 48, b"salt", b"info").derive(
-            z
-        )
-        buf = bytearray(z)
+        buf = bytearray(48)
         ckdf = ConcatKDFHMAC(hashes.SHA256(), 48, b"salt", b"info")
-        assert ckdf.derive_into(buf, buf) == 48
-        assert buf == expected
+        with pytest.raises(ValueError, match="must not overlap"):
+            ckdf.derive_into(buf, buf)
 
     def test_derive_into_already_finalized(self):
         ckdf = ConcatKDFHMAC(hashes.SHA512(), 32, None, None)

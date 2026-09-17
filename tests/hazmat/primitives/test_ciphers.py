@@ -185,45 +185,8 @@ class TestCipherUpdateInto:
         assert res == len(pt)
         assert bytes(buf)[:res] == ct
 
-    def test_update_into_in_place(self):
-        key = b"\x00" * 16
-        iv = b"\x01" * 16
-        pt = bytes(range(64))
-
-        # Stream modes never buffer input, so in-place operation is
-        # supported natively.
-        ctr = ciphers.Cipher(AES(key), modes.CTR(iv))
-        expected = ctr.encryptor().update(pt)
-        buf = bytearray(pt)
-        encryptor = ctr.encryptor()
-        n = encryptor.update_into(memoryview(buf)[:5], buf)
-        n += encryptor.update_into(memoryview(buf)[5:], memoryview(buf)[n:])
-        assert n == len(pt)
-        assert buf == expected
-
-        # Block modes with unaligned calls leave a partial block pending
-        # inside OpenSSL, which would clobber the input if it were passed
-        # through directly.
-        cbc = ciphers.Cipher(AES(key), modes.CBC(iv))
-        expected = cbc.encryptor().update(pt)
-        encryptor = cbc.encryptor()
-        buf = bytearray(32 + 15)
-        out = b""
-        for chunk in (pt[:5], pt[5:32], pt[32:]):
-            buf[: len(chunk)] = chunk
-            n = encryptor.update_into(memoryview(buf)[: len(chunk)], buf)
-            out += bytes(buf[:n])
-        assert out + encryptor.finalize() == expected
-
-        decryptor = cbc.decryptor()
-        out = b""
-        for chunk in (expected[:5], expected[5:32], expected[32:]):
-            buf[: len(chunk)] = chunk
-            n = decryptor.update_into(memoryview(buf)[: len(chunk)], buf)
-            out += bytes(buf[:n])
-        assert out + decryptor.finalize() == pt
-
-    def test_update_into_partial_overlap(self):
+    @pytest.mark.parametrize("offset", [0, 1, 16])
+    def test_update_into_overlapping_buffer(self, offset):
         key = b"\x00" * 16
         iv = b"\x01" * 16
         for mode in [modes.CBC(iv), modes.CTR(iv)]:
@@ -231,13 +194,14 @@ class TestCipherUpdateInto:
                 AES(key), typing.cast(modes.ModeWithNonce, mode)
             ).encryptor()
             buf = bytearray(64)
-            with pytest.raises(ValueError, match="must not partially overlap"):
+            with pytest.raises(ValueError, match="must not overlap"):
                 encryptor.update_into(
-                    memoryview(buf)[:32], memoryview(buf)[1:]
+                    memoryview(buf)[:32], memoryview(buf)[offset:]
                 )
-            with pytest.raises(ValueError, match="must not partially overlap"):
+            with pytest.raises(ValueError, match="must not overlap"):
                 encryptor.update_into(
-                    memoryview(buf)[1:33], memoryview(buf)[:48]
+                    memoryview(buf)[offset : offset + 32],
+                    memoryview(buf)[:48],
                 )
 
     def test_update_into_buffer_too_small(self):

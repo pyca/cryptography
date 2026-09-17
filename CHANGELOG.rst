@@ -16,21 +16,14 @@ Changelog
   the key loading APIs (including from X.509 certificates and certificate
   signing requests). Users should migrate to a more modern signature
   algorithm.
-* Fixed several ``*_into`` methods silently producing incorrect output when
-  the input and output buffers overlapped in memory. The AEAD
-  ``encrypt_into``/``decrypt_into`` methods in
-  :mod:`~cryptography.hazmat.primitives.ciphers.aead` and
-  :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.update_into`
-  now raise ``ValueError`` if ``buf`` partially overlaps ``data`` (exact
-  in-place operation continues to be supported), in-place
-  :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.update_into`
-  with a block mode now produces correct output when a previous call left a
-  partial block pending, and the ``update_into`` methods of the
-  :doc:`/cobblestone` recipe and the ``derive_into`` methods of
-  :class:`~cryptography.hazmat.primitives.kdf.concatkdf.ConcatKDFHash`,
-  :class:`~cryptography.hazmat.primitives.kdf.concatkdf.ConcatKDFHMAC`, and
-  :class:`~cryptography.hazmat.primitives.kdf.x963kdf.X963KDF` now produce
-  correct output for overlapping buffers.
+* The ``encrypt_into``/``decrypt_into`` methods in
+  :mod:`~cryptography.hazmat.primitives.ciphers.aead`,
+  :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.update_into`,
+  the ``update_into`` methods of the :doc:`/cobblestone` recipe, and the
+  ``derive_into`` methods of the
+  :doc:`key derivation functions </hazmat/primitives/key-derivation-functions>`
+  now raise ``ValueError`` if the input and output buffers overlap.
+  Previously, overlapping buffers could silently produce incorrect output.
 
 .. _v50-0-1:
 

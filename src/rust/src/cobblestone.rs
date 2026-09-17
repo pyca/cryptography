@@ -327,14 +327,7 @@ impl ChunkedEncryptor {
                 )),
             ));
         }
-        if crate::buf::overlaps(data, out) {
-            // The output is never at the same offset as the input (the
-            // header precedes the first chunk and every chunk is followed by
-            // its tag), so an overlapping `data` would be overwritten before
-            // it has been read. Operate from a copy instead.
-            let data = data.to_vec();
-            return self.update_impl(py, &data, out);
-        }
+        crate::buf::check_no_overlap(data, out)?;
         self.update_impl(py, data, out)
     }
 
@@ -515,14 +508,7 @@ impl ChunkedDecryptor {
                 )),
             ));
         }
-        // See the equivalent comment in `ChunkedEncryptor::update_into`.
-        let copied;
-        let data = if crate::buf::overlaps(data, out) {
-            copied = data.to_vec();
-            copied.as_slice()
-        } else {
-            data
-        };
+        crate::buf::check_no_overlap(data, out)?;
         let result = Self::update_impl(py, params, state, data, out);
         if result.is_err() {
             self.state = None;

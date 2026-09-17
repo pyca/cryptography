@@ -267,7 +267,8 @@ class TestChaCha20Poly1305:
         with pytest.raises(InvalidTag):
             chacha.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
 
-    def test_encrypt_into_in_place(self):
+    @pytest.mark.parametrize("offset", [0, 1, 12, 16])
+    def test_encrypt_into_overlapping_buffer(self, offset):
         key = ChaCha20Poly1305.generate_key()
         chacha = ChaCha20Poly1305(key)
         nonce = os.urandom(12)
@@ -275,46 +276,15 @@ class TestChaCha20Poly1305:
         ad = b"additional"
         ct = chacha.encrypt(nonce, pt, ad)
 
-        buf = bytearray(len(pt) + 16)
-        buf[: len(pt)] = pt
-        n = chacha.encrypt_into(nonce, memoryview(buf)[: len(pt)], ad, buf)
-        assert n == len(pt) + 16
-        assert buf == ct
-
-        buf = bytearray(ct)
-        n = chacha.decrypt_into(nonce, buf, ad, memoryview(buf)[: len(pt)])
-        assert n == len(pt)
-        assert buf[: len(pt)] == pt
-
-    @pytest.mark.parametrize("offset", [1, 12, 16])
-    def test_encrypt_into_partial_overlap(self, offset):
-        key = ChaCha20Poly1305.generate_key()
-        chacha = ChaCha20Poly1305(key)
-        nonce = os.urandom(12)
-        pt = os.urandom(1000)
-        ad = b"additional"
-        ct = chacha.encrypt(nonce, pt, ad)
-
-        # buf starts inside data
         buf = bytearray(offset + len(pt) + 16)
         buf[: len(pt)] = pt
-        with pytest.raises(ValueError, match="must not partially overlap"):
+        with pytest.raises(ValueError, match="must not overlap"):
             chacha.encrypt_into(
                 nonce, memoryview(buf)[: len(pt)], ad, memoryview(buf)[offset:]
             )
-        # data starts inside buf
-        buf = bytearray(offset + len(pt) + 16)
-        buf[offset : offset + len(pt)] = pt
-        with pytest.raises(ValueError, match="must not partially overlap"):
-            chacha.encrypt_into(
-                nonce,
-                memoryview(buf)[offset : offset + len(pt)],
-                ad,
-                memoryview(buf)[: len(pt) + 16],
-            )
 
         buf = bytearray(ct + bytes(offset))
-        with pytest.raises(ValueError, match="must not partially overlap"):
+        with pytest.raises(ValueError, match="must not overlap"):
             chacha.decrypt_into(
                 nonce,
                 memoryview(buf)[: len(ct)],
@@ -808,7 +778,8 @@ class TestAESGCM:
         with pytest.raises(InvalidTag):
             aesgcm.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
 
-    def test_encrypt_into_in_place(self):
+    @pytest.mark.parametrize("offset", [0, 12])
+    def test_encrypt_into_overlapping_buffer(self, offset):
         key = AESGCM.generate_key(128)
         aesgcm = AESGCM(key)
         nonce = os.urandom(12)
@@ -816,39 +787,20 @@ class TestAESGCM:
         ad = b"additional"
         ct = aesgcm.encrypt(nonce, pt, ad)
 
-        buf = bytearray(len(pt) + 16)
+        buf = bytearray(offset + len(pt) + 16)
         buf[: len(pt)] = pt
-        n = aesgcm.encrypt_into(nonce, memoryview(buf)[: len(pt)], ad, buf)
-        assert n == len(pt) + 16
-        assert buf == ct
-
-        buf = bytearray(ct)
-        n = aesgcm.decrypt_into(nonce, buf, ad, memoryview(buf)[: len(pt)])
-        assert n == len(pt)
-        assert buf[: len(pt)] == pt
-
-    def test_encrypt_into_partial_overlap(self):
-        key = AESGCM.generate_key(128)
-        aesgcm = AESGCM(key)
-        nonce = os.urandom(12)
-        pt = os.urandom(1000)
-        ad = b"additional"
-        ct = aesgcm.encrypt(nonce, pt, ad)
-
-        buf = bytearray(12 + len(pt) + 16)
-        buf[: len(pt)] = pt
-        with pytest.raises(ValueError, match="must not partially overlap"):
+        with pytest.raises(ValueError, match="must not overlap"):
             aesgcm.encrypt_into(
-                nonce, memoryview(buf)[: len(pt)], ad, memoryview(buf)[12:]
+                nonce, memoryview(buf)[: len(pt)], ad, memoryview(buf)[offset:]
             )
 
-        buf = bytearray(ct + bytes(12))
-        with pytest.raises(ValueError, match="must not partially overlap"):
+        buf = bytearray(ct + bytes(offset))
+        with pytest.raises(ValueError, match="must not overlap"):
             aesgcm.decrypt_into(
                 nonce,
                 memoryview(buf)[: len(ct)],
                 ad,
-                memoryview(buf)[12 : 12 + len(pt)],
+                memoryview(buf)[offset : offset + len(pt)],
             )
 
 
@@ -1343,43 +1295,26 @@ class TestAESSIV:
         with pytest.raises(InvalidTag):
             aessiv.decrypt_into(bytes(corrupted_ct), ad, buf)
 
-    def test_encrypt_into_in_place(self):
+    @pytest.mark.parametrize("offset", [0, 16])
+    def test_encrypt_into_overlapping_buffer(self, offset):
         key = AESSIV.generate_key(256)
         aessiv = AESSIV(key)
         pt = os.urandom(1000)
         ad = [b"additional"]
         ct = aessiv.encrypt(pt, ad)
 
-        # The tag is prepended, so in-place operation means the plaintext
-        # sits where the ciphertext will be written.
         buf = bytearray(len(pt) + 16)
-        buf[16:] = pt
-        n = aessiv.encrypt_into(memoryview(buf)[16:], ad, buf)
-        assert n == len(pt) + 16
-        assert buf == ct
+        buf[offset : offset + len(pt)] = pt
+        with pytest.raises(ValueError, match="must not overlap"):
+            aessiv.encrypt_into(
+                memoryview(buf)[offset : offset + len(pt)], ad, buf
+            )
 
         buf = bytearray(ct)
-        n = aessiv.decrypt_into(buf, ad, memoryview(buf)[16:])
-        assert n == len(pt)
-        assert buf[16:] == pt
-
-    def test_encrypt_into_partial_overlap(self):
-        key = AESSIV.generate_key(256)
-        aessiv = AESSIV(key)
-        pt = os.urandom(1000)
-        ad = [b"additional"]
-        ct = aessiv.encrypt(pt, ad)
-
-        # Plaintext at the front of the buffer overlaps the ciphertext
-        # region, which starts 16 bytes later.
-        buf = bytearray(len(pt) + 16)
-        buf[: len(pt)] = pt
-        with pytest.raises(ValueError, match="must not partially overlap"):
-            aessiv.encrypt_into(memoryview(buf)[: len(pt)], ad, buf)
-
-        buf = bytearray(ct)
-        with pytest.raises(ValueError, match="must not partially overlap"):
-            aessiv.decrypt_into(buf, ad, memoryview(buf)[: len(pt)])
+        with pytest.raises(ValueError, match="must not overlap"):
+            aessiv.decrypt_into(
+                buf, ad, memoryview(buf)[offset : offset + len(pt)]
+            )
 
 
 @pytest.mark.skipif(

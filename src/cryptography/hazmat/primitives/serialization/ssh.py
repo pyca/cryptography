@@ -861,9 +861,9 @@ def _serialize_ssh_private_key(
     f_main.render(buf)
     ofs = mlen - slen
 
-    # encrypt in-place
+    # encrypt the secrets section
     if ciph is not None:
-        ciph.encryptor().update_into(buf[ofs:mlen], buf[ofs:])
+        ciph.encryptor().update_into(bytes(buf[ofs:mlen]), buf[ofs:])
 
     return bytes(buf[:mlen])
 

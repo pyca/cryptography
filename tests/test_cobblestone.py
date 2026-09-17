@@ -287,39 +287,22 @@ class TestCobblestone:
     def test_update_into_overlapping_buffer(self, variant, offset):
         encryptor_cls, decryptor_cls, _ = variant
         key = encryptor_cls.generate_key()
-        plaintext = os.urandom(2 * CHUNK_SIZE + 100)
-
-        # Feed the message in several calls, each time placing the input
-        # inside the output buffer at `offset`.
-        def in_place(ctx, data, splits, buf):
-            out = b""
-            for start, end in zip([0, *splits], [*splits, len(data)]):
-                chunk = data[start:end]
-                buf[offset : offset + len(chunk)] = chunk
-                n = ctx.update_into(
-                    memoryview(buf)[offset : offset + len(chunk)], buf
-                )
-                out += bytes(buf[:n])
-            return out + ctx.finalize()
 
         enc = encryptor_cls(key, b"")
-        buf = bytearray(offset + HEADER_LEN + 3 * WIRE_CHUNK_SIZE)
-        ciphertext = in_place(
-            enc, plaintext, [100, CHUNK_SIZE + 50, 2 * CHUNK_SIZE], buf
-        )
-        assert _decrypt_all(decryptor_cls, key, b"", ciphertext) == plaintext
+        buf = bytearray(HEADER_LEN + WIRE_CHUNK_SIZE)
+        with pytest.raises(ValueError, match="must not overlap"):
+            enc.update_into(memoryview(buf)[offset : offset + 100], buf)
+        # The context remains usable after the failed call.
+        ciphertext = enc.update(b"abc") + enc.finalize()
 
         dec = decryptor_cls(key, b"")
-        buf = bytearray(offset + len(ciphertext) + WIRE_CHUNK_SIZE)
-        assert (
-            in_place(
-                dec,
-                ciphertext,
-                [100, WIRE_CHUNK_SIZE + 50, HEADER_LEN + 2 * WIRE_CHUNK_SIZE],
-                buf,
+        buf = bytearray(len(ciphertext) + WIRE_CHUNK_SIZE)
+        buf[offset : offset + len(ciphertext)] = ciphertext
+        with pytest.raises(ValueError, match="must not overlap"):
+            dec.update_into(
+                memoryview(buf)[offset : offset + len(ciphertext)], buf
             )
-            == plaintext
-        )
+        assert dec.update(ciphertext) + dec.finalize() == b"abc"
 
     def test_update_into_zero_output(self, variant):
         encryptor_cls, decryptor_cls, _ = variant

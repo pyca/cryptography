@@ -16,9 +16,6 @@ pub(crate) struct CipherContext {
     py_algorithm: pyo3::Py<pyo3::PyAny>,
     side: openssl::symm::Mode,
     is_xts: bool,
-    // The number of input bytes OpenSSL is holding back because they don't
-    // yet form a complete block. Always 0 for stream modes.
-    buffered: usize,
 }
 
 impl CipherContext {
@@ -123,7 +120,6 @@ impl CipherContext {
             py_algorithm: algorithm.into(),
             side,
             is_xts,
-            buffered: 0,
         })
     }
 
@@ -187,37 +183,17 @@ impl CipherContext {
         data: &[u8],
         buf: &mut [u8],
     ) -> CryptographyResult<usize> {
-        let block_size = self.ctx.block_size();
-        if buf.len() < (data.len() + block_size - 1) {
+        if buf.len() < (data.len() + self.ctx.block_size() - 1) {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(format!(
                     "buffer must be at least {} bytes for this payload",
-                    data.len() + block_size - 1
+                    data.len() + self.ctx.block_size() - 1
                 )),
             ));
         }
-        // OpenSSL only supports the input and output either being disjoint
-        // or aliasing exactly; any other overlap silently produces incorrect
-        // output.
-        crate::buf::check_no_partial_overlap(data, buf)?;
+        crate::buf::check_no_overlap(data, buf)?;
 
-        let n = if self.buffered != 0 && crate::buf::overlaps(data, buf) {
-            // In-place operation with a partial block pending: OpenSSL would
-            // write the completed block to `buf` before it has read the
-            // remainder of that block from `data`, so operate from a copy.
-            let data = data.to_vec();
-            crate::backend::run_with_gil_detached(py, data.len(), || {
-                self.update_into_inner(&data, buf)
-            })?
-        } else {
-            crate::backend::run_with_gil_detached(py, data.len(), || {
-                self.update_into_inner(data, buf)
-            })?
-        };
-        // Padding is disabled, so block modes emit every complete block and
-        // hold back only the remainder.
-        self.buffered = (self.buffered + data.len()).saturating_sub(n) % block_size;
-        Ok(n)
+        crate::backend::run_with_gil_detached(py, data.len(), || self.update_into_inner(data, buf))
     }
 
     fn update_into_inner(&mut self, data: &[u8], buf: &mut [u8]) -> CryptographyResult<usize> {

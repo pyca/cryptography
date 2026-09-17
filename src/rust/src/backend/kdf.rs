@@ -97,6 +97,7 @@ impl Pbkdf2Hmac {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
+        crate::buf::check_no_overlap(key_material.as_bytes(), buf.as_mut_bytes())?;
         self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
     }
 
@@ -275,6 +276,7 @@ impl Scrypt {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
+        crate::buf::check_no_overlap(key_material.as_bytes(), buf.as_mut_bytes())?;
         self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
     }
 
@@ -722,6 +724,7 @@ impl Argon2d {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
+        crate::buf::check_no_overlap(key_material.as_bytes(), buf.as_mut_bytes())?;
         self._base.derive_into_buffer(
             py,
             &Argon2Variant::Argon2d,
@@ -818,6 +821,7 @@ impl Argon2i {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
+        crate::buf::check_no_overlap(key_material.as_bytes(), buf.as_mut_bytes())?;
         self._base.derive_into_buffer(
             py,
             &Argon2Variant::Argon2i,
@@ -913,6 +917,7 @@ impl Argon2id {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
+        crate::buf::check_no_overlap(key_material.as_bytes(), buf.as_mut_bytes())?;
         self._base.derive_into_buffer(
             py,
             &Argon2Variant::Argon2id,
@@ -1109,6 +1114,7 @@ impl Hkdf {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
+        crate::buf::check_no_overlap(key_material.as_bytes(), buf.as_mut_bytes())?;
         self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
     }
 
@@ -1259,6 +1265,7 @@ impl HkdfExpand {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
+        crate::buf::check_no_overlap(key_material.as_bytes(), buf.as_mut_bytes())?;
         self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
     }
 
@@ -1397,16 +1404,8 @@ impl X963Kdf {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        // `key_material` is hashed again for every output block, so it must
-        // not be clobbered by blocks already written when it overlaps `buf`.
-        let copied;
-        let key_material = if crate::buf::overlaps(key_material.as_bytes(), buf.as_mut_bytes()) {
-            copied = key_material.as_bytes().to_vec();
-            copied.as_slice()
-        } else {
-            key_material.as_bytes()
-        };
-        self.derive_into_buffer(py, key_material, buf.as_mut_bytes())
+        crate::buf::check_no_overlap(key_material.as_bytes(), buf.as_mut_bytes())?;
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
     }
 
     fn derive<'p>(
@@ -1543,16 +1542,8 @@ impl ConcatKdfHash {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        // `key_material` is hashed again for every output block, so it must
-        // not be clobbered by blocks already written when it overlaps `buf`.
-        let copied;
-        let key_material = if crate::buf::overlaps(key_material.as_bytes(), buf.as_mut_bytes()) {
-            copied = key_material.as_bytes().to_vec();
-            copied.as_slice()
-        } else {
-            key_material.as_bytes()
-        };
-        self.derive_into_buffer(py, key_material, buf.as_mut_bytes())
+        crate::buf::check_no_overlap(key_material.as_bytes(), buf.as_mut_bytes())?;
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
     }
 
     fn derive<'p>(
@@ -1712,16 +1703,8 @@ impl ConcatKdfHmac {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        // `key_material` is hashed again for every output block, so it must
-        // not be clobbered by blocks already written when it overlaps `buf`.
-        let copied;
-        let key_material = if crate::buf::overlaps(key_material.as_bytes(), buf.as_mut_bytes()) {
-            copied = key_material.as_bytes().to_vec();
-            copied.as_slice()
-        } else {
-            key_material.as_bytes()
-        };
-        self.derive_into_buffer(py, key_material, buf.as_mut_bytes())
+        crate::buf::check_no_overlap(key_material.as_bytes(), buf.as_mut_bytes())?;
+        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
     }
 
     fn derive<'p>(
@@ -2035,6 +2018,7 @@ impl KbkdfHmac {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
+        crate::buf::check_no_overlap(key_material.as_bytes(), buf.as_mut_bytes())?;
         if self.used {
             return Err(exceptions::already_finalized_error());
         }
@@ -2171,6 +2155,7 @@ impl KbkdfCmac {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
+        crate::buf::check_no_overlap(key_material.as_bytes(), buf.as_mut_bytes())?;
         if self.used {
             return Err(exceptions::already_finalized_error());
         }

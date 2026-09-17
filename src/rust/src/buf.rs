@@ -191,26 +191,21 @@ impl<'p> pyo3::conversion::FromPyObject<'_, 'p> for CffiMutBuf<'p> {
     }
 }
 
-/// Returns whether `a` and `b` share any bytes of memory.
-pub(crate) fn overlaps(a: &[u8], b: &[u8]) -> bool {
-    if a.is_empty() || b.is_empty() {
-        return false;
+/// Returns an error if `data` and `buf` share any bytes of memory. The
+/// `*_into` methods require their input and output buffers to be disjoint:
+/// with overlapping buffers, output can be written over input that hasn't
+/// been read yet, silently producing incorrect results.
+pub(crate) fn check_no_overlap(data: &[u8], buf: &[u8]) -> pyo3::PyResult<()> {
+    if data.is_empty() || buf.is_empty() {
+        return Ok(());
     }
-    let a_start = a.as_ptr() as usize;
-    let a_end = a_start + a.len();
-    let b_start = b.as_ptr() as usize;
-    let b_end = b_start + b.len();
-    a_start < b_end && b_start < a_end
-}
-
-/// Returns an error if `data` and `buf` overlap in memory without starting
-/// at the same address. Exact aliasing (in-place operation) is allowed, but
-/// an input that is partially overwritten by the output before it has been
-/// read would produce incorrect results.
-pub(crate) fn check_no_partial_overlap(data: &[u8], buf: &[u8]) -> pyo3::PyResult<()> {
-    if overlaps(data, buf) && data.as_ptr() != buf.as_ptr() {
+    let data_start = data.as_ptr() as usize;
+    let data_end = data_start + data.len();
+    let buf_start = buf.as_ptr() as usize;
+    let buf_end = buf_start + buf.len();
+    if data_start < buf_end && buf_start < data_end {
         return Err(pyo3::exceptions::PyValueError::new_err(
-            "data and buf must not partially overlap",
+            "data and buf must not overlap",
         ));
     }
     Ok(())
