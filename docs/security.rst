@@ -52,17 +52,10 @@ Examples of things we wouldn't consider security issues:
   represent bugs that should be filed as regular issues, but they are not
   security vulnerabilities because they do not cause memory unsafety or
   undefined behavior -- the process remains in a well-defined state.
-* CPU consumption caused by the work factor embedded in serialized key
-  material. Formats such as OpenSSH private keys, PKCS#8, and PKCS#12 store
-  the number of KDF rounds or iterations used to protect the key, and
-  functions like
-  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key`
-  and :func:`~cryptography.hazmat.primitives.serialization.pkcs12.load_pkcs12`
-  perform exactly the work the file specifies. A file that specifies an
-  enormous work factor therefore takes a correspondingly long time to load.
-  This is inherent to these formats, and applications that load untrusted
-  key material must apply their own limits (e.g. by loading it in a separate
-  process with a timeout).
+* CPU consumption from loading serialized key material (e.g. OpenSSH,
+  PKCS#8, or PKCS#12) that specifies an enormous KDF work factor. The file
+  dictates the number of rounds or iterations, and applications that load
+  untrusted key material must apply their own limits.
 
 In general, if you're unsure, we request that you to default to treating things
 as security issues and handling them sensitively, the worst thing that can
