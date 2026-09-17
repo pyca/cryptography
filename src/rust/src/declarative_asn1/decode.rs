@@ -329,24 +329,28 @@ fn decode_choice_with_encoding<'a>(
     }
 }
 
-// Decoding an OPTIONAL or DEFAULT element that isn't present returns a value
-// without consuming any input, so a collection of them would never make
-// progress. The Python layer rejects such types when the schema is defined;
-// this guards `AnnotatedType`s constructed by other means.
-fn check_collection_element_type(
+// Decodes one element of a SEQUENCE OF or SET OF from its own TLV. An
+// OPTIONAL or DEFAULT element type decodes to a value without consuming
+// anything when the next tag isn't one it accepts, so parsing straight from
+// the collection's parser would never make progress on such an element.
+fn decode_collection_element<'a>(
+    py: pyo3::Python<'a>,
+    parser: &mut Parser<'a>,
     element_type: &AnnotatedType,
     collection_name: &str,
-) -> ParseResult<()> {
-    if matches!(element_type.inner.get(), Type::Option(_))
-        || element_type.annotation.get().default.is_some()
-    {
-        return Err(CryptographyError::Py(
-            pyo3::exceptions::PyValueError::new_err(format!(
-                "invalid type definition: {collection_name} elements cannot be optional or have a DEFAULT"
-            )),
-        ));
-    }
-    Ok(())
+) -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
+    let tlv = parser.read_element::<asn1::Tlv<'a>>()?;
+    asn1::parse(tlv.full_data(), |p| {
+        let value = decode_annotated_type(py, p, element_type)?;
+        if !p.is_empty() {
+            return Err(CryptographyError::Py(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "invalid DER: unexpected tag for {collection_name} element"
+                )),
+            ));
+        }
+        Ok(value)
+    })
 }
 
 pub(crate) fn decode_annotated_type<'a>(
@@ -388,10 +392,9 @@ pub(crate) fn decode_annotated_type<'a>(
 
             seqof_parse_result.parse(|d| -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
                 let inner_ann_type = cls.get();
-                check_collection_element_type(inner_ann_type, "SEQUENCE OF")?;
                 let list = pyo3::types::PyList::empty(py);
                 while !d.is_empty() {
-                    let val = decode_annotated_type(py, d, inner_ann_type)?;
+                    let val = decode_collection_element(py, d, inner_ann_type, "SEQUENCE OF")?;
                     list.append(val)?;
                 }
                 check_size_constraint(&annotation.size, || list.len(), "SEQUENCE OF")?;
@@ -418,10 +421,9 @@ pub(crate) fn decode_annotated_type<'a>(
 
             setof_parse_result.parse(|d| -> ParseResult<pyo3::Bound<'a, pyo3::PyAny>> {
                 let inner_ann_type = cls.get();
-                check_collection_element_type(inner_ann_type, "SET OF")?;
                 let list = pyo3::types::PyList::empty(py);
                 while !d.is_empty() {
-                    let val = decode_annotated_type(py, d, inner_ann_type)?;
+                    let val = decode_collection_element(py, d, inner_ann_type, "SET OF")?;
                     list.append(val)?;
                 }
                 check_size_constraint(&annotation.size, || list.len(), "SET OF")?;
@@ -509,6 +511,8 @@ pub(crate) fn decode_annotated_type<'a>(
 
 #[cfg(test)]
 mod tests {
+    use pyo3::types::PyAnyMethods;
+
     use crate::declarative_asn1::types::{AnnotatedType, Annotation, Encoding, Type, Variant};
     #[test]
     fn test_decode_implicit_choice() {
@@ -563,28 +567,43 @@ mod tests {
                     },
                 )
             };
-            for (ty, name) in [
-                (Type::SequenceOf(optional_element()?), "SEQUENCE OF"),
-                (Type::SetOf(optional_element()?), "SET OF"),
+            for (ty, name, good, bad) in [
+                (
+                    Type::SequenceOf(optional_element()?),
+                    "SEQUENCE OF",
+                    &b"\x30\x03\x02\x01\x05"[..],
+                    &b"\x30\x03\x04\x01\x00"[..],
+                ),
+                (
+                    Type::SetOf(optional_element()?),
+                    "SET OF",
+                    &b"\x31\x03\x02\x01\x05"[..],
+                    &b"\x31\x03\x04\x01\x00"[..],
+                ),
             ] {
                 let ann_type = AnnotatedType {
                     inner: pyo3::Py::new(py, ty)?,
                     annotation: empty_annotation()?,
                 };
-                // An element with a tag that doesn't match the inner type,
-                // which would previously never be consumed.
-                let data = if name == "SEQUENCE OF" {
-                    b"\x30\x03\x04\x01\x00"
+                let value = asn1::parse(good, |parser| {
+                    super::decode_annotated_type(py, parser, &ann_type)
+                })
+                .ok()
+                .unwrap();
+                let expected = if name == "SET OF" {
+                    "SetOf([5])"
                 } else {
-                    b"\x31\x03\x04\x01\x00"
+                    "[5]"
                 };
-                let result = asn1::parse(data, |parser| {
+                assert_eq!(value.repr()?.to_string(), expected);
+                // An element with a tag the optional inner type doesn't
+                // match, which would previously never be consumed.
+                let result = asn1::parse(bad, |parser| {
                     super::decode_annotated_type(py, parser, &ann_type)
                 });
                 let error = result.unwrap_err();
-                assert!(format!("{error}").contains(&format!(
-                    "invalid type definition: {name} elements cannot be optional or have a DEFAULT"
-                )));
+                assert!(format!("{error}")
+                    .contains(&format!("invalid DER: unexpected tag for {name} element")));
             }
             Ok::<_, pyo3::PyErr>(())
         })

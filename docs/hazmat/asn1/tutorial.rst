@@ -278,11 +278,6 @@ Use :class:`list`\[T] for ``SEQUENCE OF`` and :class:`~cryptography.hazmat.asn1.
     >>> decoded.values
     [1, 2, 3]
 
-Element types cannot be optional (``X | None``) or have a
-:class:`~cryptography.hazmat.asn1.Default` annotation, since ASN.1 does not
-define ``OPTIONAL`` or ``DEFAULT`` for ``SEQUENCE OF`` and ``SET OF``
-elements.
-
 ``SET OF`` elements are sorted in DER encoding:
 
 .. doctest::
