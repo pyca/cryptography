@@ -395,8 +395,8 @@ jobs:
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
-            # Latest commit on the aws-encryption-sdk-python master branch, as of Sep 05, 2026.
-            REF: 401c9bb215b45f344f6769534f2e7fac261edd36
+            # Latest commit on the aws-encryption-sdk-python master branch, as of Sep 17, 2026.
+            REF: a6c0413bb0ddc9bccdefad9f1d2c031e0bc4db29
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
