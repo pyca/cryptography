@@ -1216,6 +1216,7 @@ class TestSetOf:
 
     def test_setof_default(self) -> None:
         @asn1.sequence
+        @_comparable_dataclass
         class Example:
             values: Annotated[
                 asn1.SetOf[int], asn1.Default(asn1.SetOf([3, 1, 2]))
@@ -1224,22 +1225,22 @@ class TestSetOf:
 
         # A value equal to the DEFAULT is omitted, whatever order its
         # elements are listed in.
-        for values in ([3, 1, 2], [1, 2, 3], [2, 3, 1]):
-            assert (
-                asn1.encode_der(Example(values=asn1.SetOf(values), data=b"x"))
-                == b"\x30\x03\x04\x01\x78"
-            )
-        decoded = asn1.decode_der(Example, b"\x30\x03\x04\x01\x78")
-        assert decoded.values == asn1.SetOf([1, 2, 3])
-        assert decoded.data == b"x"
-
-        encoded = asn1.encode_der(
-            Example(values=asn1.SetOf([2, 1]), data=b"x")
+        assert_roundtrips(
+            [
+                (
+                    Example(values=asn1.SetOf([1, 2, 3]), data=b"x"),
+                    b"\x30\x03\x04\x01\x78",
+                ),
+                (
+                    Example(values=asn1.SetOf([1, 2]), data=b"x"),
+                    b"\x30\x0b\x31\x06\x02\x01\x01\x02\x01\x02\x04\x01\x78",
+                ),
+            ]
         )
-        assert encoded == (
-            b"\x30\x0b\x31\x06\x02\x01\x01\x02\x01\x02\x04\x01\x78"
+        assert (
+            asn1.encode_der(Example(values=asn1.SetOf([3, 1, 2]), data=b"x"))
+            == b"\x30\x03\x04\x01\x78"
         )
-        assert asn1.decode_der(Example, encoded).values == asn1.SetOf([1, 2])
 
         # Explicitly encoding the DEFAULT is not valid DER.
         with pytest.raises(
