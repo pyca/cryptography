@@ -416,7 +416,8 @@ fn encode_scts(ext: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>
     for sct in ext.try_iter()? {
         let sct = sct?.cast::<sct::Sct>()?.clone();
         // Each entry's length is bounded by the check on the total above.
-        result.extend_from_slice(&(sct.get().sct_data.len() as u16).to_be_bytes());
+        let sct_length: u16 = sct.get().sct_data.len().try_into().unwrap();
+        result.extend_from_slice(&sct_length.to_be_bytes());
         result.extend_from_slice(&sct.get().sct_data);
     }
     Ok(asn1::write_single(&result.as_slice())?)
