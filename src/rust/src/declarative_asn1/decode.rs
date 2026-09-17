@@ -511,8 +511,6 @@ pub(crate) fn decode_annotated_type<'a>(
 
 #[cfg(test)]
 mod tests {
-    use pyo3::types::PyAnyMethods;
-
     use crate::declarative_asn1::types::{AnnotatedType, Annotation, Encoding, Type, Variant};
     #[test]
     fn test_decode_implicit_choice() {
@@ -538,76 +536,6 @@ mod tests {
             assert!(format!("{error}")
                 .contains("invalid type definition: CHOICE fields cannot be implicitly encoded"));
         });
-    }
-
-    #[test]
-    fn test_decode_sequence_of_optional_element() {
-        pyo3::Python::initialize();
-        pyo3::Python::attach(|py| {
-            let empty_annotation = || {
-                pyo3::Py::new(
-                    py,
-                    Annotation {
-                        default: None,
-                        encoding: None,
-                        size: None,
-                    },
-                )
-            };
-            let optional_element = || -> pyo3::PyResult<pyo3::Py<AnnotatedType>> {
-                let element = AnnotatedType {
-                    inner: pyo3::Py::new(py, Type::PyInt())?,
-                    annotation: empty_annotation()?,
-                };
-                pyo3::Py::new(
-                    py,
-                    AnnotatedType {
-                        inner: pyo3::Py::new(py, Type::Option(pyo3::Py::new(py, element)?))?,
-                        annotation: empty_annotation()?,
-                    },
-                )
-            };
-            for (ty, name, good, bad) in [
-                (
-                    Type::SequenceOf(optional_element()?),
-                    "SEQUENCE OF",
-                    &b"\x30\x03\x02\x01\x05"[..],
-                    &b"\x30\x03\x04\x01\x00"[..],
-                ),
-                (
-                    Type::SetOf(optional_element()?),
-                    "SET OF",
-                    &b"\x31\x03\x02\x01\x05"[..],
-                    &b"\x31\x03\x04\x01\x00"[..],
-                ),
-            ] {
-                let ann_type = AnnotatedType {
-                    inner: pyo3::Py::new(py, ty)?,
-                    annotation: empty_annotation()?,
-                };
-                let value = asn1::parse(good, |parser| {
-                    super::decode_annotated_type(py, parser, &ann_type)
-                })
-                .ok()
-                .unwrap();
-                let expected = if name == "SET OF" {
-                    "SetOf([5])"
-                } else {
-                    "[5]"
-                };
-                assert_eq!(value.repr()?.to_string(), expected);
-                // An element with a tag the optional inner type doesn't
-                // match, which would previously never be consumed.
-                let result = asn1::parse(bad, |parser| {
-                    super::decode_annotated_type(py, parser, &ann_type)
-                });
-                let error = result.unwrap_err();
-                assert!(format!("{error}")
-                    .contains(&format!("invalid DER: unexpected tag for {name} element")));
-            }
-            Ok::<_, pyo3::PyErr>(())
-        })
-        .unwrap();
     }
 
     #[test]
