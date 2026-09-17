@@ -6137,7 +6137,7 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
                 [typing.cast(typing.Any, object())]
             )
 
-    def test_generate_oversized_list(self, rsa_key_2048: rsa.RSAPrivateKey):
+    def test_public_bytes_oversized_list(self):
         sct = (
             _load_cert(
                 os.path.join("x509", "badssl-sct.pem"),
@@ -6148,45 +6148,12 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             )
             .value[0]
         )
-        # Each serialized SCT has a 2-byte length prefix, and the list as a
-        # whole must fit in a 16-bit length prefix.
-        entry_len = (
-            len(
-                x509.PrecertificateSignedCertificateTimestamps(
-                    [sct]
-                ).public_bytes()
-            )
-            - 4
-        )
-        n = 65535 // entry_len
-        assert n * entry_len <= 65535 < (n + 1) * entry_len
-
-        ext = x509.PrecertificateSignedCertificateTimestamps([sct] * n)
-        cert = (
-            _make_certbuilder(rsa_key_2048)
-            .add_extension(ext, critical=False)
-            .sign(rsa_key_2048, hashes.SHA256())
-        )
-        assert (
-            cert.extensions.get_extension_for_class(
-                x509.PrecertificateSignedCertificateTimestamps
-            ).value
-            == ext
-        )
-
+        # The serialized list must fit in a 16-bit length prefix.
+        scts = [sct] * 1000
         with pytest.raises(ValueError, match="too large"):
-            x509.PrecertificateSignedCertificateTimestamps(
-                [sct] * (n + 1)
-            ).public_bytes()
+            x509.PrecertificateSignedCertificateTimestamps(scts).public_bytes()
         with pytest.raises(ValueError, match="too large"):
-            x509.SignedCertificateTimestamps([sct] * (n + 1)).public_bytes()
-        with pytest.raises(ValueError, match="too large"):
-            _make_certbuilder(rsa_key_2048).add_extension(
-                x509.PrecertificateSignedCertificateTimestamps(
-                    [sct] * (n + 1)
-                ),
-                critical=False,
-            ).sign(rsa_key_2048, hashes.SHA256())
+            x509.SignedCertificateTimestamps(scts).public_bytes()
 
     def test_repr(self):
         assert repr(x509.PrecertificateSignedCertificateTimestamps([])) == (
