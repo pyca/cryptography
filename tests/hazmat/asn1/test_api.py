@@ -201,6 +201,17 @@ class TestTypesAPI:
     def test_repr_setof(self) -> None:
         assert repr(asn1.SetOf([1, 2, 3])) == "SetOf([1, 2, 3])"
 
+    def test_setof_eq(self) -> None:
+        assert asn1.SetOf([1, 2, 3]) == asn1.SetOf([1, 2, 3])
+        assert asn1.SetOf([1, 2, 3]) == asn1.SetOf([3, 1, 2])
+        assert asn1.SetOf([1, 1, 2]) == asn1.SetOf([2, 1, 1])
+        assert asn1.SetOf([]) == asn1.SetOf([])
+        assert asn1.SetOf([1, 2]) != asn1.SetOf([1, 2, 3])
+        assert asn1.SetOf([1, 1, 2]) != asn1.SetOf([1, 2, 2])
+        assert asn1.SetOf([1, 2]) != asn1.SetOf([1, 3])
+        # Elements don't need to be hashable
+        assert asn1.SetOf([[1], [2]]) == asn1.SetOf([[2], [1]])
+
     def test_repr_null(self) -> None:
         assert repr(asn1.Null()) == "Null()"
 
