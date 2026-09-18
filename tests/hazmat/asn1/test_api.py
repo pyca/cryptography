@@ -354,6 +354,49 @@ class TestSequenceAPI:
                     typing.Union[int, None], asn1.Default(value=9)
                 ]
 
+    @pytest.mark.parametrize(
+        "element_type",
+        [
+            typing.Union[int, None],
+            typing.Union[int, bool, None],
+            Annotated[int, asn1.Default(0)],
+            Annotated[typing.Union[int, None], asn1.Explicit(0)],
+        ],
+    )
+    def test_fail_collection_of_optional_elements(
+        self, element_type: typing.Any
+    ) -> None:
+        with pytest.raises(
+            TypeError,
+            match=r"the element type of a `list` cannot be optional",
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: list[element_type]
+
+        with pytest.raises(
+            TypeError,
+            match=r"the element type of a `SetOf` cannot be optional",
+        ):
+
+            @asn1.sequence
+            class Example2:
+                invalid: asn1.SetOf[element_type]
+
+        with pytest.raises(TypeError, match="cannot be optional"):
+            asn1.decode_der(list[element_type], b"\x30\x00")
+
+    def test_fail_nested_collection_of_optional_elements(self) -> None:
+        with pytest.raises(
+            TypeError,
+            match=r"the element type of a `list` cannot be optional",
+        ):
+
+            @asn1.sequence
+            class Example:
+                invalid: asn1.SetOf[list[typing.Union[int, None]]]
+
     def test_fail_optional_with_annotations_inside(self) -> None:
         with pytest.raises(
             TypeError,

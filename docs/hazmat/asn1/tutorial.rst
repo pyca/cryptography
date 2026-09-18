@@ -278,6 +278,11 @@ Use :class:`list`\[T] for ``SEQUENCE OF`` and :class:`~cryptography.hazmat.asn1.
     >>> decoded.values
     [1, 2, 3]
 
+The element type itself cannot be optional or have a
+:class:`~cryptography.hazmat.asn1.Default`: ``list[int | None]`` and
+``SetOf[int | None]`` are rejected. The collection as a whole can be optional,
+as ``list[int] | None``.
+
 ``SET OF`` elements are sorted in DER encoding:
 
 .. doctest::
