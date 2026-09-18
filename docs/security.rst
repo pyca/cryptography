@@ -52,10 +52,10 @@ Examples of things we wouldn't consider security issues:
   represent bugs that should be filed as regular issues, but they are not
   security vulnerabilities because they do not cause memory unsafety or
   undefined behavior -- the process remains in a well-defined state.
-* CPU consumption from loading serialized key material (e.g. OpenSSH,
-  PKCS#8, or PKCS#12) that specifies an enormous KDF work factor. The file
-  dictates the number of rounds or iterations, and applications that load
-  untrusted key material must apply their own limits.
+* Denial of service via parsing untrusted key material. For example,
+  serialized key formats such as OpenSSH, PKCS#8, and PKCS#12 embed the KDF
+  work factor, and loading a file that specifies an enormous number of rounds
+  or iterations takes correspondingly long.
 
 In general, if you're unsure, we request that you to default to treating things
 as security issues and handling them sensitively, the worst thing that can
