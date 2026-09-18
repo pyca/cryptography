@@ -15,9 +15,9 @@ import pytest
 from cryptography import utils, x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.bindings._rust import test_support
+from cryptography.hazmat.decrepit.asymmetric import dh
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
-    dh,
     dsa,
     ec,
     ed448,
@@ -7124,8 +7124,7 @@ class TestSignatureRejection:
             load_nist_vectors,
         )[1]
         p = int.from_bytes(binascii.unhexlify(vector["p"]), "big")
-        with pytest.warns(utils.DeprecatedIn50):
-            params = dh.DHParameterNumbers(p, int(vector["g"]))
+        params = dh.DHParameterNumbers(p, int(vector["g"]))
         param = params.parameters()
         return param.generate_private_key()
 

@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import typing
 
+from cryptography.hazmat.decrepit.asymmetric import dh
 from cryptography.hazmat.primitives.asymmetric import (
-    dh,
     dsa,
     ec,
     ed448,
@@ -19,10 +19,11 @@ from cryptography.hazmat.primitives.asymmetric import (
     x25519,
 )
 
-# Every asymmetric key type. These use the private DH and DSA aliases so that
-# importing this module doesn't trigger the FFDH or DSA deprecation warnings.
+# Every asymmetric key type. FFDH types come from the decrepit module and DSA
+# uses its private aliases so that importing this module doesn't trigger the
+# FFDH or DSA deprecation warnings.
 PublicKeyTypes = typing.Union[
-    dh._DHPublicKey,
+    dh.DHPublicKey,
     dsa._DSAPublicKey,
     rsa.RSAPublicKey,
     ec.EllipticCurvePublicKey,
@@ -38,7 +39,7 @@ PublicKeyTypes = typing.Union[
 ]
 # Every asymmetric key type
 PrivateKeyTypes = typing.Union[
-    dh._DHPrivateKey,
+    dh.DHPrivateKey,
     ed25519.Ed25519PrivateKey,
     ed448.Ed448PrivateKey,
     mldsa.MLDSA44PrivateKey,

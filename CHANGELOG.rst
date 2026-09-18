@@ -16,6 +16,14 @@ Changelog
   the key loading APIs (including from X.509 certificates and certificate
   signing requests). Users should migrate to a more modern signature
   algorithm.
+* Moved Diffie-Hellman key exchange over finite fields (FFDH), which was
+  deprecated in 50.0.0, into :doc:`/hazmat/decrepit/index` as
+  :mod:`cryptography.hazmat.decrepit.asymmetric.dh`. The types in
+  ``cryptography.hazmat.primitives.asymmetric.dh`` remain deprecated, as do
+  ``load_pem_parameters`` and ``load_der_parameters`` in
+  ``cryptography.hazmat.primitives.serialization`` and loading FFDH keys with
+  the key loading APIs. Starting in 53.0.0, FFDH will only be available from
+  the decrepit module.
 
 .. _v50-0-1:
 
@@ -80,7 +88,7 @@ Changelog
   :func:`~cryptography.hazmat.primitives.serialization.load_pem_public_key` now
   reject Diffie-Hellman public keys whose modulus is smaller than 512 bits,
   matching the minimum already enforced when loading DH private keys and when
-  constructing :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameterNumbers`.
+  constructing :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHParameterNumbers`.
 * Added
   :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSAMuHasher` for
   incrementally computing the ML-DSA ``mu`` (message representative) used by
@@ -481,8 +489,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
   :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
-  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`, and
-  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`
+  :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateKey`, and
+  :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPublicKey`
   abstract base classes.
 * We significantly refactored how private key loading (
   :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
@@ -739,7 +747,7 @@ Changelog
   ``X448PrivateKey``
   :meth:`~cryptography.hazmat.primitives.asymmetric.x448.X448PrivateKey.exchange`,
   and ``DHPrivateKey``
-  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey.exchange`.
+  :meth:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateKey.exchange`.
 
 .. _v42-0-1:
 
@@ -2092,7 +2100,7 @@ Changelog
   :func:`~cryptography.hazmat.primitives.serialization.load_pem_parameters`,
   :func:`~cryptography.hazmat.primitives.serialization.load_der_parameters`,
   and
-  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHParameters.parameter_bytes`
+  :meth:`~cryptography.hazmat.decrepit.asymmetric.dh.DHParameters.parameter_bytes`
   .
 * The ``extensions`` attribute on :class:`~cryptography.x509.Certificate`,
   :class:`~cryptography.x509.CertificateSigningRequest`,
@@ -2173,13 +2181,13 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.ciphers.CipherContext.update_into` on
   :class:`~cryptography.hazmat.primitives.ciphers.CipherContext`.
 * Added
-  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey.private_bytes`
+  :meth:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateKey.private_bytes`
   to
-  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`.
+  :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateKey`.
 * Added
-  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey.public_bytes`
+  :meth:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPublicKey.public_bytes`
   to
-  :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`.
+  :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPublicKey`.
 * :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
   and
   :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
@@ -2213,7 +2221,7 @@ Changelog
 * Support for OpenSSL 1.0.0 has been removed. Users on older version of OpenSSL
   will need to upgrade.
 * Added support for Diffie-Hellman key exchange using
-  :meth:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey.exchange`.
+  :meth:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateKey.exchange`.
 * The OS random engine for OpenSSL has been rewritten to improve compatibility
   with embedded Python and other edge cases. More information about this change
   can be found in the
