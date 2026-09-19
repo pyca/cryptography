@@ -682,8 +682,8 @@ impl TrustStore {
     }
     pub fn set_time(&mut self, unix_seconds: i64) -> Result<()> {
         // SAFETY: Exclusive live store. The C shim checks the native time_t
-        // width using the target C compiler, copies the parameters into the
-        // store, and frees them. Only fixed-width integers cross the Rust ABI.
+        // width using the target C compiler and updates the store's owned
+        // parameters. Only fixed-width integers cross the Rust ABI.
         match unsafe { ffi::OB_store_set_time(self.0.as_ptr(), unix_seconds) } {
             -1 => Err(Error::InvalidInput("verification time is out of range")),
             result => check(result),

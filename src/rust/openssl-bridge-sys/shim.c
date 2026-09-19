@@ -11,14 +11,11 @@ int OB_store_set_time(X509_STORE *store, int64_t unix_seconds) {
      * 32-bit distributions), which need not match libclang's defaults. */
     time_t native_time = (time_t)unix_seconds;
     X509_VERIFY_PARAM *param;
-    int result;
     if ((int64_t)native_time != unix_seconds) return -1;
-    param = X509_VERIFY_PARAM_new();
+    param = X509_STORE_get0_param(store);
     if (param == NULL) return 0;
     X509_VERIFY_PARAM_set_time(param, native_time);
-    result = X509_STORE_set1_param(store, param);
-    X509_VERIFY_PARAM_free(param);
-    return result;
+    return 1;
 }
 int OB_tls_handshake_complete(SSL *ssl) { return SSL_is_init_finished(ssl); }
 int OB_tls_ex_index(void) { return SSL_get_ex_new_index(0, NULL, NULL, NULL, NULL); }
