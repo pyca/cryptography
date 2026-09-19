@@ -186,11 +186,6 @@ jobs:
           # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
           NOXSESSION: ${{ matrix.IMAGE.NOXSESSION }}
-      - name: Capture native ML-KEM backtrace
-        if: matrix.IMAGE.IMAGE == 'fedora'
-        run: |
-          dnf install -y gdb
-          /venv/bin/nox -e debug-native -- .nox/tests/bin/python
       - run: '/venv/bin/nox --no-install --  --color=yes --wycheproof-root="wycheproof" --x509-limbo-root="x509-limbo"'
         env:
           COLUMNS: 80
@@ -460,6 +455,11 @@ jobs:
           cache-dependency-glob: ci-constraints-requirements.txt
         timeout-minutes: 3
 
+      - name: Enable coverage for the typed TLS integration
+        if: matrix.DOWNSTREAM == 'pyopenssl-bridge'
+        run: |
+          rustup component add llvm-tools-preview
+          echo 'RUSTFLAGS=-Cinstrument-coverage' >> "$GITHUB_ENV"
       - run: uv venv
       - run: source .venv/bin/activate && ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
       - run: uv pip install -v .
@@ -483,6 +483,14 @@ jobs:
 
           EOF
       - run: source .venv/bin/activate && ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh run
+        if: matrix.DOWNSTREAM != 'pyopenssl-bridge'
+      - name: Test the typed TLS integration with coverage
+        if: matrix.DOWNSTREAM == 'pyopenssl-bridge'
+        run: |
+          uv pip install -c ci-constraints-requirements.txt 'nox[uv]'
+          .venv/bin/nox -e pyopenssl-bridge
+      - uses: ./.github/actions/upload-coverage
+        if: matrix.DOWNSTREAM == 'pyopenssl-bridge'
 
   all-green:
     # https://github.community/t/is-it-possible-to-require-all-github-actions-tasks-to-pass-without-enumerating-them/117957/4?u=graingert

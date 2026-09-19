@@ -560,8 +560,15 @@ impl PyConnection {
     fn new(context: &PyContext, server: bool, descriptor: Option<i32>) -> PyResult<Self> {
         let factory = context.freeze()?;
         let mut connection = match descriptor {
+            #[cfg(unix)]
             Some(fd) => {
                 tls::Connection::socket(factory, role(server), tls::SocketTransport::duplicate(fd)?)
+            }
+            #[cfg(not(unix))]
+            Some(_) => {
+                return Err(pyo3::exceptions::PyNotImplementedError::new_err(
+                    "socket descriptors are only supported on Unix; use memory BIOs",
+                ));
             }
             None if factory.protocol() == tls::Protocol::Dtls => {
                 tls::Connection::datagrams(factory, role(server), 1500)

@@ -193,11 +193,10 @@ impl PrivateKey {
     pub fn from_scalar(params: Parameters, scalar: &[u8]) -> Result<Self> {
         let exponent = Number::from_bytes(scalar, MAX_BYTES)?;
         let p = Number::from_bytes(params.components().p, MAX_BYTES)?;
-        let bound = Number::from_bytes(
-            params.components().q.unwrap_or(params.components().p),
-            MAX_BYTES,
-        )?;
-        if !exponent.positive() || !exponent.less_than(&bound) {
+        // Legacy DH imports may use exponents above q (including SSH peers).
+        // They are valid modulo the subgroup order. Bound the input by p and
+        // validate the resulting public value below, including subgroup checks.
+        if !exponent.positive() || !exponent.less_than(&p) {
             return Err(Error::InvalidInput("invalid DH private exponent"));
         }
         let g = Number::from_bytes(params.components().g, MAX_BYTES)?;

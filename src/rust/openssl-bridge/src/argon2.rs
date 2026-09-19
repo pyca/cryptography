@@ -72,7 +72,7 @@ impl Parameters {
             u32::try_from(input.len())
                 .map_err(|_| Error::InvalidInput("Argon2 input exceeds its length limit"))?;
         }
-        let mut size = u32::try_from(output.len())
+        let size = u32::try_from(output.len())
             .map_err(|_| Error::InvalidInput("Argon2 output exceeds its length limit"))?;
         crate::initialize()?;
         struct Kdf(*mut ffi::EVP_KDF);
@@ -100,49 +100,26 @@ impl Parameters {
         let mut salt = SecretBytes::from(salt.to_vec());
         let mut ad = SecretBytes::from(associated_data.unwrap_or(&[]).to_vec());
         let mut secret = SecretBytes::from(secret.unwrap_or(&[]).to_vec());
-        let mut iterations = self.iterations.get();
-        let mut lanes = self.lanes.get();
-        let mut memory = self.memory_kib;
-        let mut threads = 1;
-        let mut version = 0x13;
-        // SAFETY: All parameter values are writable, correctly typed, and live
-        // until the synchronous derive returns. Parameter names are static C
-        // strings; the array terminator bounds native iteration.
-        let params = unsafe {
-            [
-                ffi::OSSL_PARAM_construct_octet_string(
-                    c"pass".as_ptr(),
-                    password.as_mut().as_mut_ptr().cast(),
-                    password.as_ref().len(),
-                ),
-                ffi::OSSL_PARAM_construct_octet_string(
-                    c"salt".as_ptr(),
-                    salt.as_mut().as_mut_ptr().cast(),
-                    salt.as_ref().len(),
-                ),
-                ffi::OSSL_PARAM_construct_octet_string(
-                    c"ad".as_ptr(),
-                    ad.as_mut().as_mut_ptr().cast(),
-                    ad.as_ref().len(),
-                ),
-                ffi::OSSL_PARAM_construct_octet_string(
-                    c"secret".as_ptr(),
-                    secret.as_mut().as_mut_ptr().cast(),
-                    secret.as_ref().len(),
-                ),
-                ffi::OSSL_PARAM_construct_uint32(c"iter".as_ptr(), &mut iterations),
-                ffi::OSSL_PARAM_construct_uint32(c"lanes".as_ptr(), &mut lanes),
-                ffi::OSSL_PARAM_construct_uint32(c"memcost".as_ptr(), &mut memory),
-                ffi::OSSL_PARAM_construct_uint32(c"threads".as_ptr(), &mut threads),
-                ffi::OSSL_PARAM_construct_uint32(c"version".as_ptr(), &mut version),
-                ffi::OSSL_PARAM_construct_uint32(c"size".as_ptr(), &mut size),
-                ffi::OSSL_PARAM_construct_end(),
-            ]
-        };
-        // SAFETY: Exclusive context and output; parameter values cover their
-        // declared lengths. No output alias or native reference escapes.
+        // SAFETY: The shim borrows these exclusively owned buffers for this
+        // synchronous derive and constructs all OSSL_PARAM values on its stack.
         let result = check(unsafe {
-            ffi::EVP_KDF_derive(ctx.0, output.as_mut_ptr(), output.len(), params.as_ptr())
+            ffi::OB_argon2_derive(
+                ctx.0,
+                output.as_mut_ptr(),
+                output.len(),
+                password.as_mut().as_mut_ptr().cast(),
+                password.as_ref().len(),
+                salt.as_mut().as_mut_ptr().cast(),
+                salt.as_ref().len(),
+                ad.as_mut().as_mut_ptr().cast(),
+                ad.as_ref().len(),
+                secret.as_mut().as_mut_ptr().cast(),
+                secret.as_ref().len(),
+                self.iterations.get(),
+                self.lanes.get(),
+                self.memory_kib,
+                size,
+            )
         });
         if result.is_err() {
             crate::secret::erase(output);

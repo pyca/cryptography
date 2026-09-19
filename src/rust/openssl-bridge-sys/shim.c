@@ -376,3 +376,43 @@ size_t OB_dtls_data_mtu(SSL *ssl, unsigned int mtu) {
     return DTLS_get_data_mtu(ssl);
 #endif
 }
+
+#if OB_BACKEND_CODE == 0
+/* Keep OSSL_PARAM construction and its struct-return ABI on the C side.
+ * Buffers remain owned by Rust and are borrowed only for the synchronous call. */
+int OB_pkey_from_seed(EVP_PKEY_CTX *ctx, EVP_PKEY **key, void *seed, size_t length) {
+    OSSL_PARAM params[] = {
+        OSSL_PARAM_octet_string("seed", seed, length),
+        OSSL_PARAM_END
+    };
+    return EVP_PKEY_fromdata(ctx, key, EVP_PKEY_KEYPAIR, params);
+}
+int OB_mldsa_parameters(EVP_PKEY_CTX *ctx, void *context, size_t length, unsigned int mu) {
+    OSSL_PARAM params[] = {
+        OSSL_PARAM_octet_string("context-string", context, length),
+        OSSL_PARAM_uint("mu", &mu),
+        OSSL_PARAM_END
+    };
+    return EVP_PKEY_CTX_set_params(ctx, params);
+}
+int OB_argon2_derive(EVP_KDF_CTX *ctx, unsigned char *out, size_t length,
+    void *password, size_t password_length, void *salt, size_t salt_length,
+    void *ad, size_t ad_length, void *secret, size_t secret_length,
+    uint32_t iterations, uint32_t lanes, uint32_t memory, uint32_t size) {
+    uint32_t threads = 1, version = 0x13;
+    OSSL_PARAM params[] = {
+        OSSL_PARAM_octet_string("pass", password, password_length),
+        OSSL_PARAM_octet_string("salt", salt, salt_length),
+        OSSL_PARAM_octet_string("ad", ad, ad_length),
+        OSSL_PARAM_octet_string("secret", secret, secret_length),
+        OSSL_PARAM_uint32("iter", &iterations),
+        OSSL_PARAM_uint32("lanes", &lanes),
+        OSSL_PARAM_uint32("memcost", &memory),
+        OSSL_PARAM_uint32("threads", &threads),
+        OSSL_PARAM_uint32("version", &version),
+        OSSL_PARAM_uint32("size", &size),
+        OSSL_PARAM_END
+    };
+    return EVP_KDF_derive(ctx, out, length, params);
+}
+#endif

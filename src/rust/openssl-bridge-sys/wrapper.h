@@ -149,3 +149,12 @@ int OB_private_key_pkcs8(const EVP_PKEY *key, unsigned char *output, size_t capa
 int OB_pkcs7_kind(const PKCS7 *p7);
 const STACK_OF(X509) *OB_pkcs7_certificates(const PKCS7 *p7);
 #endif
+
+#if OB_BACKEND_CODE == 0
+int OB_pkey_from_seed(EVP_PKEY_CTX *ctx, EVP_PKEY **key, void *seed, size_t length);
+int OB_mldsa_parameters(EVP_PKEY_CTX *ctx, void *context, size_t length, unsigned int mu);
+int OB_argon2_derive(EVP_KDF_CTX *ctx, unsigned char *out, size_t length,
+    void *password, size_t password_length, void *salt, size_t salt_length,
+    void *ad, size_t ad_length, void *secret, size_t secret_length,
+    uint32_t iterations, uint32_t lanes, uint32_t memory, uint32_t size);
+#endif

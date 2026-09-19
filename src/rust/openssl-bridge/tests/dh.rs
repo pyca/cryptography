@@ -106,3 +106,21 @@ fn encoded_components_preserve_roundtrips_but_cannot_skip_validation() {
     let valid = PrivateKeyMaterial::from_components(params, &[2], &[4]).unwrap();
     assert!(valid.validate().is_ok());
 }
+
+#[test]
+fn ssh_group14_with_long_private_exponent() {
+    let p = modulus();
+    let params = Parameters::from_components(Components {
+        p: &p,
+        q: None,
+        g: &[2],
+    })
+    .unwrap();
+    let scalar = vec![0x99; 256];
+    let alice = PrivateKey::from_scalar(params.clone(), &scalar).unwrap();
+    let bob = PrivateKey::from_scalar(params, &[3]).unwrap();
+    assert_eq!(
+        alice.exchange(&bob.public_key()).unwrap().as_ref(),
+        bob.exchange(&alice.public_key()).unwrap().as_ref()
+    );
+}

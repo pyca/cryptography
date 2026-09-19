@@ -148,25 +148,15 @@ impl Key {
             // The OSSL_PARAM API takes a mutable pointer although import only reads it.
             // Copy into erased writable storage to keep that contract explicit.
             let mut seed: crate::secret::SecretBytes = seed.to_vec().into();
-            // SAFETY: Parameter and writable backing buffer live through import.
-            let mut params = unsafe {
-                [
-                    ffi::OSSL_PARAM_construct_octet_string(
-                        c"seed".as_ptr(),
-                        seed.as_mut().as_mut_ptr().cast(),
-                        seed.as_ref().len(),
-                    ),
-                    ffi::OSSL_PARAM_construct_end(),
-                ]
-            };
             let mut raw = ptr::null_mut();
-            // SAFETY: Terminated parameters describe the exact seed; output starts NULL.
+            // SAFETY: The shim borrows this exact writable seed for a synchronous
+            // import. The output starts NULL and ownership is recovered below.
             let status = unsafe {
-                ffi::EVP_PKEY_fromdata(
+                ffi::OB_pkey_from_seed(
                     ctx.ptr(),
                     &mut raw,
-                    ffi::EVP_PKEY_KEYPAIR as i32,
-                    params.as_mut_ptr(),
+                    seed.as_mut().as_mut_ptr().cast(),
+                    seed.as_ref().len(),
                 )
             };
             let key = NonNull::new(raw).map(Self);

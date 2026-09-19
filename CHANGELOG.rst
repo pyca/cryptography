@@ -14,7 +14,7 @@ Changelog
   CFFI binding remains as a compatibility shim for downstream consumers and
   links to the same native library through the new FFI crate.
 
-* Mutable input buffers are snapshotted before native operations. Output-buffer
+* Mutable input buffers are copied before native operations. Output-buffer
   APIs publish successful results from separate storage, allowing overlapping
   input and output views without aliased native buffers. Failed one-shot
   authenticated decryption leaves the destination unchanged.

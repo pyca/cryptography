@@ -407,19 +407,15 @@ def process_rust_coverage(
             f.write(lcov_data)
 
 
-@nox.session(venv_backend="none", name="debug-native")
-def debug_native(session: nox.Session) -> None:
+@nox.session(venv_backend="none", name="pyopenssl-bridge")
+def pyopenssl_bridge(session: nox.Session) -> None:
+    """Collect Rust coverage from the companion typed TLS integration suite."""
+    prof_location = (pathlib.Path(".") / ".rust-cov" / "pyopenssl").absolute()
+    session.env["LLVM_PROFILE_FILE"] = str(prof_location / "cov-%p.profraw")
     session.run(
-        "gdb",
-        "--batch",
-        "-ex",
-        "run",
-        "-ex",
-        "thread apply all bt",
-        "--args",
-        session.posargs[0],
-        "-c",
-        "import ssl; from cryptography.hazmat.primitives.asymmetric.mlkem "
-        "import MLKEM768PrivateKey; MLKEM768PrivateKey.generate()",
-        external=True,
+        ".venv/bin/python", "-m", "pytest", "pyopenssl/tests", external=True
     )
+    [rust_so] = glob.glob(
+        ".venv/lib/**/cryptography/hazmat/bindings/_rust.*", recursive=True
+    )
+    process_rust_coverage(session, [rust_so], prof_location)

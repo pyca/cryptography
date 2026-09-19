@@ -28,4 +28,8 @@ The initial implementation and cryptography/CFFI/TLS migration were imported
 from [clanker-experiments commit c970d78](https://github.com/reaperhulk/clanker-experiments/tree/c970d7830550134aeddc30ec3144a06fc592fce2/openssl-bridge).
 That revision retains the historical backend acceptance reports. New CI results
 belong to this repository and must not be inferred from those historical runs.
-The companion pyOpenSSL migration is in `.github/patches/pyopenssl.patch`.
+The companion pyOpenSSL migration is in `.github/patches/pyopenssl.patch` and
+has its own downstream CI job. The existing CFFI binding remains for released
+pyOpenSSL, Twisted, and mitmproxy consumers; it gets native build metadata and
+linkage from `openssl-bridge-sys`, not the original `openssl-sys` crate. New Rust
+cryptographic operations and the typed TLS adapter use the independent bridge.

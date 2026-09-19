@@ -61,6 +61,8 @@ just run
 
 If you prefer to compile it yourself you'll need to have OpenSSL installed.
 You can compile OpenSSL yourself as well or use `a binary distribution`_.
+Install LLVM with libclang for your build-host architecture and set
+``LIBCLANG_PATH`` to the directory containing ``libclang.dll``.
 Be sure to download the proper version for your architecture and Python
 (VC2015 is required for 3.9 and above). Wherever you place your copy of OpenSSL
 you'll need to set the ``OPENSSL_DIR`` environment variable to include the
@@ -70,6 +72,7 @@ proper location. For example:
 
     C:\> \path\to\vcvarsall.bat x86_amd64
     C:\> set OPENSSL_DIR=C:\OpenSSL-win64
+    C:\> set LIBCLANG_PATH=C:\Program Files\LLVM\bin
     C:\> pip install cryptography
 
 You will also need to have :ref:`Rust installed and
@@ -101,7 +104,8 @@ you should need to do is:
 
 If you want to compile ``cryptography`` yourself you'll need a C compiler, a
 Rust compiler, headers for Python (if you're not using ``pypy``), and headers
-for the OpenSSL and ``libffi`` libraries available on your system.
+for the OpenSSL and ``libffi`` libraries available on your system. The Rust
+FFI crate also requires libclang to generate bindings to your OpenSSL headers.
 
 On all Linux distributions you will need to have :ref:`Rust installed and
 available<installation:Rust>`.
@@ -116,7 +120,7 @@ available<installation:Rust>`.
 
     .. code-block:: console
 
-        $ sudo apk add gcc musl-dev python3-dev libffi-dev openssl-dev cargo pkgconfig
+        $ sudo apk add gcc musl-dev python3-dev libffi-dev openssl-dev cargo pkgconfig clang-dev
 
     If you get an error with ``openssl-dev`` you may have to use ``libressl-dev``.
 
@@ -131,7 +135,7 @@ available<installation:Rust>`.
     .. code-block:: console
 
         $ sudo apt-get install build-essential libssl-dev libffi-dev \
-            python3-dev cargo pkg-config
+            python3-dev cargo pkg-config libclang-dev
 
 .. tab:: Fedora/RHEL/CentOS
 
@@ -145,7 +149,7 @@ available<installation:Rust>`.
     .. code-block:: console
 
         $ sudo dnf install redhat-rpm-config gcc libffi-devel python3-devel \
-            openssl-devel cargo pkg-config
+            openssl-devel cargo pkg-config clang-devel
 
 
 Building
@@ -273,7 +277,9 @@ To build cryptography and dynamically link it:
 
 .. code-block:: console
 
-    $ brew install openssl@3 rust
+    $ brew install openssl@3 rust llvm
+    $ export OPENSSL_DIR="$(brew --prefix openssl@3)"
+    $ export LIBCLANG_PATH="$(brew --prefix llvm)/lib"
     $ pip install --no-binary cryptography cryptography
 
 `MacPorts`_:
@@ -289,7 +295,9 @@ You can also build cryptography statically:
 
 .. code-block:: console
 
-    $ brew install openssl@3 rust
+    $ brew install openssl@3 rust llvm
+    $ export OPENSSL_DIR="$(brew --prefix openssl@3)"
+    $ export LIBCLANG_PATH="$(brew --prefix llvm)/lib"
     $ env OPENSSL_STATIC=1 pip install --no-binary cryptography cryptography
 
 `MacPorts`_:

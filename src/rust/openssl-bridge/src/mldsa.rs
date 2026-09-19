@@ -193,22 +193,16 @@ fn configure(ctx: *mut ffi::EVP_PKEY_CTX, context: &[u8], external_mu: bool) -> 
     #[cfg(backend = "openssl")]
     {
         let mut context = context.to_vec();
-        let mut mu: std::ffi::c_uint = u32::from(external_mu);
-        // SAFETY: Terminated parameters and writable backing storage live through
-        // set_params. Context is bounded by the public entry points.
-        let params = unsafe {
-            [
-                ffi::OSSL_PARAM_construct_octet_string(
-                    c"context-string".as_ptr(),
-                    context.as_mut_ptr().cast(),
-                    context.len(),
-                ),
-                ffi::OSSL_PARAM_construct_uint(c"mu".as_ptr(), &mut mu),
-                ffi::OSSL_PARAM_construct_end(),
-            ]
-        };
-        // SAFETY: Native setter copies parameters into this exclusive operation.
-        check(unsafe { ffi::EVP_PKEY_CTX_set_params(ctx, params.as_ptr()) })?;
+        // SAFETY: The shim constructs parameters on its stack and copies them
+        // into this exclusive operation. Writable context storage outlives it.
+        check(unsafe {
+            ffi::OB_mldsa_parameters(
+                ctx,
+                context.as_mut_ptr().cast(),
+                context.len(),
+                u32::from(external_mu),
+            )
+        })?;
     }
     Ok(())
 }
