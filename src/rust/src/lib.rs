@@ -17,12 +17,6 @@ use std::env;
     CRYPTOGRAPHY_IS_BORINGSSL,
     CRYPTOGRAPHY_IS_AWSLC
 )))]
-use openssl::provider;
-#[cfg(not(any(
-    CRYPTOGRAPHY_IS_LIBRESSL,
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC
-)))]
 use pyo3::PyTypeInfo;
 
 #[cfg(not(any(
@@ -43,6 +37,7 @@ pub(crate) mod oid;
 mod padding;
 mod pkcs12;
 mod pkcs7;
+mod pyopenssl;
 pub(crate) mod serialization;
 mod test_support;
 pub(crate) mod types;
@@ -55,25 +50,27 @@ mod x509;
 )))]
 #[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust")]
 struct LoadedProviders {
-    legacy: Option<provider::Provider>,
-    _default: provider::Provider,
-
-    fips: Option<provider::Provider>,
+    legacy: bool,
 }
 
 #[pyo3::pyfunction]
 fn openssl_version() -> i64 {
-    openssl::version::number()
+    openssl_bridge::runtime::version_number() as i64
 }
 
 #[pyo3::pyfunction]
-fn openssl_version_text() -> &'static str {
-    openssl::version::version()
+fn has_implicit_rsa_rejection() -> bool {
+    openssl_bridge::runtime::has_implicit_rsa_rejection()
+}
+
+#[pyo3::pyfunction]
+fn openssl_version_text() -> String {
+    openssl_bridge::runtime::version_text()
 }
 
 #[pyo3::pyfunction]
 fn is_fips_enabled() -> bool {
-    cryptography_openssl::fips::is_enabled()
+    openssl_bridge::runtime::is_fips_enabled()
 }
 
 #[cfg(not(any(
@@ -92,25 +89,22 @@ fn _initialize_providers(py: pyo3::Python<'_>) -> CryptographyResult<LoadedProvi
         && !env::var("CRYPTOGRAPHY_OPENSSL_NO_LEGACY").is_ok_and(|v| !v.is_empty() && v != "0");
 
     let legacy = if load_legacy {
-        let legacy_result = provider::Provider::load(None, "legacy");
+        let legacy_result = openssl_bridge::runtime::load_legacy_provider();
         if legacy_result.is_err() {
             let message = c"OpenSSL 3's legacy provider failed to load. Legacy algorithms will not be available. If you need those algorithms, check your OpenSSL configuration.";
             let warning_cls = pyo3::exceptions::PyWarning::type_object(py);
             pyo3::PyErr::warn(py, &warning_cls, message, 1)?;
 
-            None
+            false
         } else {
-            Some(legacy_result?)
+            legacy_result?;
+            true
         }
     } else {
-        None
+        false
     };
-    let _default = provider::Provider::load(None, "default")?;
-    Ok(LoadedProviders {
-        legacy,
-        _default,
-        fips: None,
-    })
+    openssl_bridge::runtime::load_default_provider()?;
+    Ok(LoadedProviders { legacy })
 }
 
 #[cfg(not(any(
@@ -121,9 +115,8 @@ fn _initialize_providers(py: pyo3::Python<'_>) -> CryptographyResult<LoadedProvi
 // NO-COVERAGE-START
 #[pyo3::pyfunction]
 // NO-COVERAGE-END
-fn enable_fips(providers: &mut LoadedProviders) -> CryptographyResult<()> {
-    providers.fips = Some(provider::Provider::load(None, "fips")?);
-    cryptography_openssl::fips::enable()?;
+fn enable_fips(_providers: &LoadedProviders) -> CryptographyResult<()> {
+    openssl_bridge::runtime::require_fips_enabled()?;
     Ok(())
 }
 
@@ -150,6 +143,8 @@ mod _rust {
     use crate::pkcs12::pkcs12;
     #[pymodule_export]
     use crate::pkcs7::pkcs7_mod;
+    #[pymodule_export]
+    use crate::pyopenssl::pyopenssl;
     #[pymodule_export]
     use crate::serialization::{Encoding, ParameterFormat, PrivateFormat, PublicFormat};
     #[pymodule_export]
@@ -216,7 +211,9 @@ mod _rust {
         #[pymodule_export]
         use super::super::enable_fips;
         #[pymodule_export]
-        use super::super::{is_fips_enabled, openssl_version, openssl_version_text};
+        use super::super::{
+            has_implicit_rsa_rejection, is_fips_enabled, openssl_version, openssl_version_text,
+        };
         #[pymodule_export]
         use crate::backend::aead::aead;
         #[pymodule_export]
@@ -298,10 +295,11 @@ mod _rust {
 
         #[pymodule_init]
         fn init(openssl_mod: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
+            openssl_bridge::initialize().map_err(crate::error::CryptographyError::from)?;
             cfg_if::cfg_if! {
                 if #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))] {
                     let providers = super::super::_initialize_providers(openssl_mod.py())?;
-                    if providers.legacy.is_some() {
+                    if providers.legacy {
                         openssl_mod.add("_legacy_provider_loaded", true)?;
                     } else {
                         openssl_mod.add("_legacy_provider_loaded", false)?;
@@ -312,20 +310,6 @@ mod _rust {
                     openssl_mod.add("_legacy_provider_loaded", false)?;
                 }
             }
-            cfg_if::cfg_if! {
-                if #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)] {
-                    use std::ptr;
-                    use std::cmp::max;
-
-                    let available = std::thread::available_parallelism().map_or(0, |v| v.get() as u64);
-                    // SAFETY: This sets a libctx provider limit, but we always use the same libctx by passing NULL.
-                    unsafe {
-                        let current = openssl_sys::OSSL_get_max_threads(ptr::null_mut());
-                        // Set the thread limit to the max of available parallelism or current limit.
-                        openssl_sys::OSSL_set_max_threads(ptr::null_mut(), max(available, current));
-                    }
-                }
-            }
 
             Ok(())
         }
@@ -333,7 +317,7 @@ mod _rust {
 
     #[pymodule_init]
     fn init(m: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
-        m.add_submodule(&cryptography_cffi::create_module(m.py())?)?;
+        m.add("_PACKAGE_VERSION", env!("CRYPTOGRAPHY_PACKAGE_VERSION"))?;
 
         Ok(())
     }

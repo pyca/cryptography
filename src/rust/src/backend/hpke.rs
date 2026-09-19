@@ -467,7 +467,7 @@ impl KEM {
         label: &[u8],
         ikm: &[u8],
         kem_suite_id: &[u8; 5],
-    ) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
+    ) -> CryptographyResult<Vec<u8>> {
         let mut labeled_ikm = Vec::with_capacity(HPKE_VERSION.len() + 5 + label.len() + ikm.len());
         labeled_ikm.extend_from_slice(HPKE_VERSION);
         labeled_ikm.extend_from_slice(kem_suite_id);
@@ -773,7 +773,7 @@ impl Suite {
         salt: Option<&[u8]>,
         label: &[u8],
         ikm: &[u8],
-    ) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
+    ) -> CryptographyResult<Vec<u8>> {
         let mut labeled_ikm = Vec::with_capacity(HPKE_VERSION.len() + 10 + label.len() + ikm.len());
         labeled_ikm.extend_from_slice(HPKE_VERSION);
         labeled_ikm.extend_from_slice(&self.hpke_suite_id);

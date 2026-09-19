@@ -8,9 +8,7 @@ use cryptography_x509::common::{
 use cryptography_x509::csr::Attributes;
 use cryptography_x509::pkcs8::EncryptedPrivateKeyInfo;
 
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-use crate::MIN_DH_MODULUS_SIZE;
-use crate::{ec, pbe, rsa, KeyParsingError, KeyParsingResult, ParsedPrivateKey, ParsedPublicKey};
+use crate::{ec, pbe, rsa, KeyParsingError, KeyParsingResult, ParsedPrivateKey, PrivateKeyRef};
 
 // RFC 5208 Section 5 (PrivateKeyInfo), extended by RFC 5958 Section 2
 // (OneAsymmetricKey), which adds version v2 and an optional public key.
@@ -67,13 +65,16 @@ pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
         // subjectPublicKey of a SubjectPublicKeyInfo for the same algorithm)
         // and verify that it corresponds to the private key, so that an
         // inconsistent key is rejected rather than silently loaded.
-        let ParsedPublicKey::Pkey(public_pkey) =
-            crate::spki::parse_public_key_info(SubjectPublicKeyInfo {
-                algorithm: k.algorithm.clone(),
-                subject_public_key: public_key,
-            })?;
-        let ParsedPrivateKey::Pkey(pkey) = &key;
-        if !pkey.public_eq(&public_pkey) {
+        let public = crate::spki::parse_public_key_info(SubjectPublicKeyInfo {
+            algorithm: k.algorithm.clone(),
+            subject_public_key: public_key,
+        })?;
+        let derived = key.public_key()?;
+        let actual = crate::spki::serialize_public_key(public.as_key_ref())
+            .map_err(|_| KeyParsingError::InvalidKey)?;
+        let expected = crate::spki::serialize_public_key(derived.as_key_ref())
+            .map_err(|_| KeyParsingError::InvalidKey)?;
+        if actual != expected {
             return Err(KeyParsingError::InvalidKey);
         }
     }
@@ -83,77 +84,71 @@ pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
 fn parse_private_key_inner(k: &PrivateKeyInfo<'_>) -> KeyParsingResult<ParsedPrivateKey> {
     match &k.algorithm.params {
         AlgorithmParameters::Rsa(_) | AlgorithmParameters::RsaPss(_) => {
-            rsa::parse_pkcs1_private_key(k.private_key).map(ParsedPrivateKey::Pkey)
+            rsa::parse_pkcs1_private_key(k.private_key).map(ParsedPrivateKey::Rsa)
         }
-        AlgorithmParameters::Ec(ec_params) => {
-            ec::parse_pkcs1_private_key(k.private_key, Some(ec_params.clone()))
-                .map(ParsedPrivateKey::Pkey)
+        AlgorithmParameters::Ec(params) => {
+            ec::parse_pkcs1_private_key(k.private_key, Some(params.clone()))
+                .map(ParsedPrivateKey::Ec)
         }
-
-        AlgorithmParameters::Dsa(dsa_params) => {
-            let private_key_bytes =
-                asn1::parse_single::<asn1::BigUint<'_>>(k.private_key)?.as_bytes();
-            let dsa_private_key = openssl::bn::BigNum::from_slice(private_key_bytes)?;
-            let p = openssl::bn::BigNum::from_slice(dsa_params.p.as_bytes())?;
-            let q = openssl::bn::BigNum::from_slice(dsa_params.q.as_bytes())?;
-            let g = openssl::bn::BigNum::from_slice(dsa_params.g.as_bytes())?;
-
-            let mut bn_ctx = openssl::bn::BigNumContext::new()?;
-            let mut pub_key = openssl::bn::BigNum::new()?;
-            // This can fail with malformed parameters (e.g. p == 0), in which
-            // case the key data is invalid.
-            pub_key
-                .mod_exp(&g, &dsa_private_key, &p, &mut bn_ctx)
+        AlgorithmParameters::Dsa(params) => {
+            let scalar = asn1::parse_single::<asn1::BigUint<'_>>(k.private_key)?;
+            let params = openssl_bridge::dsa::ParameterMaterial::from_components(
+                openssl_bridge::dsa::Components {
+                    p: params.p.as_bytes(),
+                    q: params.q.as_bytes(),
+                    g: params.g.as_bytes(),
+                },
+            )?;
+            Ok(ParsedPrivateKey::Dsa(
+                openssl_bridge::dsa::PrivateKeyMaterial::from_scalar(params, scalar.as_bytes())
+                    .map_err(|_| KeyParsingError::InvalidKey)?,
+            ))
+        }
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+        AlgorithmParameters::Dh(params) => {
+            let scalar = asn1::parse_single::<asn1::BigUint<'_>>(k.private_key)?;
+            let params =
+                openssl_bridge::dh::Parameters::from_components(openssl_bridge::dh::Components {
+                    p: params.p.as_bytes(),
+                    q: Some(params.q.as_bytes()),
+                    g: params.g.as_bytes(),
+                })
                 .map_err(|_| KeyParsingError::InvalidKey)?;
-
-            let dsa =
-                openssl::dsa::Dsa::from_private_components(p, q, g, dsa_private_key, pub_key)?;
-            Ok(ParsedPrivateKey::Pkey(openssl::pkey::PKey::from_dsa(dsa)?))
+            Ok(ParsedPrivateKey::Dh(
+                openssl_bridge::dh::PrivateKeyMaterial::from_scalar(params, scalar.as_bytes())
+                    .map_err(|_| KeyParsingError::InvalidKey)?,
+            ))
         }
-
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-        AlgorithmParameters::Dh(dh_params) => {
-            let p = openssl::bn::BigNum::from_slice(dh_params.p.as_bytes())?;
-            let g = openssl::bn::BigNum::from_slice(dh_params.g.as_bytes())?;
-            let q = Some(openssl::bn::BigNum::from_slice(dh_params.q.as_bytes())?);
-            parse_dh_private_key(k.private_key, p, g, q).map(ParsedPrivateKey::Pkey)
-        }
-
-        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-        AlgorithmParameters::DhKeyAgreement(dh_params) => {
-            let p = openssl::bn::BigNum::from_slice(dh_params.p.as_bytes())?;
-            let g = openssl::bn::BigNum::from_slice(dh_params.g.as_bytes())?;
-            parse_dh_private_key(k.private_key, p, g, None).map(ParsedPrivateKey::Pkey)
-        }
-
-        AlgorithmParameters::X25519 => {
-            let key_bytes = asn1::parse_single(k.private_key)?;
-            let pkey = openssl::pkey::PKey::private_key_from_raw_bytes(
-                key_bytes,
-                openssl::pkey::Id::X25519,
-            )?;
-            Ok(ParsedPrivateKey::Pkey(pkey))
-        }
-        #[cfg(not(any(
-            CRYPTOGRAPHY_IS_LIBRESSL,
-            CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC
-        )))]
-        AlgorithmParameters::X448 => {
-            let key_bytes = asn1::parse_single(k.private_key)?;
-            let pkey = openssl::pkey::PKey::private_key_from_raw_bytes(
-                key_bytes,
-                openssl::pkey::Id::X448,
-            )?;
-            Ok(ParsedPrivateKey::Pkey(pkey))
+        AlgorithmParameters::DhKeyAgreement(params) => {
+            let scalar = asn1::parse_single::<asn1::BigUint<'_>>(k.private_key)?;
+            let params =
+                openssl_bridge::dh::Parameters::from_components(openssl_bridge::dh::Components {
+                    p: params.p.as_bytes(),
+                    q: None,
+                    g: params.g.as_bytes(),
+                })
+                .map_err(|_| KeyParsingError::InvalidKey)?;
+            Ok(ParsedPrivateKey::Dh(
+                openssl_bridge::dh::PrivateKeyMaterial::from_scalar(params, scalar.as_bytes())
+                    .map_err(|_| KeyParsingError::InvalidKey)?,
+            ))
         }
         AlgorithmParameters::Ed25519 => {
-            let key_bytes = asn1::parse_single(k.private_key)?;
-            let pkey = openssl::pkey::PKey::private_key_from_raw_bytes(
-                key_bytes,
-                openssl::pkey::Id::ED25519,
-            )?;
-            Ok(ParsedPrivateKey::Pkey(pkey))
+            let bytes: &[u8] = asn1::parse_single(k.private_key)?;
+            Ok(ParsedPrivateKey::Ed25519(
+                openssl_bridge::curve25519::Ed25519SigningKey::from_seed(
+                    bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
+                )?,
+            ))
+        }
+        AlgorithmParameters::X25519 => {
+            let bytes: &[u8] = asn1::parse_single(k.private_key)?;
+            Ok(ParsedPrivateKey::X25519(
+                openssl_bridge::curve25519::X25519SecretKey::from_bytes(
+                    bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
+                )?,
+            ))
         }
         #[cfg(not(any(
             CRYPTOGRAPHY_IS_LIBRESSL,
@@ -161,116 +156,112 @@ fn parse_private_key_inner(k: &PrivateKeyInfo<'_>) -> KeyParsingResult<ParsedPri
             CRYPTOGRAPHY_IS_AWSLC
         )))]
         AlgorithmParameters::Ed448 => {
-            let key_bytes = asn1::parse_single(k.private_key)?;
-            let pkey = openssl::pkey::PKey::private_key_from_raw_bytes(
-                key_bytes,
-                openssl::pkey::Id::ED448,
-            )?;
-            Ok(ParsedPrivateKey::Pkey(pkey))
+            let bytes: &[u8] = asn1::parse_single(k.private_key)?;
+            Ok(ParsedPrivateKey::Ed448(
+                openssl_bridge::curve448::Ed448SigningKey::from_seed(
+                    bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
+                )?,
+            ))
         }
-
-        #[cfg(any(
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
             CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC,
-            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
-        ))]
-        AlgorithmParameters::MlKem768 => {
-            let MlKemPrivateKey::Seed(seed) = asn1::parse_single::<MlKemPrivateKey>(k.private_key)?;
-            let pkey = cryptography_openssl::mlkem::new_raw_private_key(
-                cryptography_openssl::mlkem::MlKemVariant::MlKem768,
-                &seed,
-            )?;
-            Ok(ParsedPrivateKey::Pkey(pkey))
-        }
-
-        #[cfg(any(
-            CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC,
-            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
-        ))]
-        AlgorithmParameters::MlKem1024 => {
-            let MlKemPrivateKey::Seed(seed) = asn1::parse_single::<MlKemPrivateKey>(k.private_key)?;
-            let pkey = cryptography_openssl::mlkem::new_raw_private_key(
-                cryptography_openssl::mlkem::MlKemVariant::MlKem1024,
-                &seed,
-            )?;
-            Ok(ParsedPrivateKey::Pkey(pkey))
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
+        AlgorithmParameters::X448 => {
+            let bytes: &[u8] = asn1::parse_single(k.private_key)?;
+            Ok(ParsedPrivateKey::X448(
+                openssl_bridge::curve448::X448SecretKey::from_bytes(
+                    bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
+                )?,
+            ))
         }
         #[cfg(any(
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
             CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC,
-            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+            CRYPTOGRAPHY_IS_AWSLC
         ))]
         AlgorithmParameters::MlDsa44 => {
-            let MlDsaPrivateKey::Seed(seed) = asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
-            Ok(ParsedPrivateKey::Pkey(
-                cryptography_openssl::mldsa::new_raw_private_key(
-                    cryptography_openssl::mldsa::MlDsaVariant::MlDsa44,
-                    &seed,
-                )?,
-            ))
+            let MlDsaPrivateKey::Seed(mut seed) =
+                asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
+            let key = openssl_bridge::mldsa::PrivateKey::from_seed(
+                openssl_bridge::mldsa::Variant::MlDsa44,
+                &seed,
+            );
+            openssl_bridge::secret::erase(&mut seed);
+            Ok(ParsedPrivateKey::MlDsa(key?))
         }
-
         #[cfg(any(
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
             CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC,
-            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+            CRYPTOGRAPHY_IS_AWSLC
         ))]
         AlgorithmParameters::MlDsa65 => {
-            let MlDsaPrivateKey::Seed(seed) = asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
-            Ok(ParsedPrivateKey::Pkey(
-                cryptography_openssl::mldsa::new_raw_private_key(
-                    cryptography_openssl::mldsa::MlDsaVariant::MlDsa65,
-                    &seed,
-                )?,
-            ))
+            let MlDsaPrivateKey::Seed(mut seed) =
+                asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
+            let key = openssl_bridge::mldsa::PrivateKey::from_seed(
+                openssl_bridge::mldsa::Variant::MlDsa65,
+                &seed,
+            );
+            openssl_bridge::secret::erase(&mut seed);
+            Ok(ParsedPrivateKey::MlDsa(key?))
         }
-
         #[cfg(any(
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
             CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC,
-            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
+            CRYPTOGRAPHY_IS_AWSLC
         ))]
         AlgorithmParameters::MlDsa87 => {
-            let MlDsaPrivateKey::Seed(seed) = asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
-            Ok(ParsedPrivateKey::Pkey(
-                cryptography_openssl::mldsa::new_raw_private_key(
-                    cryptography_openssl::mldsa::MlDsaVariant::MlDsa87,
-                    &seed,
-                )?,
-            ))
+            let MlDsaPrivateKey::Seed(mut seed) =
+                asn1::parse_single::<MlDsaPrivateKey>(k.private_key)?;
+            let key = openssl_bridge::mldsa::PrivateKey::from_seed(
+                openssl_bridge::mldsa::Variant::MlDsa87,
+                &seed,
+            );
+            openssl_bridge::secret::erase(&mut seed);
+            Ok(ParsedPrivateKey::MlDsa(key?))
         }
-
+        #[cfg(any(
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        ))]
+        AlgorithmParameters::MlKem768 => {
+            let MlKemPrivateKey::Seed(mut seed) =
+                asn1::parse_single::<MlKemPrivateKey>(k.private_key)?;
+            let key = openssl_bridge::mlkem::PrivateKey::from_seed(
+                openssl_bridge::mlkem::Variant::MlKem768,
+                &seed,
+            );
+            openssl_bridge::secret::erase(&mut seed);
+            Ok(ParsedPrivateKey::MlKem(key?))
+        }
+        #[cfg(any(
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        ))]
+        AlgorithmParameters::MlKem1024 => {
+            let MlKemPrivateKey::Seed(mut seed) =
+                asn1::parse_single::<MlKemPrivateKey>(k.private_key)?;
+            let key = openssl_bridge::mlkem::PrivateKey::from_seed(
+                openssl_bridge::mlkem::Variant::MlKem1024,
+                &seed,
+            );
+            openssl_bridge::secret::erase(&mut seed);
+            Ok(ParsedPrivateKey::MlKem(key?))
+        }
         _ => Err(KeyParsingError::UnsupportedKeyType(
             k.algorithm.oid().clone(),
         )),
     }
 }
 
-#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-fn parse_dh_private_key(
-    private_key_data: &[u8],
-    p: openssl::bn::BigNum,
-    g: openssl::bn::BigNum,
-    q: Option<openssl::bn::BigNum>,
-) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
-    let private_key_bytes = asn1::parse_single::<asn1::BigUint<'_>>(private_key_data)?.as_bytes();
-    let dh_private_key = openssl::bn::BigNum::from_slice(private_key_bytes)?;
-
-    if p.num_bits() < MIN_DH_MODULUS_SIZE as i32 {
-        return Err(KeyParsingError::InvalidKey);
-    }
-
-    let dh = openssl::dh::Dh::from_pqg(p, q, g)?;
-    let dh = dh.set_private_key(dh_private_key)?;
-    Ok(openssl::pkey::PKey::from_dh(dh)?)
-}
-
 fn pkcs12_pbe_decrypt(
     data: &[u8],
     password: &[u8],
-    cipher: openssl::symm::Cipher,
-    hash: openssl::hash::MessageDigest,
+    cipher: openssl_bridge::cipher::Cipher,
+    hash: openssl_bridge::hash::Algorithm,
     params: &Pkcs12PbeParams<'_>,
 ) -> KeyParsingResult<Vec<u8>> {
     let Ok(password) = std::str::from_utf8(password) else {
@@ -281,7 +272,7 @@ fn pkcs12_pbe_decrypt(
         params.salt,
         cryptography_crypto::pkcs12::KDF_ENCRYPTION_KEY_ID,
         params.iterations,
-        cipher.key_len(),
+        cipher.default_key_size()?,
         hash,
     )?;
     let iv = cryptography_crypto::pkcs12::kdf(
@@ -289,24 +280,24 @@ fn pkcs12_pbe_decrypt(
         params.salt,
         cryptography_crypto::pkcs12::KDF_IV_ID,
         params.iterations,
-        cipher.block_size(),
+        cipher.iv_size()?,
         hash,
     )?;
 
-    openssl::symm::decrypt(cipher, &key, Some(&iv), data)
+    openssl_bridge::cipher::decrypt_padded(cipher, &key, &iv, data)
         .map_err(|_| KeyParsingError::IncorrectPassword)
 }
 
 fn pkcs5_pbe_decrypt(
     data: &[u8],
     password: &[u8],
-    cipher: openssl::symm::Cipher,
-    hash: openssl::hash::MessageDigest,
+    cipher: openssl_bridge::cipher::Cipher,
+    hash: openssl_bridge::hash::Algorithm,
     params: &PbeParams,
 ) -> KeyParsingResult<Vec<u8>> {
     // PKCS#5 v1.5 uses PBKDF1 with iteration count
     // For PKCS#5 PBE, we need key + IV length
-    let key_iv_len = cipher.key_len() + cipher.iv_len().unwrap();
+    let key_iv_len = cipher.default_key_size()? + cipher.iv_size()?;
     let key_iv = cryptography_crypto::pbkdf1::pbkdf1(
         hash,
         password,
@@ -315,10 +306,10 @@ fn pkcs5_pbe_decrypt(
         key_iv_len,
     )?;
 
-    let key = &key_iv[..cipher.key_len()];
-    let iv = &key_iv[cipher.key_len()..];
+    let key = &key_iv[..cipher.default_key_size()?];
+    let iv = &key_iv[cipher.default_key_size()?..];
 
-    openssl::symm::decrypt(cipher, key, Some(iv), data)
+    openssl_bridge::cipher::decrypt_padded(cipher, key, iv, data)
         .map_err(|_| KeyParsingError::IncorrectPassword)
 }
 
@@ -336,46 +327,46 @@ pub fn parse_encrypted_private_key(
         AlgorithmParameters::PbeWithMd5AndDesCbc(params) => pkcs5_pbe_decrypt(
             epki.encrypted_data,
             password,
-            openssl::symm::Cipher::des_cbc(),
-            openssl::hash::MessageDigest::md5(),
+            openssl_bridge::cipher::Cipher::DesCbc,
+            openssl_bridge::hash::Algorithm::from_name("md5")?,
             &params,
         )?,
         AlgorithmParameters::PbeWithShaAnd3KeyTripleDesCbc(params) => pkcs12_pbe_decrypt(
             epki.encrypted_data,
             password,
-            openssl::symm::Cipher::des_ede3_cbc(),
-            openssl::hash::MessageDigest::sha1(),
+            openssl_bridge::cipher::Cipher::TripleDesCbc,
+            openssl_bridge::hash::Algorithm::from_name("sha1")?,
             &params,
         )?,
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC2"))]
         AlgorithmParameters::PbeWithShaAnd40BitRc2Cbc(params) => pkcs12_pbe_decrypt(
             epki.encrypted_data,
             password,
-            openssl::symm::Cipher::rc2_40_cbc(),
-            openssl::hash::MessageDigest::sha1(),
+            openssl_bridge::cipher::Cipher::Rc2_40Cbc,
+            openssl_bridge::hash::Algorithm::from_name("sha1")?,
             &params,
         )?,
         #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC4"))]
         AlgorithmParameters::PbeWithShaAnd128BitRc4(params) => pkcs12_pbe_decrypt(
             epki.encrypted_data,
             password,
-            openssl::symm::Cipher::rc4(),
-            openssl::hash::MessageDigest::sha1(),
+            openssl_bridge::cipher::Cipher::Rc4,
+            openssl_bridge::hash::Algorithm::from_name("sha1")?,
             &params,
         )?,
         AlgorithmParameters::Pbes2(params) => {
             let (cipher, iv) = match params.encryption_scheme.params {
                 AlgorithmParameters::DesEde3Cbc(ref iv) => {
-                    (openssl::symm::Cipher::des_ede3_cbc(), &iv[..])
+                    (openssl_bridge::cipher::Cipher::TripleDesCbc, &iv[..])
                 }
                 AlgorithmParameters::Aes128Cbc(ref iv) => {
-                    (openssl::symm::Cipher::aes_128_cbc(), &iv[..])
+                    (openssl_bridge::cipher::Cipher::Aes128Cbc, &iv[..])
                 }
                 AlgorithmParameters::Aes192Cbc(ref iv) => {
-                    (openssl::symm::Cipher::aes_192_cbc(), &iv[..])
+                    (openssl_bridge::cipher::Cipher::Aes192Cbc, &iv[..])
                 }
                 AlgorithmParameters::Aes256Cbc(ref iv) => {
-                    (openssl::symm::Cipher::aes_256_cbc(), &iv[..])
+                    (openssl_bridge::cipher::Cipher::Aes256Cbc, &iv[..])
                 }
                 #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC2"))]
                 AlgorithmParameters::Rc2Cbc(ref params) => {
@@ -384,7 +375,7 @@ pub fn parse_encrypted_private_key(
                     if params.version.unwrap_or(32) != 58 {
                         return Err(KeyParsingError::InvalidKey);
                     }
-                    (openssl::symm::Cipher::rc2_cbc(), &params.iv[..])
+                    (openssl_bridge::cipher::Cipher::Rc2Cbc, &params.iv[..])
                 }
                 _ => {
                     return Err(KeyParsingError::UnsupportedEncryptionAlgorithm(
@@ -395,22 +386,22 @@ pub fn parse_encrypted_private_key(
 
             let key = match params.key_derivation_func.params {
                 AlgorithmParameters::Pbkdf2(pbkdf2_params) => {
-                    let mut key = vec![0; cipher.key_len()];
+                    let mut key = vec![0; cipher.default_key_size()?];
                     let md = match pbkdf2_params.prf.params {
                         AlgorithmParameters::HmacWithSha1(_) => {
-                            openssl::hash::MessageDigest::sha1()
+                            openssl_bridge::hash::Algorithm::from_name("sha1")?
                         }
                         AlgorithmParameters::HmacWithSha224(_) => {
-                            openssl::hash::MessageDigest::sha224()
+                            openssl_bridge::hash::Algorithm::from_name("sha224")?
                         }
                         AlgorithmParameters::HmacWithSha256(_) => {
-                            openssl::hash::MessageDigest::sha256()
+                            openssl_bridge::hash::Algorithm::from_name("sha256")?
                         }
                         AlgorithmParameters::HmacWithSha384(_) => {
-                            openssl::hash::MessageDigest::sha384()
+                            openssl_bridge::hash::Algorithm::from_name("sha384")?
                         }
                         AlgorithmParameters::HmacWithSha512(_) => {
-                            openssl::hash::MessageDigest::sha512()
+                            openssl_bridge::hash::Algorithm::from_name("sha512")?
                         }
                         _ => {
                             return Err(KeyParsingError::UnsupportedEncryptionAlgorithm(
@@ -418,26 +409,24 @@ pub fn parse_encrypted_private_key(
                             ))
                         }
                     };
-                    let iterations: usize = pbkdf2_params
-                        .iteration_count
-                        .try_into()
-                        .map_err(|_| KeyParsingError::InvalidKey)?;
-                    if iterations < 1 {
-                        return Err(KeyParsingError::InvalidKey);
-                    }
-                    openssl::pkcs5::pbkdf2_hmac(
+                    let iterations = i32::try_from(pbkdf2_params.iteration_count)
+                        .ok()
+                        .and_then(|n| u32::try_from(n).ok())
+                        .and_then(std::num::NonZeroU32::new)
+                        .ok_or(KeyParsingError::InvalidKey)?;
+                    openssl_bridge::kdf::pbkdf2_hmac(
+                        md,
                         password,
                         pbkdf2_params.salt,
                         iterations,
-                        md,
                         &mut key,
                     )?;
                     key
                 }
                 #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
                 AlgorithmParameters::Scrypt(scrypt_params) => {
-                    let mut key = vec![0; cipher.key_len()];
-                    openssl::pkcs5::scrypt(
+                    let mut key = vec![0; cipher.default_key_size()?];
+                    openssl_bridge::kdf::scrypt(
                         password,
                         scrypt_params.salt,
                         scrypt_params.cost_parameter,
@@ -455,7 +444,7 @@ pub fn parse_encrypted_private_key(
                 }
             };
 
-            openssl::symm::decrypt(cipher, &key, Some(iv), epki.encrypted_data)
+            openssl_bridge::cipher::decrypt_padded(cipher, &key, iv, epki.encrypted_data)
                 .map_err(|_| KeyParsingError::IncorrectPassword)?
         }
         _ => {
@@ -468,187 +457,165 @@ pub fn parse_encrypted_private_key(
     parse_private_key(&plaintext)
 }
 
-pub fn serialize_private_key(key: &ParsedPrivateKey) -> crate::KeySerializationResult<Vec<u8>> {
-    let p_bytes;
-    let q_bytes;
-    let g_bytes;
-    let q_bytes_dh;
-
+pub fn serialize_private_key(key: PrivateKeyRef<'_>) -> crate::KeySerializationResult<Vec<u8>> {
+    let (p_bytes, q_bytes, g_bytes, q_optional);
     let (params, private_key_der) = match key {
-        ParsedPrivateKey::Pkey(pkey) => match pkey.id() {
-            openssl::pkey::Id::RSA => {
-                let rsa = pkey.rsa()?;
-                let pkcs1_der = rsa::serialize_pkcs1_private_key(&rsa)?;
-                (AlgorithmParameters::Rsa(Some(())), pkcs1_der)
-            }
-            openssl::pkey::Id::EC => {
-                let ec = pkey.ec_key()?;
-                let curve_oid = ec::group_to_curve_oid(ec.group()).expect("Unknown curve");
-                let pkcs1_der = ec::serialize_pkcs1_private_key(&ec, false)?;
-                (
-                    AlgorithmParameters::Ec(cryptography_x509::common::EcParameters::NamedCurve(
-                        curve_oid,
-                    )),
-                    pkcs1_der,
-                )
-            }
-            openssl::pkey::Id::ED25519 => {
-                let raw_bytes = pkey.raw_private_key()?;
-                let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
-                (AlgorithmParameters::Ed25519, private_key_der)
-            }
-            openssl::pkey::Id::X25519 => {
-                let raw_bytes = pkey.raw_private_key()?;
-                let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
-                (AlgorithmParameters::X25519, private_key_der)
-            }
-            #[cfg(not(any(
-                CRYPTOGRAPHY_IS_LIBRESSL,
-                CRYPTOGRAPHY_IS_BORINGSSL,
-                CRYPTOGRAPHY_IS_AWSLC
-            )))]
-            openssl::pkey::Id::ED448 => {
-                let raw_bytes = pkey.raw_private_key()?;
-                let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
-                (AlgorithmParameters::Ed448, private_key_der)
-            }
-            #[cfg(not(any(
-                CRYPTOGRAPHY_IS_LIBRESSL,
-                CRYPTOGRAPHY_IS_BORINGSSL,
-                CRYPTOGRAPHY_IS_AWSLC
-            )))]
-            openssl::pkey::Id::X448 => {
-                let raw_bytes = pkey.raw_private_key()?;
-                let private_key_der = asn1::write_single(&raw_bytes.as_slice())?;
-                (AlgorithmParameters::X448, private_key_der)
-            }
-            openssl::pkey::Id::DSA => {
-                let dsa = pkey.dsa()?;
-                p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.p())?;
-                q_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.q())?;
-                g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.g())?;
-
-                let priv_key_bytes =
-                    cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.priv_key())?;
-                let priv_key_int = asn1::BigUint::new(&priv_key_bytes).unwrap();
-                let private_key_der = asn1::write_single(&priv_key_int)?;
-
-                let dsa_params = cryptography_x509::common::DssParams {
-                    p: asn1::BigUint::new(&p_bytes).unwrap(),
-                    q: asn1::BigUint::new(&q_bytes).unwrap(),
-                    g: asn1::BigUint::new(&g_bytes).unwrap(),
-                };
-
-                (AlgorithmParameters::Dsa(dsa_params), private_key_der)
-            }
-            id if crate::utils::is_dh(id) => {
-                let dh = pkey.dh()?;
-                p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.prime_p())?;
-                g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dh.generator())?;
-                q_bytes_dh = dh
-                    .prime_q()
-                    .map(cryptography_openssl::utils::bn_to_big_endian_bytes)
-                    .transpose()?;
-
-                let priv_key_bytes =
-                    cryptography_openssl::utils::bn_to_big_endian_bytes(dh.private_key())?;
-                let priv_key_int = asn1::BigUint::new(&priv_key_bytes).unwrap();
-                let private_key_der = asn1::write_single(&priv_key_int)?;
-
-                let params = if let Some(ref q_bytes) = q_bytes_dh {
-                    let dhx_params = cryptography_x509::common::DHXParams {
-                        p: asn1::BigUint::new(&p_bytes).unwrap(),
-                        g: asn1::BigUint::new(&g_bytes).unwrap(),
-                        q: asn1::BigUint::new(q_bytes).unwrap(),
-                        j: None,
-                        validation_params: None,
-                    };
-                    AlgorithmParameters::Dh(dhx_params)
-                } else {
-                    let basic_params = cryptography_x509::common::BasicDHParams {
-                        p: asn1::BigUint::new(&p_bytes).unwrap(),
-                        g: asn1::BigUint::new(&g_bytes).unwrap(),
-                        private_value_length: None,
-                    };
-                    AlgorithmParameters::DhKeyAgreement(basic_params)
-                };
-
-                (params, private_key_der)
-            }
-            #[cfg(any(
-                CRYPTOGRAPHY_IS_BORINGSSL,
-                CRYPTOGRAPHY_IS_AWSLC,
-                CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
-            ))]
-            _ if cryptography_openssl::mlkem::is_mlkem_pkey(pkey) => {
-                let seed = cryptography_openssl::mlkem::mlkem_seed_raw(pkey)?;
-                let private_key_der = asn1::write_single(&MlKemPrivateKey::Seed(seed))?;
-                let params = match cryptography_openssl::mlkem::MlKemVariant::from_pkey(pkey) {
-                    cryptography_openssl::mlkem::MlKemVariant::MlKem768 => {
-                        AlgorithmParameters::MlKem768
-                    }
-                    cryptography_openssl::mlkem::MlKemVariant::MlKem1024 => {
-                        AlgorithmParameters::MlKem1024
-                    }
-                };
-                (params, private_key_der)
-            }
-            #[cfg(any(
-                CRYPTOGRAPHY_IS_BORINGSSL,
-                CRYPTOGRAPHY_IS_AWSLC,
-                CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
-            ))]
-            _ if cryptography_openssl::mldsa::is_mldsa_pkey(pkey) => {
-                let seed = cryptography_openssl::mldsa::mldsa_seed_raw(pkey)?;
-                let private_key_der = asn1::write_single(&MlDsaPrivateKey::Seed(seed))?;
-                let params = match cryptography_openssl::mldsa::MlDsaVariant::from_pkey(pkey) {
-                    cryptography_openssl::mldsa::MlDsaVariant::MlDsa44 => {
-                        AlgorithmParameters::MlDsa44
-                    }
-                    cryptography_openssl::mldsa::MlDsaVariant::MlDsa65 => {
-                        AlgorithmParameters::MlDsa65
-                    }
-                    cryptography_openssl::mldsa::MlDsaVariant::MlDsa87 => {
-                        AlgorithmParameters::MlDsa87
-                    }
-                };
-                (params, private_key_der)
-            }
-            _ => {
-                unimplemented!("Unknown key type");
-            }
-        },
+        PrivateKeyRef::Rsa(parts) => (
+            AlgorithmParameters::Rsa(Some(())),
+            rsa::serialize_pkcs1_private_key(parts)?,
+        ),
+        PrivateKeyRef::Ec(key) => (
+            AlgorithmParameters::Ec(cryptography_x509::common::EcParameters::NamedCurve(
+                ec::group_to_curve_oid(key.curve()),
+            )),
+            ec::serialize_pkcs1_private_key(key, false)?,
+        ),
+        PrivateKeyRef::Dsa(key) => {
+            let parts = key.parameters().components();
+            p_bytes = crate::utils::integer_bytes(parts.p);
+            q_bytes = crate::utils::integer_bytes(parts.q);
+            g_bytes = crate::utils::integer_bytes(parts.g);
+            let private = crate::utils::integer_bytes(key.scalar());
+            (
+                AlgorithmParameters::Dsa(cryptography_x509::common::DssParams {
+                    p: asn1::BigUint::new(p_bytes.as_ref()).unwrap(),
+                    q: asn1::BigUint::new(q_bytes.as_ref()).unwrap(),
+                    g: asn1::BigUint::new(g_bytes.as_ref()).unwrap(),
+                }),
+                asn1::write_single(&asn1::BigUint::new(private.as_ref()).unwrap())?,
+            )
+        }
+        PrivateKeyRef::Dh(key) => {
+            let parts = key.parameters().components();
+            p_bytes = crate::utils::integer_bytes(parts.p);
+            g_bytes = crate::utils::integer_bytes(parts.g);
+            q_optional = parts.q.map(crate::utils::integer_bytes);
+            let private = crate::utils::integer_bytes(key.scalar());
+            let params = if let Some(ref q) = q_optional {
+                AlgorithmParameters::Dh(cryptography_x509::common::DHXParams {
+                    p: asn1::BigUint::new(p_bytes.as_ref()).unwrap(),
+                    g: asn1::BigUint::new(g_bytes.as_ref()).unwrap(),
+                    q: asn1::BigUint::new(q.as_ref()).unwrap(),
+                    j: None,
+                    validation_params: None,
+                })
+            } else {
+                AlgorithmParameters::DhKeyAgreement(cryptography_x509::common::BasicDHParams {
+                    p: asn1::BigUint::new(p_bytes.as_ref()).unwrap(),
+                    g: asn1::BigUint::new(g_bytes.as_ref()).unwrap(),
+                    private_value_length: None,
+                })
+            };
+            (
+                params,
+                asn1::write_single(&asn1::BigUint::new(private.as_ref()).unwrap())?,
+            )
+        }
+        PrivateKeyRef::Ed25519(key) => {
+            let bytes = key.to_seed()?;
+            (
+                AlgorithmParameters::Ed25519,
+                asn1::write_single(&bytes.as_ref())?,
+            )
+        }
+        PrivateKeyRef::X25519(key) => {
+            let bytes = key.to_bytes()?;
+            (
+                AlgorithmParameters::X25519,
+                asn1::write_single(&bytes.as_ref())?,
+            )
+        }
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
+        PrivateKeyRef::Ed448(key) => {
+            let bytes = key.to_seed()?;
+            (
+                AlgorithmParameters::Ed448,
+                asn1::write_single(&bytes.as_ref())?,
+            )
+        }
+        #[cfg(not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        )))]
+        PrivateKeyRef::X448(key) => {
+            let bytes = key.to_bytes()?;
+            (
+                AlgorithmParameters::X448,
+                asn1::write_single(&bytes.as_ref())?,
+            )
+        }
+        #[cfg(any(
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        ))]
+        PrivateKeyRef::MlDsa(key) => {
+            let params = match key.variant() {
+                openssl_bridge::mldsa::Variant::MlDsa44 => AlgorithmParameters::MlDsa44,
+                openssl_bridge::mldsa::Variant::MlDsa65 => AlgorithmParameters::MlDsa65,
+                openssl_bridge::mldsa::Variant::MlDsa87 => AlgorithmParameters::MlDsa87,
+            };
+            (
+                params,
+                asn1::write_single(&MlDsaPrivateKey::Seed(*key.seed()))?,
+            )
+        }
+        #[cfg(any(
+            CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        ))]
+        PrivateKeyRef::MlKem(key) => {
+            let params = match key.variant() {
+                openssl_bridge::mlkem::Variant::MlKem768 => AlgorithmParameters::MlKem768,
+                openssl_bridge::mlkem::Variant::MlKem1024 => AlgorithmParameters::MlKem1024,
+            };
+            (
+                params,
+                asn1::write_single(&MlKemPrivateKey::Seed(*key.seed()))?,
+            )
+        }
     };
-
-    let pki = PrivateKeyInfo {
+    let private_key_der: openssl_bridge::secret::SecretBytes = private_key_der.into();
+    Ok(asn1::write_single(&PrivateKeyInfo {
         version: PKCS8_VERSION_V1,
         algorithm: AlgorithmIdentifier {
             oid: asn1::DefinedByMarker::marker(),
             params,
         },
-        private_key: &private_key_der,
+        private_key: private_key_der.as_ref(),
         attributes: None,
         public_key: None,
-    };
-    Ok(asn1::write_single(&pki)?)
+    })?)
 }
 
 const KDF_ITERATION_COUNT: u64 = 2048;
 
 pub fn serialize_encrypted_private_key(
-    key: &ParsedPrivateKey,
+    key: PrivateKeyRef<'_>,
     password: &[u8],
 ) -> crate::KeySerializationResult<Vec<u8>> {
-    let plaintext_der = serialize_private_key(key)?;
+    let plaintext_der: openssl_bridge::secret::SecretBytes = serialize_private_key(key)?.into();
 
     let e = pbe::EncryptionAlgorithm::PBESv2SHA256AndAES256CBC;
 
     let mut salt = [0u8; 16];
     let mut iv = [0u8; 16];
-    cryptography_openssl::rand::rand_bytes(&mut salt)?;
-    cryptography_openssl::rand::rand_bytes(&mut iv)?;
+    openssl_bridge::rand::fill_private(&mut salt)?;
+    openssl_bridge::rand::fill_private(&mut iv)?;
 
-    let encrypted_data = e.encrypt(password, KDF_ITERATION_COUNT, &salt, &iv, &plaintext_der)?;
+    let encrypted_data = e.encrypt(
+        password,
+        KDF_ITERATION_COUNT,
+        &salt,
+        &iv,
+        plaintext_der.as_ref(),
+    )?;
     let encryption_alg = e.algorithm_identifier(KDF_ITERATION_COUNT, &salt, &iv);
 
     let epki = cryptography_x509::pkcs8::EncryptedPrivateKeyInfo {
@@ -659,18 +626,33 @@ pub fn serialize_encrypted_private_key(
     Ok(asn1::write_single(&epki)?)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::serialize_private_key;
-    use crate::ParsedPrivateKey;
+/// Arbitrary MAC keys cannot be serialized as asymmetric private keys.
+/// ```compile_fail
+/// use cryptography_key_parsing::PrivateKeyRef;
+/// let key = PrivateKeyRef::Hmac(&[0; 16]);
+/// ```
+const _: () = ();
 
-    #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-    #[test]
-    #[should_panic(expected = "Unknown key type")]
-    fn test_serialize_private_key_unknown_key_type() {
-        let pkey = openssl::pkey::PKey::hmac(&[0u8; 16]).unwrap();
-        let parsed = ParsedPrivateKey::Pkey(pkey);
-        // Expected to panic
-        _ = serialize_private_key(&parsed);
+#[cfg(any(
+    CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC
+))]
+impl Drop for MlDsaPrivateKey {
+    fn drop(&mut self) {
+        let Self::Seed(seed) = self;
+        openssl_bridge::secret::erase(seed);
+    }
+}
+
+#[cfg(any(
+    CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC
+))]
+impl Drop for MlKemPrivateKey {
+    fn drop(&mut self) {
+        let Self::Seed(seed) = self;
+        openssl_bridge::secret::erase(seed);
     }
 }

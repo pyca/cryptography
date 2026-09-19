@@ -2,6 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+#![forbid(unsafe_code)]
+
 // Minimum input size before hash/HMAC/cipher operations detach from the
 // interpreter (release the GIL) so other threads can run. Detaching and
 // re-attaching has a fixed cost, so it is a net loss for small inputs.

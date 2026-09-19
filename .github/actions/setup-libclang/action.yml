@@ -1,0 +1,29 @@
+name: Set up libclang
+description: Install the shared clang library required by openssl-bridge-sys bindgen
+runs:
+  using: composite
+  steps:
+    - name: Install libclang
+      shell: bash
+      run: |
+        if [[ "$RUNNER_OS" == Windows ]]; then
+          echo 'LIBCLANG_PATH=C:/Program Files/LLVM/bin' >> "$GITHUB_ENV"
+        elif [[ "$RUNNER_OS" == macOS ]]; then
+          brew list llvm >/dev/null 2>&1 || brew install llvm
+          echo "LIBCLANG_PATH=$(brew --prefix llvm)/lib" >> "$GITHUB_ENV"
+        elif command -v apk >/dev/null; then
+          apk add --no-cache clang-dev
+        elif command -v apt-get >/dev/null; then
+          if [[ $(id -u) == 0 ]]; then
+            apt-get update -qq
+            apt-get install -y --no-install-recommends libclang-dev
+          else
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends libclang-dev
+          fi
+        elif command -v dnf >/dev/null; then
+          dnf install -y clang-devel
+        else
+          echo 'No supported libclang package manager found' >&2
+          exit 1
+        fi

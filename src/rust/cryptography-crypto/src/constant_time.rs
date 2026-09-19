@@ -8,5 +8,5 @@ pub fn bytes_eq(a: &[u8], b: &[u8]) -> bool {
         return false;
     }
 
-    openssl::memcmp::eq(a, b)
+    openssl_bridge::constant_time_eq(a, b)
 }

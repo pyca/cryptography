@@ -2,14 +2,15 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use std::slice;
+// Rust slices never borrow Python's mutable buffer storage. Python's buffer
+// protocol performs the snapshot and publication; native operations only see
+// immutable bytes or exclusive Rust storage, including while the GIL is released.
+#![forbid(unsafe_code)]
 
-use pyo3::types::PyAnyMethods;
+use openssl_bridge::secret::SecretBytes;
+use pyo3::pybacked::PyBackedBytes;
+use pyo3::types::{PyAnyMethods, PyBytes, PyBytesMethods, PyMemoryView, PySlice};
 
-#[cfg(not(Py_3_11))]
-use crate::types;
-
-// Common error message generation
 fn generate_non_convertible_buffer_error_msg(
     pyobj: &pyo3::Borrowed<'_, '_, pyo3::PyAny>,
 ) -> String {
@@ -26,167 +27,215 @@ fn generate_non_convertible_buffer_error_msg(
     }
 }
 
-#[cfg(Py_3_11)]
-fn _extract_buffer_length(
-    pyobj: &pyo3::Borrowed<'_, '_, pyo3::PyAny>,
-    mutable: bool,
-) -> pyo3::PyResult<(Option<pyo3::buffer::PyBuffer<u8>>, usize, usize)> {
-    let buf = pyo3::buffer::PyBuffer::<u8>::get(pyobj).map_err(|_| {
-        let errmsg = generate_non_convertible_buffer_error_msg(pyobj);
-        pyo3::exceptions::PyTypeError::new_err(errmsg)
+fn memory_view<'p>(
+    pyobj: &pyo3::Borrowed<'_, 'p, pyo3::PyAny>,
+    writable: bool,
+) -> pyo3::PyResult<pyo3::Bound<'p, PyMemoryView>> {
+    let view = PyMemoryView::from(pyobj).map_err(|_| {
+        pyo3::exceptions::PyTypeError::new_err(generate_non_convertible_buffer_error_msg(pyobj))
     })?;
-    if mutable && buf.readonly() {
+    if writable && view.getattr("readonly")?.extract::<bool>()? {
         return Err(pyo3::exceptions::PyTypeError::new_err(
             "Buffer is not writable.",
         ));
-    };
-    if !buf.is_c_contiguous() {
+    }
+    if !view.getattr("c_contiguous")?.extract::<bool>()? {
         return Err(pyo3::exceptions::PyBufferError::new_err(
             "Buffer is not contiguous.",
         ));
     }
-    let ptr = buf.buf_ptr() as usize;
-    let len = buf.len_bytes();
-    Ok((Some(buf), ptr, len))
+    Ok(view)
 }
 
-#[cfg(not(Py_3_11))]
-fn _extract_buffer_length<'p>(
-    pyobj: &pyo3::Borrowed<'_, 'p, pyo3::PyAny>,
-    mutable: bool,
-) -> pyo3::PyResult<(pyo3::Bound<'p, pyo3::PyAny>, usize, usize)> {
-    let py = pyobj.py();
-    let bufobj = if mutable {
-        let kwargs = [(pyo3::intern!(py, "require_writable"), true)];
-        let kwargs = pyo3::types::IntoPyDict::into_py_dict(kwargs, py)?;
-        types::FFI_FROM_BUFFER
-            .get(py)?
-            .call((pyobj,), Some(&kwargs))
-    } else {
-        types::FFI_FROM_BUFFER.get(py)?.call1((pyobj,))
-    }
-    .map_err(|_| {
-        let errmsg = generate_non_convertible_buffer_error_msg(pyobj);
-        pyo3::exceptions::PyTypeError::new_err(errmsg)
-    })?;
-    let ptrval = types::FFI_CAST
-        .get(py)?
-        .call1((pyo3::intern!(py, "uintptr_t"), bufobj.clone()))?
-        .call_method0(pyo3::intern!(py, "__int__"))?
-        .extract::<usize>()?;
-    let len = bufobj.len()?;
-    Ok((bufobj, ptrval, len))
+enum Input<'p> {
+    Borrowed(&'p [u8]),
+    Python(PyBackedBytes),
 }
 
-// Contains no GIL-bound references, so it is sound to use while the GIL
-// is released, as long as it's kept alive.
 pub(crate) struct CffiBuf<'p> {
     pyobj: pyo3::Py<pyo3::PyAny>,
-    #[cfg(not(Py_3_11))]
-    _bufobj: pyo3::Py<pyo3::PyAny>,
-    #[cfg(Py_3_11)]
-    _bufobj: Option<pyo3::buffer::PyBuffer<u8>>,
-    buf: &'p [u8],
+    input: Input<'p>,
 }
-
-impl<'a> CffiBuf<'a> {
-    pub(crate) fn from_bytes(py: pyo3::Python<'a>, buf: &'a [u8]) -> Self {
-        CffiBuf {
+impl<'p> CffiBuf<'p> {
+    pub(crate) fn from_bytes(py: pyo3::Python<'p>, bytes: &'p [u8]) -> Self {
+        Self {
             pyobj: py.None(),
-            #[cfg(Py_3_11)]
-            _bufobj: None,
-            #[cfg(not(Py_3_11))]
-            _bufobj: py.None(),
-            buf,
+            input: Input::Borrowed(bytes),
         }
     }
-
     pub(crate) fn as_bytes(&self) -> &[u8] {
-        self.buf
+        match &self.input {
+            Input::Borrowed(bytes) => bytes,
+            Input::Python(bytes) => bytes.as_ref(),
+        }
     }
-
-    pub(crate) fn into_pyobj(self, py: pyo3::Python<'a>) -> pyo3::Bound<'a, pyo3::PyAny> {
+    pub(crate) fn into_pyobj(self, py: pyo3::Python<'p>) -> pyo3::Bound<'p, pyo3::PyAny> {
         self.pyobj.into_bound(py)
     }
 }
-
-impl<'p> pyo3::conversion::FromPyObject<'_, 'p> for CffiBuf<'p> {
-    type Error = pyo3::PyErr;
-
-    fn extract(pyobj: pyo3::Borrowed<'_, 'p, pyo3::PyAny>) -> pyo3::PyResult<Self> {
-        let (bufobj, ptrval, len) = _extract_buffer_length(&pyobj, false)?;
-        let buf = if len == 0 {
-            &[]
-        } else {
-            // SAFETY: _extract_buffer_length ensures that we have a valid ptr
-            // and length (and we ensure we meet slice's requirements for
-            // 0-length slices above), we're keeping pyobj alive which ensures
-            // the buffer is valid. But! There is no actually guarantee
-            // against concurrent mutation. See
-            // https://alexgaynor.net/2022/oct/23/buffers-on-the-edge/
-            // for details. This is the same as our cffi status quo ante, so
-            // we're doing an unsound thing and living with it.
-            unsafe { slice::from_raw_parts(ptrval as *const u8, len) }
+impl<'p> CffiBuf<'p> {
+    fn extract_limited(
+        pyobj: pyo3::Borrowed<'_, 'p, pyo3::PyAny>,
+        maximum: usize,
+    ) -> pyo3::PyResult<Self> {
+        let check_length = |length: usize| -> pyo3::PyResult<()> {
+            if length > maximum {
+                return Err(pyo3::exceptions::PyOverflowError::new_err(
+                    "Data or associated data too long. Max 2**31 - 1 bytes",
+                ));
+            }
+            Ok(())
         };
-        Ok(CffiBuf {
+        let bytes = if let Ok(bytes) = pyobj.cast::<PyBytes>() {
+            check_length(bytes.as_bytes().len())?;
+            bytes.to_owned()
+        } else {
+            // Validate the export's byte count before copying a potentially huge
+            // mapping. Readonly views can still have mutable underlying storage.
+            let view = memory_view(&pyobj, false)?;
+            check_length(view.getattr("nbytes")?.extract()?)?;
+            view.call_method0("tobytes")?.cast_into::<PyBytes>()?
+        };
+        Ok(Self {
             pyobj: pyobj.to_owned().unbind(),
-            #[cfg(Py_3_11)]
-            _bufobj: bufobj,
-            #[cfg(not(Py_3_11))]
-            _bufobj: bufobj.unbind(),
-            buf,
+            input: Input::Python(bytes.into()),
         })
     }
+}
+impl<'p> pyo3::conversion::FromPyObject<'_, 'p> for CffiBuf<'p> {
+    type Error = pyo3::PyErr;
+    fn extract(pyobj: pyo3::Borrowed<'_, 'p, pyo3::PyAny>) -> pyo3::PyResult<Self> {
+        Self::extract_limited(pyobj, usize::MAX)
+    }
+}
+
+/// AEAD's native signed-length limit is checked before any mutable input copy.
+pub(crate) fn extract_aead_buffer<'p>(
+    obj: &pyo3::Bound<'p, pyo3::PyAny>,
+) -> pyo3::PyResult<CffiBuf<'p>> {
+    CffiBuf::extract_limited(obj.as_borrowed(), i32::MAX as usize)
+}
+pub(crate) fn extract_optional_aead_buffer<'p>(
+    obj: &pyo3::Bound<'p, pyo3::PyAny>,
+) -> pyo3::PyResult<Option<CffiBuf<'p>>> {
+    if obj.is_none() {
+        Ok(None)
+    } else {
+        extract_aead_buffer(obj).map(Some)
+    }
+}
+
+enum Output<'p> {
+    Borrowed(&'p mut [u8]),
+    Python {
+        view: pyo3::Bound<'p, pyo3::PyAny>,
+        bytes: SecretBytes,
+    },
 }
 
 pub(crate) struct CffiMutBuf<'p> {
-    _pyobj: pyo3::Bound<'p, pyo3::PyAny>,
-    #[cfg(not(Py_3_11))]
-    _bufobj: pyo3::Bound<'p, pyo3::PyAny>,
-    #[cfg(Py_3_11)]
-    _bufobj: Option<pyo3::buffer::PyBuffer<u8>>,
-    buf: &'p mut [u8],
+    output: Output<'p>,
 }
-
-impl<'a> CffiMutBuf<'a> {
-    pub(crate) fn from_bytes(py: pyo3::Python<'a>, buf: &'a mut [u8]) -> Self {
-        CffiMutBuf {
-            _pyobj: py.None().into_bound(py),
-            #[cfg(Py_3_11)]
-            _bufobj: None,
-            #[cfg(not(Py_3_11))]
-            _bufobj: py.None().into_bound(py),
-            buf,
+impl<'p> CffiMutBuf<'p> {
+    pub(crate) fn from_bytes(_py: pyo3::Python<'p>, bytes: &'p mut [u8]) -> Self {
+        Self {
+            output: Output::Borrowed(bytes),
         }
     }
-
     pub(crate) fn as_mut_bytes(&mut self) -> &mut [u8] {
-        self.buf
+        match &mut self.output {
+            Output::Borrowed(bytes) => bytes,
+            Output::Python { bytes, .. } => bytes.as_mut(),
+        }
+    }
+    /// Publish only bytes successfully produced by the operation. Callers use
+    /// this after success, including authentication for one-shot AEAD. Failure
+    /// leaves the Python destination unchanged and drops the erased staging area.
+    pub(crate) fn commit(&self, py: pyo3::Python<'_>, count: usize) -> pyo3::PyResult<()> {
+        match &self.output {
+            Output::Borrowed(bytes) => {
+                if count > bytes.len() {
+                    return Err(pyo3::exceptions::PyRuntimeError::new_err(
+                        "invalid output length",
+                    ));
+                }
+            }
+            Output::Python { view, bytes } => {
+                let result = bytes.as_ref().get(..count).ok_or_else(|| {
+                    pyo3::exceptions::PyRuntimeError::new_err("invalid output length")
+                })?;
+                // The memoryview retains the export, preventing resize. No Rust
+                // reference ever points at its storage. Tail bytes are untouched.
+                view.set_item(
+                    PySlice::new(py, 0, count as isize, 1),
+                    PyBytes::new(py, result),
+                )?;
+            }
+        }
+        Ok(())
+    }
+}
+impl<'p> pyo3::conversion::FromPyObject<'_, 'p> for CffiMutBuf<'p> {
+    type Error = pyo3::PyErr;
+    fn extract(pyobj: pyo3::Borrowed<'_, 'p, pyo3::PyAny>) -> pyo3::PyResult<Self> {
+        let view = memory_view(&pyobj, true)?.call_method1("cast", ("B",))?;
+        let bytes = SecretBytes::from(vec![0; view.len()?]);
+        Ok(Self {
+            output: Output::Python { view, bytes },
+        })
     }
 }
 
-impl<'p> pyo3::conversion::FromPyObject<'_, 'p> for CffiMutBuf<'p> {
-    type Error = pyo3::PyErr;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pyo3::types::{PyByteArray, PyByteArrayMethods};
 
-    fn extract(pyobj: pyo3::Borrowed<'_, 'p, pyo3::PyAny>) -> pyo3::PyResult<Self> {
-        let (bufobj, ptrval, len) = _extract_buffer_length(&pyobj, true)?;
-        let buf = if len == 0 {
-            &mut []
-        } else {
-            // SAFETY: _extract_buffer_length ensures that we have a valid ptr
-            // and length (and we ensure we meet slice's requirements for
-            // 0-length slices above), we're keeping pyobj alive which ensures
-            // the buffer is valid. But! There is no actually guarantee
-            // against concurrent mutation. See
-            // https://alexgaynor.net/2022/oct/23/buffers-on-the-edge/
-            // for details. This is the same as our cffi status quo ante, so
-            // we're doing an unsound thing and living with it.
-            unsafe { slice::from_raw_parts_mut(ptrval as *mut u8, len) }
-        };
-        Ok(CffiMutBuf {
-            _pyobj: pyobj.to_owned(),
-            _bufobj: bufobj,
-            buf,
+    #[test]
+    fn mutable_and_readonly_views_are_snapshotted() {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| -> pyo3::PyResult<()> {
+            let original = PyByteArray::new(py, b"abc");
+            let direct = original.extract::<CffiBuf<'_>>()?;
+            let view = PyMemoryView::from(original.as_any())?.call_method0("toreadonly")?;
+            let readonly = view.extract::<CffiBuf<'_>>()?;
+            original.set_item(0, b'z')?;
+            assert_eq!(direct.as_bytes(), b"abc");
+            assert_eq!(readonly.as_bytes(), b"abc");
+            Ok(())
         })
+        .unwrap();
+    }
+
+    #[test]
+    fn output_is_private_until_commit_and_can_overlap_input() {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| -> pyo3::PyResult<()> {
+            let original = PyByteArray::new(py, b"abcdef");
+            let input = original.extract::<CffiBuf<'_>>()?;
+            let mut output = original.extract::<CffiMutBuf<'_>>()?;
+            output.as_mut_bytes()[..3].copy_from_slice(b"xyz");
+            assert_eq!(original.to_vec(), b"abcdef");
+            output.commit(py, 3)?;
+            assert_eq!(original.to_vec(), b"xyzdef");
+            assert_eq!(input.as_bytes(), b"abcdef");
+            Ok(())
+        })
+        .unwrap();
+    }
+
+    #[test]
+    fn abandoning_output_does_not_publish_partial_results() {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| -> pyo3::PyResult<()> {
+            let original = PyByteArray::new(py, b"sentinel");
+            {
+                let mut output = original.extract::<CffiMutBuf<'_>>()?;
+                output.as_mut_bytes().fill(42);
+            }
+            assert_eq!(original.to_vec(), b"sentinel");
+            Ok(())
+        })
+        .unwrap();
     }
 }

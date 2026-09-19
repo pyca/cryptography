@@ -9,6 +9,9 @@ use crate::asn1::encode_der_data;
 use crate::backend::utils;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{types, x509};
+use openssl_bridge::dh::{
+    Components, Parameters, PrivateKeyMaterial as PrivateKey, PublicKeyMaterial as PublicKey,
+};
 
 fn warn_ffdh_deprecated(py: pyo3::Python<'_>) -> pyo3::PyResult<()> {
     let warning_cls = types::DEPRECATED_IN_50.get(py)?;
@@ -18,17 +21,17 @@ fn warn_ffdh_deprecated(py: pyo3::Python<'_>) -> pyo3::PyResult<()> {
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
 pub(crate) struct DHPrivateKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Private>,
+    pkey: PrivateKey,
 }
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
 pub(crate) struct DHPublicKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Public>,
+    pkey: PublicKey,
 }
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.dh")]
 struct DHParameters {
-    dh: openssl::dh::Dh<openssl::pkey::Params>,
+    dh: Parameters,
 }
 
 #[pyo3::pyfunction]
@@ -56,31 +59,25 @@ fn generate_parameters(
     }
 
     let dh = py
-        .detach(|| openssl::dh::Dh::generate_params(key_size, generator))
+        .detach(|| Parameters::generate(key_size, generator))
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Unable to generate DH parameters"))?;
     Ok(DHParameters { dh })
 }
 
-pub(crate) fn private_key_from_pkey(
+pub(crate) fn private_key_from_key(
     py: pyo3::Python<'_>,
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+    pkey: PrivateKey,
 ) -> CryptographyResult<DHPrivateKey> {
-    check_dh_parameters(&pkey.dh()?)?;
     warn_ffdh_deprecated(py)?;
-    Ok(DHPrivateKey {
-        pkey: pkey.to_owned(),
-    })
+    Ok(DHPrivateKey { pkey })
 }
 
-pub(crate) fn public_key_from_pkey(
+pub(crate) fn public_key_from_key(
     py: pyo3::Python<'_>,
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
+    pkey: PublicKey,
 ) -> CryptographyResult<DHPublicKey> {
-    check_dh_parameters(&pkey.dh()?)?;
     warn_ffdh_deprecated(py)?;
-    Ok(DHPublicKey {
-        pkey: pkey.to_owned(),
-    })
+    Ok(DHPublicKey { pkey })
 }
 
 // Build DHParameters from the DER encoding of a parameter structure. When
@@ -88,25 +85,25 @@ pub(crate) fn public_key_from_pkey(
 // otherwise the structure is PKCS#3 and the optional trailing INTEGER is
 // `privateValueLength`, which we ignore.
 fn load_dh_parameters(data: &[u8], x942: bool) -> CryptographyResult<DHParameters> {
-    let (p, q, g) = if x942 {
-        let asn1_params = asn1::parse_single::<common::DHParams<'_>>(data)?;
-        let p = openssl::bn::BigNum::from_slice(asn1_params.p.as_bytes())?;
-        let q = asn1_params
-            .q
-            .map(|q| openssl::bn::BigNum::from_slice(q.as_bytes()))
-            .transpose()?;
-        let g = openssl::bn::BigNum::from_slice(asn1_params.g.as_bytes())?;
-        (p, q, g)
+    let parts = if x942 {
+        let params = asn1::parse_single::<common::DHParams<'_>>(data)?;
+        Components {
+            p: params.p.as_bytes(),
+            q: params.q.map(|q| q.as_bytes()),
+            g: params.g.as_bytes(),
+        }
     } else {
-        let asn1_params = asn1::parse_single::<common::BasicDHParams<'_>>(data)?;
-        let p = openssl::bn::BigNum::from_slice(asn1_params.p.as_bytes())?;
-        let g = openssl::bn::BigNum::from_slice(asn1_params.g.as_bytes())?;
-        (p, None, g)
+        let params = asn1::parse_single::<common::BasicDHParams<'_>>(data)?;
+        Components {
+            p: params.p.as_bytes(),
+            q: None,
+            g: params.g.as_bytes(),
+        }
     };
-
-    let dh = openssl::dh::Dh::from_pqg(p, q, g)?;
-    check_dh_parameters(&dh)?;
-    Ok(DHParameters { dh })
+    Ok(DHParameters {
+        dh: Parameters::from_components(parts)
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"))?,
+    })
 }
 
 #[pyo3::pyfunction]
@@ -140,54 +137,37 @@ fn from_pem_parameters(
 fn dh_parameters_from_numbers(
     py: pyo3::Python<'_>,
     numbers: &DHParameterNumbers,
-) -> CryptographyResult<openssl::dh::Dh<openssl::pkey::Params>> {
-    let p = utils::py_int_to_bn(py, numbers.p.bind(py))?;
+) -> CryptographyResult<Parameters> {
+    let p = utils::py_int_to_bytes(py, numbers.p.bind(py))?;
     let q = numbers
         .q
         .as_ref()
-        .map(|v| utils::py_int_to_bn(py, v.bind(py)))
+        .map(|q| utils::py_int_to_bytes(py, q.bind(py)))
         .transpose()?;
-    let g = utils::py_int_to_bn(py, numbers.g.bind(py))?;
-
-    let dh = openssl::dh::Dh::from_pqg(p, q, g)?;
-    check_dh_parameters(&dh)?;
-    Ok(dh)
+    let g = utils::py_int_to_bytes(py, numbers.g.bind(py))?;
+    Ok(Parameters::from_components(Components {
+        p: p.as_ref(),
+        q: q.as_ref().map(|q| q.as_ref()),
+        g: g.as_ref(),
+    })
+    .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"))?)
 }
-
-fn check_dh_parameters<T: openssl::pkey::HasParams>(
-    dh: &openssl::dh::Dh<T>,
-) -> CryptographyResult<()> {
-    // Enforce the modulus minimum ourselves rather than relying on OpenSSL's
-    // DH_check, so an undersized modulus is rejected consistently across every
-    // DH construction path and regardless of backend behaviour. This matches
-    // the minimum already enforced for DH private keys and DHParameterNumbers.
-    if dh.prime_p().num_bits() < cryptography_key_parsing::MIN_DH_MODULUS_SIZE as i32 {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"),
-        ));
+impl DHPrivateKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PrivateKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PrivateKeyRef::Dh(&self.pkey))
     }
-    if !dh.check_key().unwrap_or(false) {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("Invalid DH parameters"),
-        ));
-    }
-    Ok(())
 }
-
-fn clone_dh<T: openssl::pkey::HasParams>(
-    dh: &openssl::dh::Dh<T>,
-) -> CryptographyResult<openssl::dh::Dh<openssl::pkey::Params>> {
-    let p = dh.prime_p().to_owned()?;
-    let q = dh.prime_q().map(|q| q.to_owned()).transpose()?;
-    let g = dh.generator().to_owned()?;
-    Ok(openssl::dh::Dh::from_pqg(p, q, g)?)
+impl DHPublicKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PublicKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PublicKeyRef::Dh(&self.pkey))
+    }
 }
 
 #[pyo3::pymethods]
 impl DHPrivateKey {
     #[getter]
     fn key_size(&self) -> i32 {
-        self.pkey.dh().unwrap().prime_p().num_bits()
+        self.pkey.parameters().bits() as i32
     }
 
     fn exchange<'p>(
@@ -195,38 +175,29 @@ impl DHPrivateKey {
         py: pyo3::Python<'p>,
         peer_public_key: &DHPublicKey,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let mut deriver = openssl::derive::Deriver::new(&self.pkey)?;
-        deriver
-            .set_peer(&peer_public_key.pkey)
+        let secret = py
+            .detach(|| {
+                // Legacy components may contain an unrelated cached public value.
+                // Agreement uses a validated key derived from the private exponent.
+                openssl_bridge::dh::PrivateKey::from_scalar(
+                    self.pkey.parameters().clone(),
+                    self.pkey.scalar(),
+                )?
+                .exchange(&peer_public_key.pkey.validate()?)
+            })
             .map_err(|_| pyo3::exceptions::PyValueError::new_err("Error computing shared key."))?;
-
-        let len = deriver.len()?;
-        Ok(pyo3::types::PyBytes::new_with(py, len, |b| {
-            let n = deriver.derive(b).unwrap();
-
-            let pad = b.len() - n;
-            if pad > 0 {
-                b.copy_within(0..n, pad);
-                for c in b.iter_mut().take(pad) {
-                    *c = 0;
-                }
-            }
-            Ok(())
-        })?)
+        Ok(pyo3::types::PyBytes::new(py, secret.as_ref()))
     }
 
     fn private_numbers(&self, py: pyo3::Python<'_>) -> CryptographyResult<DHPrivateNumbers> {
-        let dh = self.pkey.dh().unwrap();
+        let parts = self.pkey.parameters().components();
 
-        let py_p = utils::bn_to_py_int(py, dh.prime_p())?;
-        let py_q = dh
-            .prime_q()
-            .map(|q| utils::bn_to_py_int(py, q))
-            .transpose()?;
-        let py_g = utils::bn_to_py_int(py, dh.generator())?;
+        let py_p = utils::bytes_to_py_int(py, parts.p)?;
+        let py_q = parts.q.map(|q| utils::bytes_to_py_int(py, q)).transpose()?;
+        let py_g = utils::bytes_to_py_int(py, parts.g)?;
 
-        let py_pub_key = utils::bn_to_py_int(py, dh.public_key())?;
-        let py_private_key = utils::bn_to_py_int(py, dh.private_key())?;
+        let py_pub_key = utils::bytes_to_py_int(py, self.pkey.public_key().public_value())?;
+        let py_private_key = utils::bytes_to_py_int(py, self.pkey.scalar())?;
 
         let parameter_numbers = DHParameterNumbers {
             p: py_p.extract()?,
@@ -248,18 +219,14 @@ impl DHPrivateKey {
 
     #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     fn public_key(&self) -> CryptographyResult<DHPublicKey> {
-        let orig_dh = self.pkey.dh().unwrap();
-        let dh = clone_dh(&orig_dh)?;
-
-        let pkey =
-            openssl::pkey::PKey::from_dh(dh.set_public_key(orig_dh.public_key().to_owned()?)?)?;
-
-        Ok(DHPublicKey { pkey })
+        Ok(DHPublicKey {
+            pkey: self.pkey.public_key(),
+        })
     }
 
     fn parameters(&self) -> CryptographyResult<DHParameters> {
         Ok(DHParameters {
-            dh: clone_dh(&self.pkey.dh().unwrap())?,
+            dh: self.pkey.parameters().clone(),
         })
     }
 
@@ -281,7 +248,7 @@ impl DHPrivateKey {
         utils::pkey_private_bytes(
             py,
             slf,
-            &slf.borrow().pkey,
+            &slf.borrow().serialization_key()?,
             encoding,
             format,
             encryption_algorithm,
@@ -306,7 +273,7 @@ impl DHPrivateKey {
 impl DHPublicKey {
     #[getter]
     fn key_size(&self) -> i32 {
-        self.pkey.dh().unwrap().prime_p().num_bits()
+        self.pkey.parameters().bits() as i32
     }
 
     fn public_bytes<'p>(
@@ -323,26 +290,31 @@ impl DHPublicKey {
             ));
         }
 
-        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, false)
+        utils::pkey_public_bytes(
+            py,
+            slf,
+            &slf.borrow().serialization_key()?,
+            encoding,
+            format,
+            true,
+            false,
+        )
     }
 
     fn parameters(&self) -> CryptographyResult<DHParameters> {
         Ok(DHParameters {
-            dh: clone_dh(&self.pkey.dh().unwrap())?,
+            dh: self.pkey.parameters().clone(),
         })
     }
 
     fn public_numbers(&self, py: pyo3::Python<'_>) -> CryptographyResult<DHPublicNumbers> {
-        let dh = self.pkey.dh().unwrap();
+        let parts = self.pkey.parameters().components();
 
-        let py_p = utils::bn_to_py_int(py, dh.prime_p())?;
-        let py_q = dh
-            .prime_q()
-            .map(|q| utils::bn_to_py_int(py, q))
-            .transpose()?;
-        let py_g = utils::bn_to_py_int(py, dh.generator())?;
+        let py_p = utils::bytes_to_py_int(py, parts.p)?;
+        let py_q = parts.q.map(|q| utils::bytes_to_py_int(py, q)).transpose()?;
+        let py_g = utils::bytes_to_py_int(py, parts.g)?;
 
-        let py_pub_key = utils::bn_to_py_int(py, dh.public_key())?;
+        let py_pub_key = utils::bytes_to_py_int(py, self.pkey.public_value())?;
 
         let parameter_numbers = DHParameterNumbers {
             p: py_p.extract()?,
@@ -359,7 +331,12 @@ impl DHPublicKey {
     }
 
     fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> bool {
-        self.pkey.public_eq(&other.pkey)
+        let a = self.pkey.parameters().components();
+        let b = other.pkey.parameters().components();
+        a.p == b.p
+            && a.q == b.q
+            && a.g == b.g
+            && self.pkey.public_value() == other.pkey.public_value()
     }
 
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
@@ -378,20 +355,17 @@ impl DHPublicKey {
 impl DHParameters {
     #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     fn generate_private_key(&self) -> CryptographyResult<DHPrivateKey> {
-        let dh = clone_dh(&self.dh)?.generate_key()?;
         Ok(DHPrivateKey {
-            pkey: openssl::pkey::PKey::from_dh(dh)?,
+            pkey: self.dh.generate_key()?.into(),
         })
     }
 
     fn parameter_numbers(&self, py: pyo3::Python<'_>) -> CryptographyResult<DHParameterNumbers> {
-        let py_p = utils::bn_to_py_int(py, self.dh.prime_p())?;
-        let py_q = self
-            .dh
-            .prime_q()
-            .map(|q| utils::bn_to_py_int(py, q))
-            .transpose()?;
-        let py_g = utils::bn_to_py_int(py, self.dh.generator())?;
+        let parts = self.dh.components();
+
+        let py_p = utils::bytes_to_py_int(py, parts.p)?;
+        let py_q = parts.q.map(|q| utils::bytes_to_py_int(py, q)).transpose()?;
+        let py_g = utils::bytes_to_py_int(py, parts.g)?;
 
         Ok(DHParameterNumbers {
             p: py_p.extract()?,
@@ -408,21 +382,21 @@ impl DHParameters {
         encoding: crate::serialization::Encoding,
         format: crate::serialization::ParameterFormat,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let parts = self.dh.components();
+
         match format {
             crate::serialization::ParameterFormat::PKCS3 => {}
         }
 
-        let p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(self.dh.prime_p())?;
-        let q_bytes = self
-            .dh
-            .prime_q()
-            .map(cryptography_openssl::utils::bn_to_big_endian_bytes)
-            .transpose()?;
-        let g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(self.dh.generator())?;
+        let p_bytes = cryptography_key_parsing::utils::integer_bytes(parts.p);
+        let q_bytes = parts.q.map(cryptography_key_parsing::utils::integer_bytes);
+        let g_bytes = cryptography_key_parsing::utils::integer_bytes(parts.g);
         let asn1dh_params = common::DHParams {
-            p: asn1::BigUint::new(&p_bytes).unwrap(),
-            q: q_bytes.as_ref().map(|q| asn1::BigUint::new(q).unwrap()),
-            g: asn1::BigUint::new(&g_bytes).unwrap(),
+            p: asn1::BigUint::new(p_bytes.as_ref()).unwrap(),
+            q: q_bytes
+                .as_ref()
+                .map(|q| asn1::BigUint::new(q.as_ref()).unwrap()),
+            g: asn1::BigUint::new(g_bytes.as_ref()).unwrap(),
         };
         let data = asn1::write_single(&asn1dh_params)?;
         let tag = if q_bytes.is_none() {
@@ -481,11 +455,12 @@ impl DHPrivateNumbers {
 
         let dh = dh_parameters_from_numbers(py, self.public_numbers.get().parameter_numbers.get())?;
 
-        let pub_key = utils::py_int_to_bn(py, self.public_numbers.get().y.bind(py))?;
-        let priv_key = utils::py_int_to_bn(py, self.x.bind(py))?;
+        let pub_key = utils::py_int_to_bytes(py, self.public_numbers.get().y.bind(py))?;
+        let priv_key = utils::py_int_to_bytes(py, self.x.bind(py))?;
 
-        let dh = dh.set_key(pub_key, priv_key)?;
-        let pkey = openssl::pkey::PKey::from_dh(dh)?;
+        let secret = priv_key;
+        let pkey = PrivateKey::from_components(dh, secret.as_ref(), pub_key.as_ref())
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid DH key"))?;
         Ok(DHPrivateKey { pkey })
     }
 
@@ -526,9 +501,10 @@ impl DHPublicNumbers {
 
         let dh = dh_parameters_from_numbers(py, self.parameter_numbers.get())?;
 
-        let pub_key = utils::py_int_to_bn(py, self.y.bind(py))?;
+        let pub_key = utils::py_int_to_bytes(py, self.y.bind(py))?;
 
-        let pkey = openssl::pkey::PKey::from_dh(dh.set_public_key(pub_key)?)?;
+        let pkey = PublicKey::from_components(dh, pub_key.as_ref())
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid DH key"))?;
 
         Ok(DHPublicKey { pkey })
     }

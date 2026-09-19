@@ -8,6 +8,32 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Replace the private CFFI binding with typed Rust TLS and X.509 adapters for
+  pyOpenSSL. TLS contexts freeze before creating connections, sockets retain
+  owned descriptors, and callbacks return copied data and connection-local
+  errors. CFFI is no longer a build or runtime dependency; the private
+  ``Binding.ffi``, ``Binding.lib`` and ``backend._lib`` interfaces are removed.
+
+* Add owned Rust X.509 compatibility interfaces for pyOpenSSL's migration away
+  from CFFI. Certificate names and verification results contain owned data.
+
+* Mutable input buffers are snapshotted before native operations. Output-buffer
+  APIs publish successful results from separate storage, allowing overlapping
+  input and output views without aliased native buffers. Failed one-shot
+  authenticated decryption leaves the destination unchanged.
+
+* FIPS mode must be configured before process startup using OpenSSL configuration.
+  The private activation hook now checks configuration without changing global
+  properties while other libraries may be using OpenSSL.
+
+* XTS data units must be supplied in a single non-empty ``update()`` or
+  ``update_into()`` call. XTS consistently rejects identical key halves on all
+  supported backends.
+
+* ChaCha20 streams reject rollover of the low 32 counter bits, giving a
+  consistent bound across native backends. Start or reset a stream with a new
+  nonce and counter range before reaching that bound.
+
 * :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
   and :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
   now accept :rfc:`5958` ``OneAsymmetricKey`` (PKCS8 version 2).

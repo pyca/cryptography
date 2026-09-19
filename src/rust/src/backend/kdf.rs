@@ -23,9 +23,9 @@ use crate::{exceptions, types};
 )]
 // NO-COVERAGE-END
 struct Pbkdf2Hmac {
-    md: openssl::hash::MessageDigest,
+    md: openssl_bridge::hash::Algorithm,
     salt: pyo3::Py<pyo3::types::PyBytes>,
-    iterations: usize,
+    iterations: std::num::NonZeroU32,
     length: usize,
     used: bool,
 }
@@ -54,7 +54,7 @@ impl Pbkdf2Hmac {
         let salt = self.salt.as_bytes(py);
         let iterations = self.iterations;
         let md = self.md;
-        py.detach(|| openssl::pkcs5::pbkdf2_hmac(key_material, salt, iterations, md, output))?;
+        py.detach(|| openssl_bridge::kdf::pbkdf2_hmac(md, key_material, salt, iterations, output))?;
 
         Ok(self.length)
     }
@@ -80,7 +80,14 @@ impl Pbkdf2Hmac {
                 ),
             ));
         }
-        let md = hashes::message_digest_from_algorithm(py, &algorithm)?;
+        let iterations = i32::try_from(iterations)
+            .ok()
+            .and_then(|n| u32::try_from(n).ok())
+            .and_then(std::num::NonZeroU32::new)
+            .ok_or_else(|| {
+                pyo3::exceptions::PyOverflowError::new_err("iteration count is too large")
+            })?;
+        let md = hashes::bridge_digest_from_algorithm(py, &algorithm)?;
 
         Ok(Pbkdf2Hmac {
             md,
@@ -97,7 +104,9 @@ impl Pbkdf2Hmac {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+        let written = self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn derive<'p>(
@@ -175,7 +184,7 @@ impl Scrypt {
         let r = self.r;
         let p = self.p;
         py.detach(|| {
-            openssl::pkcs5::scrypt(
+            openssl_bridge::kdf::scrypt(
                 key_material,
                 salt,
                 n,
@@ -226,7 +235,7 @@ impl Scrypt {
                     ),
                 ))
             } else {
-                if cryptography_openssl::fips::is_enabled() {
+                if openssl_bridge::runtime::is_fips_enabled() {
                     return Err(CryptographyError::from(
                         exceptions::UnsupportedAlgorithm::new_err(
                             "This version of OpenSSL does not support scrypt"
@@ -275,7 +284,9 @@ impl Scrypt {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+        let written = self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
@@ -361,41 +372,33 @@ impl BaseArgon2 {
             ));
         }
 
-        let derive_fn = match &variant {
-            Argon2Variant::Argon2d => openssl::kdf::argon2d,
-            Argon2Variant::Argon2i => openssl::kdf::argon2i,
-            Argon2Variant::Argon2id => openssl::kdf::argon2id,
+        let variant = match variant {
+            Argon2Variant::Argon2d => openssl_bridge::argon2::Variant::D,
+            Argon2Variant::Argon2i => openssl_bridge::argon2::Variant::I,
+            Argon2Variant::Argon2id => openssl_bridge::argon2::Variant::Id,
         };
-
         let salt = self.salt.as_bytes(py);
         let ad = self.ad.as_ref().map(|ad| ad.as_bytes(py));
         let secret = self.secret.as_ref().map(|secret| secret.as_bytes(py));
         let iterations = self.iterations;
         let lanes = self.lanes;
         let memory_cost = self.memory_cost;
-        py.detach(|| {
-            (derive_fn)(
-                None,
-                key_material,
-                salt,
-                ad,
-                secret,
-                iterations,
-                lanes,
-                memory_cost,
-                output,
-            )
-        })
-        .map_err(|_| {
-            // In theory other init issues (e.g. PROV_R_INVALID_THREAD_POOL_SIZE
-            // on builds without thread-pool support) can also occur here, but
-            // in practice failures from OpenSSL's argon2 provider at this point
-            // are memory-allocation failures, so we strictly map to MemoryError.
-            CryptographyError::from(pyo3::exceptions::PyMemoryError::new_err(format!(
-                "Not enough memory to derive key. These parameters require {}KiB of memory.",
-                self.memory_cost
-            )))
-        })?;
+        let parameters = openssl_bridge::argon2::Parameters::new(
+            std::num::NonZeroU32::new(iterations).unwrap(),
+            std::num::NonZeroU32::new(lanes).unwrap(),
+            memory_cost,
+        )?;
+        py.detach(|| parameters.derive_into(variant, key_material, salt, ad, secret, output))
+            .map_err(|_| {
+                // In theory other init issues (e.g. PROV_R_INVALID_THREAD_POOL_SIZE
+                // on builds without thread-pool support) can also occur here, but
+                // in practice failures from OpenSSL's argon2 provider at this point
+                // are memory-allocation failures, so we strictly map to MemoryError.
+                CryptographyError::from(pyo3::exceptions::PyMemoryError::new_err(format!(
+                    "Not enough memory to derive key. These parameters require {}KiB of memory.",
+                    self.memory_cost
+                )))
+            })?;
 
         Ok(self.length)
     }
@@ -428,7 +431,7 @@ impl BaseArgon2 {
                     ),
                 ))
             } else {
-                if cryptography_openssl::fips::is_enabled() {
+                if openssl_bridge::runtime::is_fips_enabled() {
                     return Err(CryptographyError::from(
                         exceptions::UnsupportedAlgorithm::new_err(
                             "This version of OpenSSL does not support argon2"
@@ -722,12 +725,14 @@ impl Argon2d {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self._base.derive_into_buffer(
+        let written = self._base.derive_into_buffer(
             py,
             &Argon2Variant::Argon2d,
             key_material.as_bytes(),
             buf.as_mut_bytes(),
-        )
+        )?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
@@ -818,12 +823,14 @@ impl Argon2i {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self._base.derive_into_buffer(
+        let written = self._base.derive_into_buffer(
             py,
             &Argon2Variant::Argon2i,
             key_material.as_bytes(),
             buf.as_mut_bytes(),
-        )
+        )?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
@@ -913,12 +920,14 @@ impl Argon2id {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self._base.derive_into_buffer(
+        let written = self._base.derive_into_buffer(
             py,
             &Argon2Variant::Argon2id,
             key_material.as_bytes(),
             buf.as_mut_bytes(),
-        )
+        )?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
@@ -985,7 +994,7 @@ pub(crate) fn hkdf_extract(
     algorithm: &pyo3::Py<pyo3::PyAny>,
     salt: Option<&[u8]>,
     key_material: &CffiBuf<'_>,
-) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
+) -> CryptographyResult<Vec<u8>> {
     let algorithm_bound = algorithm.bind(py);
     let digest_size = algorithm_bound
         .getattr(pyo3::intern!(py, "digest_size"))?
@@ -1109,7 +1118,9 @@ impl Hkdf {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+        let written = self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn derive<'p>(
@@ -1259,7 +1270,9 @@ impl HkdfExpand {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+        let written = self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     pub(crate) fn derive<'p>(
@@ -1397,7 +1410,9 @@ impl X963Kdf {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+        let written = self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn derive<'p>(
@@ -1534,7 +1549,9 @@ impl ConcatKdfHash {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+        let written = self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn derive<'p>(
@@ -1694,7 +1711,9 @@ impl ConcatKdfHmac {
         key_material: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())
+        let written = self.derive_into_buffer(py, key_material.as_bytes(), buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn derive<'p>(
@@ -1860,7 +1879,7 @@ fn kbkdf_derive_into_buffer<F>(
     mut prf_fn: F,
 ) -> CryptographyResult<usize>
 where
-    F: FnMut(&[u8]) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes>,
+    F: FnMut(&[u8]) -> CryptographyResult<Vec<u8>>,
 {
     if output.len() != length {
         return Err(CryptographyError::from(
@@ -1970,7 +1989,7 @@ impl KbkdfHmac {
         )?;
 
         let algorithm_bound = algorithm.bind(py);
-        let _md = hashes::message_digest_from_algorithm(py, algorithm_bound)?;
+        let _md = hashes::bridge_digest_from_algorithm(py, algorithm_bound)?;
         let digest_size = algorithm_bound
             .getattr(pyo3::intern!(py, "digest_size"))?
             .extract::<usize>()?;
@@ -2013,7 +2032,7 @@ impl KbkdfHmac {
         }
         self.used = true;
         let hmac_base = Hmac::new_bytes(py, key_material.as_bytes(), self.algorithm.bind(py))?;
-        kbkdf_derive_into_buffer(
+        let written = kbkdf_derive_into_buffer(
             py,
             self.length,
             self.digest_size,
@@ -2024,7 +2043,9 @@ impl KbkdfHmac {
                 hmac.update_bytes(py, data)?;
                 hmac.finalize_bytes()
             },
-        )
+        )?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn verify(
@@ -2150,7 +2171,7 @@ impl KbkdfCmac {
         self.used = true;
         let alg = self.algorithm.bind(py).call1((key_material.as_bytes(),))?;
         let cmac_base = cmac::Cmac::new_with_algorithm(py, &alg)?;
-        kbkdf_derive_into_buffer(
+        let written = kbkdf_derive_into_buffer(
             py,
             self.length,
             self.prf_output_size,
@@ -2161,7 +2182,9 @@ impl KbkdfCmac {
                 cmac.update_bytes(data)?;
                 cmac.finalize_bytes()
             },
-        )
+        )?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn verify(

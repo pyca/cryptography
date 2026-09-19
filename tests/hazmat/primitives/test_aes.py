@@ -84,6 +84,17 @@ class TestAESModeXTS:
                 with pytest.raises(ValueError, match="duplicated keys"):
                     cipher.encryptor()
 
+    def test_xts_requires_single_data_unit(self, backend):
+        alg = algorithms.AES(b"\x00" * 32 + b"\x01" * 32)
+        mode = modes.XTS(b"\x00" * 16)
+        if not backend.cipher_supported(alg, mode):
+            pytest.skip("AES-256-XTS not supported")
+        enc = base.Cipher(alg, mode).encryptor()
+        assert enc.update(b"") == b""
+        assert len(enc.update(b"message block 01")) == 16
+        with pytest.raises(ValueError, match="one update call"):
+            enc.update(b"message block 02")
+
     def test_xts_unsupported_with_aes128_aes256_classes(self):
         with pytest.raises(TypeError):
             base.Cipher(algorithms.AES128(b"0" * 16), modes.XTS(b"\x00" * 16))

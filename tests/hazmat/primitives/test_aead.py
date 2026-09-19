@@ -749,9 +749,10 @@ class TestAESGCM:
         # Corrupt the ciphertext
         corrupted_ct = bytearray(ct)
         corrupted_ct[0] ^= 1
-        buf = bytearray(len(pt))
+        buf = bytearray(b"!" * len(pt))
         with pytest.raises(InvalidTag):
             aesgcm.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
+        assert buf == b"!" * len(pt)
 
 
 @pytest.mark.skipif(

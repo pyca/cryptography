@@ -8,9 +8,7 @@
 use base64::engine::general_purpose::{GeneralPurpose, GeneralPurposeConfig, URL_SAFE};
 use base64::engine::{DecodePaddingMode, Engine};
 use cryptography_crypto::constant_time;
-use cryptography_openssl::OpenSSLResult;
-use openssl::hash::MessageDigest;
-use openssl::symm::Mode;
+use openssl_bridge::cipher::Direction as Mode;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyStringMethods};
 
 use crate::backend::run_with_gil_detached;
@@ -102,29 +100,27 @@ fn unverified_token_data(
 pub(crate) struct Fernet {
     // Keyed contexts that every operation starts from a copy of. Keying a
     // context is much more expensive than copying one.
-    hmac: cryptography_openssl::hmac::Hmac,
-    encryptor: openssl::cipher_ctx::CipherCtx,
-    decryptor: openssl::cipher_ctx::CipherCtx,
+    hmac: openssl_bridge::mac::Hmac,
+    cipher: openssl_bridge::cipher::CipherKey,
 }
 
 impl Fernet {
-    fn from_key(key: &[u8]) -> OpenSSLResult<Fernet> {
+    fn from_key(key: &[u8]) -> openssl_bridge::Result<Fernet> {
         let (signing_key, encryption_key) = key.split_at(KEY_LEN / 2);
-        let hmac = cryptography_openssl::hmac::Hmac::new(signing_key, MessageDigest::sha256())?;
-        let cipher = openssl::cipher::Cipher::aes_128_cbc();
-        let mut encryptor = openssl::cipher_ctx::CipherCtx::new()?;
-        encryptor.encrypt_init(Some(cipher), Some(encryption_key), None)?;
-        let mut decryptor = openssl::cipher_ctx::CipherCtx::new()?;
-        decryptor.decrypt_init(Some(cipher), Some(encryption_key), None)?;
-        Ok(Fernet {
-            hmac,
-            encryptor,
-            decryptor,
-        })
+        let hmac = openssl_bridge::mac::Hmac::new(
+            openssl_bridge::hash::Algorithm::from_name("sha256")?,
+            signing_key,
+        )?;
+        let cipher = openssl_bridge::cipher::CipherKey::new(
+            openssl_bridge::cipher::Cipher::Aes128Cbc,
+            encryption_key,
+            true,
+        )?;
+        Ok(Fernet { hmac, cipher })
     }
 
-    fn hmac(&self, data: &[u8]) -> OpenSSLResult<cryptography_openssl::hmac::DigestBytes> {
-        let mut h = self.hmac.copy()?;
+    fn hmac(&self, data: &[u8]) -> openssl_bridge::Result<Vec<u8>> {
+        let mut h = self.hmac.try_clone()?;
         h.update(data)?;
         h.finish()
     }
@@ -137,20 +133,12 @@ impl Fernet {
         iv: &[u8],
         input: &[u8],
         output: &mut [u8],
-    ) -> OpenSSLResult<usize> {
-        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        match mode {
-            Mode::Encrypt => {
-                ctx.copy(&self.encryptor)?;
-                ctx.encrypt_init(None, None, Some(iv))?;
-            }
-            Mode::Decrypt => {
-                ctx.copy(&self.decryptor)?;
-                ctx.decrypt_init(None, None, Some(iv))?;
-            }
-        }
-        let n = ctx.cipher_update(input, Some(output))?;
-        Ok(n + ctx.cipher_final(&mut output[n..])?)
+    ) -> openssl_bridge::Result<usize> {
+        let mut ctx = self.cipher.start(mode, iv)?;
+        let n = ctx.update_into(input, output)?;
+        let tail: openssl_bridge::secret::SecretBytes = ctx.finish()?.into();
+        output[n..n + tail.as_ref().len()].copy_from_slice(tail.as_ref());
+        Ok(n + tail.as_ref().len())
     }
 
     /// Builds the raw (not yet base64-encoded) token.
@@ -262,7 +250,7 @@ impl Fernet {
         cls: &pyo3::Bound<'p, pyo3::types::PyType>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut key = [0u8; KEY_LEN];
-        cryptography_openssl::rand::rand_bytes(&mut key)?;
+        openssl_bridge::rand::fill_private(&mut key)?;
         b64encode(cls.py(), &key)
     }
 
@@ -281,7 +269,7 @@ impl Fernet {
         current_time: u64,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut iv = [0u8; IV_LEN];
-        cryptography_openssl::rand::rand_bytes(&mut iv)?;
+        openssl_bridge::rand::fill_private(&mut iv)?;
         let token = self.encrypt_from_parts(py, data.as_bytes(), current_time, &iv)?;
         b64encode(py, &token)
     }
@@ -412,7 +400,7 @@ impl MultiFernet {
             .ok_or_else(invalid_token)?;
 
         let mut iv = [0u8; IV_LEN];
-        cryptography_openssl::rand::rand_bytes(&mut iv)?;
+        openssl_bridge::rand::fill_private(&mut iv)?;
         let token = self.fernets[0]
             .get()
             .encrypt_from_parts(py, &plaintext, timestamp, &iv)?;

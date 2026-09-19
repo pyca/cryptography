@@ -65,3 +65,5 @@ class ObjectIdentifier:
     def _name(self) -> str: ...
 
 T = typing.TypeVar("T")
+
+_PACKAGE_VERSION: str

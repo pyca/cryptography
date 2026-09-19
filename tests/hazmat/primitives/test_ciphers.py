@@ -125,6 +125,19 @@ class TestCipherUpdateInto:
         assert res == len(pt)
         assert bytes(buf)[:res] == ct
 
+    def test_update_into_overlapping_views(self):
+        cipher = ciphers.Cipher(AES(bytes(16)), modes.CTR(bytes(16)))
+        plaintext = bytes(range(32))
+        reference = cipher.encryptor()
+        expected = reference.update(plaintext) + reference.finalize()
+        storage = bytearray(plaintext + b"tail untouched!")
+        context = cipher.encryptor()
+        written = context.update_into(memoryview(storage)[:32], storage)
+        assert written == 32
+        assert storage[:written] == expected
+        assert storage[written:] == b"tail untouched!"
+        assert context.finalize() == b""
+
     def test_update_into_gcm(self):
         key = binascii.unhexlify(b"e98b72a9881a84ca6b76e0f43e68647a")
         iv = binascii.unhexlify(b"8b23299fde174053f3d652ba")

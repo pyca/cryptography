@@ -290,7 +290,7 @@ def test_rsa_pkcs1_encryption(backend, wycheproof):
             binascii.unhexlify(wycheproof.testcase["ct"]), padding.PKCS1v15()
         )
         assert pt == binascii.unhexlify(wycheproof.testcase["msg"])
-    elif backend._lib.Cryptography_HAS_IMPLICIT_RSA_REJECTION:
+    elif rust_openssl.has_implicit_rsa_rejection():
         try:
             assert key.decrypt(
                 binascii.unhexlify(wycheproof.testcase["ct"]),

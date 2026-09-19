@@ -4,10 +4,13 @@
 
 use pyo3::types::PyAnyMethods;
 
-use crate::backend::utils;
+use crate::backend::{hashes, utils};
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{error, exceptions, types};
+use openssl_bridge::dsa::{
+    Components, ParameterMaterial, Parameters, PrivateKeyMaterial, PublicKeyMaterial,
+};
 
 fn warn_dsa_deprecated(py: pyo3::Python<'_>) -> pyo3::PyResult<()> {
     let warning_cls = types::DEPRECATED_IN_51.get(py)?;
@@ -21,7 +24,7 @@ fn warn_dsa_deprecated(py: pyo3::Python<'_>) -> pyo3::PyResult<()> {
     name = "DSAPrivateKey"
 )]
 pub(crate) struct DsaPrivateKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Private>,
+    pkey: PrivateKeyMaterial,
 }
 
 #[pyo3::pyclass(
@@ -30,7 +33,7 @@ pub(crate) struct DsaPrivateKey {
     name = "DSAPublicKey"
 )]
 pub(crate) struct DsaPublicKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Public>,
+    pkey: PublicKeyMaterial,
 }
 
 #[pyo3::pyclass(
@@ -39,39 +42,54 @@ pub(crate) struct DsaPublicKey {
     name = "DSAParameters"
 )]
 struct DsaParameters {
-    dsa: openssl::dsa::Dsa<openssl::pkey::Params>,
+    dsa: ParameterMaterial,
 }
 
-pub(crate) fn private_key_from_pkey(
+pub(crate) fn private_key_from_key(
     py: pyo3::Python<'_>,
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+    pkey: PrivateKeyMaterial,
 ) -> CryptographyResult<DsaPrivateKey> {
     warn_dsa_deprecated(py)?;
-    Ok(DsaPrivateKey {
-        pkey: pkey.to_owned(),
-    })
+    Ok(DsaPrivateKey { pkey })
 }
 
-pub(crate) fn public_key_from_pkey(
+pub(crate) fn public_key_from_key(
     py: pyo3::Python<'_>,
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
+    pkey: PublicKeyMaterial,
 ) -> CryptographyResult<DsaPublicKey> {
     warn_dsa_deprecated(py)?;
-    Ok(DsaPublicKey {
-        pkey: pkey.to_owned(),
-    })
+    Ok(DsaPublicKey { pkey })
 }
 
 #[pyo3::pyfunction]
 fn generate_parameters(py: pyo3::Python<'_>, key_size: u32) -> CryptographyResult<DsaParameters> {
-    let dsa = py.detach(|| openssl::dsa::Dsa::generate_params(key_size))?;
+    let dsa = py.detach(|| Parameters::generate(key_size))?.into();
     Ok(DsaParameters { dsa })
 }
 
-fn clone_dsa_params<T: openssl::pkey::HasParams>(
-    d: &openssl::dsa::Dsa<T>,
-) -> Result<openssl::dsa::Dsa<openssl::pkey::Params>, openssl::error::ErrorStack> {
-    openssl::dsa::Dsa::from_pqg(d.p().to_owned()?, d.q().to_owned()?, d.g().to_owned()?)
+fn parameters_from_numbers(
+    py: pyo3::Python<'_>,
+    numbers: &DsaParameterNumbers,
+) -> CryptographyResult<ParameterMaterial> {
+    let p = utils::py_int_to_bytes(py, numbers.p.bind(py))?;
+    let q = utils::py_int_to_bytes(py, numbers.q.bind(py))?;
+    let g = utils::py_int_to_bytes(py, numbers.g.bind(py))?;
+    Ok(ParameterMaterial::from_components(Components {
+        p: p.as_ref(),
+        q: q.as_ref(),
+        g: g.as_ref(),
+    })?)
+}
+// Temporary component conversion for the shared parser/serializer.
+impl DsaPrivateKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PrivateKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PrivateKeyRef::Dsa(&self.pkey))
+    }
+}
+impl DsaPublicKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PublicKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PublicKeyRef::Dsa(&self.pkey))
+    }
 }
 
 #[pyo3::pymethods]
@@ -82,58 +100,48 @@ impl DsaPrivateKey {
         data: CffiBuf<'_>,
         algorithm: pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let (data, _) = utils::calculate_digest_and_algorithm(py, data.as_bytes(), &algorithm)?;
+        let (data, algo) = utils::calculate_digest_and_algorithm(py, data.as_bytes(), &algorithm)?;
 
-        let mut signer = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
-        signer.sign_init()?;
-        let data_bytes = data.as_bytes();
-        let sig = py
-            .detach(|| {
-                let mut sig = vec![];
-                signer.sign_to_vec(data_bytes, &mut sig)?;
-                Ok::<_, openssl::error::ErrorStack>(sig)
-            })
-            .map_err(|e| {
-                pyo3::exceptions::PyValueError::new_err((
+        let digest = hashes::bridge_digest_from_algorithm(py, &algo)?;
+        let bytes = data.as_bytes();
+        let sig = match py.detach(|| self.pkey.validate()?.sign_digest(digest, bytes)) {
+            Ok(signature) => signature,
+            Err(e) => {
+                return Err(pyo3::exceptions::PyValueError::new_err((
                     "DSA signing failed. This generally indicates an invalid key.",
-                    error::list_from_openssl_error(py, &e).unbind(),
+                    error::list_from_bridge_error(py, &e)?.unbind(),
                 ))
-            })?;
+                .into())
+            }
+        };
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
     #[getter]
     fn key_size(&self) -> i32 {
-        self.pkey.dsa().unwrap().p().num_bits()
+        self.pkey.parameters().bits() as i32
     }
 
     fn public_key(&self) -> CryptographyResult<DsaPublicKey> {
-        let priv_dsa = self.pkey.dsa()?;
-        let pub_dsa = openssl::dsa::Dsa::from_public_components(
-            priv_dsa.p().to_owned()?,
-            priv_dsa.q().to_owned()?,
-            priv_dsa.g().to_owned()?,
-            priv_dsa.pub_key().to_owned()?,
-        )
-        .unwrap();
-        let pkey = openssl::pkey::PKey::from_dsa(pub_dsa)?;
-        Ok(DsaPublicKey { pkey })
+        Ok(DsaPublicKey {
+            pkey: self.pkey.public_key(),
+        })
     }
 
     fn parameters(&self) -> CryptographyResult<DsaParameters> {
-        let dsa = clone_dsa_params(&self.pkey.dsa().unwrap())?;
+        let dsa = self.pkey.parameters().clone();
         Ok(DsaParameters { dsa })
     }
 
     fn private_numbers(&self, py: pyo3::Python<'_>) -> CryptographyResult<DsaPrivateNumbers> {
-        let dsa = self.pkey.dsa().unwrap();
+        let parts = self.pkey.parameters().components();
 
-        let py_p = utils::bn_to_py_int(py, dsa.p())?;
-        let py_q = utils::bn_to_py_int(py, dsa.q())?;
-        let py_g = utils::bn_to_py_int(py, dsa.g())?;
+        let py_p = utils::bytes_to_py_int(py, parts.p)?;
+        let py_q = utils::bytes_to_py_int(py, parts.q)?;
+        let py_g = utils::bytes_to_py_int(py, parts.g)?;
 
-        let py_pub_key = utils::bn_to_py_int(py, dsa.pub_key())?;
-        let py_private_key = utils::bn_to_py_int(py, dsa.priv_key())?;
+        let py_pub_key = utils::bytes_to_py_int(py, self.pkey.public_key().public_value())?;
+        let py_private_key = utils::bytes_to_py_int(py, self.pkey.scalar())?;
 
         let parameter_numbers = DsaParameterNumbers {
             p: py_p.extract()?,
@@ -160,7 +168,7 @@ impl DsaPrivateKey {
         utils::pkey_private_bytes(
             py,
             slf,
-            &slf.borrow().pkey,
+            &slf.borrow().serialization_key()?,
             encoding,
             format,
             encryption_algorithm,
@@ -190,13 +198,18 @@ impl DsaPublicKey {
         data: CffiBuf<'_>,
         algorithm: pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<()> {
-        let (data, _) = utils::calculate_digest_and_algorithm(py, data.as_bytes(), &algorithm)?;
+        let (data, algo) = utils::calculate_digest_and_algorithm(py, data.as_bytes(), &algorithm)?;
 
-        let mut verifier = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
-        verifier.verify_init()?;
+        let digest = hashes::bridge_digest_from_algorithm(py, &algo)?;
         let data_bytes = data.as_bytes();
-        let sig_bytes = signature.as_bytes();
-        let valid = py.detach(|| verifier.verify(data_bytes, sig_bytes).unwrap_or(false));
+        let signature = signature.as_bytes();
+        let valid = py
+            .detach(|| {
+                self.pkey
+                    .validate()?
+                    .verify_digest(digest, data_bytes, signature)
+            })
+            .unwrap_or(false);
         if !valid {
             return Err(CryptographyError::from(
                 exceptions::InvalidSignature::new_err(()),
@@ -208,22 +221,22 @@ impl DsaPublicKey {
 
     #[getter]
     fn key_size(&self) -> i32 {
-        self.pkey.dsa().unwrap().p().num_bits()
+        self.pkey.parameters().bits() as i32
     }
 
     fn parameters(&self) -> CryptographyResult<DsaParameters> {
-        let dsa = clone_dsa_params(&self.pkey.dsa().unwrap())?;
+        let dsa = self.pkey.parameters().clone();
         Ok(DsaParameters { dsa })
     }
 
     fn public_numbers(&self, py: pyo3::Python<'_>) -> CryptographyResult<DsaPublicNumbers> {
-        let dsa = self.pkey.dsa().unwrap();
+        let parts = self.pkey.parameters().components();
 
-        let py_p = utils::bn_to_py_int(py, dsa.p())?;
-        let py_q = utils::bn_to_py_int(py, dsa.q())?;
-        let py_g = utils::bn_to_py_int(py, dsa.g())?;
+        let py_p = utils::bytes_to_py_int(py, parts.p)?;
+        let py_q = utils::bytes_to_py_int(py, parts.q)?;
+        let py_g = utils::bytes_to_py_int(py, parts.g)?;
 
-        let py_pub_key = utils::bn_to_py_int(py, dsa.pub_key())?;
+        let py_pub_key = utils::bytes_to_py_int(py, self.pkey.public_value())?;
 
         let parameter_numbers = DsaParameterNumbers {
             p: py_p.extract()?,
@@ -242,11 +255,24 @@ impl DsaPublicKey {
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PublicFormat,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, false)
+        utils::pkey_public_bytes(
+            py,
+            slf,
+            &slf.borrow().serialization_key()?,
+            encoding,
+            format,
+            true,
+            false,
+        )
     }
 
     fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> bool {
-        self.pkey.public_eq(&other.pkey)
+        let a = self.pkey.parameters().components();
+        let b = other.pkey.parameters().components();
+        a.p == b.p
+            && a.q == b.q
+            && a.g == b.g
+            && self.pkey.public_value() == other.pkey.public_value()
     }
 
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
@@ -264,15 +290,16 @@ impl DsaPublicKey {
 #[pyo3::pymethods]
 impl DsaParameters {
     fn generate_private_key(&self) -> CryptographyResult<DsaPrivateKey> {
-        let dsa = clone_dsa_params(&self.dsa)?.generate_key()?;
-        let pkey = openssl::pkey::PKey::from_dsa(dsa)?;
-        Ok(DsaPrivateKey { pkey })
+        Ok(DsaPrivateKey {
+            pkey: self.dsa.validate()?.generate_key()?.into(),
+        })
     }
 
     fn parameter_numbers(&self, py: pyo3::Python<'_>) -> CryptographyResult<DsaParameterNumbers> {
-        let py_p = utils::bn_to_py_int(py, self.dsa.p())?;
-        let py_q = utils::bn_to_py_int(py, self.dsa.q())?;
-        let py_g = utils::bn_to_py_int(py, self.dsa.g())?;
+        let parts = self.dsa.components();
+        let py_p = utils::bytes_to_py_int(py, parts.p)?;
+        let py_q = utils::bytes_to_py_int(py, parts.q)?;
+        let py_g = utils::bytes_to_py_int(py, parts.g)?;
 
         Ok(DsaParameterNumbers {
             p: py_p.extract()?,
@@ -408,16 +435,12 @@ impl DsaPrivateNumbers {
 
         check_dsa_private_numbers(py, self)?;
 
-        let dsa = openssl::dsa::Dsa::from_private_components(
-            utils::py_int_to_bn(py, parameter_numbers.p.bind(py))?,
-            utils::py_int_to_bn(py, parameter_numbers.q.bind(py))?,
-            utils::py_int_to_bn(py, parameter_numbers.g.bind(py))?,
-            utils::py_int_to_bn(py, self.x.bind(py))?,
-            utils::py_int_to_bn(py, public_numbers.y.bind(py))?,
-        )
-        .unwrap();
-        let pkey = openssl::pkey::PKey::from_dsa(dsa)?;
-        Ok(DsaPrivateKey { pkey })
+        let params = parameters_from_numbers(py, parameter_numbers)?;
+        let x = utils::py_int_to_bytes(py, self.x.bind(py))?;
+        let y = utils::py_int_to_bytes(py, public_numbers.y.bind(py))?;
+        Ok(DsaPrivateKey {
+            pkey: PrivateKeyMaterial::from_components(params, x.as_ref(), y.as_ref())?,
+        })
     }
 
     fn __eq__(
@@ -458,15 +481,11 @@ impl DsaPublicNumbers {
 
         check_dsa_parameters(py, parameter_numbers)?;
 
-        let dsa = openssl::dsa::Dsa::from_public_components(
-            utils::py_int_to_bn(py, parameter_numbers.p.bind(py))?,
-            utils::py_int_to_bn(py, parameter_numbers.q.bind(py))?,
-            utils::py_int_to_bn(py, parameter_numbers.g.bind(py))?,
-            utils::py_int_to_bn(py, self.y.bind(py))?,
-        )
-        .unwrap();
-        let pkey = openssl::pkey::PKey::from_dsa(dsa)?;
-        Ok(DsaPublicKey { pkey })
+        let params = parameters_from_numbers(py, parameter_numbers)?;
+        let y = utils::py_int_to_bytes(py, self.y.bind(py))?;
+        Ok(DsaPublicKey {
+            pkey: PublicKeyMaterial::from_components(params, y.as_ref())?,
+        })
     }
 
     fn __eq__(
@@ -515,13 +534,9 @@ impl DsaParameterNumbers {
 
         check_dsa_parameters(py, self)?;
 
-        let dsa = openssl::dsa::Dsa::from_pqg(
-            utils::py_int_to_bn(py, self.p.bind(py))?,
-            utils::py_int_to_bn(py, self.q.bind(py))?,
-            utils::py_int_to_bn(py, self.g.bind(py))?,
-        )
-        .unwrap();
-        Ok(DsaParameters { dsa })
+        Ok(DsaParameters {
+            dsa: parameters_from_numbers(py, self)?,
+        })
     }
 
     fn __eq__(

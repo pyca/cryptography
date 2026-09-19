@@ -11,8 +11,10 @@ from cryptography.exceptions import InternalError, _Reasons
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
+from cryptography.hazmat.bindings._rust import pyopenssl, test_support
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from ...doubles import (
     DummyAsymmetricPadding,
@@ -86,27 +88,23 @@ class TestOpenSSL:
             backend.openssl_assert(False)
 
     def test_consume_errors(self):
-        for i in range(10):
-            backend._lib.ERR_put_error(
-                backend._lib.ERR_LIB_EVP, 0, 0, b"test_openssl.py", -1
-            )
-
-        assert backend._lib.ERR_peek_error() != 0
-
+        library, reason = test_support.queue_test_errors(10)
         errors = backend._consume_errors()
-
-        assert backend._lib.ERR_peek_error() == 0
         assert len(errors) == 10
+        assert all(
+            error.lib == library and error.reason == reason for error in errors
+        )
+        assert backend._consume_errors() == []
 
     def test_ssl_ciphers_registered(self):
-        meth = backend._lib.TLS_method()
-        ctx = backend._lib.SSL_CTX_new(meth)
-        assert ctx != backend._ffi.NULL
-        backend._lib.SSL_CTX_free(ctx)
+        context = pyopenssl.TLSContext(False)
+        connection = pyopenssl.TLSConnection(context, False)
+        assert connection.cipher_names()
 
     def test_evp_ciphers_registered(self):
-        cipher = backend._lib.EVP_get_cipherbyname(b"aes-256-cbc")
-        assert cipher != backend._ffi.NULL
+        assert backend.cipher_supported(
+            algorithms.AES(b"x" * 32), modes.CBC(b"x" * 16)
+        )
 
 
 class TestOpenSSLRSA:

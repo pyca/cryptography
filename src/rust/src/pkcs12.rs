@@ -99,8 +99,12 @@ pub(crate) fn symmetric_encrypt(
         .getattr(pyo3::intern!(py, "block_size"))?
         .extract()?;
 
-    let mut cipher =
-        ciphers::CipherContext::new(py, algorithm, mode, openssl::symm::Mode::Encrypt)?;
+    let mut cipher = ciphers::CipherContext::new(
+        py,
+        algorithm,
+        mode,
+        openssl_bridge::cipher::Direction::Encrypt,
+    )?;
 
     let mut ciphertext = vec![0; data.len() + (block_size / 8 * 2)];
     let n = cipher.update_into(py, data, &mut ciphertext)?;
@@ -367,13 +371,13 @@ fn serialize_safebags<'p>(
     let salt =
         crate::backend::rand::get_rand_bytes(py, 8)?.extract::<pyo3::pybacked::PyBackedBytes>()?;
     let mac_algorithm_md =
-        hashes::message_digest_from_algorithm(py, &encryption_details.mac_algorithm)?;
+        hashes::bridge_digest_from_algorithm(py, &encryption_details.mac_algorithm)?;
     let mac_key = cryptography_crypto::pkcs12::kdf(
         password,
         &salt,
         cryptography_crypto::pkcs12::KDF_MAC_KEY_ID,
         encryption_details.mac_kdf_iter,
-        mac_algorithm_md.size(),
+        mac_algorithm_md.output_size()?,
         mac_algorithm_md,
     )?;
     let mac_digest = {
@@ -558,32 +562,43 @@ fn decode_p12(
     py: pyo3::Python<'_>,
     data: CffiBuf<'_>,
     password: Option<CffiBuf<'_>>,
-) -> CryptographyResult<openssl::pkcs12::ParsedPkcs12_2> {
-    let p12 = openssl::pkcs12::Pkcs12::from_der(data.as_bytes()).map_err(|_| {
-        pyo3::exceptions::PyValueError::new_err("Could not deserialize PKCS12 data")
-    })?;
-
-    let password = if let Some(p) = password.as_ref() {
-        std::str::from_utf8(p.as_bytes())
-            .map_err(|_| pyo3::exceptions::PyUnicodeDecodeError::new_err(()))?
-    } else {
-        // Treat `password=None` the same as empty string. They're actually
-        // not the same in PKCS#12, but OpenSSL transparently handles them the
-        // same.
-        ""
-    };
-    // PKCS12_parse runs the MAC and PBE KDFs for however many iterations
-    // the bundle specifies, which can take a while, so don't hold the GIL.
+) -> CryptographyResult<openssl_bridge::containers::ParsedPkcs12> {
+    // Native password-based decoding runs without the GIL. Snapshot both inputs
+    // first: a Python buffer may otherwise be mutated while native code reads it.
+    let data = openssl_bridge::secret::SecretBytes::from(data.as_bytes().to_vec());
+    let password_bytes = password.as_ref().map_or(&[][..], |p| p.as_bytes());
+    std::str::from_utf8(password_bytes)
+        .map_err(|_| pyo3::exceptions::PyUnicodeDecodeError::new_err(()))?;
+    if password_bytes.contains(&0) {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "PKCS12 password must not contain NUL bytes",
+        )
+        .into());
+    }
+    let mut password_bytes = password_bytes.to_vec();
+    password_bytes.push(0);
+    let password = openssl_bridge::secret::SecretBytes::from(password_bytes);
     let parsed = py
-        .detach(|| p12.parse2(password))
-        .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid password or PKCS12 data"))?;
-
-    if let Err(e) = asn1::parse_single::<cryptography_x509::pkcs12::Pfx<'_>>(data.as_bytes()) {
+        .detach(|| {
+            openssl_bridge::containers::parse_pkcs12(
+                data.as_ref(),
+                Some(std::ffi::CStr::from_bytes_with_nul(password.as_ref()).unwrap()),
+            )
+        })
+        .map_err(|error| match error {
+            openssl_bridge::containers::Pkcs12Error::Encoding(_) => CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Could not deserialize PKCS12 data"),
+            ),
+            openssl_bridge::containers::Pkcs12Error::PasswordOrData(_) => CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Invalid password or PKCS12 data"),
+            ),
+            openssl_bridge::containers::Pkcs12Error::Output(error) => error.into(),
+        })?;
+    if let Err(e) = asn1::parse_single::<cryptography_x509::pkcs12::Pfx<'_>>(data.as_ref()) {
         let warning_cls = pyo3::exceptions::PyUserWarning::type_object(py);
         let message = std::ffi::CString::new(format!("PKCS#12 bundle could not be parsed as DER, falling back to parsing as BER. In the future, this may become an exception. Error details: {e}")).unwrap();
         pyo3::PyErr::warn(py, &warning_cls, &message, 1)?;
     }
-
     Ok(parsed)
 }
 
@@ -603,14 +618,13 @@ fn load_key_and_certificates<'p>(
 
     let p12 = decode_p12(py, data, password)?;
 
-    let private_key = if let Some(pkey) = p12.pkey {
-        let pkey_bytes = pkey.private_key_to_pkcs8()?;
-        keys::load_der_private_key_bytes(py, &pkey_bytes, None, false)?
+    let private_key = if let Some(pkey_bytes) = p12.private_key {
+        keys::load_der_private_key_bytes(py, pkey_bytes.as_ref(), None, false)?
     } else {
         py.None().into_bound(py)
     };
-    let cert = if let Some(ossl_cert) = p12.cert {
-        let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
+    let cert = if let Some(ossl_cert) = p12.certificate {
+        let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.der).unbind();
         Some(x509::certificate::load_der_x509_certificate(
             py, cert_der, None,
         )?)
@@ -618,7 +632,8 @@ fn load_key_and_certificates<'p>(
         None
     };
     let additional_certs = pyo3::types::PyList::empty(py);
-    if let Some(ossl_certs) = p12.ca {
+    {
+        let ossl_certs = p12.additional_certificates;
         cfg_if::cfg_if! {
             if #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))] {
                 let it = ossl_certs.iter();
@@ -628,7 +643,7 @@ fn load_key_and_certificates<'p>(
         };
 
         for ossl_cert in it {
-            let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
+            let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.der).unbind();
             let cert = x509::certificate::load_der_x509_certificate(py, cert_der, None)?;
             additional_certs.append(cert)?;
         }
@@ -649,17 +664,17 @@ fn load_pkcs12<'p>(
 
     let p12 = decode_p12(py, data, password)?;
 
-    let private_key = if let Some(pkey) = p12.pkey {
-        let pkey_bytes = pkey.private_key_to_pkcs8()?;
-        keys::load_der_private_key_bytes(py, &pkey_bytes, None, false)?
+    let private_key = if let Some(pkey_bytes) = p12.private_key {
+        keys::load_der_private_key_bytes(py, pkey_bytes.as_ref(), None, false)?
     } else {
         py.None().into_bound(py)
     };
-    let cert = if let Some(ossl_cert) = p12.cert {
-        let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
+    let cert = if let Some(ossl_cert) = p12.certificate {
+        let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.der).unbind();
         let cert = x509::certificate::load_der_x509_certificate(py, cert_der, None)?;
         let alias = ossl_cert
-            .alias()
+            .alias
+            .as_deref()
             .map(|a| pyo3::types::PyBytes::new(py, a).unbind());
 
         PKCS12Certificate::new(pyo3::Py::new(py, cert)?, alias)
@@ -670,7 +685,8 @@ fn load_pkcs12<'p>(
         py.None()
     };
     let additional_certs = pyo3::types::PyList::empty(py);
-    if let Some(ossl_certs) = p12.ca {
+    {
+        let ossl_certs = p12.additional_certificates;
         cfg_if::cfg_if! {
             if #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))] {
                 let it = ossl_certs.iter();
@@ -680,10 +696,11 @@ fn load_pkcs12<'p>(
         };
 
         for ossl_cert in it {
-            let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
+            let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.der).unbind();
             let cert = x509::certificate::load_der_x509_certificate(py, cert_der, None)?;
             let alias = ossl_cert
-                .alias()
+                .alias
+                .as_deref()
                 .map(|a| pyo3::types::PyBytes::new(py, a).unbind());
 
             let p12_cert = PKCS12Certificate::new(pyo3::Py::new(py, cert)?, alias);

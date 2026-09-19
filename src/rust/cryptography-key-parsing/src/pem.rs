@@ -36,9 +36,9 @@ pub fn decrypt_pem<'a>(
             // There's no RFC that defines these, but these are the ones in
             // very wide use that we support.
             let cipher = match cipher_algorithm {
-                "AES-128-CBC" => openssl::symm::Cipher::aes_128_cbc(),
-                "AES-256-CBC" => openssl::symm::Cipher::aes_256_cbc(),
-                "DES-EDE3-CBC" => openssl::symm::Cipher::des_ede3_cbc(),
+                "AES-128-CBC" => openssl_bridge::cipher::Cipher::Aes128Cbc,
+                "AES-256-CBC" => openssl_bridge::cipher::Cipher::Aes256Cbc,
+                "DES-EDE3-CBC" => openssl_bridge::cipher::Cipher::TripleDesCbc,
                 _ => return Err(KeyParsingError::PemUnsupportedCipher),
             };
 
@@ -46,18 +46,19 @@ pub fn decrypt_pem<'a>(
                 .ok_or(KeyParsingError::PemInvalidIv)?;
 
             let key = cryptography_crypto::pbkdf1::openssl_kdf(
-                openssl::hash::MessageDigest::md5(),
+                openssl_bridge::hash::Algorithm::from_name("md5")?,
                 password,
                 iv.get(..8)
                     .ok_or(KeyParsingError::PemInvalidIv)?
                     .try_into()
                     .unwrap(),
-                cipher.key_len(),
+                cipher.default_key_size()?,
             )
             .map_err(|_| KeyParsingError::PemUnableToDeriveKey)?;
 
-            let decrypted = openssl::symm::decrypt(cipher, &key, Some(&iv), pem.contents())
-                .map_err(|_| KeyParsingError::IncorrectPassword)?;
+            let decrypted =
+                openssl_bridge::cipher::decrypt_padded(cipher, &key, &iv, pem.contents())
+                    .map_err(|_| KeyParsingError::IncorrectPassword)?;
 
             Ok((Cow::Owned(decrypted), true))
         }
@@ -86,22 +87,22 @@ pub fn encrypt_pem(
         return Ok(pem::encode_config(&pem, ENCODE_CONFIG).into_bytes());
     }
 
-    let cipher = openssl::symm::Cipher::aes_256_cbc();
-    let iv_len = cipher.iv_len().unwrap();
+    let cipher = openssl_bridge::cipher::Cipher::Aes256Cbc;
+    let iv_len = cipher.iv_size()?;
     let mut iv = vec![0u8; iv_len];
-    cryptography_openssl::rand::rand_bytes(&mut iv)?;
+    openssl_bridge::rand::fill_private(&mut iv)?;
 
     // Derive key using MD5-based KDF (for compatibility with traditional
     // OpenSSL format)
     let key = cryptography_crypto::pbkdf1::openssl_kdf(
-        openssl::hash::MessageDigest::md5(),
+        openssl_bridge::hash::Algorithm::from_name("md5")?,
         password,
         iv.get(..8).unwrap().try_into().unwrap(),
-        cipher.key_len(),
+        cipher.default_key_size()?,
     )?;
 
     // Encrypt the DER data
-    let encrypted = openssl::symm::encrypt(cipher, &key, Some(&iv), der_data)?;
+    let encrypted = openssl_bridge::cipher::encrypt_padded(cipher, &key, &iv, der_data)?;
 
     let iv_hex = cryptography_crypto::encoding::hex_encode(&iv);
 

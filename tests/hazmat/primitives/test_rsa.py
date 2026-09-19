@@ -12,6 +12,7 @@ import typing
 import pytest
 
 from cryptography.exceptions import InvalidSignature, _Reasons
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
@@ -1778,7 +1779,7 @@ class TestRSADecryption:
     @pytest.mark.supported(
         only_if=lambda backend: (
             backend.rsa_encryption_supported(padding.PKCS1v15())
-            and not backend._lib.Cryptography_HAS_IMPLICIT_RSA_REJECTION
+            and not rust_openssl.has_implicit_rsa_rejection()
         ),
         skip_message="Does not support PKCS1v1.5.",
     )

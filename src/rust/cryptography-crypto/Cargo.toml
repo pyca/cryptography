@@ -8,4 +8,4 @@ rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
-openssl.workspace = true
+openssl-bridge.workspace = true

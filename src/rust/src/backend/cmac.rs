@@ -15,15 +15,15 @@ use crate::{exceptions, types};
     name = "CMAC"
 )]
 pub(crate) struct Cmac {
-    ctx: Option<cryptography_openssl::cmac::Cmac>,
+    ctx: Option<openssl_bridge::mac::Cmac>,
 }
 
 impl Cmac {
     pub(crate) fn new_bytes(
         key: &[u8],
-        cipher: &openssl::cipher::CipherRef,
+        cipher: openssl_bridge::mac::CmacCipher,
     ) -> CryptographyResult<Self> {
-        let ctx = cryptography_openssl::cmac::Cmac::new(key, cipher)?;
+        let ctx = openssl_bridge::mac::Cmac::new(cipher, key)?;
         Ok(Cmac { ctx: Some(ctx) })
     }
 
@@ -51,6 +51,7 @@ impl Cmac {
             .getattr(pyo3::intern!(py, "key"))?
             .extract::<CffiBuf<'_>>()?;
 
+        let cipher = openssl_bridge::mac::CmacCipher::from_cbc_name(cipher.name)?;
         Cmac::new_bytes(key.as_bytes(), cipher)
     }
 
@@ -59,22 +60,23 @@ impl Cmac {
         Ok(())
     }
 
-    pub(crate) fn finalize_bytes(
-        &mut self,
-    ) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
-        let data = self.get_mut_ctx()?.finish()?;
-        self.ctx = None;
+    pub(crate) fn finalize_bytes(&mut self) -> CryptographyResult<Vec<u8>> {
+        let data = self
+            .ctx
+            .take()
+            .ok_or_else(exceptions::already_finalized_error)?
+            .finish()?;
         Ok(data)
     }
 
-    fn get_ctx(&self) -> CryptographyResult<&cryptography_openssl::cmac::Cmac> {
+    fn get_ctx(&self) -> CryptographyResult<&openssl_bridge::mac::Cmac> {
         if let Some(ctx) = self.ctx.as_ref() {
             return Ok(ctx);
         }
         Err(exceptions::already_finalized_error())
     }
 
-    fn get_mut_ctx(&mut self) -> CryptographyResult<&mut cryptography_openssl::cmac::Cmac> {
+    fn get_mut_ctx(&mut self) -> CryptographyResult<&mut openssl_bridge::mac::Cmac> {
         if let Some(ctx) = self.ctx.as_mut() {
             return Ok(ctx);
         }
@@ -120,7 +122,7 @@ impl Cmac {
 
     pub(crate) fn copy(&self) -> CryptographyResult<Cmac> {
         Ok(Cmac {
-            ctx: Some(self.get_ctx()?.copy()?),
+            ctx: Some(self.get_ctx()?.try_clone()?),
         })
     }
 }

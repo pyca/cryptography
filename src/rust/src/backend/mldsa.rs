@@ -2,7 +2,6 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use cryptography_openssl::mldsa::MlDsaVariant;
 use pyo3::types::PyAnyMethods;
 
 use crate::backend::utils;
@@ -18,7 +17,7 @@ const MAX_CONTEXT_BYTES: usize = 255;
     name = "MLDSA44PrivateKey"
 )]
 pub(crate) struct MlDsa44PrivateKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Private>,
+    key: openssl_bridge::mldsa::PrivateKey,
 }
 
 #[pyo3::pyclass(
@@ -27,53 +26,51 @@ pub(crate) struct MlDsa44PrivateKey {
     name = "MLDSA44PublicKey"
 )]
 pub(crate) struct MlDsa44PublicKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Public>,
+    key: openssl_bridge::mldsa::PublicKey,
 }
 
-pub(crate) fn mldsa44_private_key_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
-) -> MlDsa44PrivateKey {
-    MlDsa44PrivateKey {
-        pkey: pkey.to_owned(),
-    }
+pub(crate) fn mldsa44_private_key_from_key(
+    key: openssl_bridge::mldsa::PrivateKey,
+) -> CryptographyResult<MlDsa44PrivateKey> {
+    Ok(MlDsa44PrivateKey { key })
 }
 
-pub(crate) fn mldsa44_public_key_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
-) -> MlDsa44PublicKey {
-    MlDsa44PublicKey {
-        pkey: pkey.to_owned(),
-    }
+pub(crate) fn mldsa44_public_key_from_key(
+    key: openssl_bridge::mldsa::PublicKey,
+) -> CryptographyResult<MlDsa44PublicKey> {
+    Ok(MlDsa44PublicKey { key })
 }
 
 #[pyo3::pyfunction]
 fn generate_mldsa44_key() -> CryptographyResult<MlDsa44PrivateKey> {
-    let mut seed = [0u8; 32];
-    cryptography_openssl::rand::rand_bytes(&mut seed)?;
-    let pkey = cryptography_openssl::mldsa::new_raw_private_key(MlDsaVariant::MlDsa44, &seed)?;
-    Ok(MlDsa44PrivateKey { pkey })
+    Ok(MlDsa44PrivateKey {
+        key: openssl_bridge::mldsa::PrivateKey::generate(openssl_bridge::mldsa::Variant::MlDsa44)?,
+    })
 }
 
 #[pyo3::pyfunction]
 fn from_mldsa44_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa44PrivateKey> {
-    let pkey =
-        cryptography_openssl::mldsa::new_raw_private_key(MlDsaVariant::MlDsa44, data.as_bytes())
+    let seed = data.as_bytes().try_into().map_err(|_| {
+        pyo3::exceptions::PyValueError::new_err("An ML-DSA-44 seed is 32 bytes long")
+    })?;
+    let key =
+        openssl_bridge::mldsa::PrivateKey::from_seed(openssl_bridge::mldsa::Variant::MlDsa44, seed)
             .map_err(|_| {
                 pyo3::exceptions::PyValueError::new_err("An ML-DSA-44 seed is 32 bytes long")
             })?;
-    Ok(MlDsa44PrivateKey { pkey })
+    Ok(MlDsa44PrivateKey { key })
 }
 
 #[pyo3::pyfunction]
 fn from_mldsa44_public_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa44PublicKey> {
-    let pkey =
-        cryptography_openssl::mldsa::new_raw_public_key(MlDsaVariant::MlDsa44, data.as_bytes())
-            .map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err(
-                    "An ML-DSA-44 public key is 1312 bytes long",
-                )
-            })?;
-    Ok(MlDsa44PublicKey { pkey })
+    let key = openssl_bridge::mldsa::PublicKey::from_bytes(
+        openssl_bridge::mldsa::Variant::MlDsa44,
+        data.as_bytes(),
+    )
+    .map_err(|_| {
+        pyo3::exceptions::PyValueError::new_err("An ML-DSA-44 public key is 1312 bytes long")
+    })?;
+    Ok(MlDsa44PublicKey { key })
 }
 
 #[pyo3::pymethods]
@@ -91,9 +88,9 @@ impl MlDsa44PrivateKey {
                 pyo3::exceptions::PyValueError::new_err("Context must be at most 255 bytes"),
             ));
         }
-        let data_bytes = data.as_bytes();
-        let sig =
-            py.detach(|| cryptography_openssl::mldsa::sign(&self.pkey, data_bytes, ctx_bytes))?;
+        let data_bytes = data.as_bytes().to_vec();
+        let ctx_bytes = ctx_bytes.to_vec();
+        let sig = py.detach(|| self.key.sign(&data_bytes, &ctx_bytes))?;
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
@@ -102,23 +99,22 @@ impl MlDsa44PrivateKey {
         py: pyo3::Python<'p>,
         mu: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
+        if mu.as_bytes().len() != 64 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"),
             ));
         }
-        let mu_bytes = mu.as_bytes();
-        let sig = py.detach(|| cryptography_openssl::mldsa::sign_mu(&self.pkey, mu_bytes))?;
+        let mu_bytes: [u8; 64] = mu
+            .as_bytes()
+            .try_into()
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"))?;
+        let sig = py.detach(|| self.key.sign_mu(&mu_bytes))?;
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
     fn public_key(&self) -> CryptographyResult<MlDsa44PublicKey> {
-        let raw_bytes = self.pkey.raw_public_key()?;
         Ok(MlDsa44PublicKey {
-            pkey: cryptography_openssl::mldsa::new_raw_public_key(
-                MlDsaVariant::MlDsa44,
-                &raw_bytes,
-            )?,
+            key: self.key.public_key(),
         })
     }
 
@@ -126,8 +122,8 @@ impl MlDsa44PrivateKey {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let seed = cryptography_openssl::mldsa::mldsa_seed_raw(&self.pkey)?;
-        Ok(pyo3::types::PyBytes::new(py, &seed))
+        let seed = self.key.seed();
+        Ok(pyo3::types::PyBytes::new(py, seed))
     }
 
     fn private_bytes<'p>(
@@ -146,7 +142,7 @@ impl MlDsa44PrivateKey {
         utils::pkey_private_bytes(
             py,
             slf,
-            &slf.borrow().pkey,
+            &slf.borrow().serialization_key()?,
             encoding,
             format,
             encryption_algorithm,
@@ -175,15 +171,18 @@ impl MlDsa44PublicKey {
         signature: CffiBuf<'_>,
         mu: CffiBuf<'_>,
     ) -> CryptographyResult<()> {
-        if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
+        if mu.as_bytes().len() != 64 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"),
             ));
         }
-        let sig_bytes = signature.as_bytes();
-        let mu_bytes = mu.as_bytes();
+        let sig_bytes = signature.as_bytes().to_vec();
+        let mu_bytes: [u8; 64] = mu
+            .as_bytes()
+            .try_into()
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"))?;
         let valid = py
-            .detach(|| cryptography_openssl::mldsa::verify_mu(&self.pkey, sig_bytes, mu_bytes))
+            .detach(|| self.key.verify_mu(&mu_bytes, &sig_bytes))
             .unwrap_or(false);
 
         if !valid {
@@ -209,12 +208,11 @@ impl MlDsa44PublicKey {
                 pyo3::exceptions::PyValueError::new_err("Context must be at most 255 bytes"),
             ));
         }
-        let sig_bytes = signature.as_bytes();
-        let data_bytes = data.as_bytes();
+        let sig_bytes = signature.as_bytes().to_vec();
+        let data_bytes = data.as_bytes().to_vec();
+        let ctx_bytes = ctx_bytes.to_vec();
         let valid = py
-            .detach(|| {
-                cryptography_openssl::mldsa::verify(&self.pkey, sig_bytes, data_bytes, ctx_bytes)
-            })
+            .detach(|| self.key.verify(&data_bytes, &ctx_bytes, &sig_bytes))
             .unwrap_or(false);
 
         if !valid {
@@ -230,8 +228,8 @@ impl MlDsa44PublicKey {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let raw_bytes = self.pkey.raw_public_key()?;
-        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
+        let raw_bytes = self.key.as_bytes();
+        Ok(pyo3::types::PyBytes::new(py, raw_bytes))
     }
 
     fn public_bytes<'p>(
@@ -240,11 +238,19 @@ impl MlDsa44PublicKey {
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PublicFormat,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, true)
+        utils::pkey_public_bytes(
+            py,
+            slf,
+            &slf.borrow().serialization_key()?,
+            encoding,
+            format,
+            true,
+            true,
+        )
     }
 
     fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> bool {
-        self.pkey.public_eq(&other.pkey)
+        self.key.as_bytes() == other.key.as_bytes()
     }
 
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
@@ -265,7 +271,7 @@ impl MlDsa44PublicKey {
     name = "MLDSA65PrivateKey"
 )]
 pub(crate) struct MlDsa65PrivateKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Private>,
+    key: openssl_bridge::mldsa::PrivateKey,
 }
 
 #[pyo3::pyclass(
@@ -274,53 +280,51 @@ pub(crate) struct MlDsa65PrivateKey {
     name = "MLDSA65PublicKey"
 )]
 pub(crate) struct MlDsa65PublicKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Public>,
+    key: openssl_bridge::mldsa::PublicKey,
 }
 
-pub(crate) fn mldsa65_private_key_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
-) -> MlDsa65PrivateKey {
-    MlDsa65PrivateKey {
-        pkey: pkey.to_owned(),
-    }
+pub(crate) fn mldsa65_private_key_from_key(
+    key: openssl_bridge::mldsa::PrivateKey,
+) -> CryptographyResult<MlDsa65PrivateKey> {
+    Ok(MlDsa65PrivateKey { key })
 }
 
-pub(crate) fn mldsa65_public_key_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
-) -> MlDsa65PublicKey {
-    MlDsa65PublicKey {
-        pkey: pkey.to_owned(),
-    }
+pub(crate) fn mldsa65_public_key_from_key(
+    key: openssl_bridge::mldsa::PublicKey,
+) -> CryptographyResult<MlDsa65PublicKey> {
+    Ok(MlDsa65PublicKey { key })
 }
 
 #[pyo3::pyfunction]
 fn generate_mldsa65_key() -> CryptographyResult<MlDsa65PrivateKey> {
-    let mut seed = [0u8; 32];
-    cryptography_openssl::rand::rand_bytes(&mut seed)?;
-    let pkey = cryptography_openssl::mldsa::new_raw_private_key(MlDsaVariant::MlDsa65, &seed)?;
-    Ok(MlDsa65PrivateKey { pkey })
+    Ok(MlDsa65PrivateKey {
+        key: openssl_bridge::mldsa::PrivateKey::generate(openssl_bridge::mldsa::Variant::MlDsa65)?,
+    })
 }
 
 #[pyo3::pyfunction]
 fn from_mldsa65_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa65PrivateKey> {
-    let pkey =
-        cryptography_openssl::mldsa::new_raw_private_key(MlDsaVariant::MlDsa65, data.as_bytes())
+    let seed = data.as_bytes().try_into().map_err(|_| {
+        pyo3::exceptions::PyValueError::new_err("An ML-DSA-65 seed is 32 bytes long")
+    })?;
+    let key =
+        openssl_bridge::mldsa::PrivateKey::from_seed(openssl_bridge::mldsa::Variant::MlDsa65, seed)
             .map_err(|_| {
                 pyo3::exceptions::PyValueError::new_err("An ML-DSA-65 seed is 32 bytes long")
             })?;
-    Ok(MlDsa65PrivateKey { pkey })
+    Ok(MlDsa65PrivateKey { key })
 }
 
 #[pyo3::pyfunction]
 fn from_mldsa65_public_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa65PublicKey> {
-    let pkey =
-        cryptography_openssl::mldsa::new_raw_public_key(MlDsaVariant::MlDsa65, data.as_bytes())
-            .map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err(
-                    "An ML-DSA-65 public key is 1952 bytes long",
-                )
-            })?;
-    Ok(MlDsa65PublicKey { pkey })
+    let key = openssl_bridge::mldsa::PublicKey::from_bytes(
+        openssl_bridge::mldsa::Variant::MlDsa65,
+        data.as_bytes(),
+    )
+    .map_err(|_| {
+        pyo3::exceptions::PyValueError::new_err("An ML-DSA-65 public key is 1952 bytes long")
+    })?;
+    Ok(MlDsa65PublicKey { key })
 }
 
 #[pyo3::pymethods]
@@ -338,9 +342,9 @@ impl MlDsa65PrivateKey {
                 pyo3::exceptions::PyValueError::new_err("Context must be at most 255 bytes"),
             ));
         }
-        let data_bytes = data.as_bytes();
-        let sig =
-            py.detach(|| cryptography_openssl::mldsa::sign(&self.pkey, data_bytes, ctx_bytes))?;
+        let data_bytes = data.as_bytes().to_vec();
+        let ctx_bytes = ctx_bytes.to_vec();
+        let sig = py.detach(|| self.key.sign(&data_bytes, &ctx_bytes))?;
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
@@ -349,23 +353,22 @@ impl MlDsa65PrivateKey {
         py: pyo3::Python<'p>,
         mu: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
+        if mu.as_bytes().len() != 64 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"),
             ));
         }
-        let mu_bytes = mu.as_bytes();
-        let sig = py.detach(|| cryptography_openssl::mldsa::sign_mu(&self.pkey, mu_bytes))?;
+        let mu_bytes: [u8; 64] = mu
+            .as_bytes()
+            .try_into()
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"))?;
+        let sig = py.detach(|| self.key.sign_mu(&mu_bytes))?;
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
     fn public_key(&self) -> CryptographyResult<MlDsa65PublicKey> {
-        let raw_bytes = self.pkey.raw_public_key()?;
         Ok(MlDsa65PublicKey {
-            pkey: cryptography_openssl::mldsa::new_raw_public_key(
-                MlDsaVariant::MlDsa65,
-                &raw_bytes,
-            )?,
+            key: self.key.public_key(),
         })
     }
 
@@ -373,8 +376,8 @@ impl MlDsa65PrivateKey {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let seed = cryptography_openssl::mldsa::mldsa_seed_raw(&self.pkey)?;
-        Ok(pyo3::types::PyBytes::new(py, &seed))
+        let seed = self.key.seed();
+        Ok(pyo3::types::PyBytes::new(py, seed))
     }
 
     fn private_bytes<'p>(
@@ -396,7 +399,7 @@ impl MlDsa65PrivateKey {
         utils::pkey_private_bytes(
             py,
             slf,
-            &slf.borrow().pkey,
+            &slf.borrow().serialization_key()?,
             encoding,
             format,
             encryption_algorithm,
@@ -425,15 +428,18 @@ impl MlDsa65PublicKey {
         signature: CffiBuf<'_>,
         mu: CffiBuf<'_>,
     ) -> CryptographyResult<()> {
-        if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
+        if mu.as_bytes().len() != 64 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"),
             ));
         }
-        let sig_bytes = signature.as_bytes();
-        let mu_bytes = mu.as_bytes();
+        let sig_bytes = signature.as_bytes().to_vec();
+        let mu_bytes: [u8; 64] = mu
+            .as_bytes()
+            .try_into()
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"))?;
         let valid = py
-            .detach(|| cryptography_openssl::mldsa::verify_mu(&self.pkey, sig_bytes, mu_bytes))
+            .detach(|| self.key.verify_mu(&mu_bytes, &sig_bytes))
             .unwrap_or(false);
 
         if !valid {
@@ -459,12 +465,11 @@ impl MlDsa65PublicKey {
                 pyo3::exceptions::PyValueError::new_err("Context must be at most 255 bytes"),
             ));
         }
-        let sig_bytes = signature.as_bytes();
-        let data_bytes = data.as_bytes();
+        let sig_bytes = signature.as_bytes().to_vec();
+        let data_bytes = data.as_bytes().to_vec();
+        let ctx_bytes = ctx_bytes.to_vec();
         let valid = py
-            .detach(|| {
-                cryptography_openssl::mldsa::verify(&self.pkey, sig_bytes, data_bytes, ctx_bytes)
-            })
+            .detach(|| self.key.verify(&data_bytes, &ctx_bytes, &sig_bytes))
             .unwrap_or(false);
 
         if !valid {
@@ -480,8 +485,8 @@ impl MlDsa65PublicKey {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let raw_bytes = self.pkey.raw_public_key()?;
-        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
+        let raw_bytes = self.key.as_bytes();
+        Ok(pyo3::types::PyBytes::new(py, raw_bytes))
     }
 
     fn public_bytes<'p>(
@@ -490,11 +495,19 @@ impl MlDsa65PublicKey {
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PublicFormat,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, true)
+        utils::pkey_public_bytes(
+            py,
+            slf,
+            &slf.borrow().serialization_key()?,
+            encoding,
+            format,
+            true,
+            true,
+        )
     }
 
     fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> bool {
-        self.pkey.public_eq(&other.pkey)
+        self.key.as_bytes() == other.key.as_bytes()
     }
 
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
@@ -515,7 +528,7 @@ impl MlDsa65PublicKey {
     name = "MLDSA87PrivateKey"
 )]
 pub(crate) struct MlDsa87PrivateKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Private>,
+    key: openssl_bridge::mldsa::PrivateKey,
 }
 
 #[pyo3::pyclass(
@@ -524,53 +537,51 @@ pub(crate) struct MlDsa87PrivateKey {
     name = "MLDSA87PublicKey"
 )]
 pub(crate) struct MlDsa87PublicKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Public>,
+    key: openssl_bridge::mldsa::PublicKey,
 }
 
-pub(crate) fn mldsa87_private_key_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
-) -> MlDsa87PrivateKey {
-    MlDsa87PrivateKey {
-        pkey: pkey.to_owned(),
-    }
+pub(crate) fn mldsa87_private_key_from_key(
+    key: openssl_bridge::mldsa::PrivateKey,
+) -> CryptographyResult<MlDsa87PrivateKey> {
+    Ok(MlDsa87PrivateKey { key })
 }
 
-pub(crate) fn mldsa87_public_key_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
-) -> MlDsa87PublicKey {
-    MlDsa87PublicKey {
-        pkey: pkey.to_owned(),
-    }
+pub(crate) fn mldsa87_public_key_from_key(
+    key: openssl_bridge::mldsa::PublicKey,
+) -> CryptographyResult<MlDsa87PublicKey> {
+    Ok(MlDsa87PublicKey { key })
 }
 
 #[pyo3::pyfunction]
 fn generate_mldsa87_key() -> CryptographyResult<MlDsa87PrivateKey> {
-    let mut seed = [0u8; 32];
-    cryptography_openssl::rand::rand_bytes(&mut seed)?;
-    let pkey = cryptography_openssl::mldsa::new_raw_private_key(MlDsaVariant::MlDsa87, &seed)?;
-    Ok(MlDsa87PrivateKey { pkey })
+    Ok(MlDsa87PrivateKey {
+        key: openssl_bridge::mldsa::PrivateKey::generate(openssl_bridge::mldsa::Variant::MlDsa87)?,
+    })
 }
 
 #[pyo3::pyfunction]
 fn from_mldsa87_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa87PrivateKey> {
-    let pkey =
-        cryptography_openssl::mldsa::new_raw_private_key(MlDsaVariant::MlDsa87, data.as_bytes())
+    let seed = data.as_bytes().try_into().map_err(|_| {
+        pyo3::exceptions::PyValueError::new_err("An ML-DSA-87 seed is 32 bytes long")
+    })?;
+    let key =
+        openssl_bridge::mldsa::PrivateKey::from_seed(openssl_bridge::mldsa::Variant::MlDsa87, seed)
             .map_err(|_| {
                 pyo3::exceptions::PyValueError::new_err("An ML-DSA-87 seed is 32 bytes long")
             })?;
-    Ok(MlDsa87PrivateKey { pkey })
+    Ok(MlDsa87PrivateKey { key })
 }
 
 #[pyo3::pyfunction]
 fn from_mldsa87_public_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa87PublicKey> {
-    let pkey =
-        cryptography_openssl::mldsa::new_raw_public_key(MlDsaVariant::MlDsa87, data.as_bytes())
-            .map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err(
-                    "An ML-DSA-87 public key is 2592 bytes long",
-                )
-            })?;
-    Ok(MlDsa87PublicKey { pkey })
+    let key = openssl_bridge::mldsa::PublicKey::from_bytes(
+        openssl_bridge::mldsa::Variant::MlDsa87,
+        data.as_bytes(),
+    )
+    .map_err(|_| {
+        pyo3::exceptions::PyValueError::new_err("An ML-DSA-87 public key is 2592 bytes long")
+    })?;
+    Ok(MlDsa87PublicKey { key })
 }
 
 #[pyo3::pymethods]
@@ -588,9 +599,9 @@ impl MlDsa87PrivateKey {
                 pyo3::exceptions::PyValueError::new_err("Context must be at most 255 bytes"),
             ));
         }
-        let data_bytes = data.as_bytes();
-        let sig =
-            py.detach(|| cryptography_openssl::mldsa::sign(&self.pkey, data_bytes, ctx_bytes))?;
+        let data_bytes = data.as_bytes().to_vec();
+        let ctx_bytes = ctx_bytes.to_vec();
+        let sig = py.detach(|| self.key.sign(&data_bytes, &ctx_bytes))?;
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
@@ -599,23 +610,22 @@ impl MlDsa87PrivateKey {
         py: pyo3::Python<'p>,
         mu: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
+        if mu.as_bytes().len() != 64 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"),
             ));
         }
-        let mu_bytes = mu.as_bytes();
-        let sig = py.detach(|| cryptography_openssl::mldsa::sign_mu(&self.pkey, mu_bytes))?;
+        let mu_bytes: [u8; 64] = mu
+            .as_bytes()
+            .try_into()
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"))?;
+        let sig = py.detach(|| self.key.sign_mu(&mu_bytes))?;
         Ok(pyo3::types::PyBytes::new(py, &sig))
     }
 
     fn public_key(&self) -> CryptographyResult<MlDsa87PublicKey> {
-        let raw_bytes = self.pkey.raw_public_key()?;
         Ok(MlDsa87PublicKey {
-            pkey: cryptography_openssl::mldsa::new_raw_public_key(
-                MlDsaVariant::MlDsa87,
-                &raw_bytes,
-            )?,
+            key: self.key.public_key(),
         })
     }
 
@@ -623,8 +633,8 @@ impl MlDsa87PrivateKey {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let seed = cryptography_openssl::mldsa::mldsa_seed_raw(&self.pkey)?;
-        Ok(pyo3::types::PyBytes::new(py, &seed))
+        let seed = self.key.seed();
+        Ok(pyo3::types::PyBytes::new(py, seed))
     }
 
     fn private_bytes<'p>(
@@ -643,7 +653,7 @@ impl MlDsa87PrivateKey {
         utils::pkey_private_bytes(
             py,
             slf,
-            &slf.borrow().pkey,
+            &slf.borrow().serialization_key()?,
             encoding,
             format,
             encryption_algorithm,
@@ -672,15 +682,18 @@ impl MlDsa87PublicKey {
         signature: CffiBuf<'_>,
         mu: CffiBuf<'_>,
     ) -> CryptographyResult<()> {
-        if mu.as_bytes().len() != cryptography_openssl::mldsa::MLDSA_MU_BYTES {
+        if mu.as_bytes().len() != 64 {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"),
             ));
         }
-        let sig_bytes = signature.as_bytes();
-        let mu_bytes = mu.as_bytes();
+        let sig_bytes = signature.as_bytes().to_vec();
+        let mu_bytes: [u8; 64] = mu
+            .as_bytes()
+            .try_into()
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("mu must be 64 bytes"))?;
         let valid = py
-            .detach(|| cryptography_openssl::mldsa::verify_mu(&self.pkey, sig_bytes, mu_bytes))
+            .detach(|| self.key.verify_mu(&mu_bytes, &sig_bytes))
             .unwrap_or(false);
 
         if !valid {
@@ -706,12 +719,11 @@ impl MlDsa87PublicKey {
                 pyo3::exceptions::PyValueError::new_err("Context must be at most 255 bytes"),
             ));
         }
-        let sig_bytes = signature.as_bytes();
-        let data_bytes = data.as_bytes();
+        let sig_bytes = signature.as_bytes().to_vec();
+        let data_bytes = data.as_bytes().to_vec();
+        let ctx_bytes = ctx_bytes.to_vec();
         let valid = py
-            .detach(|| {
-                cryptography_openssl::mldsa::verify(&self.pkey, sig_bytes, data_bytes, ctx_bytes)
-            })
+            .detach(|| self.key.verify(&data_bytes, &ctx_bytes, &sig_bytes))
             .unwrap_or(false);
 
         if !valid {
@@ -727,8 +739,8 @@ impl MlDsa87PublicKey {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let raw_bytes = self.pkey.raw_public_key()?;
-        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
+        let raw_bytes = self.key.as_bytes();
+        Ok(pyo3::types::PyBytes::new(py, raw_bytes))
     }
 
     fn public_bytes<'p>(
@@ -737,11 +749,19 @@ impl MlDsa87PublicKey {
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PublicFormat,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, true)
+        utils::pkey_public_bytes(
+            py,
+            slf,
+            &slf.borrow().serialization_key()?,
+            encoding,
+            format,
+            true,
+            true,
+        )
     }
 
     fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> bool {
-        self.pkey.public_eq(&other.pkey)
+        self.key.as_bytes() == other.key.as_bytes()
     }
 
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
@@ -759,11 +779,11 @@ impl MlDsa87PublicKey {
 /// Extract the raw public key bytes from any ML-DSA public key object.
 fn mldsa_public_key_raw(public_key: &pyo3::Bound<'_, pyo3::PyAny>) -> CryptographyResult<Vec<u8>> {
     if let Ok(k) = public_key.cast::<MlDsa44PublicKey>() {
-        Ok(k.get().pkey.raw_public_key()?)
+        Ok(k.get().key.as_bytes().to_vec())
     } else if let Ok(k) = public_key.cast::<MlDsa65PublicKey>() {
-        Ok(k.get().pkey.raw_public_key()?)
+        Ok(k.get().key.as_bytes().to_vec())
     } else if let Ok(k) = public_key.cast::<MlDsa87PublicKey>() {
-        Ok(k.get().pkey.raw_public_key()?)
+        Ok(k.get().key.as_bytes().to_vec())
     } else {
         Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err("public_key must be an ML-DSA public key."),
@@ -776,13 +796,15 @@ fn mldsa_public_key_raw(public_key: &pyo3::Bound<'_, pyo3::PyAny>) -> Cryptograp
 /// absorbed later by [`MlDsaMuHasher::update`]. SHAKE256 is unavailable through
 /// the EVP interface on BoringSSL/LibreSSL, so this is only compiled elsewhere.
 #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
-fn mu_hasher_init(raw_pk: &[u8], context: &[u8]) -> CryptographyResult<openssl::hash::Hasher> {
-    let md = openssl::hash::MessageDigest::from_name("shake256")
-        .ok_or_else(openssl::error::ErrorStack::get)?;
+fn mu_hasher_init(
+    raw_pk: &[u8],
+    context: &[u8],
+) -> CryptographyResult<openssl_bridge::hash::Hasher> {
+    let md = openssl_bridge::hash::Algorithm::from_name("shake256")?;
     // tr = SHAKE256(pk, 64)
-    let mut tr = [0u8; cryptography_openssl::mldsa::MLDSA_MU_BYTES];
-    openssl::hash::hash_xof(md, raw_pk, &mut tr)?;
-    let mut ctx = openssl::hash::Hasher::new(md)?;
+    let mut tr = [0; 64];
+    openssl_bridge::hash::digest_xof(md, raw_pk, &mut tr)?;
+    let mut ctx = openssl_bridge::hash::Hasher::new(md)?;
     ctx.update(&tr)?;
     // Pure-ML-DSA M' prefix: domain separator 0x00, then the context.
     ctx.update(&[0x00])?;
@@ -797,19 +819,19 @@ fn mu_hasher_init(raw_pk: &[u8], context: &[u8]) -> CryptographyResult<openssl::
 )]
 pub(crate) struct MlDsaMuHasher {
     #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
-    ctx: Option<openssl::hash::Hasher>,
+    ctx: Option<openssl_bridge::hash::Hasher>,
 }
 
 #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
 impl MlDsaMuHasher {
-    fn get_mut_ctx(&mut self) -> CryptographyResult<&mut openssl::hash::Hasher> {
+    fn get_mut_ctx(&mut self) -> CryptographyResult<&mut openssl_bridge::hash::Hasher> {
         if let Some(ctx) = self.ctx.as_mut() {
             return Ok(ctx);
         }
         Err(exceptions::already_finalized_error())
     }
 
-    fn get_ctx(&self) -> CryptographyResult<&openssl::hash::Hasher> {
+    fn get_ctx(&self) -> CryptographyResult<&openssl_bridge::hash::Hasher> {
         if let Some(ctx) = self.ctx.as_ref() {
             return Ok(ctx);
         }
@@ -862,7 +884,7 @@ impl MlDsaMuHasher {
     #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
     fn copy(&self) -> CryptographyResult<MlDsaMuHasher> {
         Ok(MlDsaMuHasher {
-            ctx: Some(self.get_ctx()?.clone()),
+            ctx: Some(self.get_ctx()?.try_clone()?),
         })
     }
 
@@ -871,14 +893,13 @@ impl MlDsaMuHasher {
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let ctx = self.get_mut_ctx()?;
-        let result =
-            pyo3::types::PyBytes::new_with(py, cryptography_openssl::mldsa::MLDSA_MU_BYTES, |b| {
-                ctx.finish_xof(b).unwrap();
-                Ok(())
-            })?;
-        self.ctx = None;
-        Ok(result)
+        let ctx = self
+            .ctx
+            .take()
+            .ok_or_else(exceptions::already_finalized_error)?;
+        let mut result = [0; 64];
+        ctx.finish_xof(&mut result)?;
+        Ok(pyo3::types::PyBytes::new(py, &result))
     }
 }
 
@@ -892,4 +913,37 @@ pub(crate) mod mldsa {
         MlDsa44PublicKey, MlDsa65PrivateKey, MlDsa65PublicKey, MlDsa87PrivateKey, MlDsa87PublicKey,
         MlDsaMuHasher,
     };
+}
+
+impl MlDsa44PrivateKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PrivateKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PrivateKeyRef::MlDsa(&self.key))
+    }
+}
+impl MlDsa44PublicKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PublicKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PublicKeyRef::MlDsa(&self.key))
+    }
+}
+
+impl MlDsa65PrivateKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PrivateKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PrivateKeyRef::MlDsa(&self.key))
+    }
+}
+impl MlDsa65PublicKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PublicKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PublicKeyRef::MlDsa(&self.key))
+    }
+}
+
+impl MlDsa87PrivateKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PrivateKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PrivateKeyRef::MlDsa(&self.key))
+    }
+}
+impl MlDsa87PublicKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PublicKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PublicKeyRef::MlDsa(&self.key))
+    }
 }

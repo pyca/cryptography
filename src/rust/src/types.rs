@@ -491,18 +491,6 @@ pub static DSA_PUBLIC_KEY: LazyPyImport = LazyPyImport::new(
     &["_DSAPublicKey"],
 );
 
-#[cfg(not(Py_3_11))]
-pub static FFI_FROM_BUFFER: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.bindings._rust",
-    &["_openssl", "ffi", "from_buffer"],
-);
-
-#[cfg(not(Py_3_11))]
-pub static FFI_CAST: LazyPyImport = LazyPyImport::new(
-    "cryptography.hazmat.bindings._rust",
-    &["_openssl", "ffi", "cast"],
-);
-
 pub static BLOCK_CIPHER_ALGORITHM: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.primitives.ciphers",
     &["BlockCipherAlgorithm"],
@@ -594,6 +582,7 @@ pub static CTR: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["CTR"]);
 pub static GCM: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["GCM"]);
+#[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 pub static XTS: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["XTS"]);
 

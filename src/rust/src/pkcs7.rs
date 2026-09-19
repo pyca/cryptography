@@ -16,7 +16,7 @@ use cryptography_x509::csr::Attribute;
 use cryptography_x509::pkcs7::PKCS7_DATA_OID;
 use cryptography_x509::{common, oid, pkcs7};
 #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
-use openssl::pkcs7::Pkcs7;
+use openssl_bridge::containers::Pkcs7Certificates;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
 #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 use pyo3::PyTypeInfo;
@@ -377,7 +377,7 @@ fn check_decrypt_parameters<'p>(
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> Result<(), CryptographyError> {
     // Check if RSA encryption with PKCS1 v1.5 padding is supported (dependent of FIPS mode)
-    if cryptography_openssl::fips::is_enabled() {
+    if openssl_bridge::runtime::is_fips_enabled() {
         return Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err((
                 "RSA with PKCS1 v1.5 padding is not supported by this version of OpenSSL.",
@@ -446,8 +446,12 @@ pub(crate) fn symmetric_decrypt(
         .getattr(pyo3::intern!(py, "block_size"))?
         .extract()?;
 
-    let mut cipher =
-        ciphers::CipherContext::new(py, algorithm, mode, openssl::symm::Mode::Decrypt)?;
+    let mut cipher = ciphers::CipherContext::new(
+        py,
+        algorithm,
+        mode,
+        openssl_bridge::cipher::Direction::Decrypt,
+    )?;
 
     // Decrypt the data
     let mut decrypted_data = vec![0; data.len() + (block_size / 8)];
@@ -726,20 +730,20 @@ fn smime_canonicalize(data: &[u8], text_mode: bool) -> (Cow<'_, [u8]>, Cow<'_, [
 #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
 fn load_pkcs7_certificates(
     py: pyo3::Python<'_>,
-    pkcs7: Pkcs7,
+    pkcs7: Pkcs7Certificates,
 ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyList>> {
-    let nid = pkcs7.type_().map(|t| t.nid());
-    if nid != Some(openssl::nid::Nid::PKCS7_SIGNED) {
-        let nid_string = nid.map_or("empty".to_string(), |n| n.as_raw().to_string());
-        return Err(CryptographyError::from(
-            exceptions::UnsupportedAlgorithm::new_err((
-                format!("Only basic signed structures are currently supported. NID for this data was {nid_string}"),
-                exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
-            )),
-        ));
-    }
-
-    let signed_certificates = pkcs7.signed().and_then(|x| x.certificates());
+    let signed_certificates = match pkcs7 {
+        Pkcs7Certificates::Signed(certificates) => certificates,
+        Pkcs7Certificates::Other(nid) => {
+            let nid_string = nid.map_or("empty".to_string(), |n| n.to_string());
+            return Err(CryptographyError::from(
+                exceptions::UnsupportedAlgorithm::new_err((
+                    format!("Only basic signed structures are currently supported. NID for this data was {nid_string}"),
+                    exceptions::Reasons::UNSUPPORTED_SERIALIZATION,
+                )),
+            ));
+        }
+    };
     match signed_certificates {
         None => Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(
@@ -749,7 +753,7 @@ fn load_pkcs7_certificates(
         Some(certificates) => {
             let result = pyo3::types::PyList::empty(py);
             for c in certificates {
-                let cert_der = pyo3::types::PyBytes::new(py, c.to_der()?.as_slice()).unbind();
+                let cert_der = pyo3::types::PyBytes::new(py, c.as_slice()).unbind();
                 let cert = load_der_x509_certificate(py, cert_der, None)?;
                 result.append(cert)?;
             }
@@ -849,7 +853,7 @@ fn load_der_pkcs7_certificates(
 ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyList>> {
     cfg_if::cfg_if! {
         if #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))] {
-            let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_der(data.as_bytes(py)).map_err(|_| {
+            let pkcs7_decoded = openssl_bridge::containers::parse_pkcs7_certificates(data.as_bytes(py)).map_err(|_| {
                 CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
                     "Unable to parse PKCS7 data",
                 ))

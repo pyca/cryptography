@@ -4,7 +4,6 @@
 
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use std::sync::LazyLock;
 
 use pyo3::types::PyAnyMethods;
 
@@ -19,7 +18,7 @@ use crate::{exceptions, types};
     name = "RSAPrivateKey"
 )]
 pub(crate) struct RsaPrivateKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Private>,
+    pkey: openssl_bridge::rsa::PrivateKey,
 }
 
 #[pyo3::pyclass(
@@ -28,41 +27,43 @@ pub(crate) struct RsaPrivateKey {
     name = "RSAPublicKey"
 )]
 pub(crate) struct RsaPublicKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Public>,
+    pkey: openssl_bridge::rsa::PublicKey,
 }
 
-fn check_rsa_private_key(
-    rsa: &openssl::rsa::Rsa<openssl::pkey::Private>,
-) -> CryptographyResult<()> {
-    if !rsa.check_key().unwrap_or(false) || rsa.p().unwrap().is_even() || rsa.q().unwrap().is_even()
-    {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("Invalid private key"),
-        ));
-    }
-    Ok(())
+fn invalid_private_key() -> pyo3::PyErr {
+    pyo3::exceptions::PyValueError::new_err("Invalid private key")
 }
 
-pub(crate) fn private_key_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
+pub(crate) fn private_key_from_components(
+    parts: openssl_bridge::rsa::PrivateComponents<'_>,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<RsaPrivateKey> {
-    if !unsafe_skip_rsa_key_validation {
-        check_rsa_private_key(&pkey.rsa().unwrap())?;
-    }
+    let validation = if unsafe_skip_rsa_key_validation {
+        openssl_bridge::rsa::Validation::Structural
+    } else {
+        openssl_bridge::rsa::Validation::Full
+    };
     Ok(RsaPrivateKey {
-        pkey: pkey.to_owned(),
+        pkey: openssl_bridge::rsa::PrivateKey::from_components_with_validation(parts, validation)
+            .map_err(|_| invalid_private_key())?,
     })
 }
-
-pub(crate) fn public_key_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
+pub(crate) fn public_key_from_key(
+    pkey: openssl_bridge::rsa::PublicKey,
 ) -> CryptographyResult<RsaPublicKey> {
-    let rsa = pkey.rsa()?;
-    check_public_key_components(rsa.e(), rsa.n())?;
-    Ok(RsaPublicKey {
-        pkey: pkey.to_owned(),
-    })
+    let parts = pkey.export_components()?;
+    check_public_key_components(&parts.e, &parts.n)?;
+    Ok(RsaPublicKey { pkey })
+}
+impl RsaPrivateKey {
+    fn serialization_key(&self) -> CryptographyResult<openssl_bridge::rsa::PrivateExport> {
+        Ok(self.pkey.export_components()?)
+    }
+}
+impl RsaPublicKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PublicKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PublicKeyRef::Rsa(&self.pkey))
+    }
 }
 
 #[pyo3::pyfunction]
@@ -71,223 +72,210 @@ fn generate_private_key(
     public_exponent: u32,
     key_size: u32,
 ) -> CryptographyResult<RsaPrivateKey> {
-    let e = openssl::bn::BigNum::from_u32(public_exponent)?;
-    let pkey = py.detach(|| {
-        let rsa = openssl::rsa::Rsa::generate_with_e(key_size, &e)?;
-        openssl::pkey::PKey::from_rsa(rsa)
-    })?;
-    Ok(RsaPrivateKey { pkey })
+    Ok(RsaPrivateKey {
+        pkey: py.detach(|| openssl_bridge::rsa::PrivateKey::generate(key_size, public_exponent))?,
+    })
 }
 
-fn oaep_hash_supported(md: &openssl::hash::MessageDigest) -> bool {
-    md == &openssl::hash::MessageDigest::sha1()
-        || md == &openssl::hash::MessageDigest::sha224()
-        || md == &openssl::hash::MessageDigest::sha256()
-        || md == &openssl::hash::MessageDigest::sha384()
-        || md == &openssl::hash::MessageDigest::sha512()
+enum EncryptionParameters {
+    Pkcs1v15,
+    Oaep {
+        digest: openssl_bridge::hash::Algorithm,
+        mgf1: openssl_bridge::hash::Algorithm,
+        label: Vec<u8>,
+    },
+}
+impl EncryptionParameters {
+    fn native(&self) -> openssl_bridge::rsa::EncryptionPadding<'_> {
+        match self {
+            Self::Pkcs1v15 => openssl_bridge::rsa::EncryptionPadding::Pkcs1v15,
+            Self::Oaep {
+                digest,
+                mgf1,
+                label,
+            } => openssl_bridge::rsa::EncryptionPadding::Oaep {
+                digest: *digest,
+                mgf1: *mgf1,
+                label,
+            },
+        }
+    }
 }
 
-fn setup_encryption_ctx(
+fn encryption_parameters(
     py: pyo3::Python<'_>,
-    ctx: &mut openssl::pkey_ctx::PkeyCtx<impl openssl::pkey::HasPublic>,
     padding: &pyo3::Bound<'_, pyo3::PyAny>,
-) -> CryptographyResult<()> {
+) -> CryptographyResult<EncryptionParameters> {
     if !padding.is_instance(&types::ASYMMETRIC_PADDING.get(py)?)? {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyTypeError::new_err(
-                "Padding must be an instance of AsymmetricPadding.",
+        return Err(pyo3::exceptions::PyTypeError::new_err(
+            "Padding must be an instance of AsymmetricPadding.",
+        )
+        .into());
+    }
+    if padding.is_instance(&types::PKCS1V15.get(py)?)? {
+        return Ok(EncryptionParameters::Pkcs1v15);
+    }
+    if !padding.is_instance(&types::OAEP.get(py)?)? {
+        return Err(exceptions::UnsupportedAlgorithm::new_err((
+            format!(
+                "{} is not supported by this backend.",
+                padding.getattr(pyo3::intern!(py, "name"))?
             ),
-        ));
+            exceptions::Reasons::UNSUPPORTED_PADDING,
+        ))
+        .into());
     }
-
-    let padding_enum = if padding.is_instance(&types::PKCS1V15.get(py)?)? {
-        openssl::rsa::Padding::PKCS1
-    } else if padding.is_instance(&types::OAEP.get(py)?)? {
-        if !padding
-            .getattr(pyo3::intern!(py, "_mgf"))?
-            .is_instance(&types::MGF1.get(py)?)?
-        {
-            return Err(CryptographyError::from(
-                exceptions::UnsupportedAlgorithm::new_err((
-                    "Only MGF1 is supported.",
-                    exceptions::Reasons::UNSUPPORTED_MGF,
-                )),
-            ));
-        }
-
-        openssl::rsa::Padding::PKCS1_OAEP
-    } else {
-        return Err(CryptographyError::from(
-            exceptions::UnsupportedAlgorithm::new_err((
-                format!(
-                    "{} is not supported by this backend.",
-                    padding.getattr(pyo3::intern!(py, "name"))?
-                ),
+    let mgf = padding.getattr(pyo3::intern!(py, "_mgf"))?;
+    if !mgf.is_instance(&types::MGF1.get(py)?)? {
+        return Err(exceptions::UnsupportedAlgorithm::new_err((
+            "Only MGF1 is supported.",
+            exceptions::Reasons::UNSUPPORTED_MGF,
+        ))
+        .into());
+    }
+    let mgf_algorithm = mgf.getattr(pyo3::intern!(py, "_algorithm"))?;
+    let algorithm = padding.getattr(pyo3::intern!(py, "_algorithm"))?;
+    let mgf1 = hashes::bridge_digest_from_algorithm(py, &mgf_algorithm)?;
+    let digest = hashes::bridge_digest_from_algorithm(py, &algorithm)?;
+    for algorithm in [&mgf_algorithm, &algorithm] {
+        let name = algorithm
+            .getattr(pyo3::intern!(py, "name"))?
+            .extract::<pyo3::pybacked::PyBackedStr>()?;
+        if !matches!(&*name, "sha1" | "sha224" | "sha256" | "sha384" | "sha512") {
+            return Err(exceptions::UnsupportedAlgorithm::new_err((
+                "This combination of padding and hash algorithm is not supported",
                 exceptions::Reasons::UNSUPPORTED_PADDING,
-            )),
-        ));
-    };
-
-    ctx.set_rsa_padding(padding_enum)?;
-
-    if padding_enum == openssl::rsa::Padding::PKCS1_OAEP {
-        let mgf1_md = hashes::message_digest_from_algorithm(
-            py,
-            &padding
-                .getattr(pyo3::intern!(py, "_mgf"))?
-                .getattr(pyo3::intern!(py, "_algorithm"))?,
-        )?;
-        let oaep_md = hashes::message_digest_from_algorithm(
-            py,
-            &padding.getattr(pyo3::intern!(py, "_algorithm"))?,
-        )?;
-
-        if !oaep_hash_supported(&mgf1_md) || !oaep_hash_supported(&oaep_md) {
-            return Err(CryptographyError::from(
-                exceptions::UnsupportedAlgorithm::new_err((
-                    "This combination of padding and hash algorithm is not supported",
-                    exceptions::Reasons::UNSUPPORTED_PADDING,
-                )),
-            ));
-        }
-
-        ctx.set_rsa_mgf1_md(openssl::md::Md::from_nid(mgf1_md.type_()).unwrap())?;
-        ctx.set_rsa_oaep_md(openssl::md::Md::from_nid(oaep_md.type_()).unwrap())?;
-
-        if let Some(label) = padding
-            .getattr(pyo3::intern!(py, "_label"))?
-            .extract::<Option<pyo3::pybacked::PyBackedBytes>>()?
-        {
-            if !label.is_empty() {
-                ctx.set_rsa_oaep_label(&label)?;
-            }
+            ))
+            .into());
         }
     }
-
-    Ok(())
+    let label = padding
+        .getattr(pyo3::intern!(py, "_label"))?
+        .extract::<Option<pyo3::pybacked::PyBackedBytes>>()?
+        .map(|label| label.to_vec())
+        .unwrap_or_default();
+    Ok(EncryptionParameters::Oaep {
+        digest,
+        mgf1,
+        label,
+    })
 }
 
-fn setup_signature_ctx(
+fn signature_padding(
     py: pyo3::Python<'_>,
-    ctx: &mut openssl::pkey_ctx::PkeyCtx<impl openssl::pkey::HasPublic>,
     padding: &pyo3::Bound<'_, pyo3::PyAny>,
     algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     key_size: usize,
     is_signing: bool,
-) -> CryptographyResult<()> {
+) -> CryptographyResult<openssl_bridge::rsa::VerificationPadding> {
+    use openssl_bridge::rsa::{SaltLength, VerificationPadding};
     if !padding.is_instance(&types::ASYMMETRIC_PADDING.get(py)?)? {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyTypeError::new_err(
-                "Padding must be an instance of AsymmetricPadding.",
-            ),
-        ));
+        return Err(pyo3::exceptions::PyTypeError::new_err(
+            "Padding must be an instance of AsymmetricPadding.",
+        )
+        .into());
     }
-
-    let padding_enum = if padding.is_instance(&types::PKCS1V15.get(py)?)? {
-        openssl::rsa::Padding::PKCS1
-    } else if padding.is_instance(&types::PSS.get(py)?)? {
-        if !padding
-            .getattr(pyo3::intern!(py, "_mgf"))?
-            .is_instance(&types::MGF1.get(py)?)?
-        {
-            return Err(CryptographyError::from(
-                exceptions::UnsupportedAlgorithm::new_err((
-                    "Only MGF1 is supported.",
-                    exceptions::Reasons::UNSUPPORTED_MGF,
-                )),
-            ));
-        }
-
-        // PSS padding requires a hash algorithm
-        if !algorithm.is_instance(&types::HASH_ALGORITHM.get(py)?)? {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyTypeError::new_err(
-                    "Expected instance of hashes.HashAlgorithm.",
-                ),
-            ));
-        }
-
-        if algorithm
-            .getattr(pyo3::intern!(py, "digest_size"))?
-            .extract::<usize>()?
-            + 2
-            > key_size
-        {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "Digest too large for key size. Use a larger key or different digest.",
-                ),
-            ));
-        }
-
-        openssl::rsa::Padding::PKCS1_PSS
-    } else {
-        return Err(CryptographyError::from(
-            exceptions::UnsupportedAlgorithm::new_err((
-                format!(
-                    "{} is not supported by this backend.",
-                    padding.getattr(pyo3::intern!(py, "name"))?
-                ),
-                exceptions::Reasons::UNSUPPORTED_PADDING,
-            )),
-        ));
-    };
-
-    if !algorithm.is_none() {
-        let md = hashes::message_digest_from_algorithm(py, algorithm)?;
-        ctx.set_signature_md(openssl::md::Md::from_nid(md.type_()).unwrap())
-            .or_else(|_| {
-                Err(CryptographyError::from(
-                    exceptions::UnsupportedAlgorithm::new_err((
-                        format!(
-                            "{} is not supported by this backend for RSA signing.",
-                            algorithm.getattr(pyo3::intern!(py, "name"))?
-                        ),
-                        exceptions::Reasons::UNSUPPORTED_HASH,
-                    )),
-                ))
-            })?;
+    if padding.is_instance(&types::PKCS1V15.get(py)?)? {
+        return Ok(VerificationPadding::Pkcs1v15);
     }
-    ctx.set_rsa_padding(padding_enum).or_else(|_| {
-        Err(exceptions::UnsupportedAlgorithm::new_err((
+    if !padding.is_instance(&types::PSS.get(py)?)? {
+        return Err(exceptions::UnsupportedAlgorithm::new_err((
             format!(
-                "{} is not supported for the RSA signature operation",
+                "{} is not supported by this backend.",
                 padding.getattr(pyo3::intern!(py, "name"))?
             ),
             exceptions::Reasons::UNSUPPORTED_PADDING,
-        )))
-    })?;
-
-    if padding_enum == openssl::rsa::Padding::PKCS1_PSS {
-        let salt = padding.getattr(pyo3::intern!(py, "_salt_length"))?;
-        if salt.is_instance(&types::PADDING_MAX_LENGTH.get(py)?)? {
-            ctx.set_rsa_pss_saltlen(openssl::sign::RsaPssSaltlen::MAXIMUM_LENGTH)?;
-        } else if salt.is_instance(&types::PADDING_DIGEST_LENGTH.get(py)?)? {
-            ctx.set_rsa_pss_saltlen(openssl::sign::RsaPssSaltlen::DIGEST_LENGTH)?;
-        } else if salt.is_instance(&types::PADDING_AUTO.get(py)?)? {
-            if is_signing {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err(
-                        "PSS salt length can only be set to Auto when verifying",
-                    ),
-                ));
-            }
-            // AUTO and MAXIMUM are the same in OpenSSL.
-            ctx.set_rsa_pss_saltlen(openssl::sign::RsaPssSaltlen::MAXIMUM_LENGTH)?;
-        } else {
-            ctx.set_rsa_pss_saltlen(openssl::sign::RsaPssSaltlen::custom(salt.extract::<i32>()?))?;
-        };
-
-        let mgf1_md = hashes::message_digest_from_algorithm(
-            py,
-            &padding
-                .getattr(pyo3::intern!(py, "_mgf"))?
-                .getattr(pyo3::intern!(py, "_algorithm"))?,
-        )?;
-        ctx.set_rsa_mgf1_md(openssl::md::Md::from_nid(mgf1_md.type_()).unwrap())?;
+        ))
+        .into());
     }
+    let mgf = padding.getattr(pyo3::intern!(py, "_mgf"))?;
+    if !mgf.is_instance(&types::MGF1.get(py)?)? {
+        return Err(exceptions::UnsupportedAlgorithm::new_err((
+            "Only MGF1 is supported.",
+            exceptions::Reasons::UNSUPPORTED_MGF,
+        ))
+        .into());
+    }
+    if !algorithm.is_instance(&types::HASH_ALGORITHM.get(py)?)? {
+        return Err(pyo3::exceptions::PyTypeError::new_err(
+            "Expected instance of hashes.HashAlgorithm.",
+        )
+        .into());
+    }
+    if algorithm
+        .getattr(pyo3::intern!(py, "digest_size"))?
+        .extract::<usize>()?
+        .checked_add(2)
+        .is_none_or(|size| size > key_size)
+    {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "Digest too large for key size. Use a larger key or different digest.",
+        )
+        .into());
+    }
+    let mgf1 =
+        hashes::bridge_digest_from_algorithm(py, &mgf.getattr(pyo3::intern!(py, "_algorithm"))?)?;
+    let salt = padding.getattr(pyo3::intern!(py, "_salt_length"))?;
+    let salt = if salt.is_instance(&types::PADDING_MAX_LENGTH.get(py)?)? {
+        if !is_signing {
+            return Ok(VerificationPadding::PssAuto { mgf1 });
+        }
+        SaltLength::Maximum
+    } else if salt.is_instance(&types::PADDING_DIGEST_LENGTH.get(py)?)? {
+        SaltLength::Digest
+    } else if salt.is_instance(&types::PADDING_AUTO.get(py)?)? {
+        if is_signing {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "PSS salt length can only be set to Auto when verifying",
+            )
+            .into());
+        }
+        return Ok(VerificationPadding::PssAuto { mgf1 });
+    } else {
+        let value = salt.extract::<i32>()?;
+        SaltLength::Exact(u32::try_from(value).map_err(|_| {
+            pyo3::exceptions::PyValueError::new_err("PSS salt length must be nonnegative")
+        })?)
+    };
+    Ok(VerificationPadding::Pss { mgf1, salt })
+}
 
-    Ok(())
+fn signing_padding(
+    padding: openssl_bridge::rsa::VerificationPadding,
+) -> CryptographyResult<openssl_bridge::rsa::SigningPadding> {
+    use openssl_bridge::rsa::{SigningPadding, VerificationPadding};
+    match padding {
+        VerificationPadding::Pkcs1v15 => Ok(SigningPadding::Pkcs1v15),
+        VerificationPadding::Pss { mgf1, salt } => Ok(SigningPadding::Pss { mgf1, salt }),
+        VerificationPadding::PssAuto { .. } => Err(pyo3::exceptions::PyValueError::new_err(
+            "PSS salt length can only be set to Auto when verifying",
+        )
+        .into()),
+    }
+}
+
+fn signature_digest(
+    py: pyo3::Python<'_>,
+    algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
+) -> CryptographyResult<Option<openssl_bridge::hash::Algorithm>> {
+    if algorithm.is_none() {
+        Ok(None)
+    } else {
+        Ok(Some(hashes::bridge_digest_from_algorithm(py, algorithm)?))
+    }
+}
+fn unsupported_signature_digest(
+    py: pyo3::Python<'_>,
+    algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
+) -> CryptographyResult<()> {
+    Err(exceptions::UnsupportedAlgorithm::new_err((
+        format!(
+            "{} is not supported by this backend for RSA signing.",
+            algorithm.getattr(pyo3::intern!(py, "name"))?
+        ),
+        exceptions::Reasons::UNSUPPORTED_HASH,
+    ))
+    .into())
 }
 
 #[pyo3::pymethods]
@@ -310,25 +298,29 @@ impl RsaPrivateKey {
             }
         };
 
-        let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
-        ctx.sign_init().map_err(|_| {
-            pyo3::exceptions::PyValueError::new_err("Unable to sign/verify with this key")
-        })?;
-        setup_signature_ctx(py, &mut ctx, padding, &algorithm, self.pkey.size(), true)?;
-
-        let data_bytes = data.as_bytes();
-        let length = ctx.sign(data_bytes, None)?;
-        Ok(pyo3::types::PyBytes::new_with(py, length, |b| {
-            let length = py
-                .detach(|| ctx.sign(data_bytes, Some(b)))
-                .map_err(|_| {
-                    pyo3::exceptions::PyValueError::new_err(
-                        "Digest or salt length too long for key size. Use a larger key or shorter salt length if you are specifying a PSS salt",
-                    )
-                })?;
-            assert_eq!(length, b.len());
-            Ok(())
-        })?.into_any())
+        let padding = signing_padding(signature_padding(
+            py,
+            padding,
+            &algorithm,
+            (self.pkey.bits() as usize).div_ceil(8),
+            true,
+        )?)?;
+        let digest = signature_digest(py, &algorithm)?;
+        if let Some(digest) = digest {
+            if !self.pkey.signature_digest_supported(digest).map_err(|_| {
+                pyo3::exceptions::PyValueError::new_err("Unable to sign with this key and digest")
+            })? {
+                unsupported_signature_digest(py, &algorithm)?;
+            }
+        }
+        let bytes = data.as_bytes();
+        let signature = py.detach(|| match digest {
+            Some(digest) => self.pkey.sign_digest(digest, bytes, padding),
+            None => self.pkey.sign_pkcs1v15_block(bytes),
+        }).map_err(|_| pyo3::exceptions::PyValueError::new_err(
+            "Digest or salt length too long for key size. Use a larger key or shorter salt length if you are specifying a PSS salt"
+        ))?;
+        Ok(pyo3::types::PyBytes::new(py, &signature).into_any())
     }
 
     fn decrypt<'p>(
@@ -337,76 +329,57 @@ impl RsaPrivateKey {
         ciphertext: &[u8],
         padding: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let key_size_bytes =
-            usize::try_from((self.pkey.rsa().unwrap().n().num_bits() + 7) / 8).unwrap();
-        if key_size_bytes != ciphertext.len() {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "Ciphertext length must be equal to key size.",
-                ),
-            ));
+        let length = (self.pkey.bits() as usize).div_ceil(8);
+        if length != ciphertext.len() {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "Ciphertext length must be equal to key size.",
+            )
+            .into());
         }
-
-        let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
-        ctx.decrypt_init()?;
-
-        setup_encryption_ctx(py, &mut ctx, padding)?;
-
-        // Everything from this line onwards is written with the goal of being
-        // as constant-time as is practical given the constraints of
-        // rust-openssl and our API. See Bleichenbacher's '98 attack on RSA,
-        // and its many many variants. As such, you should not attempt to
-        // change this (particularly to "clean it up") without understanding
-        // why it was written this way (see Chesterton's Fence), and without
-        // measuring to verify you have not introduced observable time
-        // differences.
-        //
-        // Once OpenSSL 3.2.0 is out, this can be simplified, as OpenSSL will
-        // have its own mitigations for Bleichenbacher's attack.
-        let (result, plaintext, length) = py.detach(|| {
-            let length = ctx.decrypt(ciphertext, None).unwrap();
+        let parameters = encryption_parameters(py, padding)?;
+        // Preserve allocation on both success and failure for the legacy
+        // PKCS1 v1.5 behavior. The abstraction checks capacity and erases failed
+        // native output before returning; this is not a constant-time guarantee.
+        let (result, plaintext) = py.detach(|| {
             let mut plaintext = vec![0; length];
-            let result = ctx.decrypt(ciphertext, Some(&mut plaintext));
-            (result, plaintext, length)
+            let result = self
+                .pkey
+                .decrypt_into(ciphertext, parameters.native(), &mut plaintext);
+            (result, openssl_bridge::secret::SecretBytes::from(plaintext))
         });
-
-        let py_result =
-            pyo3::types::PyBytes::new(py, &plaintext[..*result.as_ref().unwrap_or(&length)]);
+        let py_result = pyo3::types::PyBytes::new(
+            py,
+            &plaintext.as_ref()[..*result.as_ref().unwrap_or(&length)],
+        );
         if result.is_err() {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("Decryption failed"),
-            ));
+            return Err(pyo3::exceptions::PyValueError::new_err("Decryption failed").into());
         }
         Ok(py_result)
     }
 
     #[getter]
-    fn key_size(&self) -> i32 {
-        self.pkey.rsa().unwrap().n().num_bits()
+    fn key_size(&self) -> u32 {
+        self.pkey.bits()
     }
 
     fn public_key(&self) -> CryptographyResult<RsaPublicKey> {
-        let priv_rsa = self.pkey.rsa().unwrap();
-        let rsa = openssl::rsa::Rsa::from_public_components(
-            priv_rsa.n().to_owned()?,
-            priv_rsa.e().to_owned()?,
-        )
-        .unwrap();
-        let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
-        Ok(RsaPublicKey { pkey })
+        Ok(RsaPublicKey {
+            pkey: self.pkey.public_key()?,
+        })
     }
 
     fn private_numbers(&self, py: pyo3::Python<'_>) -> CryptographyResult<RsaPrivateNumbers> {
-        let rsa = self.pkey.rsa().unwrap();
+        let export = self.pkey.export_components()?;
+        let rsa = export.components();
 
-        let py_p = utils::bn_to_py_int(py, rsa.p().unwrap())?;
-        let py_q = utils::bn_to_py_int(py, rsa.q().unwrap())?;
-        let py_d = utils::bn_to_py_int(py, rsa.d())?;
-        let py_dmp1 = utils::bn_to_py_int(py, rsa.dmp1().unwrap())?;
-        let py_dmq1 = utils::bn_to_py_int(py, rsa.dmq1().unwrap())?;
-        let py_iqmp = utils::bn_to_py_int(py, rsa.iqmp().unwrap())?;
-        let py_e = utils::bn_to_py_int(py, rsa.e())?;
-        let py_n = utils::bn_to_py_int(py, rsa.n())?;
+        let py_p = utils::bytes_to_py_int(py, rsa.p)?;
+        let py_q = utils::bytes_to_py_int(py, rsa.q)?;
+        let py_d = utils::bytes_to_py_int(py, rsa.d)?;
+        let py_dmp1 = utils::bytes_to_py_int(py, rsa.dmp1)?;
+        let py_dmq1 = utils::bytes_to_py_int(py, rsa.dmq1)?;
+        let py_iqmp = utils::bytes_to_py_int(py, rsa.iqmp)?;
+        let py_e = utils::bytes_to_py_int(py, rsa.e)?;
+        let py_n = utils::bytes_to_py_int(py, rsa.n)?;
 
         let public_numbers = RsaPublicNumbers {
             e: py_e.extract()?,
@@ -433,7 +406,9 @@ impl RsaPrivateKey {
         utils::pkey_private_bytes(
             py,
             slf,
-            &slf.borrow().pkey,
+            &cryptography_key_parsing::PrivateKeyRef::Rsa(
+                slf.borrow().serialization_key()?.components(),
+            ),
             encoding,
             format,
             encryption_algorithm,
@@ -475,13 +450,27 @@ impl RsaPublicKey {
             }
         };
 
-        let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
-        ctx.verify_init()?;
-        setup_signature_ctx(py, &mut ctx, padding, &algorithm, self.pkey.size(), false)?;
-
-        let data_bytes = data.as_bytes();
-        let sig_bytes = signature.as_bytes();
-        let valid = py.detach(|| ctx.verify(data_bytes, sig_bytes).unwrap_or(false));
+        let padding = signature_padding(
+            py,
+            padding,
+            &algorithm,
+            (self.pkey.bits() as usize).div_ceil(8),
+            false,
+        )?;
+        let digest = signature_digest(py, &algorithm)?;
+        if let Some(digest) = digest {
+            if !self.pkey.signature_digest_supported(digest)? {
+                unsupported_signature_digest(py, &algorithm)?;
+            }
+        }
+        let data = data.as_bytes();
+        let signature = signature.as_bytes();
+        let valid = py
+            .detach(|| match digest {
+                Some(digest) => self.pkey.verify_digest(digest, data, signature, padding),
+                None => self.pkey.verify_pkcs1v15_block(data, signature),
+            })
+            .unwrap_or(false);
         if !valid {
             return Err(CryptographyError::from(
                 exceptions::InvalidSignature::new_err(()),
@@ -497,19 +486,11 @@ impl RsaPublicKey {
         plaintext: &[u8],
         padding: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
-        ctx.encrypt_init()?;
-
-        setup_encryption_ctx(py, &mut ctx, padding)?;
-
-        let length = ctx.encrypt(plaintext, None)?;
-        Ok(pyo3::types::PyBytes::new_with(py, length, |b| {
-            let length = py
-                .detach(|| ctx.encrypt(plaintext, Some(b)))
-                .map_err(|_| pyo3::exceptions::PyValueError::new_err("Encryption failed"))?;
-            assert_eq!(length, b.len());
-            Ok(())
-        })?)
+        let parameters = encryption_parameters(py, padding)?;
+        let ciphertext = py
+            .detach(|| self.pkey.encrypt(plaintext, parameters.native()))
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("Encryption failed"))?;
+        Ok(pyo3::types::PyBytes::new(py, &ciphertext))
     }
 
     fn recover_data_from_signature<'p>(
@@ -532,29 +513,43 @@ impl RsaPublicKey {
             ));
         }
 
-        let mut ctx = openssl::pkey_ctx::PkeyCtx::new(&self.pkey)?;
-        ctx.verify_recover_init()?;
-        setup_signature_ctx(py, &mut ctx, padding, algorithm, self.pkey.size(), false)?;
-
-        let length = ctx.verify_recover(signature, None)?;
-        let mut buf = vec![0u8; length];
-        let length = ctx
-            .verify_recover(signature, Some(&mut buf))
+        let padding = signature_padding(
+            py,
+            padding,
+            algorithm,
+            (self.pkey.bits() as usize).div_ceil(8),
+            false,
+        )?;
+        if !matches!(padding, openssl_bridge::rsa::VerificationPadding::Pkcs1v15) {
+            return Err(exceptions::UnsupportedAlgorithm::new_err((
+                "PSS is not supported for the RSA signature operation",
+                exceptions::Reasons::UNSUPPORTED_PADDING,
+            ))
+            .into());
+        }
+        let digest = signature_digest(py, algorithm)?;
+        if let Some(digest) = digest {
+            if !self.pkey.signature_digest_supported(digest)? {
+                unsupported_signature_digest(py, algorithm)?;
+            }
+        }
+        let recovered = self
+            .pkey
+            .recover_pkcs1v15(signature, digest)
             .map_err(|_| exceptions::InvalidSignature::new_err(()))?;
-
-        Ok(pyo3::types::PyBytes::new(py, &buf[..length]))
+        Ok(pyo3::types::PyBytes::new(py, &recovered))
     }
 
     #[getter]
-    fn key_size(&self) -> i32 {
-        self.pkey.rsa().unwrap().n().num_bits()
+    fn key_size(&self) -> u32 {
+        self.pkey.bits()
     }
 
     fn public_numbers(&self, py: pyo3::Python<'_>) -> CryptographyResult<RsaPublicNumbers> {
-        let rsa = self.pkey.rsa().unwrap();
+        let rsa = self.pkey.export_components()?;
 
-        let py_e = utils::bn_to_py_int(py, rsa.e())?;
-        let py_n = utils::bn_to_py_int(py, rsa.n())?;
+        let py_e = utils::bytes_to_py_int(py, &rsa.e)?;
+        let py_n = utils::bytes_to_py_int(py, &rsa.n)?;
 
         Ok(RsaPublicNumbers {
             e: py_e.extract()?,
@@ -568,11 +563,21 @@ impl RsaPublicKey {
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PublicFormat,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, false)
+        utils::pkey_public_bytes(
+            py,
+            slf,
+            &slf.borrow().serialization_key()?,
+            encoding,
+            format,
+            true,
+            false,
+        )
     }
 
-    fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> bool {
-        self.pkey.public_eq(&other.pkey)
+    fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> CryptographyResult<bool> {
+        let a = self.pkey.export_components()?;
+        let b = other.pkey.export_components()?;
+        Ok(a.n == b.n && a.e == b.e)
     }
 
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
@@ -750,22 +755,27 @@ impl RsaPrivateNumbers {
             self.public_numbers.get().n.bind(py),
         )?;
         let public_numbers = self.public_numbers.get();
-        let rsa = openssl::rsa::Rsa::from_private_components(
-            utils::py_int_to_bn(py, public_numbers.n.bind(py))?,
-            utils::py_int_to_bn(py, public_numbers.e.bind(py))?,
-            utils::py_int_to_bn(py, self.d.bind(py))?,
-            utils::py_int_to_bn(py, self.p.bind(py))?,
-            utils::py_int_to_bn(py, self.q.bind(py))?,
-            utils::py_int_to_bn(py, self.dmp1.bind(py))?,
-            utils::py_int_to_bn(py, self.dmq1.bind(py))?,
-            utils::py_int_to_bn(py, self.iqmp.bind(py))?,
+        let n = utils::py_int_to_bytes(py, public_numbers.n.bind(py))?;
+        let e = utils::py_int_to_bytes(py, public_numbers.e.bind(py))?;
+        let d = utils::py_int_to_bytes(py, self.d.bind(py))?;
+        let p = utils::py_int_to_bytes(py, self.p.bind(py))?;
+        let q = utils::py_int_to_bytes(py, self.q.bind(py))?;
+        let dmp1 = utils::py_int_to_bytes(py, self.dmp1.bind(py))?;
+        let dmq1 = utils::py_int_to_bytes(py, self.dmq1.bind(py))?;
+        let iqmp = utils::py_int_to_bytes(py, self.iqmp.bind(py))?;
+        private_key_from_components(
+            openssl_bridge::rsa::PrivateComponents {
+                n: n.as_ref(),
+                e: e.as_ref(),
+                d: d.as_ref(),
+                p: p.as_ref(),
+                q: q.as_ref(),
+                dmp1: dmp1.as_ref(),
+                dmq1: dmq1.as_ref(),
+                iqmp: iqmp.as_ref(),
+            },
+            unsafe_skip_rsa_key_validation,
         )
-        .unwrap();
-        if !unsafe_skip_rsa_key_validation {
-            check_rsa_private_key(&rsa)?;
-        }
-        let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
-        Ok(RsaPrivateKey { pkey })
     }
 
     fn __eq__(
@@ -798,31 +808,22 @@ impl RsaPrivateNumbers {
     }
 }
 
-fn check_public_key_components(
-    e: &openssl::bn::BigNumRef,
-    n: &openssl::bn::BigNumRef,
-) -> CryptographyResult<()> {
-    static THREE: LazyLock<openssl::bn::BigNum> =
-        LazyLock::new(|| openssl::bn::BigNum::from_u32(3).unwrap());
-
-    if n.cmp(&THREE).is_lt() {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("n must be >= 3."),
-        ));
+fn check_public_key_components(e: &[u8], n: &[u8]) -> CryptographyResult<()> {
+    let normalize = |v: &[u8]| v.iter().position(|&b| b != 0).unwrap_or(v.len());
+    let e = &e[normalize(e)..];
+    let n = &n[normalize(n)..];
+    if n.is_empty() || (n.len() == 1 && n[0] < 3) {
+        return Err(pyo3::exceptions::PyValueError::new_err("n must be >= 3.").into());
     }
-
-    if e.cmp(&THREE).is_lt() || e >= n {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("e must be >= 3 and < n."),
-        ));
+    if e.is_empty()
+        || (e.len() == 1 && e[0] < 3)
+        || e.len().cmp(&n.len()).then_with(|| e.cmp(n)).is_ge()
+    {
+        return Err(pyo3::exceptions::PyValueError::new_err("e must be >= 3 and < n.").into());
     }
-
-    if e.is_even() {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("e must be odd."),
-        ));
+    if e.last().unwrap() & 1 == 0 {
+        return Err(pyo3::exceptions::PyValueError::new_err("e must be odd.").into());
     }
-
     Ok(())
 }
 
@@ -841,13 +842,14 @@ impl RsaPublicNumbers {
     ) -> CryptographyResult<RsaPublicKey> {
         let _ = backend;
 
-        let n = utils::py_int_to_bn(py, self.n.bind(py))?;
-        let e = utils::py_int_to_bn(py, self.e.bind(py))?;
-        check_public_key_components(&e, &n)?;
+        let n = utils::py_int_to_bytes(py, self.n.bind(py))?;
+        let e = utils::py_int_to_bytes(py, self.e.bind(py))?;
+        check_public_key_components(e.as_ref(), n.as_ref())?;
 
-        let rsa = openssl::rsa::Rsa::from_public_components(n, e).unwrap();
-        let pkey = openssl::pkey::PKey::from_rsa(rsa)?;
-        Ok(RsaPublicKey { pkey })
+        public_key_from_key(openssl_bridge::rsa::PublicKey::from_components(
+            n.as_ref(),
+            e.as_ref(),
+        )?)
     }
 
     fn __eq__(

@@ -67,9 +67,6 @@ class Backend:
     _fips_dh_min_modulus = 1 << _fips_dh_min_key_size
 
     def __init__(self) -> None:
-        self._binding = binding.Binding()
-        self._ffi = self._binding.ffi
-        self._lib = self._binding.lib
         self._fips_enabled = rust_openssl.is_fips_enabled()
 
     def __repr__(self) -> str:
@@ -256,7 +253,11 @@ class Backend:
         return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
 
     def dh_x942_serialization_supported(self) -> bool:
-        return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
+        return not (
+            rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+            or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            or rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
+        )
 
     def x25519_supported(self) -> bool:
         return not self._fips_enabled

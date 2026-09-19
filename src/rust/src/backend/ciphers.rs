@@ -10,12 +10,21 @@ use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 
+enum Operation {
+    Conventional(openssl_bridge::cipher::Stream),
+    Xts(Option<openssl_bridge::cipher::XtsDataUnit>),
+    GcmEncrypt(openssl_bridge::gcm::GcmEncrypt),
+    GcmDecrypt(openssl_bridge::gcm::UnverifiedGcmDecrypt),
+}
+
 pub(crate) struct CipherContext {
-    ctx: openssl::cipher_ctx::CipherCtx,
+    ctx: Option<Operation>,
     py_mode: pyo3::Py<pyo3::PyAny>,
     py_algorithm: pyo3::Py<pyo3::PyAny>,
-    side: openssl::symm::Mode,
-    is_xts: bool,
+    block_size: usize,
+    iv_size: usize,
+    tag: Option<[u8; 16]>,
+    expected_tag: Option<Vec<u8>>,
 }
 
 impl CipherContext {
@@ -23,29 +32,27 @@ impl CipherContext {
         py: pyo3::Python<'_>,
         algorithm: pyo3::Bound<'_, pyo3::PyAny>,
         mode: pyo3::Bound<'_, pyo3::PyAny>,
-        side: openssl::symm::Mode,
+        side: openssl_bridge::cipher::Direction,
     ) -> CryptographyResult<CipherContext> {
         let cipher =
             match cipher_registry::get_cipher(py, algorithm.clone(), mode.get_type().into_any())? {
                 Some(c) => c,
                 None => {
-                    return Err(CryptographyError::from(
-                        exceptions::UnsupportedAlgorithm::new_err((
-                            format!(
-                                "cipher {} in {} mode is not supported ",
-                                algorithm.getattr(pyo3::intern!(py, "name"))?,
-                                if mode.is_truthy()? {
-                                    mode.getattr(pyo3::intern!(py, "name"))?
-                                } else {
-                                    mode
-                                }
-                            ),
-                            exceptions::Reasons::UNSUPPORTED_CIPHER,
-                        )),
+                    return Err(exceptions::UnsupportedAlgorithm::new_err((
+                        format!(
+                            "cipher {} in {} mode is not supported ",
+                            algorithm.getattr(pyo3::intern!(py, "name"))?,
+                            if mode.is_truthy()? {
+                                mode.getattr(pyo3::intern!(py, "name"))?
+                            } else {
+                                mode
+                            }
+                        ),
+                        exceptions::Reasons::UNSUPPORTED_CIPHER,
                     ))
+                    .into())
                 }
             };
-
         let iv_nonce = if mode.is_instance(&types::MODE_WITH_INITIALIZATION_VECTOR.get(py)?)? {
             Some(
                 mode.getattr(pyo3::intern!(py, "initialization_vector"))?
@@ -70,59 +77,51 @@ impl CipherContext {
         } else {
             None
         };
-
+        let iv = iv_nonce.as_ref().map_or(&[][..], |b| b.as_bytes());
         let key = algorithm
             .getattr(pyo3::intern!(py, "key"))?
             .extract::<CffiBuf<'_>>()?;
-
-        let init_op = match side {
-            openssl::symm::Mode::Encrypt => openssl::cipher_ctx::CipherCtxRef::encrypt_init,
-            openssl::symm::Mode::Decrypt => openssl::cipher_ctx::CipherCtxRef::decrypt_init,
-        };
-
-        let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
-        init_op(&mut ctx, Some(cipher), None, None)?;
-        ctx.set_key_length(key.as_bytes().len())?;
-
-        if let Some(iv) = iv_nonce.as_ref() {
-            if cipher.iv_length() != 0 && cipher.iv_length() != iv.as_bytes().len() {
-                ctx.set_iv_length(iv.as_bytes().len())?;
+        let ctx = match cipher.algorithm {
+            cipher_registry::Algorithm::Conventional(cipher) => Operation::Conventional(
+                openssl_bridge::cipher::Stream::new(cipher, side, key.as_bytes(), iv, false)?,
+            ),
+            cipher_registry::Algorithm::Xts => {
+                let tweak = iv.try_into().map_err(|_| {
+                    pyo3::exceptions::PyValueError::new_err("XTS tweak must contain 16 bytes")
+                })?;
+                Operation::Xts(Some(
+                    openssl_bridge::cipher::XtsDataUnit::new(side, key.as_bytes(), tweak).map_err(
+                        |_| {
+                            pyo3::exceptions::PyValueError::new_err(
+                                "In XTS mode duplicated keys are not allowed",
+                            )
+                        },
+                    )?,
+                ))
             }
-        }
-
-        let is_xts = mode.is_instance(&types::XTS.get(py)?)?;
-        if is_xts {
-            init_op(
-                &mut ctx,
-                None,
-                Some(key.as_bytes()),
-                iv_nonce.as_ref().map(|b| b.as_bytes()),
-            )
-            .map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err(
-                    "In XTS mode duplicated keys are not allowed",
-                )
-            })?;
-        } else {
-            init_op(
-                &mut ctx,
-                None,
-                Some(key.as_bytes()),
-                iv_nonce.as_ref().map(|b| b.as_bytes()),
-            )?;
+            cipher_registry::Algorithm::Gcm(cipher) => match side {
+                openssl_bridge::cipher::Direction::Encrypt => Operation::GcmEncrypt(
+                    openssl_bridge::gcm::GcmEncrypt::new(cipher, key.as_bytes(), iv)?,
+                ),
+                openssl_bridge::cipher::Direction::Decrypt => Operation::GcmDecrypt(
+                    openssl_bridge::gcm::UnverifiedGcmDecrypt::new(cipher, key.as_bytes(), iv)?,
+                ),
+            },
         };
-
-        ctx.set_padding(false);
-
-        Ok(CipherContext {
-            ctx,
+        let block_size = match &ctx {
+            Operation::Conventional(ctx) => ctx.block_size(),
+            _ => 1,
+        };
+        Ok(Self {
+            ctx: Some(ctx),
             py_mode: mode.into(),
             py_algorithm: algorithm.into(),
-            side,
-            is_xts,
+            block_size,
+            iv_size: iv.len(),
+            tag: None,
+            expected_tag: None,
         })
     }
-
     fn reset_nonce(&mut self, py: pyo3::Python<'_>, nonce: &[u8]) -> CryptographyResult<()> {
         if !self
             .py_mode
@@ -133,126 +132,153 @@ impl CipherContext {
                 .bind(py)
                 .is_instance(&types::CHACHA20.get(py)?)?
         {
-            return Err(CryptographyError::from(
-                exceptions::UnsupportedAlgorithm::new_err((
+            return Err(exceptions::UnsupportedAlgorithm::new_err((
+                "This algorithm or mode does not support resetting the nonce.",
+                exceptions::Reasons::UNSUPPORTED_CIPHER,
+            ))
+            .into());
+        }
+        if nonce.len() != self.iv_size {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "Nonce must be {} bytes long",
+                self.iv_size
+            ))
+            .into());
+        }
+        match self
+            .ctx
+            .as_mut()
+            .ok_or_else(exceptions::already_finalized_error)?
+        {
+            Operation::Conventional(ctx) => ctx.reset_nonce(nonce)?,
+            _ => {
+                return Err(exceptions::UnsupportedAlgorithm::new_err((
                     "This algorithm or mode does not support resetting the nonce.",
                     exceptions::Reasons::UNSUPPORTED_CIPHER,
-                )),
-            ));
+                ))
+                .into())
+            }
         }
-        if nonce.len() != self.ctx.iv_length() {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(format!(
-                    "Nonce must be {} bytes long",
-                    self.ctx.iv_length()
-                )),
-            ));
-        }
-        let init_op = match self.side {
-            openssl::symm::Mode::Encrypt => openssl::cipher_ctx::CipherCtxRef::encrypt_init,
-            openssl::symm::Mode::Decrypt => openssl::cipher_ctx::CipherCtxRef::decrypt_init,
-        };
-        init_op(&mut self.ctx, None, None, Some(nonce))?;
         Ok(())
     }
-
     fn update<'p>(
         &mut self,
         py: pyo3::Python<'p>,
         data: &[u8],
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let block_size = self.ctx.block_size();
-        if block_size == 1 {
-            // Streaming modes always produce exactly data.len() bytes of
-            // output, so encrypt directly into the result PyBytes instead
-            // of into a zeroed scratch Vec that then gets copied.
+        if self.block_size == 1 {
             return Ok(pyo3::types::PyBytes::new_with(py, data.len(), |b| {
                 let n = self.update_into(py, data, b)?;
                 assert_eq!(n, data.len());
                 Ok(())
             })?);
         }
-        let mut buf = vec![0; data.len() + block_size];
+        let mut buf = vec![0; data.len() + self.block_size];
         let n = self.update_into(py, data, &mut buf)?;
         Ok(pyo3::types::PyBytes::new(py, &buf[..n]))
     }
-
     pub(crate) fn update_into(
         &mut self,
         py: pyo3::Python<'_>,
         data: &[u8],
         buf: &mut [u8],
     ) -> CryptographyResult<usize> {
-        if buf.len() < (data.len() + self.ctx.block_size() - 1) {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(format!(
-                    "buffer must be at least {} bytes for this payload",
-                    data.len() + self.ctx.block_size() - 1
-                )),
-            ));
+        let required = data.len().checked_add(self.block_size - 1).ok_or_else(|| {
+            pyo3::exceptions::PyOverflowError::new_err("cipher output size overflow")
+        })?;
+        if buf.len() < required {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "buffer must be at least {required} bytes for this payload"
+            ))
+            .into());
         }
-
         crate::backend::run_with_gil_detached(py, data.len(), || self.update_into_inner(data, buf))
     }
-
     fn update_into_inner(&mut self, data: &[u8], buf: &mut [u8]) -> CryptographyResult<usize> {
-        let mut total_written = 0;
-        for chunk in data.chunks(1 << 29) {
-            // SAFETY: We ensure that outbuf is sufficiently large above.
-            unsafe {
-                let n = if self.is_xts {
-                    self.ctx.cipher_update_unchecked(chunk, Some(&mut buf[total_written..])).map_err(|_| {
-                    pyo3::exceptions::PyValueError::new_err(
-                        "In XTS mode you must supply at least a full block in the first update call. For AES this is 16 bytes."
-                    )
-                })?
-                } else {
-                    self.ctx
-                        .cipher_update_unchecked(chunk, Some(&mut buf[total_written..]))?
-                };
-                total_written += n;
+        let ctx = self
+            .ctx
+            .as_mut()
+            .ok_or_else(exceptions::already_finalized_error)?;
+        if let Operation::Xts(ctx) = ctx {
+            if data.is_empty() {
+                return Ok(0);
             }
+            let unit = ctx.take().ok_or_else(|| {
+                pyo3::exceptions::PyValueError::new_err(
+                    "An XTS data unit must be supplied in one update call",
+                )
+            })?;
+            return Ok(unit.crypt_into(data, buf).map_err(|_| pyo3::exceptions::PyValueError::new_err("In XTS mode you must supply at least a full block in the first update call. For AES this is 16 bytes."))?);
         }
-
-        Ok(total_written)
+        let mut written = 0;
+        for chunk in data.chunks(1 << 29) {
+            written += match ctx {
+                Operation::Conventional(ctx) => ctx.update_into(chunk, &mut buf[written..])?,
+                Operation::GcmEncrypt(ctx) => ctx.update_into(chunk, &mut buf[written..])?,
+                Operation::GcmDecrypt(ctx) => {
+                    ctx.update_unverified_into(chunk, &mut buf[written..])?
+                }
+                Operation::Xts(_) => unreachable!(),
+            };
+        }
+        Ok(written)
     }
-
     fn authenticate_additional_data(
         &mut self,
         py: pyo3::Python<'_>,
         data: &[u8],
     ) -> CryptographyResult<()> {
-        crate::backend::run_with_gil_detached(py, data.len(), || {
-            self.ctx.cipher_update(data, None)
-        })?;
-        Ok(())
+        let ctx = self
+            .ctx
+            .as_mut()
+            .ok_or_else(exceptions::already_finalized_error)?;
+        crate::backend::run_with_gil_detached(py, data.len(), || -> CryptographyResult<()> {
+            for chunk in data.chunks(1 << 29) {
+                match ctx {
+                    Operation::GcmEncrypt(ctx) => ctx.authenticate(chunk)?,
+                    Operation::GcmDecrypt(ctx) => ctx.authenticate(chunk)?,
+                    _ => {
+                        return Err(pyo3::exceptions::PyValueError::new_err(
+                            "AAD requires an authenticated cipher",
+                        )
+                        .into())
+                    }
+                }
+            }
+            Ok(())
+        })
     }
-
     pub(crate) fn finalize<'p>(
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let mut out_buf = vec![0; self.ctx.block_size()];
-        let n = self.ctx.cipher_final(&mut out_buf).or_else(|_| {
-            // For authenticated modes, the only way finalize can fail is a
-            // tag mismatch. Older OpenSSL versions (and BoringSSL, AWS-LC,
-            // and LibreSSL) leave the error queue empty in that case, while
-            // OpenSSL >= 4.1 pushes PROV_R_BAD_DECRYPT, so we can't key on
-            // the error queue.
-            if self
-                .py_mode
-                .bind(py)
-                .is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get(py)?)?
-            {
-                return Err(CryptographyError::from(exceptions::InvalidTag::new_err(())));
-            }
-            Err(CryptographyError::from(
+        let ctx = self
+            .ctx
+            .take()
+            .ok_or_else(exceptions::already_finalized_error)?;
+        let output = match ctx {
+            Operation::Conventional(ctx) => ctx.finish().map_err(|_| {
                 pyo3::exceptions::PyValueError::new_err(
                     "The length of the provided data is not a multiple of the block length.",
-                ),
-            ))
-        })?;
-        Ok(pyo3::types::PyBytes::new(py, &out_buf[..n]))
+                )
+            })?,
+            Operation::Xts(_) => vec![],
+            Operation::GcmEncrypt(ctx) => {
+                self.tag = Some(ctx.finish()?);
+                vec![]
+            }
+            Operation::GcmDecrypt(ctx) => {
+                let tag = self.expected_tag.as_ref().ok_or_else(|| {
+                    pyo3::exceptions::PyValueError::new_err(
+                        "Authentication tag must be provided when decrypting.",
+                    )
+                })?;
+                ctx.finish(tag)
+                    .map_err(|_| exceptions::InvalidTag::new_err(()))?;
+                vec![]
+            }
+        };
+        Ok(pyo3::types::PyBytes::new(py, &output))
     }
 }
 
@@ -371,7 +397,9 @@ impl PyCipherContext {
     ) -> CryptographyResult<usize> {
         let data = data.as_bytes();
         self.decrement_bytes_remaining(data.len())?;
-        get_mut_ctx(self.ctx.as_mut())?.update_into(py, data, buf.as_mut_bytes())
+        let written = get_mut_ctx(self.ctx.as_mut())?.update_into(py, data, buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn finalize<'p>(
@@ -418,7 +446,9 @@ impl PyAEADEncryptionContext {
             .ok_or_else(|| {
                 pyo3::exceptions::PyValueError::new_err("Exceeded maximum encrypted byte limit")
             })?;
-        get_mut_ctx(self.ctx.as_mut())?.update_into(py, data, buf.as_mut_bytes())
+        let written = get_mut_ctx(self.ctx.as_mut())?.update_into(py, data, buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn authenticate_additional_data(
@@ -451,10 +481,7 @@ impl PyAEADEncryptionContext {
         let result = ctx.finalize(py)?;
 
         // XXX: do not hard code 16
-        let tag = pyo3::types::PyBytes::new_with(py, 16, |t| {
-            ctx.ctx.tag(t).map_err(CryptographyError::from)?;
-            Ok(())
-        })?;
+        let tag = pyo3::types::PyBytes::new(py, ctx.tag.as_ref().unwrap());
         self.tag = Some(tag.unbind());
         self.ctx = None;
 
@@ -513,7 +540,9 @@ impl PyAEADDecryptionContext {
             .ok_or_else(|| {
                 pyo3::exceptions::PyValueError::new_err("Exceeded maximum encrypted byte limit")
             })?;
-        get_mut_ctx(self.ctx.as_mut())?.update_into(py, data, buf.as_mut_bytes())
+        let written = get_mut_ctx(self.ctx.as_mut())?.update_into(py, data, buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn authenticate_additional_data(
@@ -602,7 +631,7 @@ impl PyAEADDecryptionContext {
             ));
         }
 
-        ctx.ctx.set_tag(tag)?;
+        ctx.expected_tag = Some(tag.to_vec());
         let result = ctx.finalize(py)?;
         self.ctx = None;
         Ok(result)
@@ -620,7 +649,12 @@ fn create_encryption_ctx<'p>(
     mode: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let bytes_remaining = chacha20_initial_byte_limit(py, &algorithm)?;
-    let ctx = CipherContext::new(py, algorithm, mode.clone(), openssl::symm::Mode::Encrypt)?;
+    let ctx = CipherContext::new(
+        py,
+        algorithm,
+        mode.clone(),
+        openssl_bridge::cipher::Direction::Encrypt,
+    )?;
 
     if mode.is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get(py)?)? {
         Ok(PyAEADEncryptionContext {
@@ -653,14 +687,19 @@ fn create_decryption_ctx<'p>(
     mode: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let bytes_remaining = chacha20_initial_byte_limit(py, &algorithm)?;
-    let mut ctx = CipherContext::new(py, algorithm, mode.clone(), openssl::symm::Mode::Decrypt)?;
+    let mut ctx = CipherContext::new(
+        py,
+        algorithm,
+        mode.clone(),
+        openssl_bridge::cipher::Direction::Decrypt,
+    )?;
 
     if mode.is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get(py)?)? {
         if let Some(tag) = mode
             .getattr(pyo3::intern!(py, "tag"))?
             .extract::<Option<pyo3::pybacked::PyBackedBytes>>()?
         {
-            ctx.ctx.set_tag(&tag)?;
+            ctx.expected_tag = Some(tag.to_vec());
         }
 
         Ok(PyAEADDecryptionContext {

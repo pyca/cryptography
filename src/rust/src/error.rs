@@ -13,7 +13,7 @@ pub enum CryptographyError {
     Asn1Write(asn1::WriteError),
     KeyParsing(asn1::ParseError),
     Py(pyo3::PyErr),
-    OpenSSL(openssl::error::ErrorStack),
+    OpenSSL(openssl_bridge::Error),
 }
 
 impl From<asn1::ParseError> for CryptographyError {
@@ -52,9 +52,24 @@ impl From<pyo3::pyclass::PyClassGuardError<'_, '_>> for CryptographyError {
     }
 }
 
-impl From<openssl::error::ErrorStack> for CryptographyError {
-    fn from(e: openssl::error::ErrorStack) -> CryptographyError {
-        CryptographyError::OpenSSL(e)
+impl From<openssl_bridge::Error> for CryptographyError {
+    fn from(error: openssl_bridge::Error) -> Self {
+        let message = error.to_string();
+        Self::Py(
+            pyo3::Python::attach(|py| {
+                let errors = pyo3::types::PyList::empty(py);
+                if let openssl_bridge::Error::Native(native) = error {
+                    for e in native {
+                        errors.append(pyo3::Bound::new(py, OpenSSLError { e })?)?;
+                    }
+                }
+                Ok::<_, pyo3::PyErr>(exceptions::InternalError::new_err((
+                    message,
+                    errors.unbind(),
+                )))
+            })
+            .unwrap_or_else(|error| error),
+        )
     }
 }
 
@@ -70,7 +85,10 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
     fn from(e: cryptography_key_parsing::KeyParsingError) -> CryptographyError {
         match e {
             cryptography_key_parsing::KeyParsingError::Parse(e) => CryptographyError::KeyParsing(e),
-            cryptography_key_parsing::KeyParsingError::OpenSSL(e) => CryptographyError::OpenSSL(e),
+            cryptography_key_parsing::KeyParsingError::Bridge(openssl_bridge::Error::InvalidInput(message)) => {
+                pyo3::exceptions::PyValueError::new_err(message).into()
+            }
+            cryptography_key_parsing::KeyParsingError::Bridge(e) => e.into(),
             cryptography_key_parsing::KeyParsingError::InvalidKey => {
                 CryptographyError::Py(pyo3::exceptions::PyValueError::new_err("Invalid key"))
             }
@@ -155,27 +173,22 @@ impl From<cryptography_key_parsing::KeySerializationError> for CryptographyError
             cryptography_key_parsing::KeySerializationError::Write(e) => {
                 CryptographyError::Asn1Write(e)
             }
-            cryptography_key_parsing::KeySerializationError::OpenSSL(e) => {
-                CryptographyError::OpenSSL(e)
-            }
+            cryptography_key_parsing::KeySerializationError::Bridge(e) => e.into(),
         }
     }
 }
 
-pub(crate) fn list_from_openssl_error<'p>(
+pub(crate) fn list_from_bridge_error<'p>(
     py: pyo3::Python<'p>,
-    error_stack: &openssl::error::ErrorStack,
-) -> pyo3::Bound<'p, pyo3::types::PyList> {
+    error: &openssl_bridge::Error,
+) -> pyo3::PyResult<pyo3::Bound<'p, pyo3::types::PyList>> {
     let errors = pyo3::types::PyList::empty(py);
-    for e in error_stack.errors() {
-        errors
-            .append(
-                pyo3::Bound::new(py, OpenSSLError { e: e.clone() })
-                    .expect("Failed to create OpenSSLError"),
-            )
-            .expect("Failed to append to list");
+    if let openssl_bridge::Error::Native(native) = error {
+        for e in native {
+            errors.append(pyo3::Bound::new(py, OpenSSLError { e: e.clone() })?)?;
+        }
     }
-    errors
+    Ok(errors)
 }
 
 impl fmt::Display for CryptographyError {
@@ -232,10 +245,14 @@ impl From<CryptographyError> for pyo3::PyErr {
                 pyo3::exceptions::PyValueError::new_err(e.to_string())
             }
             CryptographyError::Py(py_error) => py_error,
-            CryptographyError::OpenSSL(ref error_stack) => pyo3::Python::attach(|py| {
-                let errors = list_from_openssl_error(py, error_stack);
-                exceptions::InternalError::new_err((e.to_string(), errors.unbind()))
-            }),
+            CryptographyError::OpenSSL(ref error_stack) => {
+                pyo3::Python::attach(|py| match list_from_bridge_error(py, error_stack) {
+                    Ok(errors) => {
+                        exceptions::InternalError::new_err((e.to_string(), errors.unbind()))
+                    }
+                    Err(error) => error,
+                })
+            }
         }
     }
 }
@@ -274,29 +291,31 @@ pub(crate) type CryptographyResult<T> = Result<T, CryptographyError>;
 
 #[pyo3::pyfunction]
 pub(crate) fn raise_openssl_error() -> crate::error::CryptographyResult<()> {
-    Err(openssl::error::ErrorStack::get().into())
+    Err(CryptographyError::OpenSSL(openssl_bridge::Error::Native(
+        openssl_bridge::error::take_error_queue(),
+    )))
 }
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl")]
 pub(crate) struct OpenSSLError {
-    e: openssl::error::Error,
+    e: openssl_bridge::error::NativeError,
 }
 
 #[pyo3::pymethods]
 impl OpenSSLError {
     #[getter]
     fn lib(&self) -> i32 {
-        self.e.library_code()
+        self.e.library
     }
 
     #[getter]
     fn reason(&self) -> i32 {
-        self.e.reason_code()
+        self.e.reason
     }
 
     #[getter]
     fn reason_text(&self) -> &[u8] {
-        self.e.reason().unwrap_or("").as_bytes()
+        self.e.reason_text.as_bytes()
     }
 
     fn __repr__<'py>(
@@ -307,10 +326,7 @@ impl OpenSSLError {
             py,
             format_args!(
                 "<OpenSSLError(code={}, lib={}, reason={}, reason_text={})>",
-                self.e.code(),
-                self.e.library_code(),
-                self.e.reason_code(),
-                self.e.reason().unwrap_or("")
+                self.e.code, self.e.library, self.e.reason, self.e.reason_text
             ),
         )
     }
@@ -320,11 +336,10 @@ impl OpenSSLError {
 pub(crate) fn capture_error_stack(
     py: pyo3::Python<'_>,
 ) -> pyo3::PyResult<pyo3::Bound<'_, pyo3::types::PyList>> {
-    let errs = pyo3::types::PyList::empty(py);
-    for e in openssl::error::ErrorStack::get().errors() {
-        errs.append(pyo3::Bound::new(py, OpenSSLError { e: e.clone() })?)?;
-    }
-    Ok(errs)
+    list_from_bridge_error(
+        py,
+        &openssl_bridge::Error::Native(openssl_bridge::error::take_error_queue()),
+    )
 }
 
 #[cfg(test)]
@@ -377,11 +392,11 @@ mod tests {
             .into();
             assert!(matches!(e, CryptographyError::Py(_)));
 
-            let e = cryptography_key_parsing::KeyParsingError::OpenSSL(
-                openssl::error::ErrorStack::get(),
+            let e = cryptography_key_parsing::KeyParsingError::Bridge(
+                openssl_bridge::Error::Native(Vec::new()),
             )
             .into();
-            assert!(matches!(e, CryptographyError::OpenSSL(_)));
+            assert!(matches!(e, CryptographyError::Py(_)));
 
             let e = pyo3::CastIntoError::new(
                 py.None().into_bound(py),
@@ -410,12 +425,13 @@ mod tests {
             CryptographyError::Asn1Write(asn1::WriteError::AllocationError)
         ));
 
-        let e = cryptography_key_parsing::KeySerializationError::OpenSSL(
-            openssl::error::ErrorStack::get(),
+        pyo3::Python::initialize();
+        let e = cryptography_key_parsing::KeySerializationError::Bridge(
+            openssl_bridge::Error::Native(Vec::new()),
         );
         assert!(matches!(
             CryptographyError::from(e),
-            CryptographyError::OpenSSL(_)
+            CryptographyError::Py(_)
         ));
     }
 
@@ -428,8 +444,9 @@ mod tests {
         CryptographyError::Asn1Write(asn1_write_err)
             .add_location(asn1::ParseLocation::Field("meh"));
 
-        let openssl_error = openssl::error::ErrorStack::get();
-        CryptographyError::from(openssl_error).add_location(asn1::ParseLocation::Field("meh"));
+        let openssl_error =
+            openssl_bridge::Error::Native(openssl_bridge::error::take_error_queue());
+        CryptographyError::OpenSSL(openssl_error).add_location(asn1::ParseLocation::Field("meh"));
 
         let asn1_parse_error = asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue);
         CryptographyError::KeyParsing(asn1_parse_error)

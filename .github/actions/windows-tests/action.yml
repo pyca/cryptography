@@ -44,9 +44,11 @@ runs:
         workflow: build-windows-openssl.yml
         name: "openssl-${{ inputs.openssl-name }}"
         path: "C:/openssl-${{ inputs.openssl-name }}/"
+    - uses: ./.github/actions/setup-libclang
     - name: Configure
       run: |
           echo "OPENSSL_DIR=C:/openssl-${OPENSSL_NAME}" >> $GITHUB_ENV
+          echo "OPENSSL_STATIC=1" >> $GITHUB_ENV
       env:
         OPENSSL_NAME: ${{ inputs.openssl-name }}
       shell: bash

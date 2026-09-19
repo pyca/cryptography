@@ -10,10 +10,25 @@ fn main() {
     // recompiles the crate) whenever any mtime in the package changes,
     // which defeats CI build caching. Everything below depends only on
     // this file, the environment variables it reads, and metadata from
-    // openssl-sys (which cargo tracks as a dependency on its own).
+    // openssl-bridge-sys (which cargo tracks as a dependency on its own).
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-env-changed=CRYPTOGRAPHY_BUILD_OPENSSL_NO_LEGACY");
 
+    println!("cargo:rerun-if-changed=../cryptography/__about__.py");
+    let about =
+        std::fs::read_to_string("../cryptography/__about__.py").expect("read package version");
+    let version = about
+        .lines()
+        .find_map(|line| line.strip_prefix("__version__ = "))
+        .expect("package version assignment")
+        .trim_matches('"');
+    assert!(
+        !version.is_empty()
+            && version
+                .bytes()
+                .all(|c| c.is_ascii_alphanumeric() || b".-_+".contains(&c))
+    );
+    println!("cargo:rustc-env=CRYPTOGRAPHY_PACKAGE_VERSION={version}");
     pyo3_build_config::use_pyo3_cfgs();
 
     if let Ok(version) = env::var("DEP_OPENSSL_VERSION_NUMBER") {

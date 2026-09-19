@@ -2,16 +2,13 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-pub(crate) fn is_dh(id: openssl::pkey::Id) -> bool {
-    cfg_if::cfg_if! {
-        if #[cfg(not(any(
-            CRYPTOGRAPHY_IS_LIBRESSL,
-            CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC
-        )))] {
-            id == openssl::pkey::Id::DH || id == openssl::pkey::Id::DHX
-        } else {
-            id == openssl::pkey::Id::DH
-        }
+/// Minimal positive DER INTEGER contents, including the required sign octet.
+pub fn integer_bytes(bytes: &[u8]) -> openssl_bridge::secret::SecretBytes {
+    let bytes = &bytes[bytes.iter().position(|&b| b != 0).unwrap_or(bytes.len())..];
+    let mut out = Vec::with_capacity(bytes.len() + 1);
+    if bytes.first().is_none_or(|b| b & 0x80 != 0) {
+        out.push(0);
     }
+    out.extend_from_slice(bytes);
+    out.into()
 }

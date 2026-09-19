@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - openssl-bridge
       - '*.*.x'
 
 permissions:
@@ -67,12 +68,13 @@ jobs:
           # Not actually an MSRV, just for coverage on this
           - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2"}}
           - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.4"}}
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         timeout-minutes: 3
         with:
           persist-credentials: false
+      - uses: ./.github/actions/setup-libclang
       - name: Setup python
         id: setup-python
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
@@ -111,17 +113,10 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
         with:
-          # openssl-sys reruns its build script when the include directory
+          # openssl-bridge-sys reruns its build script when the include directory
           # is newer than the cached fingerprint, so the key names the
           # specific OpenSSL build, not just its configuration.
           key: "${{ steps.setup-python.outputs.python-runtime-id }}-${{ matrix.PYTHON.NOXSESSION }}-${{ steps.openssl.outputs.cache-key }}-0"
-      # This must run after the cache action: rust-cache prunes binaries
-      # that already existed in ~/.cargo/bin before it ran, so installing
-      # bindgen first means it never gets cached. When the cache is warm,
-      # cargo sees the binary is already installed and skips the build.
-      - run: rustup run stable cargo install bindgen-cli
-        if: matrix.PYTHON.OPENSSL.TYPE == 'boringssl' || matrix.PYTHON.OPENSSL.TYPE == 'aws-lc'
-
       - run: uv pip install -c ci-constraints-requirements.txt 'nox[uv]' 'tomli; python_version < "3.11"'
       - name: Create nox environment
         run: |
@@ -161,7 +156,7 @@ jobs:
           - {IMAGE: "ubuntu-rolling:aarch64", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-arm"}
           - {IMAGE: "ubuntu-rolling:armv7l", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-arm"}
           - {IMAGE: "ubuntu-rolling:ppc64le", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-ppc64le"}
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       RUSTUP_HOME: /root/.rustup
     steps:
@@ -169,6 +164,7 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
+      - uses: ./.github/actions/setup-libclang
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
@@ -211,7 +207,7 @@ jobs:
         IMAGE:
           - {IMAGE: "alpine", NOXSESSION: "tests", RUNNER: "ubuntu-latest"}
           - {IMAGE: "alpine:aarch64", NOXSESSION: "tests", RUNNER: "ubuntu-24.04-arm"}
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       RUSTUP_HOME: /root/.rustup
     steps:
@@ -231,6 +227,7 @@ jobs:
         timeout-minutes: 3
         with:
           persist-credentials: false
+      - uses: ./.github/actions/setup-libclang
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
@@ -271,12 +268,13 @@ jobs:
           - {VERSION: "3.14t", NOXSESSION: "tests"}
           - {VERSION: "3.15", NOXSESSION: "tests"}
           - {VERSION: "3.15t", NOXSESSION: "tests"}
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         timeout-minutes: 3
         with:
           persist-credentials: false
+      - uses: ./.github/actions/setup-libclang
       - name: Setup python
         id: setup-python
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
@@ -303,7 +301,7 @@ jobs:
       #
       # Also keyed on the OpenSSL artifact: its header mtimes are its
       # creation time, and a cargo cache older than the artifact would
-      # otherwise recompile openssl-sys and everything above it every run.
+      # otherwise recompile openssl-bridge-sys and everything above it every run.
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
@@ -352,7 +350,7 @@ jobs:
             PYTHON: {VERSION: "3.14", NOXSESSION: "tests-nocoverage"}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "3.15", NOXSESSION: "tests-nocoverage"}
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         timeout-minutes: 3
@@ -424,7 +422,7 @@ jobs:
             REF: 50a73f5e96ba6c3d89647e28872c71cbd71af41b
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         timeout-minutes: 3
@@ -441,6 +439,7 @@ jobs:
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
+      - uses: ./.github/actions/setup-libclang
       - name: Setup python
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:

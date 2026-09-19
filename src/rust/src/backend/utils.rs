@@ -9,40 +9,11 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::serialization::{Encoding, PrivateFormat, PublicFormat};
 use crate::types;
 
-pub(crate) fn py_int_to_bn(
-    py: pyo3::Python<'_>,
-    v: &pyo3::Bound<'_, pyo3::PyAny>,
-) -> CryptographyResult<openssl::bn::BigNum> {
-    let n = v
-        .call_method0(pyo3::intern!(py, "bit_length"))?
-        .extract::<usize>()?
-        / 8
-        + 1;
-    let bytes = v
-        .call_method1(pyo3::intern!(py, "to_bytes"), (n, pyo3::intern!(py, "big")))?
-        .extract::<pyo3::pybacked::PyBackedBytes>()?;
-
-    Ok(openssl::bn::BigNum::from_slice(&bytes)?)
-}
-
-pub(crate) fn bn_to_py_int<'p>(
-    py: pyo3::Python<'p>,
-    b: &openssl::bn::BigNumRef,
-) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
-    assert!(!b.is_negative());
-
-    let int_type = py.get_type::<pyo3::types::PyInt>();
-    Ok(int_type.call_method1(
-        pyo3::intern!(py, "from_bytes"),
-        (b.to_vec(), pyo3::intern!(py, "big")),
-    )?)
-}
-
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn pkey_private_bytes<'p>(
     py: pyo3::Python<'p>,
     key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
-    pkey: &openssl::pkey::PKey<openssl::pkey::Private>,
+    pkey: &cryptography_key_parsing::PrivateKeyRef<'_>,
     encoding: Encoding,
     format: PrivateFormat,
     encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
@@ -66,8 +37,8 @@ pub(crate) fn pkey_private_bytes<'p>(
                     "When using Raw both encoding and format must be Raw and encryption_algorithm must be NoEncryption()"
                 )));
         }
-        let raw_bytes = pkey.raw_private_key()?;
-        return Ok(pyo3::types::PyBytes::new(py, &raw_bytes));
+        let raw_bytes = pkey.raw_bytes()?;
+        return Ok(pyo3::types::PyBytes::new(py, raw_bytes.as_ref()));
     }
 
     let py_password;
@@ -99,18 +70,16 @@ pub(crate) fn pkey_private_bytes<'p>(
     }
 
     if format == PrivateFormat::PKCS8 {
-        let parsed = cryptography_key_parsing::ParsedPrivateKey::Pkey(pkey.to_owned());
+        let parsed = *pkey;
         let (tag, der_bytes) = if password.is_empty() {
             (
                 "PRIVATE KEY",
-                cryptography_key_parsing::pkcs8::serialize_private_key(&parsed)?,
+                cryptography_key_parsing::pkcs8::serialize_private_key(parsed)?,
             )
         } else {
             (
                 "ENCRYPTED PRIVATE KEY",
-                cryptography_key_parsing::pkcs8::serialize_encrypted_private_key(
-                    &parsed, password,
-                )?,
+                cryptography_key_parsing::pkcs8::serialize_encrypted_private_key(parsed, password)?,
             )
         };
 
@@ -118,15 +87,15 @@ pub(crate) fn pkey_private_bytes<'p>(
     }
 
     if format == PrivateFormat::TraditionalOpenSSL {
-        if cryptography_openssl::fips::is_enabled() && !password.is_empty() {
+        if openssl_bridge::runtime::is_fips_enabled() && !password.is_empty() {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err(
                     "Encrypted traditional OpenSSL format is not supported in FIPS mode",
                 ),
             ));
         }
-        if let Ok(rsa) = pkey.rsa() {
-            let der_bytes = cryptography_key_parsing::rsa::serialize_pkcs1_private_key(&rsa)?;
+        if let cryptography_key_parsing::PrivateKeyRef::Rsa(rsa) = pkey {
+            let der_bytes = cryptography_key_parsing::rsa::serialize_pkcs1_private_key(*rsa)?;
             if encoding == Encoding::PEM {
                 let pem_bytes = cryptography_key_parsing::pem::encrypt_pem(
                     "RSA PRIVATE KEY",
@@ -145,8 +114,8 @@ pub(crate) fn pkey_private_bytes<'p>(
 
                 return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
             }
-        } else if let Ok(dsa) = pkey.dsa() {
-            let der_bytes = cryptography_key_parsing::dsa::serialize_pkcs1_private_key(&dsa)?;
+        } else if let cryptography_key_parsing::PrivateKeyRef::Dsa(dsa) = pkey {
+            let der_bytes = cryptography_key_parsing::dsa::serialize_pkcs1_private_key(dsa)?;
             if encoding == Encoding::PEM {
                 let pem_bytes = cryptography_key_parsing::pem::encrypt_pem(
                     "DSA PRIVATE KEY",
@@ -165,8 +134,8 @@ pub(crate) fn pkey_private_bytes<'p>(
 
                 return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
             }
-        } else if let Ok(ec) = pkey.ec_key() {
-            let der_bytes = cryptography_key_parsing::ec::serialize_pkcs1_private_key(&ec, true)?;
+        } else if let cryptography_key_parsing::PrivateKeyRef::Ec(ec) = pkey {
+            let der_bytes = cryptography_key_parsing::ec::serialize_pkcs1_private_key(ec, true)?;
             if encoding == Encoding::PEM {
                 let pem_bytes = cryptography_key_parsing::pem::encrypt_pem(
                     "EC PRIVATE KEY",
@@ -218,7 +187,7 @@ pub(crate) fn pkey_private_bytes<'p>(
 pub(crate) fn pkey_public_bytes<'p>(
     py: pyo3::Python<'p>,
     key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
-    pkey: &openssl::pkey::PKey<openssl::pkey::Public>,
+    pkey: &cryptography_key_parsing::PublicKeyRef<'_>,
     encoding: Encoding,
     format: PublicFormat,
     openssh_allowed: bool,
@@ -232,22 +201,22 @@ pub(crate) fn pkey_public_bytes<'p>(
                 ),
             ));
         }
-        let raw_bytes = pkey.raw_public_key()?;
-        return Ok(pyo3::types::PyBytes::new(py, &raw_bytes));
+        let raw_bytes = pkey.raw_bytes()?;
+        return Ok(pyo3::types::PyBytes::new(py, raw_bytes.as_ref()));
     }
 
     // SubjectPublicKeyInfo + PEM/DER
     if format == PublicFormat::SubjectPublicKeyInfo {
-        let der_bytes = cryptography_key_parsing::spki::serialize_public_key(pkey)?;
+        let der_bytes = cryptography_key_parsing::spki::serialize_public_key(*pkey)?;
 
         return crate::asn1::encode_der_data(py, "PUBLIC KEY".to_string(), der_bytes, encoding);
     }
 
-    if let Ok(ec) = pkey.ec_key() {
+    if let cryptography_key_parsing::PublicKeyRef::Ec(ec) = pkey {
         if encoding == Encoding::X962 {
             let point_form = match format {
-                PublicFormat::UncompressedPoint => openssl::ec::PointConversionForm::UNCOMPRESSED,
-                PublicFormat::CompressedPoint => openssl::ec::PointConversionForm::COMPRESSED,
+                PublicFormat::UncompressedPoint => openssl_bridge::ec::PointEncoding::Uncompressed,
+                PublicFormat::CompressedPoint => openssl_bridge::ec::PointEncoding::Compressed,
                 _ => {
                     return Err(CryptographyError::from(
                         pyo3::exceptions::PyValueError::new_err(
@@ -256,17 +225,14 @@ pub(crate) fn pkey_public_bytes<'p>(
                     ));
                 }
             };
-            let mut bn_ctx = openssl::bn::BigNumContext::new()?;
-            let data = ec
-                .public_key()
-                .to_bytes(ec.group(), point_form, &mut bn_ctx)?;
+            let data = ec.to_encoded(point_form)?;
             return Ok(pyo3::types::PyBytes::new(py, &data));
         }
     }
 
-    if let Ok(rsa) = pkey.rsa() {
+    if let cryptography_key_parsing::PublicKeyRef::Rsa(rsa) = pkey {
         if format == PublicFormat::PKCS1 {
-            let der_bytes = cryptography_key_parsing::rsa::serialize_pkcs1_public_key(&rsa)?;
+            let der_bytes = cryptography_key_parsing::rsa::serialize_pkcs1_public_key(rsa)?;
 
             return crate::asn1::encode_der_data(
                 py,
@@ -339,4 +305,34 @@ pub(crate) fn calculate_digest_and_algorithm<'p>(
     }
 
     Ok((data, algorithm))
+}
+
+pub(crate) fn py_int_to_bytes(
+    py: pyo3::Python<'_>,
+    value: &pyo3::Bound<'_, pyo3::PyAny>,
+) -> CryptographyResult<openssl_bridge::secret::SecretBytes> {
+    let size = value
+        .call_method0(pyo3::intern!(py, "bit_length"))?
+        .extract::<usize>()?
+        .div_ceil(8);
+    let bytes = value
+        .call_method1(
+            pyo3::intern!(py, "to_bytes"),
+            (size, pyo3::intern!(py, "big")),
+        )?
+        .extract::<pyo3::pybacked::PyBackedBytes>()?;
+    Ok(bytes.to_vec().into())
+}
+
+pub(crate) fn bytes_to_py_int<'p>(
+    py: pyo3::Python<'p>,
+    bytes: &[u8],
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    Ok(py.get_type::<pyo3::types::PyInt>().call_method1(
+        pyo3::intern!(py, "from_bytes"),
+        (
+            pyo3::types::PyBytes::new(py, bytes),
+            pyo3::intern!(py, "big"),
+        ),
+    )?)
 }

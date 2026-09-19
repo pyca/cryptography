@@ -5,18 +5,18 @@
 /// This is the OpenSSL KDF that's used in decrypting PEM blocks. It is a
 /// generalization of PBKDF1.
 pub fn openssl_kdf(
-    hash_alg: openssl::hash::MessageDigest,
+    hash_alg: openssl_bridge::hash::Algorithm,
     password: &[u8],
     salt: [u8; 8],
     length: usize,
-) -> Result<Vec<u8>, openssl::error::ErrorStack> {
+) -> Result<Vec<u8>, openssl_bridge::Error> {
     let mut key = Vec::with_capacity(length);
 
     while key.len() < length {
-        let mut h = openssl::hash::Hasher::new(hash_alg)?;
+        let mut h = openssl_bridge::hash::Hasher::new(hash_alg)?;
 
         if !key.is_empty() {
-            h.update(&key[key.len() - hash_alg.size()..])?;
+            h.update(&key[key.len() - hash_alg.output_size()?..])?;
         }
 
         h.update(password)?;
@@ -32,24 +32,26 @@ pub fn openssl_kdf(
 
 /// PBKDF1 as defined in RFC 2898 for PKCS#5 v1.5 PBE algorithms
 pub fn pbkdf1(
-    hash_alg: openssl::hash::MessageDigest,
+    hash_alg: openssl_bridge::hash::Algorithm,
     password: &[u8],
     salt: [u8; 8],
     iterations: u64,
     length: usize,
-) -> Result<Vec<u8>, openssl::error::ErrorStack> {
-    if length > hash_alg.size() || iterations == 0 {
-        return Err(openssl::error::ErrorStack::get());
+) -> Result<Vec<u8>, openssl_bridge::Error> {
+    if length > hash_alg.output_size()? || iterations == 0 {
+        return Err(openssl_bridge::Error::InvalidInput(
+            "invalid PBKDF1 parameters",
+        ));
     }
 
-    let mut h = openssl::hash::Hasher::new(hash_alg)?;
+    let mut h = openssl_bridge::hash::Hasher::new(hash_alg)?;
     h.update(password)?;
     h.update(&salt)?;
     let mut t = h.finish()?;
 
     // Apply hash function for specified iterations
     for _ in 1..iterations {
-        let mut h = openssl::hash::Hasher::new(hash_alg)?;
+        let mut h = openssl_bridge::hash::Hasher::new(hash_alg)?;
         h.update(&t)?;
         t = h.finish()?;
     }
@@ -63,10 +65,10 @@ mod tests {
     use super::{openssl_kdf, pbkdf1};
 
     #[test]
-    fn test_openssl_kdf() {
+    fn test_openssl_kdf_md5() {
         for (md, password, salt, expected) in [
             (
-                openssl::hash::MessageDigest::md5(),
+                openssl_bridge::hash::Algorithm::from_name("md5").unwrap(),
                 b"password123" as &[u8],
                 [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
                 &[
@@ -75,7 +77,7 @@ mod tests {
                 ][..],
             ),
             (
-                openssl::hash::MessageDigest::md5(),
+                openssl_bridge::hash::Algorithm::from_name("md5").unwrap(),
                 b"diffpassword",
                 [0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x11, 0x22],
                 &[
@@ -84,7 +86,7 @@ mod tests {
                 ],
             ),
             (
-                openssl::hash::MessageDigest::md5(),
+                openssl_bridge::hash::Algorithm::from_name("md5").unwrap(),
                 b"secret_key",
                 [0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88],
                 &[
@@ -93,7 +95,7 @@ mod tests {
                 ],
             ),
             (
-                openssl::hash::MessageDigest::md5(),
+                openssl_bridge::hash::Algorithm::from_name("md5").unwrap(),
                 b"another_password",
                 [0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00],
                 &[
@@ -102,7 +104,7 @@ mod tests {
                 ],
             ),
             (
-                openssl::hash::MessageDigest::md5(),
+                openssl_bridge::hash::Algorithm::from_name("md5").unwrap(),
                 b"very_long_and_complex_password",
                 [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef],
                 &[
@@ -112,7 +114,7 @@ mod tests {
                 ],
             ),
             (
-                openssl::hash::MessageDigest::md5(),
+                openssl_bridge::hash::Algorithm::from_name("md5").unwrap(),
                 b"different_secure_password",
                 [0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x10],
                 &[
@@ -122,14 +124,57 @@ mod tests {
                 ],
             ),
         ] {
-            let key = openssl_kdf(md, password, salt, expected.len()).unwrap();
-            assert_eq!(key, expected);
+            let key = openssl_kdf(md, password, salt, expected.len());
+            if openssl_bridge::BACKEND == openssl_bridge::Backend::OpenSsl
+                && openssl_bridge::runtime::is_fips_enabled()
+            {
+                // Startup FIPS properties must reject MD5, including when
+                // called from a Rust test instead of the Python API.
+                assert!(key.is_err());
+            } else {
+                assert_eq!(key.unwrap(), expected);
+            }
         }
     }
 
     #[test]
+    fn test_openssl_kdf_sha256() {
+        // OpenSSL enc -aes-256-cbc -P -md sha256 -S 0102030405060708
+        // -pass pass:password123, concatenating the printed key and IV.
+        // This spans two digest blocks and runs with startup FIPS properties.
+        let expected = [
+            0x73, 0xb8, 0x6b, 0x89, 0xbb, 0xf8, 0x2a, 0xff, 0xc1, 0x4c, 0x9f, 0xe4, 0x00, 0xbe,
+            0x75, 0x51, 0x06, 0x05, 0x4c, 0x12, 0x60, 0xd5, 0x12, 0x67, 0xbb, 0x1e, 0xc4, 0xc4,
+            0xd5, 0x9a, 0x61, 0xb8, 0xc3, 0xba, 0x39, 0x12, 0xff, 0x6b, 0x91, 0xf6, 0x8e, 0x67,
+            0x3e, 0xf0, 0xfb, 0x81, 0x29, 0xbc,
+        ];
+        let key = openssl_kdf(
+            openssl_bridge::hash::Algorithm::from_name("sha256").unwrap(),
+            b"password123",
+            [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
+            expected.len(),
+        )
+        .unwrap();
+        assert_eq!(key, expected);
+    }
+
+    #[test]
     fn test_pbkdf1() {
-        assert!(pbkdf1(openssl::hash::MessageDigest::md5(), b"abc", [0; 8], 1, 20).is_err());
-        assert!(pbkdf1(openssl::hash::MessageDigest::md5(), b"abc", [0; 8], 0, 8).is_err());
+        assert!(pbkdf1(
+            openssl_bridge::hash::Algorithm::from_name("md5").unwrap(),
+            b"abc",
+            [0; 8],
+            1,
+            20
+        )
+        .is_err());
+        assert!(pbkdf1(
+            openssl_bridge::hash::Algorithm::from_name("md5").unwrap(),
+            b"abc",
+            [0; 8],
+            0,
+            8
+        )
+        .is_err());
     }
 }

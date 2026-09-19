@@ -27,16 +27,27 @@ if [[ "${TYPE}" == "openssl" ]]; then
   make install_sw install_ssldirs
   # delete binaries we don't need
   rm -rf "${OSSL_PATH}/bin"
-  # For OpenSSL 3.0.0 set up the FIPS config. This does not activate it by
-  # default, but allows programmatic activation at runtime
+  # Select FIPS algorithms during native initialization, before any operations.
+  # Runtime mutation of default properties is not thread safe.
   if [[ "${CONFIG_FLAGS}" =~ enable-fips ]]; then
       # As of alpha16 we have to install it separately and enable it in the config flags
       make -j"$(nproc)" install_fips
       pushd "${OSSL_PATH}"
-      # include the conf file generated as part of install_fips
-      sed -i "s:# .include fipsmodule.cnf:.include $(pwd)/ssl/fipsmodule.cnf:" ssl/openssl.cnf
-      # uncomment the FIPS section
-      sed -i 's:# fips = fips_sect:fips = fips_sect:' ssl/openssl.cnf
+      cat > ssl/openssl.cnf <<EOF
+config_diagnostics = 1
+openssl_conf = openssl_init
+.include ${OSSL_PATH}/ssl/fipsmodule.cnf
+[openssl_init]
+providers = provider_sect
+alg_section = algorithm_sect
+[provider_sect]
+fips = fips_sect
+base = base_sect
+[base_sect]
+activate = 1
+[algorithm_sect]
+default_properties = fips=yes
+EOF
       popd
   fi
   popd

@@ -15,37 +15,40 @@ struct DsaPrivateKey<'a> {
 }
 
 pub fn serialize_pkcs1_private_key(
-    dsa: &openssl::dsa::DsaRef<openssl::pkey::Private>,
+    dsa: &openssl_bridge::dsa::PrivateKeyMaterial,
 ) -> KeySerializationResult<Vec<u8>> {
-    let p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.p())?;
-    let q_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.q())?;
-    let g_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.g())?;
-    let pub_key_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.pub_key())?;
-    let priv_key_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(dsa.priv_key())?;
-
-    let key = DsaPrivateKey {
+    let parts = dsa.parameters().components();
+    let public = dsa.public_key();
+    let p_bytes = crate::utils::integer_bytes(parts.p);
+    let q_bytes = crate::utils::integer_bytes(parts.q);
+    let g_bytes = crate::utils::integer_bytes(parts.g);
+    let pub_key_bytes = crate::utils::integer_bytes(public.public_value());
+    let priv_key_bytes = crate::utils::integer_bytes(dsa.scalar());
+    Ok(asn1::write_single(&DsaPrivateKey {
         version: 0,
-        p: asn1::BigUint::new(&p_bytes).unwrap(),
-        q: asn1::BigUint::new(&q_bytes).unwrap(),
-        g: asn1::BigUint::new(&g_bytes).unwrap(),
-        pub_key: asn1::BigUint::new(&pub_key_bytes).unwrap(),
-        priv_key: asn1::BigUint::new(&priv_key_bytes).unwrap(),
-    };
-    Ok(asn1::write_single(&key)?)
+        p: asn1::BigUint::new(p_bytes.as_ref()).unwrap(),
+        q: asn1::BigUint::new(q_bytes.as_ref()).unwrap(),
+        g: asn1::BigUint::new(g_bytes.as_ref()).unwrap(),
+        pub_key: asn1::BigUint::new(pub_key_bytes.as_ref()).unwrap(),
+        priv_key: asn1::BigUint::new(priv_key_bytes.as_ref()).unwrap(),
+    })?)
 }
-
 pub fn parse_pkcs1_private_key(
     data: &[u8],
-) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
-    let dsa_private_key = asn1::parse_single::<DsaPrivateKey<'_>>(data)?;
-    if dsa_private_key.version != 0 {
+) -> KeyParsingResult<openssl_bridge::dsa::PrivateKeyMaterial> {
+    let key = asn1::parse_single::<DsaPrivateKey<'_>>(data)?;
+    if key.version != 0 {
         return Err(crate::KeyParsingError::InvalidKey);
     }
-    let p = openssl::bn::BigNum::from_slice(dsa_private_key.p.as_bytes())?;
-    let q = openssl::bn::BigNum::from_slice(dsa_private_key.q.as_bytes())?;
-    let g = openssl::bn::BigNum::from_slice(dsa_private_key.g.as_bytes())?;
-    let priv_key = openssl::bn::BigNum::from_slice(dsa_private_key.priv_key.as_bytes())?;
-    let pub_key = openssl::bn::BigNum::from_slice(dsa_private_key.pub_key.as_bytes())?;
-    let dsa = openssl::dsa::Dsa::from_private_components(p, q, g, priv_key, pub_key)?;
-    Ok(openssl::pkey::PKey::from_dsa(dsa)?)
+    let params =
+        openssl_bridge::dsa::ParameterMaterial::from_components(openssl_bridge::dsa::Components {
+            p: key.p.as_bytes(),
+            q: key.q.as_bytes(),
+            g: key.g.as_bytes(),
+        })?;
+    Ok(openssl_bridge::dsa::PrivateKeyMaterial::from_components(
+        params,
+        key.priv_key.as_bytes(),
+        key.pub_key.as_bytes(),
+    )?)
 }

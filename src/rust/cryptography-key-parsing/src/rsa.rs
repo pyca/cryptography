@@ -22,73 +22,85 @@ pub(crate) struct RsaPrivateKey<'a> {
     pub(crate) other_prime_infos: Option<asn1::SequenceOf<'a, asn1::Sequence<'a>, 1>>,
 }
 
-pub fn parse_pkcs1_public_key(
-    data: &[u8],
-) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Public>> {
-    let k = asn1::parse_single::<Pkcs1RsaPublicKey<'_>>(data)?;
-
-    let n = openssl::bn::BigNum::from_slice(k.n.as_bytes())?;
-    let e = openssl::bn::BigNum::from_slice(k.e.as_bytes())?;
-
-    let rsa = openssl::rsa::Rsa::from_public_components(n, e)?;
-    Ok(openssl::pkey::PKey::from_rsa(rsa)?)
+/// Bounded encodings from an RSA private-key container. Operations require the
+/// independent RSA constructor with the caller's explicit validation policy.
+pub struct RsaPrivateMaterial {
+    parts: [openssl_bridge::secret::SecretBytes; 8],
 }
-
+impl RsaPrivateMaterial {
+    pub fn components(&self) -> openssl_bridge::rsa::PrivateComponents<'_> {
+        let [n, e, d, p, q, dmp1, dmq1, iqmp] = &self.parts;
+        openssl_bridge::rsa::PrivateComponents {
+            n: n.as_ref(),
+            e: e.as_ref(),
+            d: d.as_ref(),
+            p: p.as_ref(),
+            q: q.as_ref(),
+            dmp1: dmp1.as_ref(),
+            dmq1: dmq1.as_ref(),
+            iqmp: iqmp.as_ref(),
+        }
+    }
+}
+pub fn parse_pkcs1_public_key(data: &[u8]) -> KeyParsingResult<openssl_bridge::rsa::PublicKey> {
+    let key = asn1::parse_single::<Pkcs1RsaPublicKey<'_>>(data)?;
+    Ok(openssl_bridge::rsa::PublicKey::from_components(
+        key.n.as_bytes(),
+        key.e.as_bytes(),
+    )?)
+}
 pub fn serialize_pkcs1_public_key(
-    rsa: &openssl::rsa::RsaRef<impl openssl::pkey::HasPublic>,
+    key: &openssl_bridge::rsa::PublicKey,
 ) -> KeySerializationResult<Vec<u8>> {
-    let n_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.n())?;
-    let e_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.e())?;
-
-    let key = Pkcs1RsaPublicKey {
-        n: asn1::BigUint::new(&n_bytes).unwrap(),
-        e: asn1::BigUint::new(&e_bytes).unwrap(),
-    };
-    Ok(asn1::write_single(&key)?)
+    let parts = key.export_components()?;
+    let n = crate::utils::integer_bytes(&parts.n);
+    let e = crate::utils::integer_bytes(&parts.e);
+    Ok(asn1::write_single(&Pkcs1RsaPublicKey {
+        n: asn1::BigUint::new(n.as_ref()).unwrap(),
+        e: asn1::BigUint::new(e.as_ref()).unwrap(),
+    })?)
 }
-
 pub fn serialize_pkcs1_private_key(
-    rsa: &openssl::rsa::RsaRef<openssl::pkey::Private>,
+    parts: openssl_bridge::rsa::PrivateComponents<'_>,
 ) -> KeySerializationResult<Vec<u8>> {
-    let n_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.n())?;
-    let e_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.e())?;
-    let d_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.d())?;
-    let p_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.p().unwrap())?;
-    let q_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.q().unwrap())?;
-    let dmp1_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.dmp1().unwrap())?;
-    let dmq1_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.dmq1().unwrap())?;
-    let iqmp_bytes = cryptography_openssl::utils::bn_to_big_endian_bytes(rsa.iqmp().unwrap())?;
-
-    let key = RsaPrivateKey {
+    let n = crate::utils::integer_bytes(parts.n);
+    let e = crate::utils::integer_bytes(parts.e);
+    let d = crate::utils::integer_bytes(parts.d);
+    let p = crate::utils::integer_bytes(parts.p);
+    let q = crate::utils::integer_bytes(parts.q);
+    let dmp1 = crate::utils::integer_bytes(parts.dmp1);
+    let dmq1 = crate::utils::integer_bytes(parts.dmq1);
+    let iqmp = crate::utils::integer_bytes(parts.iqmp);
+    Ok(asn1::write_single(&RsaPrivateKey {
         version: 0,
-        n: asn1::BigUint::new(&n_bytes).unwrap(),
-        e: asn1::BigUint::new(&e_bytes).unwrap(),
-        d: asn1::BigUint::new(&d_bytes).unwrap(),
-        p: asn1::BigUint::new(&p_bytes).unwrap(),
-        q: asn1::BigUint::new(&q_bytes).unwrap(),
-        dmp1: asn1::BigUint::new(&dmp1_bytes).unwrap(),
-        dmq1: asn1::BigUint::new(&dmq1_bytes).unwrap(),
-        iqmp: asn1::BigUint::new(&iqmp_bytes).unwrap(),
+        n: asn1::BigUint::new(n.as_ref()).unwrap(),
+        e: asn1::BigUint::new(e.as_ref()).unwrap(),
+        d: asn1::BigUint::new(d.as_ref()).unwrap(),
+        p: asn1::BigUint::new(p.as_ref()).unwrap(),
+        q: asn1::BigUint::new(q.as_ref()).unwrap(),
+        dmp1: asn1::BigUint::new(dmp1.as_ref()).unwrap(),
+        dmq1: asn1::BigUint::new(dmq1.as_ref()).unwrap(),
+        iqmp: asn1::BigUint::new(iqmp.as_ref()).unwrap(),
         other_prime_infos: None,
-    };
-    Ok(asn1::write_single(&key)?)
+    })?)
 }
-
-pub fn parse_pkcs1_private_key(
-    data: &[u8],
-) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
-    let rsa_private_key = asn1::parse_single::<RsaPrivateKey<'_>>(data)?;
-    if rsa_private_key.version != 0 || rsa_private_key.other_prime_infos.is_some() {
+pub fn parse_pkcs1_private_key(data: &[u8]) -> KeyParsingResult<RsaPrivateMaterial> {
+    let key = asn1::parse_single::<RsaPrivateKey<'_>>(data)?;
+    if key.version != 0 || key.other_prime_infos.is_some() {
         return Err(KeyParsingError::InvalidKey);
     }
-    let n = openssl::bn::BigNum::from_slice(rsa_private_key.n.as_bytes())?;
-    let e = openssl::bn::BigNum::from_slice(rsa_private_key.e.as_bytes())?;
-    let d = openssl::bn::BigNum::from_slice(rsa_private_key.d.as_bytes())?;
-    let p = openssl::bn::BigNum::from_slice(rsa_private_key.p.as_bytes())?;
-    let q = openssl::bn::BigNum::from_slice(rsa_private_key.q.as_bytes())?;
-    let dmp1 = openssl::bn::BigNum::from_slice(rsa_private_key.dmp1.as_bytes())?;
-    let dmq1 = openssl::bn::BigNum::from_slice(rsa_private_key.dmq1.as_bytes())?;
-    let iqmp = openssl::bn::BigNum::from_slice(rsa_private_key.iqmp.as_bytes())?;
-    let rsa_key = openssl::rsa::Rsa::from_private_components(n, e, d, p, q, dmp1, dmq1, iqmp)?;
-    Ok(openssl::pkey::PKey::from_rsa(rsa_key)?)
+    let parts = [
+        key.n, key.e, key.d, key.p, key.q, key.dmp1, key.dmq1, key.iqmp,
+    ];
+    // Match the independent RSA operation layer's native bit-length bound, while
+    // deferring mathematical checks until the validation policy is selected.
+    if parts
+        .iter()
+        .any(|n| n.as_bytes().len() > (i32::MAX as usize) / 8)
+    {
+        return Err(KeyParsingError::InvalidKey);
+    }
+    Ok(RsaPrivateMaterial {
+        parts: parts.map(|n| n.as_bytes().to_vec().into()),
+    })
 }

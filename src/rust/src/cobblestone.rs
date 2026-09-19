@@ -224,7 +224,7 @@ impl ChunkedEncryptor {
     ) -> CryptographyResult<Self> {
         check_key_length(params, key)?;
         let mut salt = [0; SALT_LEN];
-        cryptography_openssl::rand::rand_bytes(&mut salt)?;
+        openssl_bridge::rand::fill_private(&mut salt)?;
         let keys = derive_keys(py, params, key, &salt, context)?;
         let cipher = ChunkCipher::new(py, params, &keys)?;
         let mut header = [0; HEADER_LEN];
@@ -586,8 +586,11 @@ impl Cobblestone128Encryptor {
         data: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.inner
-            .update_into(py, data.as_bytes(), buf.as_mut_bytes())
+        let written = self
+            .inner
+            .update_into(py, data.as_bytes(), buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn finalize<'p>(
@@ -626,8 +629,11 @@ impl Cobblestone128Decryptor {
         data: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.inner
-            .update_into(py, data.as_bytes(), buf.as_mut_bytes())
+        let written = self
+            .inner
+            .update_into(py, data.as_bytes(), buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn finalize<'p>(
@@ -677,8 +683,11 @@ impl Cobblestone256Encryptor {
         data: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.inner
-            .update_into(py, data.as_bytes(), buf.as_mut_bytes())
+        let written = self
+            .inner
+            .update_into(py, data.as_bytes(), buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn finalize<'p>(
@@ -717,8 +726,11 @@ impl Cobblestone256Decryptor {
         data: CffiBuf<'_>,
         mut buf: CffiMutBuf<'_>,
     ) -> CryptographyResult<usize> {
-        self.inner
-            .update_into(py, data.as_bytes(), buf.as_mut_bytes())
+        let written = self
+            .inner
+            .update_into(py, data.as_bytes(), buf.as_mut_bytes())?;
+        buf.commit(py, written)?;
+        Ok(written)
     }
 
     fn finalize<'p>(

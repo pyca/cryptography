@@ -91,7 +91,7 @@ impl EncryptionAlgorithm {
                     cryptography_crypto::pkcs12::KDF_ENCRYPTION_KEY_ID,
                     cipher_kdf_iter,
                     24,
-                    openssl::hash::MessageDigest::sha1(),
+                    openssl_bridge::hash::Algorithm::from_name("sha1")?,
                 )?;
                 let iv = cryptography_crypto::pkcs12::kdf(
                     password,
@@ -99,32 +99,37 @@ impl EncryptionAlgorithm {
                     cryptography_crypto::pkcs12::KDF_IV_ID,
                     cipher_kdf_iter,
                     8,
-                    openssl::hash::MessageDigest::sha1(),
+                    openssl_bridge::hash::Algorithm::from_name("sha1")?,
                 )?;
 
-                Ok(openssl::symm::encrypt(
-                    openssl::symm::Cipher::des_ede3_cbc(),
+                Ok(openssl_bridge::cipher::encrypt_padded(
+                    openssl_bridge::cipher::Cipher::TripleDesCbc,
                     &key,
-                    Some(&iv),
+                    &iv,
                     data,
                 )?)
             }
             EncryptionAlgorithm::PBESv2SHA256AndAES256CBC => {
-                let sha256 = openssl::hash::MessageDigest::sha256();
+                let sha256 = openssl_bridge::hash::Algorithm::from_name("sha256")?;
 
                 let mut key = [0; 32];
-                openssl::pkcs5::pbkdf2_hmac(
+                openssl_bridge::kdf::pbkdf2_hmac(
+                    sha256,
                     password,
                     salt,
-                    cipher_kdf_iter.try_into().unwrap(),
-                    sha256,
+                    u32::try_from(cipher_kdf_iter)
+                        .ok()
+                        .and_then(std::num::NonZeroU32::new)
+                        .ok_or(openssl_bridge::Error::InvalidInput(
+                            "invalid PBKDF2 iteration count",
+                        ))?,
                     &mut key,
                 )?;
 
-                Ok(openssl::symm::encrypt(
-                    openssl::symm::Cipher::aes_256_cbc(),
+                Ok(openssl_bridge::cipher::encrypt_padded(
+                    openssl_bridge::cipher::Cipher::Aes256Cbc,
                     &key,
-                    Some(iv),
+                    iv,
                     data,
                 )?)
             }

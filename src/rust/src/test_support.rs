@@ -70,36 +70,46 @@ fn pkcs7_verify(
     certs: Vec<pyo3::Py<PyCertificate>>,
     options: pyo3::Bound<'_, pyo3::types::PyList>,
 ) -> CryptographyResult<()> {
-    let p7 = match encoding {
-        crate::serialization::Encoding::DER => openssl::pkcs7::Pkcs7::from_der(sig)?,
-        crate::serialization::Encoding::PEM => openssl::pkcs7::Pkcs7::from_pem(sig)?,
-        _ => openssl::pkcs7::Pkcs7::from_smime(sig)?.0,
+    let encoding = match encoding {
+        crate::serialization::Encoding::DER => openssl_bridge::pkcs7::Encoding::Der,
+        crate::serialization::Encoding::PEM => openssl_bridge::pkcs7::Encoding::Pem,
+        _ => openssl_bridge::pkcs7::Encoding::Smime,
     };
-
-    let mut flags = openssl::pkcs7::Pkcs7Flags::empty();
-    if options.contains(types::PKCS7_TEXT.get(py)?)? {
-        flags |= openssl::pkcs7::Pkcs7Flags::TEXT;
-    }
-
-    let store = {
-        let mut b = openssl::x509::store::X509StoreBuilder::new()?;
-        for cert in &certs {
-            let der = asn1::write_single(cert.get().raw.borrow_dependent())?;
-            b.add_cert(openssl::x509::X509::from_der(&der)?)?;
-        }
-        b.build()
-    };
-    let certs = openssl::stack::Stack::new()?;
-
-    p7.verify(
-        &certs,
-        &store,
+    let text = options.contains(types::PKCS7_TEXT.get(py)?)?;
+    let certificates = certs
+        .iter()
+        .map(|cert| asn1::write_single(cert.get().raw.borrow_dependent()))
+        .collect::<Result<Vec<_>, _>>()?;
+    let anchors: Vec<&[u8]> = certificates.iter().map(Vec::as_slice).collect();
+    openssl_bridge::pkcs7::verify(
+        encoding,
+        sig,
         msg.as_ref().map(|m| m.as_bytes()),
-        None,
-        flags,
+        &anchors,
+        text,
     )?;
 
     Ok(())
+}
+
+/// Seed fixed owned diagnostics for error-boundary regression tests. No raw
+/// pointer, callback, arbitrary error number, or allocation crosses Python.
+#[pyo3::pyfunction]
+fn queue_test_errors(count: u8) -> pyo3::PyResult<(i32, i32)> {
+    if !(1..=10).contains(&count) {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "test diagnostic count must be 1..=10",
+        ));
+    }
+    // SAFETY: Bounded fixture modifies only the current thread's error queue
+    // with fixed native codes. The shim and macro decoders take no pointers.
+    unsafe {
+        let code = openssl_bridge_sys::OB_test_queue_errors(count.into());
+        Ok((
+            openssl_bridge_sys::OB_err_lib(code),
+            openssl_bridge_sys::OB_err_reason(code),
+        ))
+    }
 }
 
 #[pyo3::pymodule(gil_used = false)]
@@ -107,6 +117,8 @@ pub(crate) mod test_support {
     #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     #[pymodule_export]
     use super::pkcs7_verify;
+    #[pymodule_export]
+    use super::queue_test_errors;
     #[pymodule_export]
     use super::test_parse_certificate;
 }

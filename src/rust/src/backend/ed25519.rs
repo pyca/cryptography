@@ -9,34 +9,42 @@ use crate::exceptions;
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed25519")]
 pub(crate) struct Ed25519PrivateKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Private>,
+    pkey: openssl_bridge::curve25519::Ed25519SigningKey,
 }
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed25519")]
 pub(crate) struct Ed25519PublicKey {
-    pkey: openssl::pkey::PKey<openssl::pkey::Public>,
+    pkey: openssl_bridge::curve25519::Ed25519VerifyingKey,
 }
 
 #[pyo3::pyfunction]
 fn generate_key() -> CryptographyResult<Ed25519PrivateKey> {
     Ok(Ed25519PrivateKey {
-        pkey: openssl::pkey::PKey::generate_ed25519()?,
+        pkey: openssl_bridge::curve25519::Ed25519SigningKey::generate()?,
     })
 }
 
-pub(crate) fn private_key_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
-) -> Ed25519PrivateKey {
-    Ed25519PrivateKey {
-        pkey: pkey.to_owned(),
-    }
+// Temporary serialization boundary until the shared key parser is migrated.
+pub(crate) fn private_key_from_key(
+    key: openssl_bridge::curve25519::Ed25519SigningKey,
+) -> CryptographyResult<Ed25519PrivateKey> {
+    Ok(Ed25519PrivateKey { pkey: key })
 }
 
-pub(crate) fn public_key_from_pkey(
-    pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
-) -> Ed25519PublicKey {
-    Ed25519PublicKey {
-        pkey: pkey.to_owned(),
+pub(crate) fn public_key_from_key(
+    key: openssl_bridge::curve25519::Ed25519VerifyingKey,
+) -> CryptographyResult<Ed25519PublicKey> {
+    Ok(Ed25519PublicKey { pkey: key })
+}
+
+impl Ed25519PrivateKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PrivateKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PrivateKeyRef::Ed25519(&self.pkey))
+    }
+}
+impl Ed25519PublicKey {
+    fn serialization_key(&self) -> CryptographyResult<cryptography_key_parsing::PublicKeyRef<'_>> {
+        Ok(cryptography_key_parsing::PublicKeyRef::Ed25519(&self.pkey))
     }
 }
 
@@ -44,22 +52,21 @@ pub(crate) fn public_key_from_pkey(
 // them is a risk.
 #[pyo3::pyfunction]
 fn from_private_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<Ed25519PrivateKey> {
-    let pkey = openssl::pkey::PKey::private_key_from_raw_bytes(
-        data.as_bytes(),
-        openssl::pkey::Id::ED25519,
-    )
-    .map_err(|_| {
-        pyo3::exceptions::PyValueError::new_err("An Ed25519 private key is 32 bytes long")
-    })?;
+    let length_error =
+        || pyo3::exceptions::PyValueError::new_err("An Ed25519 private key is 32 bytes long");
+    let bytes = data.as_bytes().try_into().map_err(|_| length_error())?;
+    let pkey = openssl_bridge::curve25519::Ed25519SigningKey::from_seed(bytes)
+        .map_err(|_| length_error())?;
     Ok(Ed25519PrivateKey { pkey })
 }
 
 #[pyo3::pyfunction]
 fn from_public_bytes(data: &[u8]) -> pyo3::PyResult<Ed25519PublicKey> {
-    let pkey = openssl::pkey::PKey::public_key_from_raw_bytes(data, openssl::pkey::Id::ED25519)
-        .map_err(|_| {
-            pyo3::exceptions::PyValueError::new_err("An Ed25519 public key is 32 bytes long")
-        })?;
+    let length_error =
+        || pyo3::exceptions::PyValueError::new_err("An Ed25519 public key is 32 bytes long");
+    let bytes = data.try_into().map_err(|_| length_error())?;
+    let pkey = openssl_bridge::curve25519::Ed25519VerifyingKey::from_bytes(bytes)
+        .map_err(|_| length_error())?;
     Ok(Ed25519PublicKey { pkey })
 }
 
@@ -70,25 +77,14 @@ impl Ed25519PrivateKey {
         py: pyo3::Python<'p>,
         data: CffiBuf<'_>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let mut signer = openssl::sign::Signer::new_without_digest(&self.pkey)?;
-        let len = signer.len()?;
-        let data_bytes = data.as_bytes();
-        Ok(pyo3::types::PyBytes::new_with(py, len, |b| {
-            let n = py
-                .detach(|| signer.sign_oneshot(b, data_bytes))
-                .map_err(CryptographyError::from)?;
-            assert_eq!(n, b.len());
-            Ok(())
-        })?)
+        let data = data.as_bytes();
+        let signature = py.detach(|| self.pkey.sign(data))?;
+        Ok(pyo3::types::PyBytes::new(py, &signature))
     }
 
     fn public_key(&self) -> CryptographyResult<Ed25519PublicKey> {
-        let raw_bytes = self.pkey.raw_public_key()?;
         Ok(Ed25519PublicKey {
-            pkey: openssl::pkey::PKey::public_key_from_raw_bytes(
-                &raw_bytes,
-                openssl::pkey::Id::ED25519,
-            )?,
+            pkey: self.pkey.verifying_key()?,
         })
     }
 
@@ -96,8 +92,8 @@ impl Ed25519PrivateKey {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let raw_bytes = self.pkey.raw_private_key()?;
-        Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
+        let raw_bytes = self.pkey.to_seed()?;
+        Ok(pyo3::types::PyBytes::new(py, raw_bytes.as_ref()))
     }
 
     fn private_bytes<'p>(
@@ -110,7 +106,7 @@ impl Ed25519PrivateKey {
         utils::pkey_private_bytes(
             py,
             slf,
-            &slf.borrow().pkey,
+            &slf.borrow().serialization_key()?,
             encoding,
             format,
             encryption_algorithm,
@@ -139,11 +135,10 @@ impl Ed25519PublicKey {
         signature: CffiBuf<'_>,
         data: CffiBuf<'_>,
     ) -> CryptographyResult<()> {
-        let mut verifier = openssl::sign::Verifier::new_without_digest(&self.pkey)?;
-        let sig_bytes = signature.as_bytes();
-        let data_bytes = data.as_bytes();
+        let signature = signature.as_bytes();
+        let data = data.as_bytes();
         let valid = py
-            .detach(|| verifier.verify_oneshot(sig_bytes, data_bytes))
+            .detach(|| self.pkey.verify(data, signature))
             .unwrap_or(false);
 
         if !valid {
@@ -159,7 +154,7 @@ impl Ed25519PublicKey {
         &self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        let raw_bytes = self.pkey.raw_public_key()?;
+        let raw_bytes = self.pkey.to_bytes()?;
         Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
     }
 
@@ -169,11 +164,19 @@ impl Ed25519PublicKey {
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PublicFormat,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        utils::pkey_public_bytes(py, slf, &slf.borrow().pkey, encoding, format, true, true)
+        utils::pkey_public_bytes(
+            py,
+            slf,
+            &slf.borrow().serialization_key()?,
+            encoding,
+            format,
+            true,
+            true,
+        )
     }
 
-    fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> bool {
-        self.pkey.public_eq(&other.pkey)
+    fn __eq__(&self, other: pyo3::PyRef<'_, Self>) -> CryptographyResult<bool> {
+        Ok(self.pkey.to_bytes()? == other.pkey.to_bytes()?)
     }
 
     fn __copy__(slf: pyo3::PyRef<'_, Self>) -> pyo3::PyRef<'_, Self> {
