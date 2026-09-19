@@ -436,6 +436,20 @@ jobs:
           ref: ${{ matrix.REF }}
           path: ${{ matrix.PATH }}
           persist-credentials: false
+      - name: Apply the companion pyOpenSSL migration
+        if: matrix.PATH == 'pyopenssl'
+        run: git -C pyopenssl apply "$GITHUB_WORKSPACE/.github/patches/${{ matrix.DOWNSTREAM }}.patch"
+      - name: Checkout migrated pyOpenSSL for other downstream consumers
+        if: matrix.PATH != 'pyopenssl'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: pyca/pyopenssl
+          ref: 567808adb4d859323424c3a6bc183e13a1ac59e8
+          path: pyopenssl-bridge
+          persist-credentials: false
+      - name: Apply the companion pyOpenSSL migration for dependencies
+        if: matrix.PATH != 'pyopenssl'
+        run: git -C pyopenssl-bridge apply "$GITHUB_WORKSPACE/.github/patches/pyopenssl.patch"
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
@@ -451,6 +465,11 @@ jobs:
       - run: uv venv
       - run: source .venv/bin/activate && ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
       - run: uv pip install -v .
+      # Released pyOpenSSL uses the removed private CFFI binding. Exercise its
+      # companion migration with downstream consumers on this development branch.
+      - name: Install migrated pyOpenSSL dependency
+        if: matrix.PATH != 'pyopenssl'
+        run: uv pip install --no-deps ./pyopenssl-bridge
       # cryptography main has a version of "(X+1).0.0.dev1" where X is the
       # most recently released major version. A package used by a downstream
       # may depend on cryptography <=X. If you use entrypoints stuff, this can
