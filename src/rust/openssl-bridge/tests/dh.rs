@@ -110,9 +110,18 @@ fn encoded_components_preserve_roundtrips_but_cannot_skip_validation() {
 #[test]
 fn ssh_group14_with_long_private_exponent() {
     let p = modulus();
+    // BoringSSL requires the explicit subgroup order for this legacy group.
+    let mut q = p.clone();
+    *q.last_mut().unwrap() -= 1;
+    let mut carry = 0;
+    for byte in &mut q {
+        let next = *byte & 1;
+        *byte = (*byte >> 1) | (carry << 7);
+        carry = next;
+    }
     let params = Parameters::from_components(Components {
         p: &p,
-        q: None,
+        q: Some(&q),
         g: &[2],
     })
     .unwrap();
