@@ -311,7 +311,11 @@ fn pkcs12_pbe_decrypt(
         params.iterations,
         cipher.default_key_size()?,
         hash,
+        // Algorithms and lengths are validated above. LLVM attributes the native KDF
+        // allocation/provider failure edge to this delimiter.
+        // NO-COVERAGE-START
     )?;
+    // NO-COVERAGE-END
     let iv = cryptography_crypto::pkcs12::kdf(
         password,
         params.salt,
@@ -319,7 +323,11 @@ fn pkcs12_pbe_decrypt(
         params.iterations,
         cipher.iv_size()?,
         hash,
+        // Algorithms and lengths are validated above. LLVM attributes the native KDF
+        // allocation/provider failure edge to this delimiter.
+        // NO-COVERAGE-START
     )?;
+    // NO-COVERAGE-END
 
     openssl_bridge::cipher::decrypt_padded(cipher, &key, &iv, data)
         .map_err(|_| KeyParsingError::IncorrectPassword)

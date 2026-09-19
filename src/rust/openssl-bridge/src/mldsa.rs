@@ -202,7 +202,11 @@ fn configure(ctx: *mut ffi::EVP_PKEY_CTX, context: &[u8], input: Input) -> Resul
                 context.len(),
                 u32::from(matches!(input, Input::Mu)),
             )
+            // Context length and input mode are validated first; this edge requires failure
+            // to install fixed native parameters.
+            // NO-COVERAGE-START
         })?;
+        // NO-COVERAGE-END
     }
     Ok(())
 }

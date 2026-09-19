@@ -309,12 +309,18 @@ impl Descriptor {
                 ffi::OB_cipher_block_size(self.ptr()),
             )
         };
-        if key <= 0 || iv < 0 || block <= 0 || block > 32 {
-            return Err(Error::Unsupported("unexpected cipher parameters"));
-        }
-        Ok((key as usize, iv as usize, block as usize))
+        descriptor_sizes(key, iv, block)
     }
 }
+
+// Validate native metadata before it controls buffer sizes or pointer reads.
+fn descriptor_sizes(key: i32, iv: i32, block: i32) -> Result<(usize, usize, usize)> {
+    if key <= 0 || iv < 0 || block <= 0 || block > 32 {
+        return Err(Error::Unsupported("unexpected cipher parameters"));
+    }
+    Ok((key as usize, iv as usize, block as usize))
+}
+
 impl Drop for Descriptor {
     fn drop(&mut self) {
         #[cfg(backend = "openssl")]
@@ -410,7 +416,11 @@ impl Stream {
                 },
                 encrypt,
             )
+            // The stored key and IV sizes are validated; this propagation edge needs native
+            // initialization/allocation failure.
+            // NO-COVERAGE-START
         })?;
+        // NO-COVERAGE-END
         // SAFETY: Padding is configured exactly once, before any payload.
         check(unsafe { ffi::EVP_CIPHER_CTX_set_padding(ctx.ptr(), padding as i32) })?;
         Ok(Self {
@@ -661,7 +671,11 @@ impl CipherKey {
                 },
                 -1,
             )
+            // The stored key and IV sizes are validated; this propagation edge needs native
+            // initialization/allocation failure.
+            // NO-COVERAGE-START
         })?;
+        // NO-COVERAGE-END
         Ok(Stream {
             ctx,
             _descriptor: base._descriptor.clone(),
@@ -706,6 +720,16 @@ fn padded(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn descriptor_sizes_reject_invalid_native_metadata() {
+        assert_eq!(descriptor_sizes(16, 0, 1).unwrap(), (16, 0, 1));
+        assert_eq!(descriptor_sizes(32, 16, 32).unwrap(), (32, 16, 32));
+        for sizes in [(0, 0, 1), (-1, 0, 1), (16, -1, 16), (16, 0, 0), (16, 0, 33)] {
+            assert!(descriptor_sizes(sizes.0, sizes.1, sizes.2).is_err());
+        }
+    }
+
     #[test]
     fn poisoned_stream_rejects_reuse_and_preserves_output() {
         let mut c = Stream::new(

@@ -58,6 +58,21 @@ impl From<openssl_bridge::Error> for CryptographyError {
     }
 }
 
+impl From<openssl_bridge::containers::Pkcs12Error> for CryptographyError {
+    fn from(error: openssl_bridge::containers::Pkcs12Error) -> Self {
+        use openssl_bridge::containers::Pkcs12Error;
+        match error {
+            Pkcs12Error::Encoding(_) => {
+                pyo3::exceptions::PyValueError::new_err("Could not deserialize PKCS12 data").into()
+            }
+            Pkcs12Error::PasswordOrData(_) => {
+                pyo3::exceptions::PyValueError::new_err("Invalid password or PKCS12 data").into()
+            }
+            Pkcs12Error::Output(error) => error.into(),
+        }
+    }
+}
+
 impl From<pem::PemError> for CryptographyError {
     fn from(e: pem::PemError) -> CryptographyError {
         CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(format!(
@@ -235,7 +250,11 @@ impl From<CryptographyError> for pyo3::PyErr {
                     Ok(errors) => {
                         exceptions::InternalError::new_err((e.to_string(), errors.unbind()))
                     }
+                    // Building the native error list can fail only while allocating
+                    // Python-owned error records.
+                    // NO-COVERAGE-START
                     Err(error) => error,
+                    // NO-COVERAGE-END
                 })
             }
         }
@@ -333,6 +352,14 @@ mod tests {
     use pyo3::PyTypeInfo;
 
     use super::CryptographyError;
+
+    #[test]
+    fn pkcs12_export_errors_preserve_backend_diagnostics() {
+        let native = openssl_bridge::Error::InvalidState("export failed");
+        let error: CryptographyError =
+            openssl_bridge::containers::Pkcs12Error::Output(native.clone()).into();
+        assert!(matches!(error, CryptographyError::OpenSSL(e) if e == native));
+    }
 
     #[test]
     fn test_cryptographyerror_display() {

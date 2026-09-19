@@ -104,12 +104,20 @@ fn every_supported_aead_authenticates_before_releasing_plaintext() {
                         &mut output[..length]
                     )
                     .is_err(),
+                    // Failure-only assertion diagnostic; the authentication and output-
+                    // preservation checks remain covered.
+                    // NO-COVERAGE-START
                     "{algorithm:?} accepted bad tag"
                 );
+                // NO-COVERAGE-END
                 assert!(
                     output.iter().all(|&b| b == 0xA5),
+                    // Failure-only assertion diagnostic; the authentication and output-
+                    // preservation checks remain covered.
+                    // NO-COVERAGE-START
                     "{algorithm:?} released unauthenticated output"
                 );
+                // NO-COVERAGE-END
             }
             assert!(key
                 .open_into(

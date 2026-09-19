@@ -379,7 +379,11 @@ fn serialize_safebags<'p>(
         encryption_details.mac_kdf_iter,
         mac_algorithm_md.output_size()?,
         mac_algorithm_md,
+        // Algorithms and lengths are validated above. LLVM attributes the native KDF
+        // allocation/provider failure edge to this delimiter.
+        // NO-COVERAGE-START
     )?;
+    // NO-COVERAGE-END
     let mac_digest = {
         let mut h = hmac::Hmac::new_bytes(py, &mac_key, &encryption_details.mac_algorithm)?;
         h.update_bytes(py, &auth_safe_content)?;
@@ -578,22 +582,12 @@ fn decode_p12(
     let mut password_bytes = password_bytes.to_vec();
     password_bytes.push(0);
     let password = openssl_bridge::secret::SecretBytes::from(password_bytes);
-    let parsed = py
-        .detach(|| {
-            openssl_bridge::containers::parse_pkcs12(
-                data.as_ref(),
-                Some(std::ffi::CStr::from_bytes_with_nul(password.as_ref()).unwrap()),
-            )
-        })
-        .map_err(|error| match error {
-            openssl_bridge::containers::Pkcs12Error::Encoding(_) => CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("Could not deserialize PKCS12 data"),
-            ),
-            openssl_bridge::containers::Pkcs12Error::PasswordOrData(_) => CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("Invalid password or PKCS12 data"),
-            ),
-            openssl_bridge::containers::Pkcs12Error::Output(error) => error.into(),
-        })?;
+    let parsed = py.detach(|| {
+        openssl_bridge::containers::parse_pkcs12(
+            data.as_ref(),
+            Some(std::ffi::CStr::from_bytes_with_nul(password.as_ref()).unwrap()),
+        )
+    })?;
     if let Err(e) = asn1::parse_single::<cryptography_x509::pkcs12::Pfx<'_>>(data.as_ref()) {
         let warning_cls = pyo3::exceptions::PyUserWarning::type_object(py);
         let message = std::ffi::CString::new(format!("PKCS#12 bundle could not be parsed as DER, falling back to parsing as BER. In the future, this may become an exception. Error details: {e}")).unwrap();

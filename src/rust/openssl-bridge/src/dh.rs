@@ -240,7 +240,11 @@ impl PrivateKey {
         dh.set_key(
             Number::from_bytes(&self.public, MAX_BYTES)?,
             Some(Number::from_bytes(self.private.as_ref(), MAX_BYTES)?),
+            // The retained components have already been validated; rebuilding their native
+            // owner can fail only in native allocation.
+            // NO-COVERAGE-START
         )?;
+        // NO-COVERAGE-END
         struct NativeKey(NonNull<ffi::EVP_PKEY>);
         impl NativeKey {
             fn from_dh(dh: &Dh) -> Result<Self> {

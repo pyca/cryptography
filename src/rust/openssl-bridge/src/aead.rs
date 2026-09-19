@@ -124,7 +124,11 @@ impl Implementation {
         }
         let descriptor = Descriptor::lookup(algorithm.name())?;
         if descriptor.sizes()?.0 != algorithm.key_size() {
+            // The closed algorithm table fixes key sizes; this guards a broken native
+            // descriptor contract.
+            // NO-COVERAGE-START
             return Err(Error::Unsupported("unexpected AEAD descriptor parameters"));
+            // NO-COVERAGE-END
         }
         Ok(Self::Cipher(descriptor))
     }
@@ -324,7 +328,11 @@ impl Key {
                         ptr::null_mut()
                     },
                 )
+                // Keys, tags and nonce lengths are validated before initialization; this
+                // native failure edge requires a provider or allocation failure.
+                // NO-COVERAGE-START
             })?;
+            // NO-COVERAGE-END
         }
         // SAFETY: The stored key has the algorithm's exact length; nonce length
         // has been configured. SIV deliberately receives no nonce.
@@ -341,7 +349,11 @@ impl Key {
                 },
                 encrypt,
             )
+            // Keys, tags and nonce lengths are validated before initialization; this native
+            // failure edge requires a provider or allocation failure.
+            // NO-COVERAGE-START
         })?;
+        // NO-COVERAGE-END
         let mut written = 0;
         if protocol == Protocol::Ccm {
             // SAFETY: CCM's NULL-input, NULL-output call announces total payload
@@ -437,11 +449,19 @@ impl Key {
                 Algorithm::ChaCha20Poly1305 => ffi::EVP_aead_chacha20_poly1305(),
                 Algorithm::Aes128GcmSiv => ffi::EVP_aead_aes_128_gcm_siv(),
                 Algorithm::Aes256GcmSiv => ffi::EVP_aead_aes_256_gcm_siv(),
+                // Implementation::new selects the native AEAD path only for the three
+                // algorithms above.
+                // NO-COVERAGE-START
                 _ => return Err(Error::Unsupported("unsupported native AEAD")),
+                // NO-COVERAGE-END
             }
         };
         if descriptor.is_null() {
+            // These backend getters return static descriptors; NULL would violate their
+            // native contract.
+            // NO-COVERAGE-START
             return Err(Error::Unsupported("native AEAD is unavailable"));
+            // NO-COVERAGE-END
         }
         // SAFETY: Descriptor matches a validated key length and 16-byte tag size.
         crate::error::pointer(unsafe {

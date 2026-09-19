@@ -142,7 +142,11 @@ impl Ec {
         // SAFETY: Static NUL-terminated curve name; the object table is immutable.
         let nid = unsafe { ffi::OBJ_sn2nid(curve.native_name().as_ptr()) };
         if nid == 0 {
+            // Every compiled Curve variant has a registered native object name; retain
+            // this guard for a broken backend object table.
+            // NO-COVERAGE-START
             return Err(Error::Unsupported("EC curve is unavailable"));
+            // NO-COVERAGE-END
         }
         // SAFETY: Native named-curve constructor returns an owned key with a group.
         let key = Self(pointer(unsafe { ffi::EC_KEY_new_by_curve_name(nid) })?);
@@ -152,7 +156,11 @@ impl Ec {
         check(unsafe { ffi::EC_GROUP_get_cofactor(key.group(), cofactor.ptr(), ctx.ptr()) })?;
         // SAFETY: The query reads an initialized number without mutation.
         if unsafe { ffi::BN_is_one(cofactor.ptr()) } != 1 {
+            // The closed Curve enum contains only cofactor-one named groups; this
+            // guards the native group contract.
+            // NO-COVERAGE-START
             return Err(Error::Unsupported("EC curves must have cofactor one"));
+            // NO-COVERAGE-END
         }
         Ok(key)
     }

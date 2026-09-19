@@ -94,13 +94,34 @@ pub fn parse_pkcs1_private_key(data: &[u8]) -> KeyParsingResult<RsaPrivateMateri
     ];
     // Match the independent RSA operation layer's native bit-length bound, while
     // deferring mathematical checks until the validation policy is selected.
-    if parts
-        .iter()
-        .any(|n| n.as_bytes().len() > (i32::MAX as usize) / 8)
-    {
-        return Err(KeyParsingError::InvalidKey);
+    for n in parts {
+        validate_component_length(n.as_bytes().len())?;
     }
     Ok(RsaPrivateMaterial {
         parts: parts.map(|n| n.as_bytes().to_vec().into()),
     })
+}
+
+fn validate_component_length(length: usize) -> KeyParsingResult<()> {
+    if length > (i32::MAX as usize) / 8 {
+        return Err(KeyParsingError::InvalidKey);
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn component_lengths_fit_native_signed_bit_counts() {
+        let maximum = (i32::MAX as usize) / 8;
+        assert!(validate_component_length(0).is_ok());
+        assert!(validate_component_length(maximum).is_ok());
+        assert!(matches!(
+            validate_component_length(maximum + 1),
+            Err(KeyParsingError::InvalidKey)
+        ));
+        assert!(validate_component_length(usize::MAX).is_err());
+    }
 }

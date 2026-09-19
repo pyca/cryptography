@@ -330,6 +330,9 @@ class TestOwnedObjects:
         ]:
             with pytest.raises(ValueError):
                 pyopenssl.private_key_pem(der, cipher, password)
+        # A recognized AEAD cipher cannot encode encrypted PKCS#8 PEM.
+        with pytest.raises((ValueError, pyopenssl.NativeError)):
+            pyopenssl.private_key_pem(der, b"aes-128-gcm", b"password")
         assert "prime256v1" in pyopenssl.curve_names()
         assert pyopenssl.compiled_version_text()
         pyopenssl.random_mix(b"untrusted supplemental input")

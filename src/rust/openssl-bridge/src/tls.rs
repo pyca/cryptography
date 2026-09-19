@@ -72,6 +72,24 @@ mod state_tests {
     }
 
     #[test]
+    fn certificate_retry_preserves_writes_but_fatal_errors_erase_them() {
+        let mut connection = Connection::memory(context(Protocol::Tls), Role::Client).unwrap();
+        connection.pending_write = Some(b"pending plaintext".to_vec().into());
+        assert!(matches!(
+            connection.classify_status(ffi::SSL_ERROR_WANT_X509_LOOKUP, -1, None),
+            Err(IoError::WantCertificate)
+        ));
+        assert!(connection.pending_write.is_some());
+        assert!(!connection.poisoned);
+        assert!(matches!(
+            connection.classify_status(ffi::SSL_ERROR_SYSCALL, -1, Some(0)),
+            Err(IoError::System { code: None, .. })
+        ));
+        assert!(connection.pending_write.is_none());
+        assert!(connection.write(b"pending plaintext").is_err());
+    }
+
+    #[test]
     fn transports_and_pending_writes_restrict_operations() {
         let dtls = context(Protocol::Dtls);
         assert!(Connection::memory(dtls.clone(), Role::Client).is_err());
@@ -151,7 +169,10 @@ mod state_tests {
             Err(IoError::WantRead)
         ));
         let Transport::Memory { output, .. } = connection.transport else {
+            // Failure-only test diagnostic.
+            // NO-COVERAGE-START
             unreachable!()
+            // NO-COVERAGE-END
         };
         // SAFETY: The connection owns this memory BIO exclusively. Requesting
         // its documented EOF result safely exercises a terminal transport error.
@@ -392,7 +413,11 @@ impl ContextBuilder {
         // the local owner frees the certificate. No Rust pointer escapes.
         check(unsafe {
             ffi::OB_tls_context_add_chain_cert(self.native.0.as_ptr(), certificate.0.as_ptr())
+            // A valid owned certificate is transferred here; this edge requires native
+            // reference/allocation failure.
+            // NO-COVERAGE-START
         })?;
+        // NO-COVERAGE-END
         std::mem::forget(certificate);
         Ok(())
     }
@@ -734,7 +759,13 @@ impl Connection {
             let _ = Error::capture();
             return Err(error.into());
         }
-        match kind as u32 {
+        self.classify_status(kind as u32, result, errno)
+    }
+
+    // SSL_get_error is called immediately after native I/O; interpretation owns
+    // no native pointers and can be checked independently of TLS scheduling.
+    fn classify_status(&mut self, kind: u32, result: i32, errno: Option<i32>) -> IoResult<usize> {
+        match kind {
             ffi::SSL_ERROR_NONE if result > 0 => Ok(result as usize),
             ffi::SSL_ERROR_WANT_READ => Err(IoError::WantRead),
             ffi::SSL_ERROR_WANT_WRITE => Err(IoError::WantWrite),
@@ -744,7 +775,7 @@ impl Connection {
                 let native = Error::capture();
                 self.poisoned = true;
                 self.pending_write = None;
-                if kind as u32 == ffi::SSL_ERROR_SYSCALL {
+                if kind == ffi::SSL_ERROR_SYSCALL {
                     Err(IoError::System {
                         code: errno.filter(|code| *code != 0),
                         native,

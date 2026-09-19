@@ -63,15 +63,13 @@ fn transfer(from: &mut Connection, to: &mut Connection) {
 fn handshake(client: &mut Connection, server: &mut Connection) {
     let (mut client_done, mut server_done) = (false, false);
     for _ in 0..32 {
-        if !client_done {
-            match client.handshake() {
-                Ok(()) => client_done = true,
-                Err(IoError::WantRead | IoError::WantWrite) => (),
-                // A passing test cannot execute its failure diagnostic.
-                // NO-COVERAGE-START
-                result => panic!("client handshake: {result:?}"),
-                // NO-COVERAGE-END
-            }
+        match client.handshake() {
+            Ok(()) => client_done = true,
+            Err(IoError::WantRead | IoError::WantWrite) => (),
+            // A passing test cannot execute its failure diagnostic.
+            // NO-COVERAGE-START
+            result => panic!("client handshake: {result:?}"),
+            // NO-COVERAGE-END
         }
         transfer(client, server);
         if !server_done {
@@ -631,15 +629,13 @@ fn dtls_cookie_exchange_preserves_mtu_and_packet_peek() {
     let mut listening = true;
     let (mut client_done, mut server_done) = (false, false);
     for _ in 0..40 {
-        if !client_done {
-            match client.handshake() {
-                Ok(()) => client_done = true,
-                Err(IoError::WantRead | IoError::WantWrite) => (),
-                // A passing test cannot execute its failure diagnostic.
-                // NO-COVERAGE-START
-                error => panic!("client: {error:?}"),
-                // NO-COVERAGE-END
-            }
+        match client.handshake() {
+            Ok(()) => client_done = true,
+            Err(IoError::WantRead | IoError::WantWrite) => (),
+            // A passing test cannot execute its failure diagnostic.
+            // NO-COVERAGE-START
+            error => panic!("client: {error:?}"),
+            // NO-COVERAGE-END
         }
         transfer(&mut client, &mut server);
         if listening {

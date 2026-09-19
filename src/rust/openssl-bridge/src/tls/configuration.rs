@@ -163,7 +163,11 @@ impl ContextBuilder {
             let result = ffi::OB_tls_context_dh(self.native.0.as_ptr(), parameters.as_ptr());
             ffi::DH_free(parameters.as_ptr());
             result
+            // LLVM attributes an unsafe-block exit region here; both successful
+            // configuration and malformed PEM rejection are tested.
+            // NO-COVERAGE-START
         };
+        // NO-COVERAGE-END
         check(result)
     }
 }

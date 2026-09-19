@@ -188,7 +188,11 @@ impl CipherContext {
                 format!("Nonce must be {} bytes long", self.iv_size),
             )
             .into(),
+            // The remaining bridge errors require native failure after validated nonce
+            // input; preserve backend diagnostics.
+            // NO-COVERAGE-START
             error => error.into(),
+            // NO-COVERAGE-END
         })
     }
     fn update<'p>(

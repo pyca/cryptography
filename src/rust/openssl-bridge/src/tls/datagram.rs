@@ -105,7 +105,11 @@ fn method() -> Result<&'static Method> {
             unsafe {
                 let index = ffi::BIO_get_new_index();
                 if index < 0 {
+                    // This requires exhausting the process-wide native BIO method index
+                    // space.
+                    // NO-COVERAGE-START
                     return Err(Error::capture());
+                    // NO-COVERAGE-END
                 }
                 let method = pointer(ffi::BIO_meth_new(
                     index | ffi::BIO_TYPE_SOURCE_SINK as i32,
@@ -119,8 +123,12 @@ fn method() -> Result<&'static Method> {
                     check(ffi::BIO_meth_set_ctrl(method.as_ptr(), Some(control)))
                 })();
                 if let Err(error) = result {
+                    // Supported backends return success when installing these static
+                    // callbacks on a valid method; retain defensive cleanup.
+                    // NO-COVERAGE-START
                     ffi::BIO_meth_free(method.as_ptr());
                     return Err(error);
+                    // NO-COVERAGE-END
                 }
                 // A single small method descriptor intentionally has process lifetime.
                 Ok(Method(method))
@@ -357,7 +365,11 @@ impl Connection {
         match unsafe { ffi::OB_dtls_timeout(self.native.0.as_ptr(), &mut micros) } {
             0 => Ok(None),
             1 => Ok(Some(Duration::from_micros(micros))),
+            // The shim rejects malformed native timeval fields; supported backends
+            // return normalized nonnegative timers.
+            // NO-COVERAGE-START
             _ => Err(Error::InvalidState("native DTLS timer is invalid")),
+            // NO-COVERAGE-END
         }
     }
     pub fn dtls_handle_timeout(&mut self) -> IoResult<bool> {
@@ -374,6 +386,11 @@ impl Connection {
         // SAFETY: Exclusive DTLS object with no outstanding application write.
         let result = unsafe { ffi::OB_dtls_handle_timeout(self.native.0.as_ptr()) };
         self.callback_result()?;
+        self.timeout_result(result)
+    }
+
+    // Interpret the native timer result independently of clock/transport timing.
+    fn timeout_result(&mut self, result: i32) -> IoResult<bool> {
         if result < 0 {
             self.poisoned = true;
             return Err(Error::capture().into());
@@ -451,7 +468,11 @@ impl Connection {
             info.version,
             info.cipher.as_ref().map(|c| c.name.as_str()),
             mtu,
+            // LLVM attributes an inlined fallback return here; fallback protocol/cipher
+            // boundaries are exercised directly below.
+            // NO-COVERAGE-START
         )
+        // NO-COVERAGE-END
     }
 }
 
@@ -483,6 +504,21 @@ fn validate_mtu(mtu: u32) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn failed_timer_processing_prevents_further_io() {
+        let builder =
+            super::super::ContextBuilder::new(Protocol::Dtls, super::super::PeerVerification::None)
+                .unwrap();
+        let mut connection = Connection::datagrams(builder.finish(), Role::Client, 1200).unwrap();
+        assert!(!connection.timeout_result(0).unwrap());
+        assert!(connection.timeout_result(1).unwrap());
+        assert!(!connection.poisoned);
+        assert!(connection.timeout_result(-1).is_err());
+        assert!(connection.poisoned);
+        assert!(connection.handshake().is_err());
+        assert!(connection.dtls_handle_timeout().is_err());
+    }
 
     #[test]
     fn fallback_mtu_accounts_for_record_nonce_and_tag() {

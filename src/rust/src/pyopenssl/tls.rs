@@ -485,10 +485,12 @@ fn dispatch<T>(
         let result = info_dict(py, info).and_then(|info| call(py, owner.bind(py), info));
         result.map_err(|error| {
             ACTIVE.with(|stack| {
-                if let Some(op) = stack.borrow_mut().last_mut() {
-                    if op.error.is_none() {
-                        op.error = Some(error);
-                    }
+                // The ActiveGuard which supplied owner above remains alive
+                // throughout this call, including nested Python operations.
+                let mut stack = stack.borrow_mut();
+                let op = stack.last_mut().unwrap();
+                if op.error.is_none() {
+                    op.error = Some(error);
                 }
             });
             Error::InvalidState("Python TLS callback failed")

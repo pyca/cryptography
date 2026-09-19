@@ -99,7 +99,11 @@ pub fn encrypt_pem(
         password,
         iv.get(..8).unwrap().try_into().unwrap(),
         cipher.default_key_size()?,
+        // Algorithms and lengths are validated above. LLVM attributes the native KDF
+        // allocation/provider failure edge to this delimiter.
+        // NO-COVERAGE-START
     )?;
+    // NO-COVERAGE-END
 
     // Encrypt the DER data
     let encrypted = openssl_bridge::cipher::encrypt_padded(cipher, &key, &iv, der_data)?;

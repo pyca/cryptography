@@ -56,7 +56,11 @@ fn retain_validated_group(data: ParameterData) -> Parameters {
             cache.pop_front();
         }
         cache.push_back(data.clone());
+        // No application code runs under this cache lock. LLVM attributes the defensive
+        // poisoned-lock bypass to this delimiter.
+        // NO-COVERAGE-START
     }
+    // NO-COVERAGE-END
     Parameters(data)
 }
 struct Dsa(NonNull<ffi::DSA>);
