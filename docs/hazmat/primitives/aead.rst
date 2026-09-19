@@ -92,7 +92,8 @@ also support providing integrity for associated data which is not encrypted.
             appended will be written to this buffer.
         :returns int: The number of bytes written to the buffer (always
             ``len(data) + 16``).
-        :raises ValueError: If the buffer is not the correct size.
+        :raises ValueError: If the buffer is not the correct size, or if
+            ``buf`` overlaps ``data``.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
 
@@ -138,7 +139,8 @@ also support providing integrity for associated data which is not encrypted.
             buffer.
         :returns int: The number of bytes written to the buffer (always
             ``len(data) - 16``).
-        :raises ValueError: If the buffer is not the correct size.
+        :raises ValueError: If the buffer is not the correct size, or if
+            ``buf`` overlaps ``data``.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the
@@ -235,7 +237,8 @@ also support providing integrity for associated data which is not encrypted.
             appended will be written to this buffer.
         :returns int: The number of bytes written to the buffer (always
             ``len(data) + 16``).
-        :raises ValueError: If the buffer is not the correct size.
+        :raises ValueError: If the buffer is not the correct size, or if
+            ``buf`` overlaps ``data``.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
 
@@ -283,7 +286,8 @@ also support providing integrity for associated data which is not encrypted.
             buffer.
         :returns int: The number of bytes written to the buffer (always
             ``len(data) - 16``).
-        :raises ValueError: If the buffer is not the correct size.
+        :raises ValueError: If the buffer is not the correct size, or if
+            ``buf`` overlaps ``data``.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the
@@ -363,7 +367,8 @@ also support providing integrity for associated data which is not encrypted.
             appended will be written to this buffer.
         :returns int: The number of bytes written to the buffer (always
             ``len(data) + 16``).
-        :raises ValueError: If the buffer is not the correct size.
+        :raises ValueError: If the buffer is not the correct size, or if
+            ``buf`` overlaps ``data``.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`32` - 1 bytes.
 
@@ -407,7 +412,8 @@ also support providing integrity for associated data which is not encrypted.
             buffer.
         :returns int: The number of bytes written to the buffer (always
             ``len(data) - 16``).
-        :raises ValueError: If the buffer is not the correct size.
+        :raises ValueError: If the buffer is not the correct size, or if
+            ``buf`` overlaps ``data``.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the
@@ -495,7 +501,8 @@ also support providing integrity for associated data which is not encrypted.
             appended will be written to this buffer.
         :returns int: The number of bytes written to the buffer (always
             ``len(data) + 16``).
-        :raises ValueError: If the buffer is not the correct size.
+        :raises ValueError: If the buffer is not the correct size, or if
+            ``buf`` overlaps ``data``.
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
 
@@ -539,7 +546,8 @@ also support providing integrity for associated data which is not encrypted.
             buffer.
         :returns int: The number of bytes written to the buffer (always
             ``len(data) - 16``).
-        :raises ValueError: If the buffer is not the correct size.
+        :raises ValueError: If the buffer is not the correct size, or if
+            ``buf`` overlaps ``data``.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the
@@ -649,7 +657,8 @@ also support providing integrity for associated data which is not encrypted.
             **prepended** will be written to this buffer.
         :returns int: The number of bytes written to the buffer (always
             ``len(data) + 16``).
-        :raises ValueError: If the buffer is not the correct size.
+        :raises ValueError: If the buffer is not the correct size, or if
+            ``buf`` overlaps ``data``.
         :raises OverflowError: If ``data`` or an ``associated_data`` element
             is larger than 2\ :sup:`31` - 1 bytes.
 
@@ -689,7 +698,8 @@ also support providing integrity for associated data which is not encrypted.
             buffer.
         :returns int: The number of bytes written to the buffer (always
             ``len(data) - 16``).
-        :raises ValueError: If the buffer is not the correct size.
+        :raises ValueError: If the buffer is not the correct size, or if
+            ``buf`` overlaps ``data``.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the
@@ -798,7 +808,8 @@ also support providing integrity for associated data which is not encrypted.
             always ``len(data) + tag_length``).
         :raises OverflowError: If ``data`` or ``associated_data`` is larger
             than 2\ :sup:`31` - 1 bytes.
-        :raises ValueError: If ``buf`` is not the correct length.
+        :raises ValueError: If ``buf`` is not the correct length, or if
+            ``buf`` overlaps ``data``.
 
     .. method:: decrypt(nonce, data, associated_data)
 
@@ -844,7 +855,8 @@ also support providing integrity for associated data which is not encrypted.
             this buffer.
         :returns int: The number of bytes written to the buffer (always
             ``len(data) - tag_length``).
-        :raises ValueError: If the buffer is not the correct size.
+        :raises ValueError: If the buffer is not the correct size, or if
+            ``buf`` overlaps ``data``.
         :raises cryptography.exceptions.InvalidTag: If the authentication tag
             doesn't validate this exception will be raised. This will occur
             when the ciphertext has been changed, but will also occur when the

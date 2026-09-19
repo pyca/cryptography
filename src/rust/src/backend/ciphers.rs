@@ -191,6 +191,7 @@ impl CipherContext {
                 )),
             ));
         }
+        crate::buf::check_no_overlap(data, buf)?;
 
         crate::backend::run_with_gil_detached(py, data.len(), || self.update_into_inner(data, buf))
     }

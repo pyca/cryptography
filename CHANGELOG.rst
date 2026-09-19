@@ -16,6 +16,10 @@ Changelog
   the key loading APIs (including from X.509 certificates and certificate
   signing requests). Users should migrate to a more modern signature
   algorithm.
+* The ``*_into`` methods (e.g. ``encrypt_into``, ``update_into``, and
+  ``derive_into``) now raise ``ValueError`` if the input and output buffers
+  overlap. Previously, overlapping buffers could silently produce incorrect
+  output.
 
 .. _v50-0-1:
 

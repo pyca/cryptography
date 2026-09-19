@@ -327,6 +327,7 @@ impl ChunkedEncryptor {
                 )),
             ));
         }
+        crate::buf::check_no_overlap(data, out)?;
         self.update_impl(py, data, out)
     }
 
@@ -507,6 +508,7 @@ impl ChunkedDecryptor {
                 )),
             ));
         }
+        crate::buf::check_no_overlap(data, out)?;
         let result = Self::update_impl(py, params, state, data, out);
         if result.is_err() {
             self.state = None;

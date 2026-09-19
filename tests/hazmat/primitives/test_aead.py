@@ -267,6 +267,31 @@ class TestChaCha20Poly1305:
         with pytest.raises(InvalidTag):
             chacha.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
 
+    @pytest.mark.parametrize("offset", [0, 1, 12, 16])
+    def test_encrypt_into_overlapping_buffer(self, offset):
+        key = ChaCha20Poly1305.generate_key()
+        chacha = ChaCha20Poly1305(key)
+        nonce = os.urandom(12)
+        pt = os.urandom(1000)
+        ad = b"additional"
+        ct = chacha.encrypt(nonce, pt, ad)
+
+        buf = bytearray(offset + len(pt) + 16)
+        buf[: len(pt)] = pt
+        with pytest.raises(ValueError, match="must not overlap"):
+            chacha.encrypt_into(
+                nonce, memoryview(buf)[: len(pt)], ad, memoryview(buf)[offset:]
+            )
+
+        buf = bytearray(ct + bytes(offset))
+        with pytest.raises(ValueError, match="must not overlap"):
+            chacha.decrypt_into(
+                nonce,
+                memoryview(buf)[: len(ct)],
+                ad,
+                memoryview(buf)[offset : offset + len(pt)],
+            )
+
 
 @pytest.mark.skipif(
     not _aead_supported(AESCCM),
@@ -752,6 +777,31 @@ class TestAESGCM:
         buf = bytearray(len(pt))
         with pytest.raises(InvalidTag):
             aesgcm.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
+
+    @pytest.mark.parametrize("offset", [0, 12])
+    def test_encrypt_into_overlapping_buffer(self, offset):
+        key = AESGCM.generate_key(128)
+        aesgcm = AESGCM(key)
+        nonce = os.urandom(12)
+        pt = os.urandom(1000)
+        ad = b"additional"
+        ct = aesgcm.encrypt(nonce, pt, ad)
+
+        buf = bytearray(offset + len(pt) + 16)
+        buf[: len(pt)] = pt
+        with pytest.raises(ValueError, match="must not overlap"):
+            aesgcm.encrypt_into(
+                nonce, memoryview(buf)[: len(pt)], ad, memoryview(buf)[offset:]
+            )
+
+        buf = bytearray(ct + bytes(offset))
+        with pytest.raises(ValueError, match="must not overlap"):
+            aesgcm.decrypt_into(
+                nonce,
+                memoryview(buf)[: len(ct)],
+                ad,
+                memoryview(buf)[offset : offset + len(pt)],
+            )
 
 
 @pytest.mark.skipif(
@@ -1244,6 +1294,27 @@ class TestAESSIV:
         buf = bytearray(len(pt))
         with pytest.raises(InvalidTag):
             aessiv.decrypt_into(bytes(corrupted_ct), ad, buf)
+
+    @pytest.mark.parametrize("offset", [0, 16])
+    def test_encrypt_into_overlapping_buffer(self, offset):
+        key = AESSIV.generate_key(256)
+        aessiv = AESSIV(key)
+        pt = os.urandom(1000)
+        ad = [b"additional"]
+        ct = aessiv.encrypt(pt, ad)
+
+        buf = bytearray(len(pt) + 16)
+        buf[offset : offset + len(pt)] = pt
+        with pytest.raises(ValueError, match="must not overlap"):
+            aessiv.encrypt_into(
+                memoryview(buf)[offset : offset + len(pt)], ad, buf
+            )
+
+        buf = bytearray(ct)
+        with pytest.raises(ValueError, match="must not overlap"):
+            aessiv.decrypt_into(
+                buf, ad, memoryview(buf)[offset : offset + len(pt)]
+            )
 
 
 @pytest.mark.skipif(

@@ -614,8 +614,10 @@ Interfaces
         :param buf: A writable Python buffer that the data will be written
             into. This buffer should be ``len(data) + n - 1`` bytes where ``n``
             is the block size (in bytes) of the cipher and mode combination.
+            ``buf`` must not overlap ``data``.
         :return int: Number of bytes written.
-        :raises ValueError: This is raised if the supplied buffer is too small.
+        :raises ValueError: This is raised if the supplied buffer is too
+            small, or if ``buf`` overlaps ``data``.
 
         .. doctest::
 
