@@ -6137,6 +6137,24 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
                 [typing.cast(typing.Any, object())]
             )
 
+    def test_public_bytes_oversized_list(self):
+        sct = (
+            _load_cert(
+                os.path.join("x509", "badssl-sct.pem"),
+                x509.load_pem_x509_certificate,
+            )
+            .extensions.get_extension_for_class(
+                x509.PrecertificateSignedCertificateTimestamps
+            )
+            .value[0]
+        )
+        # The serialized list must fit in a 16-bit length prefix.
+        scts = [sct] * 1000
+        with pytest.raises(ValueError, match="too large"):
+            x509.PrecertificateSignedCertificateTimestamps(scts).public_bytes()
+        with pytest.raises(ValueError, match="too large"):
+            x509.SignedCertificateTimestamps(scts).public_bytes()
+
     def test_repr(self):
         assert repr(x509.PrecertificateSignedCertificateTimestamps([])) == (
             "<PrecertificateSignedCertificateTimestamps([])>"
