@@ -129,9 +129,10 @@ mod tests {
             let fips = openssl_bridge::BACKEND == openssl_bridge::Backend::OpenSsl
                 && openssl_bridge::runtime::is_fips_enabled();
             assert_eq!(key.is_err(), fips);
-            if let Ok(key) = key {
-                assert_eq!(key, expected);
-            }
+            assert_eq!(
+                key.as_ref().ok().map(Vec::as_slice),
+                (!fips).then_some(&expected[..])
+            );
         }
     }
 

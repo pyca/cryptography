@@ -486,6 +486,12 @@ mod tests {
 
     #[test]
     fn fallback_mtu_accounts_for_record_nonce_and_tag() {
+        for mtu in [0, 255, 65536, u32::MAX] {
+            assert!(validate_mtu(mtu).is_err());
+        }
+        for mtu in [256, 1200, 65535] {
+            assert!(validate_mtu(mtu).is_ok());
+        }
         let version = ffi::DTLS1_2_VERSION as i32;
         assert_eq!(
             fallback_data_mtu(version, Some("ECDHE-RSA-AES128-GCM-SHA256"), 1200).unwrap(),

@@ -47,6 +47,10 @@ fn pkcs12_optional_key_and_certificate() {
 #[cfg(any(backend = "openssl", backend = "libressl"))]
 #[test]
 fn pkcs7_certificates_and_wrong_content() {
+    use openssl_bridge::pkcs7::{verify, Encoding};
+    for encoding in [Encoding::Der, Encoding::Pem, Encoding::Smime] {
+        assert!(verify(encoding, b"invalid", None, &[], false).is_err());
+    }
     use openssl_bridge::containers::{parse_pkcs7_certificates, Pkcs7Certificates};
     match parse_pkcs7_certificates(include_bytes!("vectors/amazon-roots.der")).unwrap() {
         Pkcs7Certificates::Signed(Some(certs)) => {

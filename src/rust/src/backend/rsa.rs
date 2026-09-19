@@ -224,12 +224,7 @@ fn signature_padding(
     } else if salt.is_instance(&types::PADDING_DIGEST_LENGTH.get(py)?)? {
         SaltLength::Digest
     } else if salt.is_instance(&types::PADDING_AUTO.get(py)?)? {
-        if is_signing {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                "PSS salt length can only be set to Auto when verifying",
-            )
-            .into());
-        }
+        // The conversion to SigningPadding rejects automatic salt detection.
         return Ok(VerificationPadding::PssAuto { mgf1 });
     } else {
         let value = salt.extract::<i32>()?;

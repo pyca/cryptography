@@ -74,6 +74,26 @@ class TestOpenSSL:
             connection.set_ciphertext_mtu(1500)
         with pytest.raises(ValueError):
             connection.set_context(pyopenssl.TLSContext(True))
+        assert connection.shutdown_state() == 0
+        for state in [0, 1, 3]:
+            connection.set_shutdown_state(state)
+            assert connection.shutdown_state() == state
+
+    def test_tls_reference_identity_and_platform_capabilities(self):
+        context = pyopenssl.TLSContext(False)
+        context.set_verify(1)
+        connection = pyopenssl.TLSConnection(context, False)
+        connection.set_reference_dns_name(b"localhost")
+        with pytest.raises(ValueError):
+            connection.set_reference_dns_name(b"nul\x00")
+        with pytest.raises(ValueError):
+            connection.set_reference_dns_name(b"")
+        with pytest.raises((pyopenssl.NativeError, ValueError)):
+            context.verify(b"invalid", [])
+        assert len(pyopenssl.default_verify_paths()) == 2
+        if os.name != "posix":
+            with pytest.raises(NotImplementedError):
+                pyopenssl.TLSConnection(context, False, 0)
 
     def test_dtls_initial_state(self):
         connection = pyopenssl.TLSConnection(pyopenssl.TLSContext(True), False)

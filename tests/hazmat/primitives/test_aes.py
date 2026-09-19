@@ -19,6 +19,19 @@ from .utils import _load_all_params, generate_encrypt_test
 
 
 class TestAESModeXTS:
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.cipher_supported(
+            algorithms.AES(bytes(range(32))), modes.XTS(b"\x00" * 16)
+        ),
+        skip_message="XTS is unavailable",
+    )
+    def test_mutated_tweak_is_checked_at_the_native_boundary(self):
+        mode = modes.XTS(b"\x00" * 16)
+        mode._tweak = b"short"
+        cipher = base.Cipher(algorithms.AES(bytes(range(32))), mode)
+        with pytest.raises(ValueError, match="16 bytes"):
+            cipher.encryptor()
+
     def test_xts_vectors(self, backend, subtests):
         # This list comprehension excludes any vector that does not have a
         # data unit length that is divisible by 8. The NIST vectors include

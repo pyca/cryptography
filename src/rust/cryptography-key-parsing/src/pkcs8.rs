@@ -26,6 +26,43 @@ pub struct PrivateKeyInfo<'a> {
 const PKCS8_VERSION_V1: u8 = 0;
 const PKCS8_VERSION_V2: u8 = 1;
 
+#[cfg(test)]
+mod legacy_encryption_tests {
+    use super::*;
+
+    #[test]
+    fn malformed_legacy_ciphertexts_cannot_be_imported_as_keys() {
+        let params = Pkcs12PbeParams {
+            salt: b"salt",
+            iterations: 1,
+        };
+        let mut algorithms = vec![
+            AlgorithmParameters::PbeWithMd5AndDesCbc(PbeParams {
+                salt: [0; 8],
+                iterations: 1,
+            }),
+            AlgorithmParameters::PbeWithShaAnd3KeyTripleDesCbc(params.clone()),
+        ];
+        #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC2"))]
+        algorithms.push(AlgorithmParameters::PbeWithShaAnd40BitRc2Cbc(
+            params.clone(),
+        ));
+        #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC4"))]
+        algorithms.push(AlgorithmParameters::PbeWithShaAnd128BitRc4(params));
+        for params in algorithms {
+            let encoded = asn1::write_single(&EncryptedPrivateKeyInfo {
+                encryption_algorithm: AlgorithmIdentifier {
+                    oid: asn1::DefinedByMarker::marker(),
+                    params,
+                },
+                encrypted_data: b"invalid",
+            })
+            .unwrap();
+            assert!(parse_encrypted_private_key(&encoded, Some(b"password")).is_err());
+        }
+    }
+}
+
 // RFC 9935 Section 6
 #[cfg(any(
     CRYPTOGRAPHY_IS_BORINGSSL,

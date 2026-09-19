@@ -278,26 +278,16 @@ impl Connection {
         self.random(true)
     }
     fn random(&mut self, server: bool) -> Option<[u8; 32]> {
-        // SAFETY: All queries are within the exclusive SSL borrow. Native random
-        // getters copy at most the supplied destination capacity.
-        unsafe {
-            if ffi::SSL_get_session(self.native.0.as_ptr()).is_null() {
-                return None;
-            }
-            if let Some(random) =
-                callbacks::lock(&self.callbacks.records).hello_randoms[usize::from(server)]
-            {
-                return Some(random);
-            }
-            let mut out = [0; 32];
-            let length = if server {
-                ffi::SSL_get_server_random(self.native.0.as_ptr(), out.as_mut_ptr(), out.len())
-            } else {
-                ffi::SSL_get_client_random(self.native.0.as_ptr(), out.as_mut_ptr(), out.len())
-            };
-            (length == 32).then_some(out)
+        // Every connection installs the message observer before I/O. Its owned
+        // Hello values are the source of truth, including on backends whose
+        // legacy random getters do not retain TLS 1.3 peer values.
+        // SAFETY: Exclusive live SSL query; no interior pointer escapes.
+        if unsafe { ffi::SSL_get_session(self.native.0.as_ptr()) }.is_null() {
+            return None;
         }
+        callbacks::lock(&self.callbacks.records).hello_randoms[usize::from(server)]
     }
+
     /// Export sensitive session material. Prefer a labeled TLS exporter for
     /// application binding; the legacy master secret can expose the connection.
     pub fn master_secret(&mut self) -> Result<Option<SecretBytes>> {

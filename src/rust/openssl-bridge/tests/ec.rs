@@ -72,6 +72,14 @@ fn invalid_points_and_encodings_are_rejected() {
 }
 
 #[test]
+#[cfg(not(all(backend = "openssl", openssl_320)))]
+fn unsupported_deterministic_signatures_are_rejected() {
+    let key = PrivateKey::from_scalar(Curve::P256, &[42]).unwrap();
+    let md = Algorithm::from_name("sha256").unwrap();
+    assert!(key.sign_digest(md, &[0; 32], Nonce::Deterministic).is_err());
+}
+
+#[test]
 fn all_supported_curves_sign_and_exchange() {
     let sha256 = Algorithm::from_name("sha256").unwrap();
     let digest = hash::digest(sha256, b"EC operation tests").unwrap();

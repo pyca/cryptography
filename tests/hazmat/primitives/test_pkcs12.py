@@ -68,6 +68,13 @@ def _skip_curve_unsupported(backend, curve):
     reason="PKCS12 unsupported in FIPS mode. So much bad crypto in it."
 )
 class TestPKCS12Loading:
+    @pytest.mark.parametrize(
+        "loader", [load_key_and_certificates, load_pkcs12]
+    )
+    def test_password_nul_is_not_silently_truncated(self, loader):
+        with pytest.raises(ValueError, match="NUL"):
+            loader(b"invalid", b"prefix\x00suffix")
+
     def _test_load_pkcs12_ec_keys(self, filename, password):
         cert, key = _load_ca()
         assert isinstance(key, ec.EllipticCurvePrivateKey)

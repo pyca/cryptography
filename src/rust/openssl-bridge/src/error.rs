@@ -106,6 +106,20 @@ pub(crate) fn check(code: i32) -> Result<()> {
     }
 }
 
+/// Interpret APIs such as ALPN configuration which return zero on success.
+pub(crate) fn check_zero(code: i32) -> Result<()> {
+    check(i32::from(code == 0))
+}
+
+/// Interpret a native byte count whose nonpositive results signal failure.
+pub(crate) fn check_positive(code: i32) -> Result<usize> {
+    if code > 0 {
+        Ok(code as usize)
+    } else {
+        Err(Error::capture())
+    }
+}
+
 /// Interpret native predicates that distinguish false from an internal error.
 pub(crate) fn check_bool(code: i32) -> Result<bool> {
     match code {
@@ -159,6 +173,17 @@ mod tests {
     use super::*;
 
     #[test]
+    fn native_status_conventions_do_not_confuse_success_with_failure() {
+        assert!(check_zero(0).is_ok());
+        assert!(check_zero(1).is_err());
+        assert!(check_zero(-1).is_err());
+        assert_eq!(check_positive(1).unwrap(), 1);
+        assert_eq!(check_positive(i32::MAX).unwrap(), i32::MAX as usize);
+        assert!(check_positive(0).is_err());
+        assert!(check_positive(-1).is_err());
+    }
+
+    #[test]
     fn input_lengths_reject_truncation_without_allocating_large_buffers() {
         assert_eq!(input_length::<i32>(0, "length").unwrap(), 0);
         assert_eq!(
@@ -174,9 +199,10 @@ mod tests {
             usize::MAX
         );
         assert_eq!(input_length::<i64>(0, "length").unwrap(), 0);
-        if usize::BITS == 64 {
-            assert!(input_length::<i64>(usize::MAX, "length").is_err());
-        }
+        assert_eq!(
+            input_length::<i64>(usize::MAX, "length").is_err(),
+            usize::BITS == 64
+        );
     }
 
     #[test]

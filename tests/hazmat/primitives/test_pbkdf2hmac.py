@@ -16,6 +16,10 @@ from ...utils import raises_unsupported_algorithm
 
 
 class TestPBKDF2HMAC:
+    def test_iteration_count_exceeds_native_limit(self):
+        with pytest.raises(OverflowError, match="iteration count"):
+            PBKDF2HMAC(hashes.SHA256(), 32, b"salt", 2**31)
+
     def test_already_finalized(self):
         kdf = PBKDF2HMAC(hashes.SHA1(), 20, b"salt", 10)
         kdf.derive(b"password")

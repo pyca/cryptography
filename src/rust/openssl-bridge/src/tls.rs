@@ -102,6 +102,9 @@ mod state_tests {
         assert!(stream.dtls_timeout().is_err());
         assert!(stream.dtls_handle_timeout().is_err());
         assert!(stream.dtls_listen().is_err());
+        assert!(stream
+            .export_keying_material(b"label", None, 65536)
+            .is_err());
         assert!(stream.dtls_data_mtu().is_err());
         assert!(stream.set_ciphertext_mtu(1200).is_err());
         // A pending native write owns its original bytes. These guards must
@@ -133,9 +136,30 @@ mod state_tests {
         builder.set_default_verify_paths().unwrap();
         assert!(builder.set_srtp_profiles(c"not-a-profile").is_err());
         assert!(builder.use_dh_parameters_pem(b"invalid").is_err());
+        #[cfg(any(backend = "boringssl", backend = "awslc"))]
+        assert!(builder.enable_cookie_callbacks().is_err());
         builder.set_max_version(ffi::TLS1_2_VERSION as i32).unwrap();
         builder.set_client_ca_names(&[]).unwrap();
         assert!(builder.set_client_ca_names(&[b"invalid".to_vec()]).is_err());
+    }
+
+    #[test]
+    fn memory_output_distinguishes_retry_from_transport_eof() {
+        let mut connection = Connection::memory(context(Protocol::Tls), Role::Client).unwrap();
+        assert!(matches!(
+            connection.drain_ciphertext(&mut [0; 1]),
+            Err(IoError::WantRead)
+        ));
+        let Transport::Memory { output, .. } = connection.transport else {
+            unreachable!()
+        };
+        // SAFETY: The connection owns this memory BIO exclusively. Requesting
+        // its documented EOF result safely exercises a terminal transport error.
+        unsafe { ffi::OB_bio_eof_return(output.as_ptr(), 0) };
+        assert!(matches!(
+            connection.drain_ciphertext(&mut [0; 1]),
+            Err(IoError::Failure(Error::Native(_)))
+        ));
     }
 
     #[cfg(unix)]
@@ -844,10 +868,7 @@ impl Connection {
         }
         // SAFETY: Input is borrowed only until it is copied into the owned BIO.
         let written = unsafe { ffi::BIO_write(input.as_ptr(), bytes.as_ptr().cast(), len) };
-        if written <= 0 {
-            return Err(Error::capture().into());
-        }
-        Ok(written as usize)
+        crate::error::check_positive(written).map_err(Into::into)
     }
     pub fn drain_ciphertext(&mut self, output: &mut [u8]) -> IoResult<usize> {
         // Draining already-produced alert bytes remains useful after failure.

@@ -92,6 +92,30 @@ mod tests {
     use super::*;
 
     #[test]
+    fn key_decoders_reject_trailing_bytes_and_missing_strings() {
+        let parsed = crate::containers::parse_pkcs12(
+            include_bytes!("../tests/vectors/cert-key-aes256cbc.p12"),
+            Some(c"cryptography"),
+        )
+        .unwrap();
+        let mut private = parsed.private_key.unwrap().as_ref().to_vec();
+        assert!(Key::private_der(&private).is_ok());
+        private.push(0);
+        assert!(Key::private_der(&private).is_err());
+        let mut certificate = Certificate::decode(
+            include_bytes!("../tests/vectors/tls-localhost.der"),
+            Encoding::Der,
+        )
+        .unwrap();
+        let mut public = certificate.public_key_der().unwrap();
+        assert!(Key::public_der(&public).is_ok());
+        public.push(0);
+        assert!(Key::public_der(&public).is_err());
+        // SAFETY: NULL is an explicitly handled absent-string input.
+        assert!(unsafe { string_bytes(ptr::null()) }.is_err());
+    }
+
+    #[test]
     fn encoders_check_query_write_length_and_cursor() {
         // These encoders never exceed the queried capacity, including on error.
         for failure in [-1, 0] {
@@ -187,9 +211,8 @@ impl Bio {
         let len = crate::error::input_length::<i32>(data.len(), "BIO input is too long")?;
         if len != 0 {
             // SAFETY: The memory BIO copies the readable input; no borrow escapes.
-            if unsafe { ffi::BIO_write(bio.0.as_ptr(), data.as_ptr().cast(), len) } != len {
-                return Err(Error::capture());
-            }
+            let written = unsafe { ffi::BIO_write(bio.0.as_ptr(), data.as_ptr().cast(), len) };
+            crate::error::check_len(crate::error::check_positive(written)?, len as usize)?;
         }
         Ok(bio)
     }
@@ -201,10 +224,8 @@ impl Bio {
         let mut out = vec![0; len];
         if length != 0 {
             // SAFETY: The exclusive BIO writes into exactly length output bytes.
-            if unsafe { ffi::BIO_read(self.0.as_ptr(), out.as_mut_ptr().cast(), length) } != length
-            {
-                return Err(Error::capture());
-            }
+            let read = unsafe { ffi::BIO_read(self.0.as_ptr(), out.as_mut_ptr().cast(), length) };
+            crate::error::check_len(crate::error::check_positive(read)?, length as usize)?;
         }
         Ok(out)
     }
@@ -247,7 +268,7 @@ pub(crate) unsafe fn encode_with<T: AsMut<[u8]>>(
     Ok(out)
 }
 
-// SAFETY: value is a live native ASN1_STRING for this call, with no mutation.
+// SAFETY: value is NULL or a live native ASN1_STRING for this call, with no mutation.
 unsafe fn string_bytes(value: *const ffi::ASN1_STRING) -> Result<Vec<u8>> {
     if value.is_null() {
         return Err(Error::InvalidState("missing ASN.1 string"));
@@ -531,9 +552,8 @@ impl Certificate {
         let key = Key::private_der(private_der)?;
         // SAFETY: Exclusive certificate and freshly decoded private key, with
         // a live immutable digest descriptor and no callbacks or retained borrows.
-        if unsafe { ffi::X509_sign(self.0.as_ptr(), key.0.as_ptr(), digest.as_ptr()) } <= 0 {
-            return Err(Error::capture());
-        }
+        let written = unsafe { ffi::X509_sign(self.0.as_ptr(), key.0.as_ptr(), digest.as_ptr()) };
+        crate::error::check_positive(written)?;
         Ok(())
     }
     pub fn signature_algorithm(&mut self) -> Result<Vec<u8>> {
@@ -565,9 +585,7 @@ impl Certificate {
         check(unsafe {
             ffi::X509_digest(self.0.as_ptr(), digest.as_ptr(), out.as_mut_ptr(), &mut len)
         })?;
-        if len as usize != out.len() {
-            return Err(Error::InvalidState("inconsistent digest size"));
-        }
+        crate::error::check_len(len as usize, out.len())?;
         Ok(out)
     }
     pub fn serial(&mut self) -> Result<(bool, Vec<u8>)> {

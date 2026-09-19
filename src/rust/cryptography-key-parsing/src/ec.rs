@@ -18,6 +18,41 @@ pub(crate) struct EcPrivateKey<'a> {
     pub(crate) public_key: Option<asn1::BitString<'a>>,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use openssl_bridge::ec::{Curve, PointEncoding, PrivateKey};
+
+    #[test]
+    fn sec1_rejects_a_valid_public_point_for_a_different_private_scalar() {
+        let mut scalar = [0; 32];
+        scalar[31] = 1;
+        for public_scalar in [1, 2] {
+            let public = PrivateKey::from_scalar(Curve::P256, &[public_scalar])
+                .unwrap()
+                .public_key()
+                .unwrap()
+                .to_encoded(PointEncoding::Uncompressed)
+                .unwrap();
+            let encoded = asn1::write_single(&EcPrivateKey {
+                version: 1,
+                private_key: &scalar,
+                parameters: Some(EcParameters::NamedCurve(
+                    cryptography_x509::oid::EC_SECP256R1,
+                )),
+                public_key: Some(asn1::BitString::new(&public, 0).unwrap()),
+            })
+            .unwrap();
+            let result = parse_pkcs1_private_key(&encoded, None);
+            if public_scalar == 1 {
+                assert!(result.is_ok());
+            } else {
+                assert!(matches!(result, Err(KeyParsingError::InvalidKey)));
+            }
+        }
+    }
+}
+
 pub(crate) fn group_to_curve_oid(curve: openssl_bridge::ec::Curve) -> asn1::ObjectIdentifier {
     match curve {
         openssl_bridge::ec::Curve::P192 => cryptography_x509::oid::EC_SECP192R1,

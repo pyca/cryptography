@@ -134,7 +134,7 @@ impl Drop for Key {
 }
 
 /// # Safety
-/// The pointer must refer to a live immutable BIGNUM throughout the call.
+/// The pointer is NULL or refers to a live immutable BIGNUM throughout the call.
 #[allow(clippy::useless_conversion)] // BN_bn2bin returns size_t on BoringSSL/AWS-LC.
 unsafe fn component(number: *const ffi::BIGNUM) -> Result<Vec<u8>> {
     if number.is_null() {
@@ -150,6 +150,15 @@ unsafe fn component(number: *const ffi::BIGNUM) -> Result<Vec<u8>> {
     let written = unsafe { ffi::BN_bn2bin(number, bytes.as_mut_ptr()) };
     crate::secret::clear_on_error(crate::error::check_len(written as usize, size), &mut bytes)?;
     Ok(bytes)
+}
+
+#[cfg(test)]
+mod component_tests {
+    #[test]
+    fn absent_native_components_are_rejected() {
+        // SAFETY: NULL is the explicitly handled missing-component case.
+        assert!(unsafe { super::component(std::ptr::null()) }.is_err());
+    }
 }
 
 struct Context(NonNull<ffi::EVP_PKEY_CTX>);

@@ -20,11 +20,57 @@ enum Operation {
 pub(crate) struct CipherContext {
     ctx: Option<Operation>,
     py_mode: pyo3::Py<pyo3::PyAny>,
-    py_algorithm: pyo3::Py<pyo3::PyAny>,
     block_size: usize,
     iv_size: usize,
     tag: Option<[u8; 16]>,
     expected_tag: Option<Vec<u8>>,
+}
+
+#[cfg(test)]
+mod state_tests {
+    use super::*;
+    use openssl_bridge::cipher::{Cipher, Direction, Stream};
+
+    #[test]
+    fn operation_kind_and_tag_are_checked_before_consuming_state() {
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| {
+            let mut context = CipherContext {
+                ctx: Some(Operation::Conventional(
+                    Stream::new(
+                        Cipher::Aes128Cbc,
+                        Direction::Encrypt,
+                        &[0; 16],
+                        &[0; 16],
+                        false,
+                    )
+                    .unwrap(),
+                )),
+                py_mode: py.None(),
+                block_size: 16,
+                iv_size: 16,
+                tag: None,
+                expected_tag: None,
+            };
+            assert!(context.authenticate_additional_data(py, b"aad").is_err());
+            context.ctx = Some(Operation::GcmDecrypt(
+                openssl_bridge::gcm::UnverifiedGcmDecrypt::new(
+                    openssl_bridge::gcm::GcmCipher::Aes128,
+                    &[0; 16],
+                    &[0; 12],
+                )
+                .unwrap(),
+            ));
+            assert!(context.finalize(py).is_err());
+            assert!(context.ctx.is_some());
+            context.expected_tag = Some(vec![
+                0x58, 0xe2, 0xfc, 0xce, 0xfa, 0x7e, 0x30, 0x61, 0x36, 0x7f, 0x1d, 0x57, 0xa4, 0xe7,
+                0x45, 0x5a,
+            ]);
+            assert!(context.finalize(py).is_ok());
+            assert!(context.ctx.is_none());
+        });
+    }
 }
 
 impl CipherContext {
@@ -115,51 +161,35 @@ impl CipherContext {
         Ok(Self {
             ctx: Some(ctx),
             py_mode: mode.into(),
-            py_algorithm: algorithm.into(),
             block_size,
             iv_size: iv.len(),
             tag: None,
             expected_tag: None,
         })
     }
-    fn reset_nonce(&mut self, py: pyo3::Python<'_>, nonce: &[u8]) -> CryptographyResult<()> {
-        if !self
-            .py_mode
-            .bind(py)
-            .is_instance(&types::MODE_WITH_NONCE.get(py)?)?
-            && !self
-                .py_algorithm
-                .bind(py)
-                .is_instance(&types::CHACHA20.get(py)?)?
-        {
-            return Err(exceptions::UnsupportedAlgorithm::new_err((
-                "This algorithm or mode does not support resetting the nonce.",
-                exceptions::Reasons::UNSUPPORTED_CIPHER,
-            ))
-            .into());
-        }
-        if nonce.len() != self.iv_size {
-            return Err(pyo3::exceptions::PyValueError::new_err(format!(
-                "Nonce must be {} bytes long",
-                self.iv_size
-            ))
-            .into());
-        }
-        match self
+    fn reset_nonce(&mut self, nonce: &[u8]) -> CryptographyResult<()> {
+        let result = match self
             .ctx
             .as_mut()
             .ok_or_else(exceptions::already_finalized_error)?
         {
-            Operation::Conventional(ctx) => ctx.reset_nonce(nonce)?,
-            _ => {
-                return Err(exceptions::UnsupportedAlgorithm::new_err((
-                    "This algorithm or mode does not support resetting the nonce.",
-                    exceptions::Reasons::UNSUPPORTED_CIPHER,
-                ))
-                .into())
-            }
-        }
-        Ok(())
+            Operation::Conventional(ctx) => ctx.reset_nonce(nonce),
+            _ => Err(openssl_bridge::Error::Unsupported(
+                "cipher does not support nonce reset",
+            )),
+        };
+        result.map_err(|error| match error {
+            openssl_bridge::Error::Unsupported(_) => exceptions::UnsupportedAlgorithm::new_err((
+                "This algorithm or mode does not support resetting the nonce.",
+                exceptions::Reasons::UNSUPPORTED_CIPHER,
+            ))
+            .into(),
+            openssl_bridge::Error::InvalidInput(_) => pyo3::exceptions::PyValueError::new_err(
+                format!("Nonce must be {} bytes long", self.iv_size),
+            )
+            .into(),
+            error => error.into(),
+        })
     }
     fn update<'p>(
         &mut self,
@@ -253,6 +283,12 @@ impl CipherContext {
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        if matches!(self.ctx, Some(Operation::GcmDecrypt(_))) && self.expected_tag.is_none() {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "Authentication tag must be provided when decrypting.",
+            )
+            .into());
+        }
         let ctx = self
             .ctx
             .take()
@@ -269,11 +305,8 @@ impl CipherContext {
                 vec![]
             }
             Operation::GcmDecrypt(ctx) => {
-                let tag = self.expected_tag.as_ref().ok_or_else(|| {
-                    pyo3::exceptions::PyValueError::new_err(
-                        "Authentication tag must be provided when decrypting.",
-                    )
-                })?;
+                // The tag was checked before taking the operation above.
+                let tag = self.expected_tag.as_ref().unwrap();
                 ctx.finish(tag)
                     .map_err(|_| exceptions::InvalidTag::new_err(()))?;
                 vec![]
@@ -379,9 +412,9 @@ impl PyCipherContext {
         get_mut_ctx(self.ctx.as_mut())?.update(py, data)
     }
 
-    fn reset_nonce(&mut self, py: pyo3::Python<'_>, nonce: CffiBuf<'_>) -> CryptographyResult<()> {
+    fn reset_nonce(&mut self, nonce: CffiBuf<'_>) -> CryptographyResult<()> {
         let nonce = nonce.as_bytes();
-        get_mut_ctx(self.ctx.as_mut())?.reset_nonce(py, nonce)?;
+        get_mut_ctx(self.ctx.as_mut())?.reset_nonce(nonce)?;
         // The reset above validates the nonce length, so recompute the ChaCha20
         // limit for the new counter only after it succeeds.
         if self.bytes_remaining.is_some() {
@@ -502,8 +535,8 @@ impl PyAEADEncryptionContext {
             .clone_ref(py))
     }
 
-    fn reset_nonce(&mut self, py: pyo3::Python<'_>, nonce: CffiBuf<'_>) -> CryptographyResult<()> {
-        get_mut_ctx(self.ctx.as_mut())?.reset_nonce(py, nonce.as_bytes())
+    fn reset_nonce(&mut self, nonce: CffiBuf<'_>) -> CryptographyResult<()> {
+        get_mut_ctx(self.ctx.as_mut())?.reset_nonce(nonce.as_bytes())
     }
 }
 
@@ -574,19 +607,6 @@ impl PyAEADDecryptionContext {
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let ctx = get_mut_ctx(self.ctx.as_mut())?;
 
-        if ctx
-            .py_mode
-            .bind(py)
-            .getattr(pyo3::intern!(py, "tag"))?
-            .is_none()
-        {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err(
-                    "Authentication tag must be provided when decrypting.",
-                ),
-            ));
-        }
-
         let result = ctx.finalize(py)?;
         self.ctx = None;
         Ok(result)
@@ -638,8 +658,8 @@ impl PyAEADDecryptionContext {
         Ok(result)
     }
 
-    fn reset_nonce(&mut self, py: pyo3::Python<'_>, nonce: CffiBuf<'_>) -> CryptographyResult<()> {
-        get_mut_ctx(self.ctx.as_mut())?.reset_nonce(py, nonce.as_bytes())
+    fn reset_nonce(&mut self, nonce: CffiBuf<'_>) -> CryptographyResult<()> {
+        get_mut_ctx(self.ctx.as_mut())?.reset_nonce(nonce.as_bytes())
     }
 }
 

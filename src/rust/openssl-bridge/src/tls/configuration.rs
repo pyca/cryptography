@@ -117,14 +117,9 @@ impl ContextBuilder {
     pub fn set_alpn_protocols(&mut self, protocols: &[&[u8]]) -> Result<()> {
         let wire = alpn_wire(protocols)?;
         // SAFETY: The validated length-prefixed list is copied synchronously.
-        if unsafe {
+        crate::error::check_zero(unsafe {
             ffi::SSL_CTX_set_alpn_protos(self.native.0.as_ptr(), wire.as_ptr(), wire.len() as _)
-        } == 0
-        {
-            Ok(())
-        } else {
-            Err(Error::capture())
-        }
+        })
     }
     pub fn set_client_ca_names(&mut self, names: &[Vec<u8>]) -> Result<()> {
         self.check_ca_names_support(!names.is_empty(), self.max_version)?;
@@ -195,13 +190,8 @@ impl Connection {
         self.configuring()?;
         let wire = alpn_wire(protocols)?;
         // SAFETY: The validated wire list is synchronously copied by SSL.
-        if unsafe {
+        crate::error::check_zero(unsafe {
             ffi::SSL_set_alpn_protos(self.native.0.as_ptr(), wire.as_ptr(), wire.len() as _)
-        } == 0
-        {
-            Ok(())
-        } else {
-            Err(Error::capture())
-        }
+        })
     }
 }

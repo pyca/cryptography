@@ -145,27 +145,63 @@ pub(crate) unsafe fn export_private_key(key: *mut ffi::EVP_PKEY) -> Result<Secre
 // SAFETY: The key is live and exclusively owned for this call.
 #[cfg(any(backend = "boringssl", backend = "awslc"))]
 pub(crate) unsafe fn export_private_key(key: *mut ffi::EVP_PKEY) -> Result<SecretBytes> {
-    // A fixed caller-owned buffer avoids native reallocations and a PKCS#8
-    // object's uncleared private octet string on these forks. Retry allocation
-    // sizes up to an explicit 16 MiB export limit; each failed buffer is erased.
+    bounded_export(|output| {
+        let mut length = 0;
+        // SAFETY: Live key and writable output of exactly its advertised capacity.
+        // The CBB uses fixed-buffer mode and cannot grow beyond this allocation.
+        crate::error::check(unsafe {
+            ffi::OB_private_key_pkcs8(key, output.as_mut_ptr(), output.len(), &mut length)
+        })?;
+        Ok(length)
+    })
+}
+
+// Fixed caller-owned buffers avoid native reallocations and uncleared private
+// octet strings on the forks. Every failed attempt is erased before retrying.
+#[cfg(any(test, backend = "boringssl", backend = "awslc"))]
+fn bounded_export(mut encoder: impl FnMut(&mut [u8]) -> Result<usize>) -> Result<SecretBytes> {
     let mut capacity = 1024;
     loop {
         let mut output = SecretBytes::from(vec![0; capacity]);
-        let mut length = 0;
-        // SAFETY: Live key and writable output of exactly capacity bytes. The
-        // CBB uses fixed-buffer mode, so it cannot write beyond that capacity.
-        let status = unsafe {
-            ffi::OB_private_key_pkcs8(key, output.as_mut().as_mut_ptr(), capacity, &mut length)
-        };
-        if status == 1 {
-            crate::error::check_len_at_most(length, capacity)?;
-            return Ok(SecretBytes::from(output.as_ref()[..length].to_vec()));
+        match encoder(output.as_mut()) {
+            Ok(length) => {
+                crate::error::check_len_at_most(length, capacity)?;
+                return Ok(SecretBytes::from(output.as_ref()[..length].to_vec()));
+            }
+            Err(error) if capacity == 16 * 1024 * 1024 => return Err(error),
+            Err(_) => capacity *= 2,
         }
-        let error = Error::capture();
-        if capacity == 16 * 1024 * 1024 {
-            return Err(error);
-        }
-        capacity *= 2;
+    }
+}
+
+#[cfg(test)]
+mod export_tests {
+    use super::*;
+
+    #[test]
+    fn bounded_exports_retry_only_up_to_the_limit() {
+        let mut attempts = Vec::new();
+        let output = bounded_export(|out| {
+            attempts.push(out.len());
+            assert!(out.iter().all(|&b| b == 0));
+            out.fill(0x42);
+            if out.len() < 1536 {
+                Err(Error::InvalidInput("short buffer"))
+            } else {
+                Ok(1536)
+            }
+        })
+        .unwrap();
+        assert_eq!(attempts, [1024, 2048]);
+        assert_eq!(output.as_ref(), &[0x42; 1536]);
+        assert!(bounded_export(|out| Ok(out.len() + 1)).is_err());
+        let mut last = 0;
+        assert!(bounded_export(|out| {
+            last = out.len();
+            Err(Error::InvalidInput("cannot export"))
+        })
+        .is_err());
+        assert_eq!(last, 16 * 1024 * 1024);
     }
 }
 

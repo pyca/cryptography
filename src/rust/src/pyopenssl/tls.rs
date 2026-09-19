@@ -20,6 +20,54 @@ pyo3::create_exception!(pyopenssl, TLSSystemError, pyo3::exceptions::PyException
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tls::Callbacks;
+
+    #[test]
+    fn callback_exceptions_preserve_the_first_error_and_context_switches_are_owned() {
+        Python::initialize();
+        Python::attach(|py| {
+            let context = tls::ContextBuilder::new(tls::Protocol::Tls, tls::PeerVerification::None)
+                .unwrap()
+                .finish();
+            let info = tls::Connection::memory(context, tls::Role::Client)
+                .unwrap()
+                .info();
+            let module = PyModule::from_code(py, c"class Owner:\n    def _dispatch_native_callback(self, event, info, args):\n        raise RuntimeError(event)\n", c"callbacks.py", c"callbacks").unwrap();
+            let owner = module.getattr("Owner").unwrap().call0().unwrap().unbind();
+            let active = ActiveGuard::new(owner);
+            let hooks = PythonCallbacks;
+            assert!(hooks.verify(&info, b"certificate", 1, 0, false).is_err());
+            assert!(hooks.server_name(&info).is_err());
+            assert!(hooks.select_alpn(&info, &[b"h2".to_vec()]).is_err());
+            assert!(hooks.info(&info, 1, 1).is_err());
+            assert!(hooks.key_log(&info, b"secret").is_err());
+            assert!(hooks.ocsp_response(&info).is_err());
+            assert!(hooks.verify_ocsp(&info, b"response").is_err());
+            assert!(hooks.generate_cookie(&info).is_err());
+            assert!(hooks.verify_cookie(&info, b"cookie").is_err());
+            let error = active.error().unwrap();
+            assert!(error.is_instance_of::<pyo3::exceptions::PyRuntimeError>(py));
+            assert_eq!(error.value(py).str().unwrap().to_str().unwrap(), "verify");
+            drop(active);
+            assert!(hooks.info(&info, 1, 1).is_err());
+
+            let module = PyModule::from_code(py, c"class Owner:\n    def _dispatch_native_callback(self, event, info, args):\n        return replacement\n", c"callbacks.py", c"callbacks").unwrap();
+            let replacement = PyContext::new(false).unwrap();
+            replacement.set_verify(1).unwrap();
+            module
+                .add("replacement", Py::new(py, replacement).unwrap())
+                .unwrap();
+            let active =
+                ActiveGuard::new(module.getattr("Owner").unwrap().call0().unwrap().unbind());
+            let replacement = hooks.server_name(&info).unwrap().unwrap();
+            assert_eq!(replacement.protocol(), tls::Protocol::Tls);
+            assert!(matches!(
+                replacement.verification(),
+                tls::PeerVerification::Chain { .. }
+            ));
+            assert!(active.error().is_none());
+        });
+    }
 
     #[test]
     fn io_errors_preserve_retry_close_errno_and_native_diagnostics() {

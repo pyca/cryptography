@@ -131,6 +131,86 @@ fn memory_handshake_authenticated_identity_data_and_shutdown() {
 }
 
 #[test]
+fn tls12_renegotiation_obeys_backend_capabilities_and_pending_state() {
+    let mut builder = server_builder();
+    builder.set_min_version(0x0303).unwrap();
+    builder.set_max_version(0x0303).unwrap();
+    let mut server = Connection::memory(builder.finish(), Role::Server).unwrap();
+    let mut client = Connection::memory(client(false), Role::Client).unwrap();
+    handshake(&mut client, &mut server);
+    assert!(!client.renegotiation_pending());
+    if matches!(
+        openssl_bridge::BACKEND,
+        openssl_bridge::Backend::BoringSsl | openssl_bridge::Backend::AwsLc
+    ) {
+        assert!(matches!(
+            client.request_renegotiation(),
+            Err(Error::Unsupported(_))
+        ));
+    } else {
+        assert!(client.request_renegotiation().unwrap());
+        assert!(client.renegotiation_pending());
+        assert!(!client.request_renegotiation().unwrap());
+    }
+}
+
+#[test]
+fn sni_cannot_switch_transport_protocol() {
+    struct Switch(Context);
+    impl Callbacks for Switch {
+        fn server_name(&self, _: &ConnectionInfo) -> openssl_bridge::Result<Option<Context>> {
+            Ok(Some(self.0.clone()))
+        }
+    }
+    let replacement = ContextBuilder::new(Protocol::Dtls, PeerVerification::None)
+        .unwrap()
+        .finish();
+    let mut server = Connection::memory(server(), Role::Server).unwrap();
+    server
+        .set_callbacks(std::sync::Arc::new(Switch(replacement)))
+        .unwrap();
+    let mut client = Connection::memory(client(false), Role::Client).unwrap();
+    client.set_sni(c"localhost").unwrap();
+    assert!(matches!(client.handshake(), Err(IoError::WantRead)));
+    transfer(&mut client, &mut server);
+    assert!(matches!(
+        server.handshake(),
+        Err(IoError::Failure(Error::InvalidInput(_)))
+    ));
+}
+
+#[test]
+#[cfg(backend = "libressl")]
+fn sni_cannot_negotiate_tls13_with_unsupported_ca_hints() {
+    struct Switch(Context);
+    impl Callbacks for Switch {
+        fn server_name(&self, _: &ConnectionInfo) -> openssl_bridge::Result<Option<Context>> {
+            Ok(Some(self.0.clone()))
+        }
+    }
+    let mut replacement = server_builder();
+    replacement.set_max_version(0x0303).unwrap();
+    replacement
+        .add_client_ca_certificate(include_bytes!("vectors/tls-ca.der"))
+        .unwrap();
+    let mut server = Connection::memory(server(), Role::Server).unwrap();
+    server
+        .set_callbacks(std::sync::Arc::new(Switch(replacement.finish())))
+        .unwrap();
+    let mut builder = ContextBuilder::new(Protocol::Tls, PeerVerification::None).unwrap();
+    builder.set_min_version(0x0304).unwrap();
+    let mut client = Connection::memory(builder.finish(), Role::Client).unwrap();
+    client.set_sni(c"localhost").unwrap();
+    assert!(matches!(client.handshake(), Err(IoError::WantRead)));
+    transfer(&mut client, &mut server);
+    assert!(matches!(
+        server.handshake(),
+        Err(IoError::Failure(Error::Unsupported(_)))
+    ));
+    assert!(server.handshake().is_err());
+}
+
+#[test]
 fn write_retries_own_input_and_reject_changed_contents() {
     let mut client = Connection::memory(client(false), Role::Client).unwrap();
     let mut server = Connection::memory(server(), Role::Server).unwrap();

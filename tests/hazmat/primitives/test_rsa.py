@@ -368,6 +368,12 @@ class TestRSA:
 
 
 class TestRSASignature:
+    def test_native_boundary_rechecks_negative_pss_salt(self, rsa_key_2048):
+        pss = padding.PSS(padding.MGF1(hashes.SHA256()), 32)
+        pss._salt_length = -1
+        with pytest.raises(ValueError, match="nonnegative"):
+            rsa_key_2048.sign(b"message", pss, hashes.SHA256())
+
     @pytest.mark.supported(
         only_if=lambda backend: backend.signature_hash_supported(
             hashes.SHA1()
@@ -843,6 +849,27 @@ class TestRSASignature:
 
 
 class TestRSAVerification:
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.hash_supported(hashes.SHAKE256(32)),
+        skip_message="SHAKE256 is unavailable",
+    )
+    @pytest.mark.parametrize("recover", [False, True])
+    def test_rsa_rejects_xof_signature_digests(self, rsa_key_2048, recover):
+        public = rsa_key_2048.public_key()
+        signature = b"\x00" * 256
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            if recover:
+                public.recover_data_from_signature(
+                    signature, padding.PKCS1v15(), hashes.SHAKE256(32)
+                )
+            else:
+                public.verify(
+                    signature,
+                    b"message",
+                    padding.PKCS1v15(),
+                    hashes.SHAKE256(32),
+                )
+
     @pytest.mark.supported(
         only_if=lambda backend: backend.signature_hash_supported(
             hashes.SHA1()
