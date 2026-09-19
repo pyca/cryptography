@@ -71,36 +71,38 @@ pub(crate) fn parse_public_key_info(
                 openssl_bridge::dh::PublicKeyMaterial::from_components(params, value.as_bytes())?,
             ))
         }
-        AlgorithmParameters::Ed25519 => Ok(ParsedPublicKey::Ed25519(
+        AlgorithmParameters::Ed25519 => {
             openssl_bridge::curve25519::Ed25519VerifyingKey::from_bytes(
                 bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
-            )?,
-        )),
-        AlgorithmParameters::X25519 => Ok(ParsedPublicKey::X25519(
-            openssl_bridge::curve25519::X25519PublicKey::from_bytes(
-                bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
-            )?,
-        )),
+            )
+            .map(ParsedPublicKey::Ed25519)
+            .map_err(Into::into)
+        }
+        AlgorithmParameters::X25519 => openssl_bridge::curve25519::X25519PublicKey::from_bytes(
+            bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
+        )
+        .map(ParsedPublicKey::X25519)
+        .map_err(Into::into),
         #[cfg(not(any(
             CRYPTOGRAPHY_IS_LIBRESSL,
             CRYPTOGRAPHY_IS_BORINGSSL,
             CRYPTOGRAPHY_IS_AWSLC
         )))]
-        AlgorithmParameters::Ed448 => Ok(ParsedPublicKey::Ed448(
-            openssl_bridge::curve448::Ed448VerifyingKey::from_bytes(
-                bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
-            )?,
-        )),
+        AlgorithmParameters::Ed448 => openssl_bridge::curve448::Ed448VerifyingKey::from_bytes(
+            bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
+        )
+        .map(ParsedPublicKey::Ed448)
+        .map_err(Into::into),
         #[cfg(not(any(
             CRYPTOGRAPHY_IS_LIBRESSL,
             CRYPTOGRAPHY_IS_BORINGSSL,
             CRYPTOGRAPHY_IS_AWSLC
         )))]
-        AlgorithmParameters::X448 => Ok(ParsedPublicKey::X448(
-            openssl_bridge::curve448::X448PublicKey::from_bytes(
-                bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
-            )?,
-        )),
+        AlgorithmParameters::X448 => openssl_bridge::curve448::X448PublicKey::from_bytes(
+            bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
+        )
+        .map(ParsedPublicKey::X448)
+        .map_err(Into::into),
         #[cfg(any(
             CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
             CRYPTOGRAPHY_IS_BORINGSSL,

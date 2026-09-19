@@ -149,9 +149,35 @@ pub(crate) fn check_len_at_most(actual: usize, capacity: usize) -> Result<()> {
     }
 }
 
+/// Check a Rust buffer length before passing it to a narrower native parameter.
+pub(crate) fn input_length<T: TryFrom<usize>>(length: usize, message: &'static str) -> Result<T> {
+    T::try_from(length).map_err(|_| Error::InvalidInput(message))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn input_lengths_reject_truncation_without_allocating_large_buffers() {
+        assert_eq!(input_length::<i32>(0, "length").unwrap(), 0);
+        assert_eq!(
+            input_length::<i32>(i32::MAX as usize, "length").unwrap(),
+            i32::MAX
+        );
+        assert_eq!(
+            input_length::<i32>(i32::MAX as usize + 1, "length"),
+            Err(Error::InvalidInput("length"))
+        );
+        assert_eq!(
+            input_length::<usize>(usize::MAX, "length").unwrap(),
+            usize::MAX
+        );
+        assert_eq!(input_length::<i64>(0, "length").unwrap(), 0);
+        if usize::BITS == 64 {
+            assert!(input_length::<i64>(usize::MAX, "length").is_err());
+        }
+    }
 
     #[test]
     fn native_lengths_are_checked_before_exposing_output() {

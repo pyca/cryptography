@@ -11,6 +11,12 @@ use openssl_bridge::secret::SecretBytes;
 use pyo3::pybacked::PyBackedBytes;
 use pyo3::types::{PyAnyMethods, PyBytes, PyBytesMethods, PyMemoryView, PySlice};
 
+pub(crate) fn checked_add_length(length: usize, extra: usize) -> pyo3::PyResult<usize> {
+    length
+        .checked_add(extra)
+        .ok_or_else(|| pyo3::exceptions::PyOverflowError::new_err("buffer length overflow"))
+}
+
 fn generate_non_convertible_buffer_error_msg(
     pyobj: &pyo3::Borrowed<'_, '_, pyo3::PyAny>,
 ) -> String {
@@ -190,6 +196,25 @@ impl<'p> pyo3::conversion::FromPyObject<'_, 'p> for CffiMutBuf<'p> {
 mod tests {
     use super::*;
     use pyo3::types::{PyByteArray, PyByteArrayMethods};
+
+    #[test]
+    fn output_lengths_cannot_overflow_or_publish_past_capacity() {
+        assert_eq!(checked_add_length(usize::MAX - 1, 1).unwrap(), usize::MAX);
+        assert!(checked_add_length(usize::MAX, 1).is_err());
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| {
+            let mut bytes = [0x42; 4];
+            assert!(CffiMutBuf::from_bytes(py, &mut bytes)
+                .commit(py, 5)
+                .is_err());
+            assert_eq!(bytes, [0x42; 4]);
+            let original = PyByteArray::new(py, b"keep");
+            let mut output = original.extract::<CffiMutBuf<'_>>().unwrap();
+            output.as_mut_bytes().fill(0);
+            assert!(output.commit(py, 5).is_err());
+            assert_eq!(original.to_vec(), b"keep");
+        });
+    }
 
     #[test]
     fn mutable_and_readonly_views_are_snapshotted() {

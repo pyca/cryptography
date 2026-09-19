@@ -80,7 +80,10 @@ fn trust_store_copies_anchors_and_verification_diagnostics() {
             assert_eq!(error.certificate_der.unwrap(), der);
             assert!(!error.message.is_empty());
         }
+        // A passing test cannot execute its failure diagnostic.
+        // NO-COVERAGE-START
         error => panic!("expected verification rejection: {error:?}"),
+        // NO-COVERAGE-END
     }
     store
         .add_certificate_der(&cert.encode(Encoding::Der).unwrap())

@@ -253,9 +253,7 @@ impl Key {
                 ctx.ptr(),
             )
         };
-        if written != result.len() {
-            return Err(Error::capture());
-        }
+        crate::error::check_len(written, result.len())?;
         Ok(result)
     }
     fn coordinates(&self) -> Result<(Vec<u8>, Vec<u8>)> {

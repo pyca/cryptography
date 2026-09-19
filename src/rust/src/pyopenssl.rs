@@ -27,7 +27,11 @@ fn bridge_error(error: Error) -> PyErr {
                 })
                 .collect::<Vec<_>>(),
         ),
+        // Required for a non-exhaustive dependency enum; all current variants
+        // are handled above, so this arm cannot be constructed in this version.
+        // NO-COVERAGE-START
         _ => NativeError::new_err(error.to_string()),
+        // NO-COVERAGE-END
     }
 }
 
@@ -59,7 +63,10 @@ fn time_field(after: bool) -> x509::TimeField {
     }
 }
 
+// PyO3 generates fallible type-registration machinery for this declaration.
+// NO-COVERAGE-START
 #[pyclass(module = "cryptography.hazmat.bindings._rust.pyopenssl", name = "Name")]
+// NO-COVERAGE-END
 struct PyName {
     inner: Mutex<x509::Name>,
 }
@@ -126,10 +133,13 @@ impl PyName {
     }
 }
 
+// PyO3 generates fallible type-registration machinery for this declaration.
+// NO-COVERAGE-START
 #[pyclass(
     module = "cryptography.hazmat.bindings._rust.pyopenssl",
     name = "Certificate"
 )]
+// NO-COVERAGE-END
 struct PyCertificate {
     inner: Mutex<x509::Certificate>,
 }
@@ -249,10 +259,13 @@ impl PyCertificate {
     }
 }
 
+// PyO3 generates fallible type-registration machinery for this declaration.
+// NO-COVERAGE-START
 #[pyclass(
     module = "cryptography.hazmat.bindings._rust.pyopenssl",
     name = "TrustStore"
 )]
+// NO-COVERAGE-END
 struct PyTrustStore {
     inner: Mutex<x509::TrustStore>,
 }

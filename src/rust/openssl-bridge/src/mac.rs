@@ -24,10 +24,7 @@ impl Hmac {
         }
         let size = algorithm.output_size()?;
         #[allow(clippy::useless_conversion)]
-        let key_len = key
-            .len()
-            .try_into()
-            .map_err(|_| Error::InvalidInput("HMAC key is too long"))?;
+        let key_len = crate::error::input_length(key.len(), "HMAC key is too long")?;
         // SAFETY: The allocator has no preconditions.
         let ctx = pointer(unsafe { ffi::HMAC_CTX_new() })?;
         let result = Self {

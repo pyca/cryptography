@@ -169,21 +169,10 @@ pub(crate) unsafe fn export_private_key(key: *mut ffi::EVP_PKEY) -> Result<Secre
     }
 }
 
-// SAFETY contract: encoder must be an i2d-style native encoder of an immutable,
-// live object. NULL queries its exact encoded length; a non-null output writes
-// that many bytes and advances the pointer. No other thread can mutate it.
-unsafe fn encode_secret(mut encoder: impl FnMut(*mut *mut u8) -> i32) -> Result<SecretBytes> {
-    let length = encoder(ptr::null_mut());
-    if length <= 0 {
-        return Err(Error::capture());
-    }
-    let mut bytes = SecretBytes::from(vec![0; length as usize]);
-    let mut cursor = bytes.as_mut().as_mut_ptr();
-    let written = encoder(&mut cursor);
-    if written != length || cursor != bytes.as_mut().as_mut_ptr().wrapping_add(length as usize) {
-        return Err(Error::capture());
-    }
-    Ok(bytes)
+// SAFETY: The encoder satisfies x509::encode_with's bounded i2d contract.
+unsafe fn encode_secret(encoder: impl FnMut(*mut *mut u8) -> i32) -> Result<SecretBytes> {
+    // SAFETY: Exactly sized secret storage is erased on every failure path.
+    unsafe { crate::x509::encode_with(encoder, |len| SecretBytes::from(vec![0; len])) }
 }
 
 // SAFETY: cert is a live, non-null X509 with no concurrent accesses.

@@ -136,19 +136,19 @@ fn parse_private_key_inner(k: &PrivateKeyInfo<'_>) -> KeyParsingResult<ParsedPri
         }
         AlgorithmParameters::Ed25519 => {
             let bytes: &[u8] = asn1::parse_single(k.private_key)?;
-            Ok(ParsedPrivateKey::Ed25519(
-                openssl_bridge::curve25519::Ed25519SigningKey::from_seed(
-                    bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
-                )?,
-            ))
+            openssl_bridge::curve25519::Ed25519SigningKey::from_seed(
+                bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
+            )
+            .map(ParsedPrivateKey::Ed25519)
+            .map_err(Into::into)
         }
         AlgorithmParameters::X25519 => {
             let bytes: &[u8] = asn1::parse_single(k.private_key)?;
-            Ok(ParsedPrivateKey::X25519(
-                openssl_bridge::curve25519::X25519SecretKey::from_bytes(
-                    bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
-                )?,
-            ))
+            openssl_bridge::curve25519::X25519SecretKey::from_bytes(
+                bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
+            )
+            .map(ParsedPrivateKey::X25519)
+            .map_err(Into::into)
         }
         #[cfg(not(any(
             CRYPTOGRAPHY_IS_LIBRESSL,
@@ -157,11 +157,11 @@ fn parse_private_key_inner(k: &PrivateKeyInfo<'_>) -> KeyParsingResult<ParsedPri
         )))]
         AlgorithmParameters::Ed448 => {
             let bytes: &[u8] = asn1::parse_single(k.private_key)?;
-            Ok(ParsedPrivateKey::Ed448(
-                openssl_bridge::curve448::Ed448SigningKey::from_seed(
-                    bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
-                )?,
-            ))
+            openssl_bridge::curve448::Ed448SigningKey::from_seed(
+                bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
+            )
+            .map(ParsedPrivateKey::Ed448)
+            .map_err(Into::into)
         }
         #[cfg(not(any(
             CRYPTOGRAPHY_IS_LIBRESSL,
@@ -170,11 +170,11 @@ fn parse_private_key_inner(k: &PrivateKeyInfo<'_>) -> KeyParsingResult<ParsedPri
         )))]
         AlgorithmParameters::X448 => {
             let bytes: &[u8] = asn1::parse_single(k.private_key)?;
-            Ok(ParsedPrivateKey::X448(
-                openssl_bridge::curve448::X448SecretKey::from_bytes(
-                    bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
-                )?,
-            ))
+            openssl_bridge::curve448::X448SecretKey::from_bytes(
+                bytes.try_into().map_err(|_| KeyParsingError::InvalidKey)?,
+            )
+            .map(ParsedPrivateKey::X448)
+            .map_err(Into::into)
         }
         #[cfg(any(
             CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,

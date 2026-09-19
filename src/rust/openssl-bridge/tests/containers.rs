@@ -53,7 +53,10 @@ fn pkcs7_certificates_and_wrong_content() {
             assert_eq!(certs.len(), 2);
             assert!(certs.iter().all(|cert| cert.first() == Some(&0x30)));
         }
+        // A passing test cannot execute its failure diagnostic.
+        // NO-COVERAGE-START
         _ => panic!("expected signed certificate collection"),
+        // NO-COVERAGE-END
     }
     // ContentInfo carrying the pkcs7-data OID, with no content.
     let data = b"\x30\x0b\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x07\x01";

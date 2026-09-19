@@ -186,10 +186,11 @@ impl Key {
         if output != length || tag != self.tag_size {
             return Err(Error::InvalidInput("incorrect AEAD output or tag size"));
         }
-        if aad.iter().any(|data| data.len() > i32::MAX as usize) {
-            return Err(Error::InvalidInput(
+        for data in aad {
+            crate::error::input_length::<i32>(
+                data.len(),
                 "AEAD associated data exceeds native limit",
-            ));
+            )?;
         }
         if (protocol != Protocol::Siv && aad.len() > 1) || aad.len() > 126 {
             return Err(Error::InvalidInput(
@@ -518,5 +519,20 @@ impl Key {
         crate::error::check_len(written, output.len())?;
         output.copy_from_slice(private.as_ref());
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod length_tests {
+    use super::*;
+
+    #[test]
+    fn payload_bound_is_checked_before_allocation() {
+        let key = Key::new(Algorithm::Aes128Gcm, &[0; 16]).unwrap();
+        let limit = i32::MAX as usize - 32;
+        assert!(key.validate(&[0; 12], &[], limit, limit, 16).is_ok());
+        assert!(key
+            .validate(&[0; 12], &[], limit + 1, limit + 1, 16)
+            .is_err());
     }
 }

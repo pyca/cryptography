@@ -183,9 +183,7 @@ impl CipherContext {
         data: &[u8],
         buf: &mut [u8],
     ) -> CryptographyResult<usize> {
-        let required = data.len().checked_add(self.block_size - 1).ok_or_else(|| {
-            pyo3::exceptions::PyOverflowError::new_err("cipher output size overflow")
-        })?;
+        let required = crate::buf::checked_add_length(data.len(), self.block_size - 1)?;
         if buf.len() < required {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "buffer must be at least {required} bytes for this payload"
@@ -218,7 +216,10 @@ impl CipherContext {
                 Operation::GcmDecrypt(ctx) => {
                     ctx.update_unverified_into(chunk, &mut buf[written..])?
                 }
+                // XTS returns before entering this loop.
+                // NO-COVERAGE-START
                 Operation::Xts(_) => unreachable!(),
+                // NO-COVERAGE-END
             };
         }
         Ok(written)

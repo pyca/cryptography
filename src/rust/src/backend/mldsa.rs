@@ -55,9 +55,7 @@ fn from_mldsa44_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa44PrivateKe
     })?;
     let key =
         openssl_bridge::mldsa::PrivateKey::from_seed(openssl_bridge::mldsa::Variant::MlDsa44, seed)
-            .map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err("An ML-DSA-44 seed is 32 bytes long")
-            })?;
+            .map_err(CryptographyError::from)?;
     Ok(MlDsa44PrivateKey { key })
 }
 
@@ -309,9 +307,7 @@ fn from_mldsa65_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa65PrivateKe
     })?;
     let key =
         openssl_bridge::mldsa::PrivateKey::from_seed(openssl_bridge::mldsa::Variant::MlDsa65, seed)
-            .map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err("An ML-DSA-65 seed is 32 bytes long")
-            })?;
+            .map_err(CryptographyError::from)?;
     Ok(MlDsa65PrivateKey { key })
 }
 
@@ -566,9 +562,7 @@ fn from_mldsa87_seed_bytes(data: CffiBuf<'_>) -> pyo3::PyResult<MlDsa87PrivateKe
     })?;
     let key =
         openssl_bridge::mldsa::PrivateKey::from_seed(openssl_bridge::mldsa::Variant::MlDsa87, seed)
-            .map_err(|_| {
-                pyo3::exceptions::PyValueError::new_err("An ML-DSA-87 seed is 32 bytes long")
-            })?;
+            .map_err(CryptographyError::from)?;
     Ok(MlDsa87PrivateKey { key })
 }
 

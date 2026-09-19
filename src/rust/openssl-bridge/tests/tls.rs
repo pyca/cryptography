@@ -52,7 +52,10 @@ fn transfer(from: &mut Connection, to: &mut Connection) {
         match from.drain_ciphertext(&mut buffer) {
             Ok(length) => assert_eq!(to.feed_ciphertext(&buffer[..length]).unwrap(), length),
             Err(IoError::WantRead) => return,
+            // A passing test cannot execute its failure diagnostic.
+            // NO-COVERAGE-START
             outcome => panic!("transport error: {outcome:?}"),
+            // NO-COVERAGE-END
         }
     }
 }
@@ -64,7 +67,10 @@ fn handshake(client: &mut Connection, server: &mut Connection) {
             match client.handshake() {
                 Ok(()) => client_done = true,
                 Err(IoError::WantRead | IoError::WantWrite) => (),
+                // A passing test cannot execute its failure diagnostic.
+                // NO-COVERAGE-START
                 result => panic!("client handshake: {result:?}"),
+                // NO-COVERAGE-END
             }
         }
         transfer(client, server);
@@ -72,7 +78,10 @@ fn handshake(client: &mut Connection, server: &mut Connection) {
             match server.handshake() {
                 Ok(()) => server_done = true,
                 Err(IoError::WantRead | IoError::WantWrite) => (),
+                // A passing test cannot execute its failure diagnostic.
+                // NO-COVERAGE-START
                 result => panic!("server handshake: {result:?}"),
+                // NO-COVERAGE-END
             }
         }
         transfer(server, client);
@@ -80,7 +89,10 @@ fn handshake(client: &mut Connection, server: &mut Connection) {
             return;
         }
     }
+    // A passing test cannot execute its failure diagnostic.
+    // NO-COVERAGE-START
     panic!("handshake did not complete");
+    // NO-COVERAGE-END
 }
 
 #[test]
@@ -141,7 +153,10 @@ fn write_retries_own_input_and_reject_changed_contents() {
         transfer(&mut client, &mut server);
         match server.handshake() {
             Ok(()) | Err(IoError::WantRead | IoError::WantWrite) => (),
+            // A passing test cannot execute its failure diagnostic.
+            // NO-COVERAGE-START
             result => panic!("{result:?}"),
+            // NO-COVERAGE-END
         }
         transfer(&mut server, &mut client);
         match client.write(b"retained bytes") {
@@ -153,10 +168,16 @@ fn write_retries_own_input_and_reject_changed_contents() {
                 return;
             }
             Err(IoError::WantRead | IoError::WantWrite) => (),
+            // A passing test cannot execute its failure diagnostic.
+            // NO-COVERAGE-START
             result => panic!("write retry: {result:?}"),
+            // NO-COVERAGE-END
         }
     }
+    // A passing test cannot execute its failure diagnostic.
+    // NO-COVERAGE-START
     panic!("write did not complete");
+    // NO-COVERAGE-END
 }
 
 #[test]
@@ -534,7 +555,10 @@ fn dtls_cookie_exchange_preserves_mtu_and_packet_peek() {
             match client.handshake() {
                 Ok(()) => client_done = true,
                 Err(IoError::WantRead | IoError::WantWrite) => (),
+                // A passing test cannot execute its failure diagnostic.
+                // NO-COVERAGE-START
                 error => panic!("client: {error:?}"),
+                // NO-COVERAGE-END
             }
         }
         transfer(&mut client, &mut server);
@@ -542,14 +566,20 @@ fn dtls_cookie_exchange_preserves_mtu_and_packet_peek() {
             match server.dtls_listen() {
                 Ok(()) => listening = false,
                 Err(IoError::WantRead | IoError::WantWrite) => (),
+                // A passing test cannot execute its failure diagnostic.
+                // NO-COVERAGE-START
                 error => panic!("listen: {error:?}"),
+                // NO-COVERAGE-END
             }
         }
         if !listening && !server_done {
             match server.handshake() {
                 Ok(()) => server_done = true,
                 Err(IoError::WantRead | IoError::WantWrite) => (),
+                // A passing test cannot execute its failure diagnostic.
+                // NO-COVERAGE-START
                 error => panic!("server: {error:?}"),
+                // NO-COVERAGE-END
             }
         }
         transfer(&mut server, &mut client);
@@ -585,16 +615,11 @@ fn frozen_context_store_remains_usable_for_independent_verification() {
 
 #[test]
 fn callbacks_cannot_destroy_parent_error_queue_or_errno() {
-    use std::sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    };
-    struct DrainErrors(Arc<AtomicBool>);
+    use std::sync::Arc;
+    struct DrainErrors;
     impl Callbacks for DrainErrors {
         fn info(&self, _: &ConnectionInfo, _: i32, _: i32) -> openssl_bridge::Result<()> {
-            if !openssl_bridge::error::take_error_queue().is_empty() {
-                self.0.store(true, Ordering::Relaxed);
-            }
+            assert!(openssl_bridge::error::take_error_queue().is_empty());
             assert!(std::fs::File::open("/openssl-bridge/nonexistent/callback-file").is_err());
             Ok(())
         }
@@ -609,17 +634,16 @@ fn callbacks_cannot_destroy_parent_error_queue_or_errno() {
             .unwrap();
         match connection.handshake() {
             Err(IoError::Failure(Error::Native(errors))) => errors,
+            // A passing test cannot execute its failure diagnostic.
+            // NO-COVERAGE-START
             result => panic!("expected TLS protocol failure: {result:?}"),
+            // NO-COVERAGE-END
         }
     };
     let expected = failure(None);
     assert!(!expected.is_empty());
-    let drained = Arc::new(AtomicBool::new(false));
-    let actual = failure(Some(Arc::new(DrainErrors(drained.clone()))));
+    let actual = failure(Some(Arc::new(DrainErrors)));
     assert_eq!(actual, expected);
-    // The callback must see an empty isolated queue even when native SSL has
-    // recorded the protocol error before invoking its final info callback.
-    assert!(!drained.load(Ordering::Relaxed));
 }
 
 #[test]
@@ -664,6 +688,8 @@ fn ca_names_are_copied_during_certificate_selection() {
 #[test]
 fn ocsp_observers_are_not_called_without_a_request() {
     struct UnexpectedOcsp;
+    // These sentinels fail the handshake if unsolicited callbacks occur.
+    // NO-COVERAGE-START
     impl Callbacks for UnexpectedOcsp {
         fn ocsp_response(&self, _: &ConnectionInfo) -> openssl_bridge::Result<Option<Vec<u8>>> {
             Err(Error::InvalidState("unsolicited OCSP server callback"))
@@ -672,6 +698,7 @@ fn ocsp_observers_are_not_called_without_a_request() {
             Err(Error::InvalidState("unsolicited OCSP client callback"))
         }
     }
+    // NO-COVERAGE-END
     let mut client = Connection::memory(client(true), Role::Client).unwrap();
     let mut server = Connection::memory(server(), Role::Server).unwrap();
     client

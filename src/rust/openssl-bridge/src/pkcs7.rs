@@ -1,7 +1,7 @@
 //! One-shot native PKCS#7 signature verification for OpenSSL and LibreSSL.
 use crate::{
     error::{check, pointer},
-    ffi, Error, Result,
+    ffi, Result,
 };
 use std::ptr;
 
@@ -53,10 +53,7 @@ pub fn verify(
     text: bool,
 ) -> Result<()> {
     crate::initialize()?;
-    let length = signature
-        .len()
-        .try_into()
-        .map_err(|_| Error::InvalidInput("PKCS#7 signature is too long"))?;
+    let length = crate::error::input_length(signature.len(), "PKCS#7 signature is too long")?;
     let input = Bio(
         // SAFETY: Explicit nonnegative length, readable signature; this BIO is
         // dropped before signature's borrow ends. It does not own the slice.
@@ -81,10 +78,7 @@ pub fn verify(
     let store = Store(pointer(unsafe { ffi::X509_STORE_new() })?.as_ptr());
     for der in trust_anchors {
         let mut cursor = der.as_ptr();
-        let length = der
-            .len()
-            .try_into()
-            .map_err(|_| Error::InvalidInput("certificate is too long"))?;
+        let length = crate::error::input_length(der.len(), "certificate is too long")?;
         let cert = Certificate(
             // SAFETY: The decoder reads the bounded DER input and creates a new object.
             pointer(unsafe { ffi::d2i_X509(ptr::null_mut(), &mut cursor, length) })?.as_ptr(),
@@ -94,10 +88,7 @@ pub fn verify(
         check(unsafe { ffi::X509_STORE_add_cert(store.0, cert.0) })?;
     }
     let data = if let Some(content) = content {
-        let length = content
-            .len()
-            .try_into()
-            .map_err(|_| Error::InvalidInput("PKCS#7 content is too long"))?;
+        let length = crate::error::input_length(content.len(), "PKCS#7 content is too long")?;
         // SAFETY: The content slice remains live through verification and the
         // BIO's drop. Explicit length avoids the native strlen convention.
         Bio(pointer(unsafe { ffi::BIO_new_mem_buf(content.as_ptr().cast(), length) })?.as_ptr())

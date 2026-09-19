@@ -447,21 +447,29 @@ impl Connection {
             return Ok(native);
         }
         let info = self.info();
-        if info.version != ffi::DTLS1_2_VERSION as i32 {
-            return Err(Error::Unsupported("DTLS data MTU for this native protocol"));
-        }
-        let cipher = info
-            .cipher
-            .ok_or(Error::InvalidState("DTLS cipher is unavailable"))?;
-        let overhead = if cipher.name.contains("GCM") {
-            13 + 8 + 16
-        } else if cipher.name.contains("CHACHA20") {
-            13 + 16
-        } else {
-            return Err(Error::Unsupported("DTLS data MTU for this native cipher"));
-        };
-        Ok(mtu as usize - overhead)
+        fallback_data_mtu(
+            info.version,
+            info.cipher.as_ref().map(|c| c.name.as_str()),
+            mtu,
+        )
     }
+}
+
+// Backends without a native data-MTU query need an exact record-overhead rule.
+// Keep unsupported protocol/cipher combinations explicit instead of guessing.
+fn fallback_data_mtu(version: i32, cipher: Option<&str>, mtu: u32) -> Result<usize> {
+    if version != ffi::DTLS1_2_VERSION as i32 {
+        return Err(Error::Unsupported("DTLS data MTU for this native protocol"));
+    }
+    let cipher = cipher.ok_or(Error::InvalidState("DTLS cipher is unavailable"))?;
+    let overhead = if cipher.contains("GCM") {
+        13 + 8 + 16
+    } else if cipher.contains("CHACHA20") {
+        13 + 16
+    } else {
+        return Err(Error::Unsupported("DTLS data MTU for this native cipher"));
+    };
+    Ok(mtu as usize - overhead)
 }
 fn validate_mtu(mtu: u32) -> Result<()> {
     if !(256..=65535).contains(&mtu) {
@@ -475,6 +483,22 @@ fn validate_mtu(mtu: u32) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn fallback_mtu_accounts_for_record_nonce_and_tag() {
+        let version = ffi::DTLS1_2_VERSION as i32;
+        assert_eq!(
+            fallback_data_mtu(version, Some("ECDHE-RSA-AES128-GCM-SHA256"), 1200).unwrap(),
+            1163
+        );
+        assert_eq!(
+            fallback_data_mtu(version, Some("ECDHE-RSA-CHACHA20-POLY1305"), 1200).unwrap(),
+            1171
+        );
+        assert!(fallback_data_mtu(0, Some("AES128-GCM"), 1200).is_err());
+        assert!(fallback_data_mtu(version, None, 1200).is_err());
+        assert!(fallback_data_mtu(version, Some("AES128-SHA256"), 1200).is_err());
+    }
 
     #[test]
     fn packet_queue_preserves_boundaries_backpressure_and_eof() {

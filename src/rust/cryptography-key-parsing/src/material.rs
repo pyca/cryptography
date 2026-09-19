@@ -1,5 +1,52 @@
 //! Algorithm-specific owned keys and borrowed serialization views.
 use openssl_bridge as bridge;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn structured_keys_reject_raw_serialization() {
+        let key = bridge::ec::PrivateKey::generate(bridge::ec::Curve::P256).unwrap();
+        assert!(PrivateKeyRef::Ec(&key).raw_bytes().is_err());
+        assert!(PublicKeyRef::Ec(&key.public_key().unwrap())
+            .raw_bytes()
+            .is_err());
+    }
+
+    #[cfg(any(
+        CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    ))]
+    #[test]
+    fn post_quantum_raw_encodings_preserve_seeds_and_public_keys() {
+        let dsa =
+            bridge::mldsa::PrivateKey::from_seed(bridge::mldsa::Variant::MlDsa44, &[0x42; 32])
+                .unwrap();
+        assert_eq!(
+            PrivateKeyRef::MlDsa(&dsa).raw_bytes().unwrap().as_ref(),
+            &[0x42; 32]
+        );
+        let public = dsa.public_key();
+        assert_eq!(
+            PublicKeyRef::MlDsa(&public).raw_bytes().unwrap(),
+            public.as_bytes()
+        );
+        let kem =
+            bridge::mlkem::PrivateKey::from_seed(bridge::mlkem::Variant::MlKem768, &[0x24; 64])
+                .unwrap();
+        assert_eq!(
+            PrivateKeyRef::MlKem(&kem).raw_bytes().unwrap().as_ref(),
+            &[0x24; 64]
+        );
+        let public = kem.public_key();
+        assert_eq!(
+            PublicKeyRef::MlKem(&public).raw_bytes().unwrap(),
+            public.as_bytes()
+        );
+    }
+}
 pub enum ParsedPrivateKey {
     Rsa(crate::rsa::RsaPrivateMaterial),
     Ec(bridge::ec::PrivateKey),

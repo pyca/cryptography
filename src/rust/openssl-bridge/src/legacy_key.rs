@@ -17,9 +17,7 @@ pub fn curve_names() -> Result<Vec<String>> {
     crate::initialize()?;
     // SAFETY: NULL with zero capacity queries the immutable built-in table.
     let count = unsafe { ffi::EC_get_builtin_curves(ptr::null_mut(), 0) };
-    if count > 1024 {
-        return Err(Error::InvalidState("unexpected number of built-in curves"));
-    }
+    crate::error::check_len_at_most(count, 1024)?;
     let mut curves = vec![
         ffi::EC_builtin_curve {
             nid: 0,
@@ -29,9 +27,11 @@ pub fn curve_names() -> Result<Vec<String>> {
     ];
     // SAFETY: The vector covers exactly the advertised capacity. The native
     // immutable table fills each entry and retains no reference to the vector.
-    if unsafe { ffi::EC_get_builtin_curves(curves.as_mut_ptr(), curves.len()) } != count {
-        return Err(Error::InvalidState("built-in curve table changed"));
-    }
+    crate::error::check_len(
+        // SAFETY: The allocation has the capacity reported by the immutable table.
+        unsafe { ffi::EC_get_builtin_curves(curves.as_mut_ptr(), curves.len()) },
+        count,
+    )?;
     let mut names = Vec::new();
     for curve in curves {
         // SAFETY: A built-in curve NID has a backend-owned static short name.
@@ -87,17 +87,6 @@ pub fn dsa_private_key_der(bits: u32) -> Result<SecretBytes> {
     unsafe { export_private_key(key.0.as_ptr()) }
 }
 
-// A NULL password callback would permit OpenSSL to prompt on the terminal.
-// Always reject such implicit input; callers must provide a bounded byte string.
-unsafe extern "C" fn no_password(
-    _: *mut std::ffi::c_char,
-    _: i32,
-    _: i32,
-    _: *mut std::ffi::c_void,
-) -> i32 {
-    0
-}
-
 /// Export the legacy PEM form using the native named cipher. Encryption is
 /// requested only when both cipher and password are present; embedded NUL bytes
 /// in passwords remain data. Private temporary BIO storage is erased on drop.
@@ -127,8 +116,7 @@ pub fn private_key_pem(
     // LibreSSL's historical signature accepts a mutable password pointer.
     // Give it owned, erased storage instead of casting away a Rust borrow.
     let mut password = SecretBytes::from(password.unwrap_or(b"").to_vec());
-    let len = i32::try_from(password.as_ref().len())
-        .map_err(|_| Error::InvalidInput("password is too long"))?;
+    let len = crate::error::input_length::<i32>(password.as_ref().len(), "password is too long")?;
     // SAFETY: The private key and output BIO are exclusive. A provided password
     // is readable for its explicit length, including NULs. When encrypted, the
     // non-NULL explicit password prevents prompting. Do not also install a
@@ -142,7 +130,7 @@ pub fn private_key_pem(
             password.as_mut().as_mut_ptr(),
             len,
             if cipher.is_null() {
-                Some(no_password)
+                Some(crate::x509::no_password)
             } else {
                 None
             },

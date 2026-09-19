@@ -38,9 +38,25 @@ pub(crate) fn clear_on_error<T>(result: crate::Result<T>, output: &mut [u8]) -> 
     result
 }
 
+pub(crate) fn check_shared_secret<const N: usize>(secret: &[u8; N]) -> crate::Result<()> {
+    if crate::constant_time_eq(secret, &[0; N]) {
+        Err(crate::Error::InvalidInput("shared secret is all zero"))
+    } else {
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn low_order_points_cannot_yield_an_all_zero_shared_secret() {
+        assert!(check_shared_secret(&[0; 32]).is_err());
+        assert!(check_shared_secret(&[0; 56]).is_err());
+        assert!(check_shared_secret(&[1; 32]).is_ok());
+        assert!(check_shared_secret(&[1; 56]).is_ok());
+    }
 
     #[test]
     fn errors_erase_only_the_borrowed_output() {

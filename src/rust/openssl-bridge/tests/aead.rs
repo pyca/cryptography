@@ -79,7 +79,7 @@ fn every_supported_aead_authenticates_before_releasing_plaintext() {
                 &mut ciphertext,
                 &mut tag,
             )
-            .unwrap_or_else(|e| panic!("{algorithm:?} encryption: {e}"));
+            .expect(&format!("{algorithm:?} encryption"));
             let mut output = vec![0xA5; length + 32];
             key.open_into(
                 &nonce,
@@ -88,7 +88,7 @@ fn every_supported_aead_authenticates_before_releasing_plaintext() {
                 &tag,
                 &mut output[..length],
             )
-            .unwrap_or_else(|e| panic!("{algorithm:?} decryption: {e}"));
+            .expect(&format!("{algorithm:?} decryption"));
             assert_eq!(&output[..length], &plaintext);
             assert_eq!(&output[length..], &[0xA5; 32]);
             for byte in 0..tag.len() {
@@ -125,9 +125,9 @@ fn every_supported_aead_authenticates_before_releasing_plaintext() {
         if !siv {
             let mut tag = [0; 16];
             key.seal_into(&nonce, &[], &[], &mut [], &mut tag)
-                .unwrap_or_else(|e| panic!("{algorithm:?} empty encryption: {e}"));
+                .expect(&format!("{algorithm:?} empty encryption"));
             key.open_into(&nonce, &[], &[], &tag, &mut [])
-                .unwrap_or_else(|e| panic!("{algorithm:?} empty decryption: {e}"));
+                .expect(&format!("{algorithm:?} empty decryption"));
             tag[0] ^= 1;
             assert!(key.open_into(&nonce, &[], &[], &tag, &mut []).is_err());
         }

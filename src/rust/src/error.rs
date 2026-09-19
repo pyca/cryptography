@@ -54,22 +54,7 @@ impl From<pyo3::pyclass::PyClassGuardError<'_, '_>> for CryptographyError {
 
 impl From<openssl_bridge::Error> for CryptographyError {
     fn from(error: openssl_bridge::Error) -> Self {
-        let message = error.to_string();
-        Self::Py(
-            pyo3::Python::attach(|py| {
-                let errors = pyo3::types::PyList::empty(py);
-                if let openssl_bridge::Error::Native(native) = error {
-                    for e in native {
-                        errors.append(pyo3::Bound::new(py, OpenSSLError { e })?)?;
-                    }
-                }
-                Ok::<_, pyo3::PyErr>(exceptions::InternalError::new_err((
-                    message,
-                    errors.unbind(),
-                )))
-            })
-            .unwrap_or_else(|error| error),
-        )
+        Self::OpenSSL(error)
     }
 }
 
@@ -396,7 +381,7 @@ mod tests {
                 openssl_bridge::Error::Native(Vec::new()),
             )
             .into();
-            assert!(matches!(e, CryptographyError::Py(_)));
+            assert!(matches!(e, CryptographyError::OpenSSL(_)));
 
             let e = pyo3::CastIntoError::new(
                 py.None().into_bound(py),
@@ -431,7 +416,7 @@ mod tests {
         );
         assert!(matches!(
             CryptographyError::from(e),
-            CryptographyError::Py(_)
+            CryptographyError::OpenSSL(_)
         ));
     }
 

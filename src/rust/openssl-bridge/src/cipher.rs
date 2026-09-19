@@ -492,9 +492,7 @@ impl Stream {
         if output.len() < capacity {
             return Err(Error::InvalidInput("output buffer is too small"));
         }
-        if capacity > i32::MAX as usize {
-            return Err(Error::InvalidInput("cipher output exceeds INT_MAX"));
-        }
+        crate::error::input_length::<i32>(capacity, "cipher output exceeds INT_MAX")?;
         let remaining = self
             .remaining
             .map(|n| {

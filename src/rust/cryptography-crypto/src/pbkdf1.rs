@@ -125,14 +125,12 @@ mod tests {
             ),
         ] {
             let key = openssl_kdf(md, password, salt, expected.len());
-            if openssl_bridge::BACKEND == openssl_bridge::Backend::OpenSsl
-                && openssl_bridge::runtime::is_fips_enabled()
-            {
-                // Startup FIPS properties must reject MD5, including when
-                // called from a Rust test instead of the Python API.
-                assert!(key.is_err());
-            } else {
-                assert_eq!(key.unwrap(), expected);
+            // Startup FIPS properties must reject MD5 in Rust as in Python.
+            let fips = openssl_bridge::BACKEND == openssl_bridge::Backend::OpenSsl
+                && openssl_bridge::runtime::is_fips_enabled();
+            assert_eq!(key.is_err(), fips);
+            if let Ok(key) = key {
+                assert_eq!(key, expected);
             }
         }
     }

@@ -13,11 +13,10 @@ use std::{
 struct Number(NonNull<ffi::BIGNUM>);
 impl Number {
     fn new(bytes: &[u8]) -> Result<Self> {
-        if bytes.len() > (i32::MAX as usize) / 8 {
-            return Err(Error::InvalidInput(
-                "RSA component bit length exceeds INT_MAX",
-            ));
-        }
+        crate::error::input_length::<i32>(
+            bytes.len().saturating_mul(8),
+            "RSA component bit length exceeds INT_MAX",
+        )?;
         if bytes.iter().all(|b| *b == 0) {
             return Err(Error::InvalidInput("RSA components must be positive"));
         }
@@ -149,10 +148,7 @@ unsafe fn component(number: *const ffi::BIGNUM) -> Result<Vec<u8>> {
     let mut bytes = vec![0; size];
     // SAFETY: The destination has exactly BN_num_bytes(number) bytes.
     let written = unsafe { ffi::BN_bn2bin(number, bytes.as_mut_ptr()) };
-    if usize::try_from(written).ok() != Some(size) {
-        cleanse(&mut bytes);
-        return Err(Error::InvalidState("invalid component output length"));
-    }
+    crate::secret::clear_on_error(crate::error::check_len(written as usize, size), &mut bytes)?;
     Ok(bytes)
 }
 

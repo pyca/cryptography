@@ -310,10 +310,10 @@ impl Connection {
             }
             let length = ffi::SSL_SESSION_get_master_key(session, std::ptr::null_mut(), 0);
             let mut out = SecretBytes::from(vec![0; length]);
-            if ffi::SSL_SESSION_get_master_key(session, out.as_mut().as_mut_ptr(), length) != length
-            {
-                return Err(Error::capture());
-            }
+            crate::error::check_len(
+                ffi::SSL_SESSION_get_master_key(session, out.as_mut().as_mut_ptr(), length),
+                length,
+            )?;
             Ok(Some(out))
         }
     }

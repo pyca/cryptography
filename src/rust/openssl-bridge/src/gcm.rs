@@ -105,9 +105,7 @@ impl GcmState {
         if self.payload_started {
             return Err(Error::InvalidState("AAD must precede payload"));
         }
-        if aad.len() > i32::MAX as usize {
-            return Err(Error::InvalidInput("AAD chunk exceeds INT_MAX"));
-        }
+        crate::error::input_length::<i32>(aad.len(), "AAD chunk exceeds INT_MAX")?;
         let remaining = self
             .aad_remaining
             .checked_sub(aad.len() as u64)
@@ -131,9 +129,7 @@ impl GcmState {
     }
     fn update(&mut self, input: &[u8], output: &mut [u8]) -> Result<usize> {
         self.ready()?;
-        if input.len() > i32::MAX as usize {
-            return Err(Error::InvalidInput("GCM chunk exceeds INT_MAX"));
-        }
+        crate::error::input_length::<i32>(input.len(), "GCM chunk exceeds INT_MAX")?;
         if output.len() < input.len() {
             return Err(Error::InvalidInput("GCM output buffer is too small"));
         }

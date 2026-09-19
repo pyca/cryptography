@@ -158,7 +158,7 @@ impl ContextBuilder {
             ffi::PEM_read_bio_DHparams(
                 bio.0.as_ptr(),
                 std::ptr::null_mut(),
-                Some(no_password),
+                Some(crate::x509::no_password),
                 std::ptr::null_mut(),
             )
         })?;
@@ -171,14 +171,6 @@ impl ContextBuilder {
         };
         check(result)
     }
-}
-unsafe extern "C" fn no_password(
-    _: *mut std::ffi::c_char,
-    _: i32,
-    _: i32,
-    _: *mut std::ffi::c_void,
-) -> i32 {
-    0
 }
 
 impl Connection {

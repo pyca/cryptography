@@ -2,7 +2,7 @@
 //! agreement keys cannot sign. Foreign contexts never cross the public API.
 use crate::{
     error::{check, pointer},
-    ffi, Error, Result,
+    ffi, Result,
 };
 use std::ptr::{self, NonNull};
 
@@ -222,9 +222,7 @@ impl X25519SecretKey {
         // algorithm's 32-byte result. Its capacity is also supplied to the backend.
         check(unsafe { ffi::EVP_PKEY_derive(ctx.0.as_ptr(), output.0.as_mut_ptr(), &mut size) })?;
         crate::error::check_len(size, output.0.len())?;
-        if crate::constant_time_eq(&output.0, &[0; 32]) {
-            return Err(Error::InvalidInput("X25519 shared secret is all zero"));
-        }
+        crate::secret::check_shared_secret(&output.0)?;
         Ok(output)
     }
 }

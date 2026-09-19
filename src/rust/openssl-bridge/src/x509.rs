@@ -87,6 +87,49 @@ owner!(Name, X509_NAME, X509_NAME_free);
 owner!(Certificate, X509, X509_free);
 owner!(TrustStore, X509_STORE, X509_STORE_free);
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn encoders_check_query_write_length_and_cursor() {
+        // These encoders never exceed the queried capacity, including on error.
+        for failure in [-1, 0] {
+            assert!(unsafe { encode(|_| failure) }.is_err());
+        }
+        for (written, advance) in [(-1, 0), (1, 1), (2, 1), (2, 2)] {
+            let result = unsafe {
+                encode(|out| {
+                    if out.is_null() {
+                        return 2;
+                    }
+                    // The queried allocation is two bytes and remains live.
+                    (*out).write_bytes(0x42, 2);
+                    *out = (*out).add(advance);
+                    written
+                })
+            };
+            if written == 2 && advance == 2 {
+                assert_eq!(result.unwrap(), [0x42; 2]);
+            } else {
+                assert!(result.is_err());
+            }
+        }
+    }
+
+    #[test]
+    fn rejecting_password_callback_never_writes_output() {
+        let mut out = [0x42u8; 16];
+        for writing in [0, 1] {
+            assert_eq!(
+                no_password(out.as_mut_ptr().cast(), 16, writing, ptr::null_mut()),
+                0
+            );
+            assert_eq!(out, [0x42; 16]);
+        }
+    }
+}
+
 pub(crate) struct Key(pub(crate) NonNull<ffi::EVP_PKEY>);
 impl Drop for Key {
     fn drop(&mut self) {
@@ -98,10 +141,7 @@ impl Key {
     pub(crate) fn private_der(data: &[u8]) -> Result<Self> {
         let mut cursor = data.as_ptr();
         #[allow(clippy::useless_conversion)]
-        let len = data
-            .len()
-            .try_into()
-            .map_err(|_| Error::InvalidInput("key is too long"))?;
+        let len = crate::error::input_length(data.len(), "key is too long")?;
         // SAFETY: Readable input of checked length; NULL requests a new key.
         let key = Self(pointer(unsafe {
             ffi::d2i_AutoPrivateKey(ptr::null_mut(), &mut cursor, len)
@@ -114,10 +154,7 @@ impl Key {
     pub(crate) fn public_der(data: &[u8]) -> Result<Self> {
         let mut cursor = data.as_ptr();
         #[allow(clippy::useless_conversion)]
-        let len = data
-            .len()
-            .try_into()
-            .map_err(|_| Error::InvalidInput("key is too long"))?;
+        let len = crate::error::input_length(data.len(), "key is too long")?;
         // SAFETY: Readable input of checked length; NULL requests a new key.
         let key = Self(pointer(unsafe {
             ffi::d2i_PUBKEY(ptr::null_mut(), &mut cursor, len)
@@ -147,8 +184,7 @@ impl Bio {
     }
     pub(crate) fn input(data: &[u8]) -> Result<Self> {
         let bio = Self::memory()?;
-        let len =
-            i32::try_from(data.len()).map_err(|_| Error::InvalidInput("BIO input is too long"))?;
+        let len = crate::error::input_length::<i32>(data.len(), "BIO input is too long")?;
         if len != 0 {
             // SAFETY: The memory BIO copies the readable input; no borrow escapes.
             if unsafe { ffi::BIO_write(bio.0.as_ptr(), data.as_ptr().cast(), len) } != len {
@@ -174,16 +210,38 @@ impl Bio {
     }
 }
 
+// A NULL PEM password callback permits interactive terminal input. Compatibility
+// callers must supply explicit passwords; this callback never touches its inputs.
+pub(crate) extern "C" fn no_password(
+    _: *mut std::ffi::c_char,
+    _: i32,
+    _: i32,
+    _: *mut std::ffi::c_void,
+) -> i32 {
+    0
+}
+
 // SAFETY contract: encoder is an i2d-style function on an exclusively held,
-// initialized native object. Its output length must be stable across both calls.
-pub(crate) unsafe fn encode(mut encoder: impl FnMut(*mut *mut u8) -> i32) -> Result<Vec<u8>> {
+// initialized native object. It may fail, but must never write beyond the queried
+// capacity. On success it advances the cursor by exactly the returned length.
+pub(crate) unsafe fn encode(encoder: impl FnMut(*mut *mut u8) -> i32) -> Result<Vec<u8>> {
+    // SAFETY: The caller supplies the encoder contract; the allocation is exact.
+    unsafe { encode_with(encoder, |len| vec![0; len]) }
+}
+
+// SAFETY: Same encoder contract as encode. allocate must return exactly len bytes.
+pub(crate) unsafe fn encode_with<T: AsMut<[u8]>>(
+    mut encoder: impl FnMut(*mut *mut u8) -> i32,
+    allocate: impl FnOnce(usize) -> T,
+) -> Result<T> {
     let len = encoder(ptr::null_mut());
-    if len < 0 {
+    if len <= 0 {
         return Err(Error::capture());
     }
-    let mut out = vec![0; len as usize];
-    let mut cursor = out.as_mut_ptr();
-    if encoder(&mut cursor) != len || cursor != out.as_mut_ptr().wrapping_add(out.len()) {
+    let mut out = allocate(len as usize);
+    let bytes = out.as_mut();
+    let mut cursor = bytes.as_mut_ptr();
+    if encoder(&mut cursor) != len || cursor != bytes.as_mut_ptr().wrapping_add(bytes.len()) {
         return Err(Error::InvalidState("inconsistent native encoding length"));
     }
     Ok(out)
@@ -216,10 +274,7 @@ impl Name {
         crate::initialize()?;
         let mut cursor = data.as_ptr();
         #[allow(clippy::useless_conversion)]
-        let len = data
-            .len()
-            .try_into()
-            .map_err(|_| Error::InvalidInput("name is too long"))?;
+        let len = crate::error::input_length(data.len(), "name is too long")?;
         // SAFETY: Input is readable for the checked length; fresh output object.
         let name = Self(pointer(unsafe {
             ffi::d2i_X509_NAME(ptr::null_mut(), &mut cursor, len)
@@ -253,10 +308,7 @@ impl Name {
     /// allocation or native string validation fails.
     pub fn set(&mut self, attribute: &CStr, utf8: &[u8]) -> Result<()> {
         let nid = Self::attribute_nid(attribute)?;
-        let len = utf8
-            .len()
-            .try_into()
-            .map_err(|_| Error::InvalidInput("name value is too long"))?;
+        let len = crate::error::input_length(utf8.len(), "name value is too long")?;
         let candidate = self.try_clone()?;
         // SAFETY: candidate is a deep independent copy, exclusively held here.
         unsafe {

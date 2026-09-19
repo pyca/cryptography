@@ -73,7 +73,7 @@ impl PrivateKey {
             return Err(Error::InvalidInput("ML-DSA context exceeds 255 bytes"));
         }
         let key = Key::private(self.variant.algorithm(), self.seed.as_ref())?;
-        digest_sign(self.variant, &key, message, context, false)
+        digest_sign(self.variant, &key, message, context, Input::Message)
     }
     /// Sign the FIPS 204 64-byte message representative, which must include the
     /// public-key hash and context domain separation. This does not sign a message.
@@ -106,7 +106,7 @@ impl PrivateKey {
         #[cfg(backend = "openssl")]
         {
             let key = Key::private(self.variant.algorithm(), self.seed.as_ref())?;
-            digest_sign(self.variant, &key, mu, &[], true)
+            digest_sign(self.variant, &key, mu, &[], Input::Mu)
         }
     }
 }
@@ -132,7 +132,7 @@ impl PublicKey {
             return Ok(false);
         }
         let key = Key::public(self.variant.algorithm(), &self.public)?;
-        digest_verify(&key, message, context, signature, false)
+        digest_verify(&key, message, context, signature, Input::Message)
     }
     pub fn verify_mu(&self, mu: &[u8; 64], signature: &[u8]) -> Result<bool> {
         if signature.len() != self.variant.signature_size() {
@@ -162,21 +162,23 @@ impl PublicKey {
         #[cfg(backend = "openssl")]
         {
             let key = Key::public(self.variant.algorithm(), &self.public)?;
-            digest_verify(&key, mu, &[], signature, true)
+            digest_verify(&key, mu, &[], signature, Input::Mu)
         }
     }
 }
 // The context is private and always borrowed from a successfully initialized
 // local EVP_MD_CTX. No foreign pointer is accepted by the public interface.
-fn configure(ctx: *mut ffi::EVP_PKEY_CTX, context: &[u8], external_mu: bool) -> Result<()> {
+enum Input {
+    Message,
+    // The forks use dedicated native entry points for external-mu operations.
+    #[cfg(backend = "openssl")]
+    Mu,
+}
+fn configure(ctx: *mut ffi::EVP_PKEY_CTX, context: &[u8], input: Input) -> Result<()> {
     pointer(ctx)?;
     #[cfg(any(backend = "boringssl", backend = "awslc"))]
     {
-        if external_mu {
-            return Err(Error::InvalidState(
-                "external mu requires the backend-specific operation",
-            ));
-        }
+        let Input::Message = input;
         if !context.is_empty() {
             // SAFETY: Initialized local ML-DSA context; setter copies the bytes.
             check(unsafe {
@@ -198,7 +200,7 @@ fn configure(ctx: *mut ffi::EVP_PKEY_CTX, context: &[u8], external_mu: bool) -> 
                 ctx,
                 context.as_mut_ptr().cast(),
                 context.len(),
-                u32::from(external_mu),
+                u32::from(matches!(input, Input::Mu)),
             )
         })?;
     }
@@ -209,7 +211,7 @@ fn digest_sign(
     key: &Key,
     data: &[u8],
     context: &[u8],
-    external_mu: bool,
+    input: Input,
 ) -> Result<Vec<u8>> {
     let md = pq::Digest::new()?;
     let mut ctx = ptr::null_mut();
@@ -217,7 +219,7 @@ fn digest_sign(
     check(unsafe {
         ffi::EVP_DigestSignInit(md.ptr(), &mut ctx, ptr::null(), ptr::null_mut(), key.ptr())
     })?;
-    configure(ctx, context, external_mu)?;
+    configure(ctx, context, input)?;
     let mut signature = vec![0; variant.signature_size()];
     let mut length = signature.len();
     // SAFETY: Output matches the algorithm's fixed size; capacity is supplied.
@@ -238,7 +240,7 @@ fn digest_verify(
     data: &[u8],
     context: &[u8],
     signature: &[u8],
-    external_mu: bool,
+    input: Input,
 ) -> Result<bool> {
     let md = pq::Digest::new()?;
     let mut ctx = ptr::null_mut();
@@ -246,7 +248,7 @@ fn digest_verify(
     check(unsafe {
         ffi::EVP_DigestVerifyInit(md.ptr(), &mut ctx, ptr::null(), ptr::null_mut(), key.ptr())
     })?;
-    configure(ctx, context, external_mu)?;
+    configure(ctx, context, input)?;
     // SAFETY: All borrowed inputs are readable for their exact declared sizes.
     Ok(pq::verified(unsafe {
         ffi::EVP_DigestVerify(

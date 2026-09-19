@@ -8,8 +8,8 @@ use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
-fn check_length(data: &[u8]) -> CryptographyResult<()> {
-    if data.len() > (i32::MAX as usize) {
+fn check_length(length: usize) -> CryptographyResult<()> {
+    if length > (i32::MAX as usize) {
         // This is OverflowError to match what cffi would raise
         return Err(CryptographyError::from(
             pyo3::exceptions::PyOverflowError::new_err(
@@ -40,7 +40,7 @@ fn extract_aad(aad: Option<Aad<'_>>) -> CryptographyResult<(ExtractedAad<'_>, us
     match aad {
         None => Ok((ExtractedAad::None, 0)),
         Some(Aad::Single(ad)) => {
-            check_length(ad.as_bytes())?;
+            check_length(ad.as_bytes().len())?;
             let len = ad.as_bytes().len();
             Ok((ExtractedAad::Single(ad), len))
         }
@@ -49,10 +49,8 @@ fn extract_aad(aad: Option<Aad<'_>>) -> CryptographyResult<(ExtractedAad<'_>, us
             let mut len = 0usize;
             for ad in ads.iter() {
                 let buf = crate::buf::extract_aead_buffer(&ad)?;
-                check_length(buf.as_bytes())?;
-                len = len.checked_add(buf.as_bytes().len()).ok_or_else(|| {
-                    pyo3::exceptions::PyOverflowError::new_err("associated data length overflow")
-                })?;
+                check_length(buf.as_bytes().len())?;
+                len = crate::buf::checked_add_length(len, buf.as_bytes().len())?;
                 bufs.push(buf);
             }
             Ok((ExtractedAad::List(bufs), len))
@@ -64,6 +62,37 @@ struct CheckedAead {
     key: openssl_bridge::aead::Key,
     tag_len: usize,
     tag_first: bool,
+}
+
+#[cfg(test)]
+mod checked_tests {
+    use super::*;
+
+    #[test]
+    fn checked_aead_rejects_impossible_lengths_before_native_operations() {
+        assert!(check_length(i32::MAX as usize).is_ok());
+        assert!(check_length(i32::MAX as usize + 1).is_err());
+        pyo3::Python::initialize();
+        pyo3::Python::attach(|py| {
+            let cipher = CheckedAead {
+                key: openssl_bridge::aead::Key::new(
+                    openssl_bridge::aead::Algorithm::Aes128Gcm,
+                    &[0; 16],
+                )
+                .unwrap(),
+                tag_len: 16,
+                tag_first: false,
+            };
+            let mut output = [0x42; 15];
+            assert!(cipher
+                .encrypt_into(py, &[], None, Some(&[0; 12]), &mut output)
+                .is_err());
+            assert_eq!(output, [0x42; 15]);
+            assert!(cipher
+                .decrypt_into(py, &[0; 15], None, Some(&[0; 12]), &mut [])
+                .is_err());
+        });
+    }
 }
 
 impl ExtractedAad<'_> {
@@ -123,7 +152,7 @@ impl CheckedAead {
         nonce: Option<&[u8]>,
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
-        check_length(plaintext)?;
+        check_length(plaintext.len())?;
         if buf.len() != plaintext.len() + self.tag_len {
             return Err(pyo3::exceptions::PyValueError::new_err(
                 "incorrect AEAD output buffer length",
@@ -161,7 +190,7 @@ impl CheckedAead {
         nonce: Option<&[u8]>,
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
-        check_length(ciphertext)?;
+        check_length(ciphertext.len())?;
         if ciphertext.len() < self.tag_len {
             return Err(exceptions::InvalidTag::new_err(()).into());
         }
@@ -254,7 +283,7 @@ impl ChaCha20Poly1305 {
         >,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let data_bytes = data.as_bytes();
-        check_length(data_bytes)?;
+        check_length(data_bytes.len())?;
         Ok(pyo3::types::PyBytes::new_with(
             py,
             data_bytes.len() + self.ctx.tag_len,
@@ -289,7 +318,7 @@ impl ChaCha20Poly1305 {
 
         // Check this early so we know we can add tag_len without overflow
         // check_length requires that the length be 2 ** 31 - 1 or smaller.
-        check_length(data_bytes)?;
+        check_length(data_bytes.len())?;
         let expected_len = data_bytes.len() + 16;
         if buf.as_mut_bytes().len() != expected_len {
             return Err(CryptographyError::from(
@@ -440,7 +469,7 @@ impl AesGcm {
         >,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let data_bytes = data.as_bytes();
-        check_length(data_bytes)?;
+        check_length(data_bytes.len())?;
         Ok(pyo3::types::PyBytes::new_with(
             py,
             data_bytes.len() + self.ctx.tag_len,
@@ -475,7 +504,7 @@ impl AesGcm {
 
         // Check this early so we know we can add tag_len without overflow
         // check_length requires that the length be 2 ** 31 - 1 or smaller.
-        check_length(data_bytes)?;
+        check_length(data_bytes.len())?;
         let expected_len = data_bytes.len() + 16;
         if buf.as_mut_bytes().len() != expected_len {
             return Err(CryptographyError::from(
@@ -660,7 +689,7 @@ impl AesCcm {
         >,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let data_bytes = data.as_bytes();
-        check_length(data_bytes)?;
+        check_length(data_bytes.len())?;
         Ok(pyo3::types::PyBytes::new_with(
             py,
             data_bytes.len() + self.tag_length,
@@ -695,7 +724,7 @@ impl AesCcm {
 
         // Check this early so we know we can add tag_len without overflow
         // check_length requires that the length be 2 ** 31 - 1 or smaller.
-        check_length(data_bytes)?;
+        check_length(data_bytes.len())?;
         // For information about computing this, see
         // https://tools.ietf.org/html/rfc3610#section-2.1
         let l_val = 15 - nonce_bytes.len();
@@ -896,7 +925,7 @@ impl AesSiv {
         #[pyo3(from_py_with = crate::buf::extract_aead_buffer)] data: CffiBuf<'_>,
         associated_data: Option<pyo3::Bound<'p, pyo3::types::PyList>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        check_length(data.as_bytes())?;
+        check_length(data.as_bytes().len())?;
         Ok(pyo3::types::PyBytes::new_with(
             py,
             data.as_bytes().len() + self.ctx.tag_len,
@@ -928,7 +957,7 @@ impl AesSiv {
 
         // Check this early so we know we can add tag_len without overflow
         // check_length requires that the length be 2 ** 31 - 1 or smaller.
-        check_length(data_bytes)?;
+        check_length(data_bytes.len())?;
         let expected_len = data_bytes.len() + self.ctx.tag_len;
         if buf.as_mut_bytes().len() != expected_len {
             return Err(CryptographyError::from(
@@ -1089,7 +1118,7 @@ impl AesOcb3 {
         >,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let data_bytes = data.as_bytes();
-        check_length(data_bytes)?;
+        check_length(data_bytes.len())?;
         Ok(pyo3::types::PyBytes::new_with(
             py,
             data_bytes.len() + 16,
@@ -1124,7 +1153,7 @@ impl AesOcb3 {
 
         // Check this early so we know we can add tag_len without overflow
         // check_length requires that the length be 2 ** 31 - 1 or smaller.
-        check_length(data_bytes)?;
+        check_length(data_bytes.len())?;
         let expected_len = data_bytes.len() + 16;
         if buf.as_mut_bytes().len() != expected_len {
             return Err(CryptographyError::from(
@@ -1319,7 +1348,7 @@ impl AesGcmSiv {
         >,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let data_bytes = data.as_bytes();
-        check_length(data_bytes)?;
+        check_length(data_bytes.len())?;
         Ok(pyo3::types::PyBytes::new_with(
             py,
             data_bytes.len() + 16,
@@ -1364,7 +1393,7 @@ impl AesGcmSiv {
 
         // Check this early so we know we can add tag_len without overflow
         // check_length requires that the length be 2 ** 31 - 1 or smaller.
-        check_length(data_bytes)?;
+        check_length(data_bytes.len())?;
         let expected_len = data_bytes.len() + 16;
         if buf.as_mut_bytes().len() != expected_len {
             return Err(CryptographyError::from(

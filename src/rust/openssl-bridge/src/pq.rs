@@ -73,6 +73,26 @@ impl Algorithm {
     }
 }
 pub(crate) struct Key(NonNull<ffi::EVP_PKEY>);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn private_import_rejects_incorrect_seed_lengths() {
+        for algorithm in [
+            Algorithm::Dsa44,
+            Algorithm::Dsa65,
+            Algorithm::Dsa87,
+            Algorithm::Kem768,
+            Algorithm::Kem1024,
+        ] {
+            assert!(Key::private(algorithm, &[]).is_err());
+            assert!(Key::private(algorithm, &vec![0; algorithm.seed_len() - 1]).is_err());
+            assert!(Key::private(algorithm, &vec![0; algorithm.seed_len() + 1]).is_err());
+        }
+    }
+}
 impl Drop for Key {
     fn drop(&mut self) {
         // SAFETY: Exactly one owned native reference.

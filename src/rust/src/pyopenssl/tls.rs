@@ -17,6 +17,63 @@ pyo3::create_exception!(pyopenssl, TLSWantCertificate, pyo3::exceptions::PyExcep
 pyo3::create_exception!(pyopenssl, TLSClosed, pyo3::exceptions::PyException);
 pyo3::create_exception!(pyopenssl, TLSSystemError, pyo3::exceptions::PyException);
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn io_errors_preserve_retry_close_errno_and_native_diagnostics() {
+        Python::initialize();
+        Python::attach(|py| {
+            assert!(io_error(tls::IoError::WantRead).is_instance_of::<TLSWantRead>(py));
+            assert!(io_error(tls::IoError::WantWrite).is_instance_of::<TLSWantWrite>(py));
+            assert!(
+                io_error(tls::IoError::WantCertificate).is_instance_of::<TLSWantCertificate>(py)
+            );
+            assert!(io_error(tls::IoError::Closed).is_instance_of::<TLSClosed>(py));
+            for code in [None, Some(5)] {
+                let error = io_error(tls::IoError::System {
+                    code,
+                    native: Error::Native(vec![]),
+                });
+                assert!(error.is_instance_of::<TLSSystemError>(py));
+                let (number, message): (i32, String) =
+                    error.value(py).getattr("args").unwrap().extract().unwrap();
+                assert_eq!(number, code.unwrap_or(-1));
+                assert!(!message.is_empty());
+            }
+            for reason in [
+                "unexpected eof while reading",
+                "UNEXPECTED_EOF_WHILE_READING",
+                "bad record",
+            ] {
+                let native = Error::Native(vec![openssl_bridge::error::NativeError {
+                    code: 1,
+                    library: 1,
+                    reason: 1,
+                    description: "error:1:SSL:bad record".into(),
+                    reason_text: reason.into(),
+                }]);
+                assert!(io_error(tls::IoError::System {
+                    code: None,
+                    native: native.clone()
+                })
+                .is_instance_of::<super::super::NativeError>(py));
+                let error = io_error(tls::IoError::Failure(native));
+                if reason == "bad record" {
+                    assert!(error.is_instance_of::<super::super::NativeError>(py));
+                } else {
+                    assert!(error.is_instance_of::<TLSSystemError>(py));
+                }
+            }
+            assert!(
+                io_error(tls::IoError::Failure(Error::InvalidState("state")))
+                    .is_instance_of::<pyo3::exceptions::PyValueError>(py)
+            );
+        });
+    }
+}
+
 fn exclusive<T>(mutex: &Mutex<T>) -> PyResult<MutexGuard<'_, T>> {
     mutex.try_lock().map_err(|_| {
         pyo3::exceptions::PyRuntimeError::new_err("concurrent or reentrant TLS operation")
@@ -91,10 +148,13 @@ struct Config {
     cache_mode: i64,
     timeout: i64,
 }
+// PyO3 generates fallible type-registration machinery for this declaration.
+// NO-COVERAGE-START
 #[pyclass(
     module = "cryptography.hazmat.bindings._rust.pyopenssl",
     name = "TLSContext"
 )]
+// NO-COVERAGE-END
 pub(super) struct PyContext {
     config: Mutex<Config>,
     hooks: Arc<PythonCallbacks>,
@@ -512,17 +572,23 @@ impl tls::Callbacks for PythonCallbacks {
     }
 }
 
+// PyO3 generates fallible type-registration machinery for this declaration.
+// NO-COVERAGE-START
 #[pyclass(
     module = "cryptography.hazmat.bindings._rust.pyopenssl",
     name = "TLSSession"
 )]
+// NO-COVERAGE-END
 struct PySession {
     inner: Mutex<tls::Session>,
 }
+// PyO3 generates fallible type-registration machinery for this declaration.
+// NO-COVERAGE-START
 #[pyclass(
     module = "cryptography.hazmat.bindings._rust.pyopenssl",
     name = "TLSConnection"
 )]
+// NO-COVERAGE-END
 struct PyConnection {
     inner: Mutex<tls::Connection>,
 }
