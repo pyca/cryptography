@@ -682,3 +682,69 @@ fn ocsp_observers_are_not_called_without_a_request() {
         .unwrap();
     handshake(&mut client, &mut server);
 }
+
+#[test]
+fn default_callbacks_preserve_verification_and_decline_optional_protocols() {
+    struct Defaults;
+    impl Callbacks for Defaults {}
+    let mut connection = Connection::memory(client(false), Role::Client).unwrap();
+    let info = connection.info();
+    assert!(Defaults.verify(&info, &[], 0, 0, true).unwrap());
+    assert!(!Defaults.verify(&info, &[], 1, 0, false).unwrap());
+    assert!(Defaults.server_name(&info).unwrap().is_none());
+    assert!(Defaults
+        .select_alpn(&info, &[b"h2".to_vec()])
+        .unwrap()
+        .is_none());
+    Defaults.info(&info, 0, 0).unwrap();
+    Defaults.key_log(&info, b"line").unwrap();
+    assert!(Defaults.ocsp_response(&info).unwrap().is_none());
+    assert!(Defaults.verify_ocsp(&info, &[]).unwrap());
+    assert!(Defaults.generate_cookie(&info).is_err());
+    assert!(!Defaults.verify_cookie(&info, b"untrusted").unwrap());
+}
+
+#[test]
+fn context_configuration_bounds_and_unconnected_metadata() {
+    use openssl_bridge::tls::ShutdownState;
+    assert!(!openssl_bridge::tls::version_description(0).is_empty());
+    let _ = openssl_bridge::tls::default_verify_paths();
+    let mut builder = ContextBuilder::new(Protocol::Tls, PeerVerification::None).unwrap();
+    assert!(builder.set_alpn_protocols(&[b""]).is_err());
+    assert!(builder.set_alpn_protocols(&[&[1; 256]]).is_err());
+    assert!(builder
+        .set_alpn_protocols(&vec![&[1u8; 255][..]; 257])
+        .is_err());
+    assert!(builder.set_verify_depth(u32::MAX).is_err());
+    assert!(builder.set_session_timeout(u32::MAX).is_err());
+    assert!(builder.set_groups(c"not-a-group").is_err());
+    assert!(builder.set_srtp_profiles(c"not-a-profile").is_err());
+    let suites = builder.set_tls13_ciphersuites(c"TLS_AES_128_GCM_SHA256");
+    assert_eq!(
+        suites.is_ok(),
+        openssl_bridge::BACKEND != openssl_bridge::Backend::BoringSsl
+    );
+    let context = builder.finish();
+    assert!(context.certificate_der().is_none());
+    assert_eq!(
+        server().certificate_der().unwrap(),
+        include_bytes!("vectors/tls-localhost.der")
+    );
+    let mut connection = Connection::memory(context, Role::Client).unwrap();
+    assert_eq!(connection.pending(), 0);
+    assert!(connection.peer_certificate_der().unwrap().is_none());
+    assert!(connection.peer_chain_der().unwrap().is_none());
+    assert!(connection.finished_message(false).is_empty());
+    assert!(connection.finished_message(true).is_empty());
+    for state in [
+        ShutdownState::Open,
+        ShutdownState::Sent,
+        ShutdownState::Received,
+        ShutdownState::Both,
+    ] {
+        connection.set_shutdown_state(state).unwrap();
+        assert_eq!(connection.shutdown_state(), state);
+    }
+    assert!(!connection.renegotiation_pending());
+    assert_eq!(connection.total_renegotiations(), 0);
+}

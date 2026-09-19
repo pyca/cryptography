@@ -276,3 +276,21 @@ impl Drop for Cmac {
         unsafe { ffi::CMAC_CTX_free(self.ctx.as_ptr()) };
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn poisoned_macs_reject_updates_cloning_and_finalization() {
+        let mut h = Hmac::new(Algorithm::from_name("SHA256").unwrap(), b"key").unwrap();
+        h.poisoned = true;
+        assert!(h.update(b"message").is_err());
+        assert!(h.try_clone().is_err());
+        assert!(h.finish().is_err());
+        let mut c = Cmac::new(CmacCipher::Aes128, &[0; 16]).unwrap();
+        c.poisoned = true;
+        assert!(c.update(b"message").is_err());
+        assert!(c.try_clone().is_err());
+        assert!(c.finish().is_err());
+    }
+}

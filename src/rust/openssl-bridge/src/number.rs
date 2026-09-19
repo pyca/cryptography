@@ -138,3 +138,17 @@ impl Drop for Context {
         unsafe { ffi::BN_CTX_free(self.0.as_ptr()) };
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn bounded_integer_validation_and_zero_modulus() {
+        assert!(Number::from_bytes(&[1, 0], 1).is_err());
+        let one = Number::from_bytes(&[1], 1).unwrap();
+        let zero = Number::from_bytes(&[0], 1).unwrap();
+        assert!(one.modulo(&zero).is_err());
+        // SAFETY: Explicitly exercise the helper's checked NULL rejection.
+        assert!(unsafe { Number::copy_raw(ptr::null()) }.is_err());
+    }
+}

@@ -68,7 +68,9 @@ fn streaming_cipher_metadata_and_xts_bounds() {
 
 #[test]
 fn digest_and_kdf_reject_incompatible_algorithms() {
+    #[cfg(any(backend = "openssl", backend = "awslc"))]
     let sha256 = Algorithm::from_name("SHA256").unwrap();
+    #[cfg(any(backend = "openssl", backend = "awslc"))]
     assert!(Hasher::new(sha256)
         .unwrap()
         .finish_xof(&mut [0; 16])

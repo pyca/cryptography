@@ -432,3 +432,18 @@ impl UnverifiedGcmDecrypt {
         self.0.finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn poisoned_gcm_never_releases_more_output() {
+        let mut c = GcmEncrypt::new(GcmCipher::Aes128, &[0; 16], &[0; 12]).unwrap();
+        c.0.poisoned = true;
+        let mut out = [0xa5; 16];
+        assert!(c.authenticate(b"aad").is_err());
+        assert!(c.update_into(&[0; 16], &mut out).is_err());
+        assert!(c.finish().is_err());
+        assert_eq!(out, [0xa5; 16]);
+    }
+}

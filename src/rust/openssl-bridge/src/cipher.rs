@@ -715,3 +715,25 @@ fn padded(
     result.extend_from_slice(tail.as_ref());
     Ok(result)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn poisoned_stream_rejects_reuse_and_preserves_output() {
+        let mut c = Stream::new(
+            Cipher::Aes128Ctr,
+            Direction::Encrypt,
+            &[0; 16],
+            &[0; 16],
+            false,
+        )
+        .unwrap();
+        c.poisoned = true;
+        let mut out = [0xa5; 16];
+        assert!(c.update_into(&[0; 16], &mut out).is_err());
+        assert!(c.reset_nonce(&[1; 16]).is_err());
+        assert!(c.finish().is_err());
+        assert_eq!(out, [0xa5; 16]);
+    }
+}

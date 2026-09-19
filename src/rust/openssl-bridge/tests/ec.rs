@@ -100,6 +100,7 @@ fn all_supported_curves_sign_and_exchange() {
                 .unwrap(),
             public.coordinates().unwrap()
         );
+        assert!(public.verify_digest(sha256, &[], &[]).is_err());
         let signature = alice.sign_digest(sha256, &digest, Nonce::Random).unwrap();
         assert!(public.verify_digest(sha256, &digest, &signature).unwrap());
         assert!(!bob

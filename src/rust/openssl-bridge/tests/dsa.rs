@@ -21,12 +21,25 @@ fn nist_parameters_scalar_and_validation() {
         g: &g,
     })
     .unwrap();
+    assert_eq!(params.bits(), 1024);
+    assert!(Parameters::generate(511).is_err());
     let key = PrivateKey::from_scalar(
         params.clone(),
         &hex("c53eae6d45323164c7d07af5715703744a63fc3a"),
     )
     .unwrap();
     assert_eq!(key.public_key().public_value(),hex("313fd9ebca91574e1c2eebe1517c57e0c21b0209872140c5328761bbb2450b33f1b18b409ce9ab7c4cd8fda3391e8e34868357c199e16a6b2eba06d6749def791d79e95d3a4d09b24c392ad89dbf100995ae19c01062056bb14bce005e8731efde175f95b975089bdcdaea562b32786d96f5a31aedf75364008ad4fffebb970b"));
+    assert_eq!(key.parameters().bits(), 1024);
+    assert_eq!(
+        key.scalar(),
+        hex("c53eae6d45323164c7d07af5715703744a63fc3a")
+    );
+    assert_eq!(key.public_key().parameters().bits(), 1024);
+    let material: openssl_bridge::dsa::PublicKeyMaterial = key.public_key().into();
+    assert_eq!(
+        material.validate().unwrap().public_value(),
+        key.public_key().public_value()
+    );
     assert!(PrivateKey::from_scalar(params.clone(), &q).is_err());
     assert!(PrivateKey::from_scalar(params.clone(), &[0]).is_err());
     assert!(PrivateKey::from_components(

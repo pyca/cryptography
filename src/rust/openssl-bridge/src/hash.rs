@@ -209,3 +209,16 @@ pub fn digest_xof(algorithm: Algorithm, input: &[u8], output: &mut [u8]) -> Resu
     context.update(input)?;
     context.finish_xof(output)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn poisoned_hash_cannot_resume_or_escape_through_clone() {
+        let mut h = Hasher::new(Algorithm::from_name("SHA256").unwrap()).unwrap();
+        h.poisoned = true;
+        assert!(h.update(b"message").is_err());
+        assert!(h.try_clone().is_err());
+        assert!(h.finish().is_err());
+    }
+}

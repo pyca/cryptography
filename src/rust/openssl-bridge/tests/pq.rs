@@ -10,6 +10,7 @@ fn mldsa_message_context_and_external_mu() {
         mldsa::Variant::MlDsa87,
     ] {
         let key = mldsa::PrivateKey::from_seed(variant, &[7; 32]).unwrap();
+        assert_eq!(key.public_key().as_bytes().len(), variant.public_key_size());
         let public = key.public_key();
         let imported = mldsa::PublicKey::from_bytes(variant, public.as_bytes()).unwrap();
         let signature = key.sign(b"message", b"context").unwrap();
@@ -127,6 +128,7 @@ fn mlkem_known_answers() {
         ),
     ] {
         let seed: [u8; 64] = field(vector, "seed").try_into().unwrap();
+        assert_eq!(field(vector, "public").len(), variant.public_key_size());
         let key = mlkem::PrivateKey::from_seed(variant, &seed).unwrap();
         assert_eq!(key.public_key().as_bytes(), field(vector, "public"));
         assert_eq!(
