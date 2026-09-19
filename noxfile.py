@@ -405,3 +405,21 @@ def process_rust_coverage(
         )
         with open(f"{uuid.uuid4()}.lcov", "w") as f:
             f.write(lcov_data)
+
+
+@nox.session(venv_backend="none", name="debug-native")
+def debug_native(session: nox.Session) -> None:
+    session.run(
+        "gdb",
+        "--batch",
+        "-ex",
+        "run",
+        "-ex",
+        "thread apply all bt",
+        "--args",
+        session.posargs[0],
+        "-c",
+        "import ssl; from cryptography.hazmat.primitives.asymmetric.mlkem "
+        "import MLKEM768PrivateKey; MLKEM768PrivateKey.generate()",
+        external=True,
+    )

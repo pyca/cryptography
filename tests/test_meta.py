@@ -2,7 +2,6 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-import importlib.util
 import os
 import pkgutil
 import subprocess
@@ -11,21 +10,6 @@ import sys
 import pytest
 
 import cryptography
-
-
-def test_removed_cffi_binding():
-    from cryptography.hazmat.bindings import _rust
-    from cryptography.hazmat.bindings.openssl import binding
-
-    # The former conditional CFFI module must not survive in built packages.
-    assert (
-        importlib.util.find_spec(
-            "cryptography.hazmat.bindings.openssl._conditional"
-        )
-        is None
-    )
-    assert not hasattr(binding, "Binding")
-    assert not hasattr(_rust, "_openssl")
 
 
 def find_all_modules() -> list[str]:

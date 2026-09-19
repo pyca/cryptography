@@ -186,6 +186,11 @@ jobs:
           # OPENSSL_ENABLE_SHA1_SIGNATURES is for CentOS 9 Stream
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
           NOXSESSION: ${{ matrix.IMAGE.NOXSESSION }}
+      - name: Capture native ML-KEM backtrace
+        if: matrix.IMAGE.IMAGE == 'fedora'
+        run: |
+          dnf install -y gdb
+          /venv/bin/nox -e debug-native -- .nox/tests/bin/python
       - run: '/venv/bin/nox --no-install --  --color=yes --wycheproof-root="wycheproof" --x509-limbo-root="x509-limbo"'
         env:
           COLUMNS: 80
@@ -381,6 +386,10 @@ jobs:
             # Latest commit on the pyopenssl main branch, as of Sep 09, 2026.
             REF: 567808adb4d859323424c3a6bc183e13a1ac59e8
             PATH: pyopenssl
+          - DOWNSTREAM: pyopenssl-bridge
+            REPO: pyca/pyopenssl
+            REF: 567808adb4d859323424c3a6bc183e13a1ac59e8
+            PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
             # Latest release tag of pyopenssl-release, as of Aug 02, 2026.
@@ -437,19 +446,8 @@ jobs:
           path: ${{ matrix.PATH }}
           persist-credentials: false
       - name: Apply the companion pyOpenSSL migration
-        if: matrix.PATH == 'pyopenssl'
-        run: git -C pyopenssl apply "$GITHUB_WORKSPACE/.github/patches/${{ matrix.DOWNSTREAM }}.patch"
-      - name: Checkout migrated pyOpenSSL for other downstream consumers
-        if: matrix.PATH != 'pyopenssl'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: pyca/pyopenssl
-          ref: 567808adb4d859323424c3a6bc183e13a1ac59e8
-          path: pyopenssl-bridge
-          persist-credentials: false
-      - name: Apply the companion pyOpenSSL migration for dependencies
-        if: matrix.PATH != 'pyopenssl'
-        run: git -C pyopenssl-bridge apply "$GITHUB_WORKSPACE/.github/patches/pyopenssl.patch"
+        if: matrix.DOWNSTREAM == 'pyopenssl-bridge'
+        run: git -C pyopenssl apply "$GITHUB_WORKSPACE/.github/patches/pyopenssl.patch"
       - name: Cache rust and pip
         uses: ./.github/actions/cache
         timeout-minutes: 2
@@ -465,11 +463,6 @@ jobs:
       - run: uv venv
       - run: source .venv/bin/activate && ./.github/downstream.d/${{ matrix.DOWNSTREAM }}.sh install
       - run: uv pip install -v .
-      # Released pyOpenSSL uses the removed private CFFI binding. Exercise its
-      # companion migration with downstream consumers on this development branch.
-      - name: Install migrated pyOpenSSL dependency
-        if: matrix.PATH != 'pyopenssl'
-        run: uv pip install --no-deps ./pyopenssl-bridge
       # cryptography main has a version of "(X+1).0.0.dev1" where X is the
       # most recently released major version. A package used by a downstream
       # may depend on cryptography <=X. If you use entrypoints stuff, this can

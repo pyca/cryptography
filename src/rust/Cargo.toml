@@ -8,6 +8,7 @@ rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
+cryptography-cffi = { path = "cryptography-cffi" }
 openssl-bridge.workspace = true
 openssl-bridge-sys.workspace = true
 asn1.workspace = true

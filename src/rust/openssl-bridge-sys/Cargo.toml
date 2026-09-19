@@ -10,5 +10,5 @@ links = "openssl"
 
 [build-dependencies]
 bindgen = "0.71"
-cc = "1"
+cc.workspace = true
 pkg-config = "0.3"

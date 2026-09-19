@@ -8,14 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
-* Replace the private CFFI binding with typed Rust TLS and X.509 adapters for
-  pyOpenSSL. TLS contexts freeze before creating connections, sockets retain
-  owned descriptors, and callbacks return copied data and connection-local
-  errors. CFFI is no longer a build or runtime dependency; the private
-  ``Binding.ffi``, ``Binding.lib`` and ``backend._lib`` interfaces are removed.
-
-* Add owned Rust X.509 compatibility interfaces for pyOpenSSL's migration away
-  from CFFI. Certificate names and verification results contain owned data.
+* Add independent Rust OpenSSL abstraction and FFI crates to the workspace,
+  replacing the ``openssl`` and ``openssl-sys`` dependencies. Typed Rust TLS
+  and X.509 adapters are available for pyOpenSSL's migration. The existing
+  CFFI binding remains as a compatibility shim for downstream consumers and
+  links to the same native library through the new FFI crate.
 
 * Mutable input buffers are snapshotted before native operations. Output-buffer
   APIs publish successful results from separate storage, allowing overlapping

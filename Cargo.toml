@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "src/rust/",
+    "src/rust/cryptography-cffi",
     "src/rust/openssl-bridge",
     "src/rust/openssl-bridge-sys",
     "src/rust/cryptography-crypto",

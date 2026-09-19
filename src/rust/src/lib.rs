@@ -318,6 +318,7 @@ mod _rust {
     #[pymodule_init]
     fn init(m: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
         m.add("_PACKAGE_VERSION", env!("CRYPTOGRAPHY_PACKAGE_VERSION"))?;
+        m.add_submodule(&cryptography_cffi::create_module(m.py())?)?;
 
         Ok(())
     }

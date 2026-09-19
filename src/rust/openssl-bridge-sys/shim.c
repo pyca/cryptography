@@ -269,8 +269,10 @@ int OB_rsa_oaep_label(EVP_PKEY_CTX *ctx, const unsigned char *label, int length)
     unsigned char *copy;
     int result;
     if (length < 0) return 0;
-    /* LibreSSL does not retain a non-NULL allocation when length is zero. */
-    if (length == 0) return EVP_PKEY_CTX_set0_rsa_oaep_label(ctx, NULL, 0);
+    /* Contexts are fresh and their default OAEP label is empty. Older
+     * OpenSSL 3.0 providers reject an explicit NULL, zero-length label;
+     * LibreSSL does not retain a non-NULL allocation with zero length. */
+    if (length == 0) return 1;
     /* The successful set0 call owns this exact OpenSSL allocation;
      * failure retains ownership. */
     copy = OPENSSL_malloc((size_t)length);

@@ -67,6 +67,9 @@ class Backend:
     _fips_dh_min_modulus = 1 << _fips_dh_min_key_size
 
     def __init__(self) -> None:
+        self._binding = binding.Binding()
+        self._ffi = self._binding.ffi
+        self._lib = self._binding.lib
         self._fips_enabled = rust_openssl.is_fips_enabled()
 
     def __repr__(self) -> str:

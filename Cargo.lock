@@ -101,6 +101,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "cryptography-cffi"
+version = "0.51.0-dev1"
+dependencies = [
+ "cc",
+ "openssl-bridge-sys",
+ "pyo3",
+ "pyo3-build-config",
+]
+
+[[package]]
 name = "cryptography-crypto"
 version = "0.51.0-dev1"
 dependencies = [
@@ -134,6 +144,7 @@ dependencies = [
  "asn1",
  "base64",
  "cfg-if",
+ "cryptography-cffi",
  "cryptography-crypto",
  "cryptography-keepalive",
  "cryptography-key-parsing",

@@ -2,10 +2,17 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
+from __future__ import annotations
+
+import threading
+import types
+import typing
+from collections.abc import Callable, Mapping
+
 import cryptography
 from cryptography.exceptions import InternalError
-from cryptography.hazmat.bindings import _rust
-from cryptography.hazmat.bindings._rust import openssl
+from cryptography.hazmat.bindings._rust import _openssl, openssl
+from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 
 def _openssl_assert(ok: bool) -> None:
@@ -24,14 +31,77 @@ def _openssl_assert(ok: bool) -> None:
         )
 
 
+def build_conditional_library(
+    lib: typing.Any,
+    conditional_names: Mapping[str, Callable[[], list[str]]],
+) -> typing.Any:
+    conditional_lib = types.ModuleType("lib")
+    conditional_lib._original_lib = lib  # type: ignore[attr-defined]
+    excluded_names = set()
+    for condition, names_cb in conditional_names.items():
+        if not getattr(lib, condition):
+            excluded_names.update(names_cb())
+
+    for attr in dir(lib):
+        if attr not in excluded_names:
+            setattr(conditional_lib, attr, getattr(lib, attr))
+
+    return conditional_lib
+
+
+class Binding:
+    """
+    OpenSSL API wrapper.
+    """
+
+    lib: typing.ClassVar[typing.Any] = None
+    ffi: typing.Any = _openssl.ffi
+    _lib_loaded = False
+    _init_lock = threading.Lock()
+
+    def __init__(self) -> None:
+        self._ensure_ffi_initialized()
+
+    @classmethod
+    def _ensure_ffi_initialized(cls) -> None:
+        with cls._init_lock:
+            if not cls._lib_loaded:
+                cls.lib = build_conditional_library(
+                    _openssl.lib, CONDITIONAL_NAMES
+                )
+                cls._lib_loaded = True
+
+    @classmethod
+    def init_static_locks(cls) -> None:
+        cls._ensure_ffi_initialized()
+
+
 def _verify_package_version(version: str) -> None:
-    if version != _rust._PACKAGE_VERSION:
+    # Occasionally we run into situations where the version of the Python
+    # package does not match the version of the shared object that is loaded.
+    # This may occur in environments where multiple versions of cryptography
+    # are installed and available in the python path. To avoid errors cropping
+    # up later this code checks that the currently imported package and the
+    # shared object that were loaded have the same version and raise an
+    # ImportError if they do not
+    so_package_version = _openssl.ffi.string(
+        _openssl.lib.CRYPTOGRAPHY_PACKAGE_VERSION
+    )
+    if version.encode("ascii") != so_package_version:
         raise ImportError(
-            "The version of cryptography does not match the loaded shared "
-            "object. Check for multiple installations in your Python path. "
-            f"Loaded Python version: {version}, "
-            f"shared object version: {_rust._PACKAGE_VERSION}"
+            "The version of cryptography does not match the loaded "
+            "shared object. This can happen if you have multiple copies of "
+            "cryptography installed in your Python path. Please try creating "
+            "a new virtual environment to resolve this issue. "
+            f"Loaded python version: {version}, "
+            f"shared object version: {so_package_version}"
         )
+
+    _openssl_assert(
+        _openssl.lib.OpenSSL_version_num() == openssl.openssl_version(),
+    )
 
 
 _verify_package_version(cryptography.__version__)
+
+Binding.init_static_locks()

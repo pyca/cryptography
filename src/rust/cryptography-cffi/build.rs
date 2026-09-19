@@ -1,0 +1,211 @@
+// This file is dual licensed under the terms of the Apache License, Version
+// 2.0, and the BSD License. See the LICENSE file in the root of this repository
+// for complete details.
+
+use std::env;
+use std::path::Path;
+use std::process::Command;
+
+use pyo3_build_config::{PythonAbiKind, StableAbi};
+
+fn main() {
+    let target = env::var("TARGET").unwrap();
+    let openssl_static = env::var("OPENSSL_STATIC")
+        .map(|x| x == "1")
+        .unwrap_or(false);
+    if target.contains("apple") && openssl_static {
+        // On (older) OSX we need to link against the clang runtime,
+        // which is hidden in some non-default path.
+        //
+        // More details at https://github.com/alexcrichton/curl-rust/issues/279.
+        if let Some(path) = macos_link_search_path() {
+            println!("cargo:rustc-link-lib=clang_rt.osx");
+            println!("cargo:rustc-link-search={path}");
+        }
+    }
+
+    let out_dir = env::var("OUT_DIR").unwrap();
+    // FIXME: maybe pyo3-build-config should provide a way to do this?
+    let python = env::var("PYO3_PYTHON").unwrap_or_else(|_| "python3".to_string());
+    // maturin/uv build isolation points PYO3_PYTHON at an ephemeral
+    // environment whose path changes on every build, so fingerprinting
+    // its value would rerun this script (and recompile this crate and
+    // its dependents) on every build. When a pyo3 config file is in use
+    // it fully identifies the target interpreter, so track it instead.
+    if let Ok(config_file) = env::var("PYO3_CONFIG_FILE") {
+        println!("cargo:rerun-if-env-changed=PYO3_CONFIG_FILE");
+        println!("cargo:rerun-if-changed={config_file}");
+    } else {
+        println!("cargo:rerun-if-env-changed=PYO3_PYTHON");
+    }
+    println!("cargo:rerun-if-changed=../../_cffi_src/");
+    println!("cargo:rerun-if-changed=../../cryptography/__about__.py");
+    let output = Command::new(&python)
+        .env("OUT_DIR", &out_dir)
+        // Writing __pycache__ into _cffi_src would bump the mtime of a
+        // directory this build script registers rerun-if-changed on,
+        // re-dirtying the crate on every subsequent build.
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .arg("../../_cffi_src/build_openssl.py")
+        .output()
+        .expect("failed to execute build_openssl.py");
+    if !output.status.success() {
+        panic!(
+            "failed to run build_openssl.py, stdout: \n{}\nstderr: \n{}\n",
+            String::from_utf8(output.stdout).unwrap(),
+            String::from_utf8(output.stderr).unwrap()
+        );
+    }
+
+    let python_impl = run_python_script(
+        &python,
+        "import platform; print(platform.python_implementation(), end='')",
+    )
+    .unwrap();
+    println!("cargo:rustc-cfg=python_implementation=\"{python_impl}\"");
+    println!("cargo:rerun-if-env-changed=PYO3_CROSS_LIB_DIR");
+    // When cross-compiling, PyO3 expects the build system to point
+    // PYO3_CROSS_LIB_DIR at the target's libpython directory. Derive the
+    // matching include dir from it instead of querying the host
+    // interpreter's setuptools, which returns host headers (e.g.
+    // /usr/include/python3.x) and breaks the cross build whenever the host
+    // happens to have same-version Python development headers installed.
+    let python_includes = if let Ok(lib_dir) = env::var("PYO3_CROSS_LIB_DIR") {
+        let lib = Path::new(&lib_dir);
+        let py_ver = lib
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or("python3");
+        let prefix = lib
+            .parent()
+            .and_then(|p| p.parent())
+            .expect("PYO3_CROSS_LIB_DIR has unexpected layout");
+        prefix
+            .join("include")
+            .join(py_ver)
+            .to_string_lossy()
+            .into_owned()
+    } else {
+        run_python_script(
+            &python,
+            "import os; \
+             import setuptools.dist; \
+             import setuptools.command.build_ext; \
+             b = setuptools.command.build_ext.build_ext(setuptools.dist.Distribution()); \
+             b.finalize_options(); \
+             print(os.pathsep.join(b.include_dirs), end='')",
+        )
+        .unwrap()
+    };
+    let openssl_c = Path::new(&out_dir).join("_openssl.c");
+
+    let mut build = cc::Build::new();
+    build
+        .file(openssl_c)
+        .includes(std::env::var_os("DEP_OPENSSL_INCLUDE"))
+        .flag_if_supported("-Wconversion")
+        .flag_if_supported("-Wno-error=sign-conversion")
+        .flag_if_supported("-Wno-unused-parameter");
+
+    // We use the `-fmacro-prefix-map` option to replace the output directory in macros with a dot.
+    // This is because we don't want a potentially random build path to end up in the binary because
+    // CFFI generated code uses the __FILE__ macro in its debug messages.
+    if let Some(out_dir_str) = Path::new(&out_dir).to_str() {
+        build.flag_if_supported(format!("-fmacro-prefix-map={out_dir_str}=.").as_str());
+    }
+
+    for python_include in env::split_paths(&python_includes) {
+        build.include(python_include);
+    }
+
+    // Derive the target ABI from what pyo3 is targeting for this build,
+    // resolved from the abi3/abi3t Cargo features
+    let config = pyo3_build_config::get();
+
+    match config.target_abi().kind() {
+        // GIL-enabled limited API (abi3): a single wheel for CPython 3.9 to 3.14 (not free-threaded)
+        PythonAbiKind::Stable(StableAbi::Abi3) => {
+            // cp39 (Python 3.9 to help our grep when we some day drop 3.9 support)
+            build.define("Py_LIMITED_API", "0x030900f0");
+        }
+        // Free-threaded limited API (abi3t): a single wheel CPython 3.15+.
+        PythonAbiKind::Stable(StableAbi::Abi3t) => {
+            // cp315 (Python 3.15 to help our grep when we some day drop 3.15 support)
+            build.define("Py_LIMITED_API", "0x030f00f0");
+        }
+        // PyPy, or a free-threaded build older than abi3t (e.g. 3.14t):
+        // compile against the full, version-specific ABI.
+        PythonAbiKind::VersionSpecific(_) => {}
+    }
+
+    if cfg!(windows) {
+        build.define("WIN32_LEAN_AND_MEAN", None);
+        // python.h doesn't set this on the Windows free-threaded build
+        // see https://github.com/python/cpython/issues/127294
+        if config.is_free_threaded() {
+            build.define("Py_GIL_DISABLED", "1");
+        }
+
+        // The C code we build auto-links the Python import library via
+        // `#pragma comment(lib, ...)` in pyconfig.h. pyo3 0.29+ links
+        // libpython with raw-dylib and no longer emits Python's libs
+        // directory as a link search path, so we have to do it ourselves.
+        let libs_dir = run_python_script(
+            &python,
+            "import os, sys; print(os.path.join(sys.base_prefix, 'libs'), end='')",
+        )
+        .unwrap();
+        println!("cargo:rustc-link-search=native={libs_dir}");
+    }
+
+    build.compile("_openssl.a");
+}
+
+/// Run a python script using the specified interpreter binary.
+fn run_python_script(interpreter: impl AsRef<Path>, script: &str) -> Result<String, String> {
+    let interpreter = interpreter.as_ref();
+    let out = Command::new(interpreter)
+        .env("PYTHONIOENCODING", "utf-8")
+        .arg("-c")
+        .arg(script)
+        .output();
+
+    match out {
+        Err(err) => Err(format!(
+            "failed to run the Python interpreter at {}: {}",
+            interpreter.display(),
+            err
+        )),
+        Ok(ok) if !ok.status.success() => Err(format!(
+            "Python script failed: {}",
+            String::from_utf8(ok.stderr).expect("failed to parse Python script stderr as utf-8")
+        )),
+        Ok(ok) => Ok(
+            String::from_utf8(ok.stdout).expect("failed to parse Python script stdout as utf-8")
+        ),
+    }
+}
+
+fn macos_link_search_path() -> Option<String> {
+    let output = Command::new("clang")
+        .arg("--print-search-dirs")
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        println!(
+            "failed to run 'clang --print-search-dirs', continuing without a link search path"
+        );
+        return None;
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    for line in stdout.lines() {
+        if line.contains("libraries: =") {
+            let path = line.split('=').nth(1)?;
+            return Some(format!("{path}/lib/darwin"));
+        }
+    }
+
+    println!("failed to determine link search path, continuing without it");
+    None
+}

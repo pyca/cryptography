@@ -71,7 +71,10 @@ fn main() {
             println!("cargo:rustc-link-search=native={}", lib.display());
             let windows = env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows");
             let is_static = static_link.unwrap_or_else(|| {
-                lib.join("libssl.a").is_file() || lib.join("libssl_static.lib").is_file()
+                (lib.join("libssl.a").is_file()
+                    && !lib.join("libssl.so").exists()
+                    && !lib.join("libssl.dylib").exists())
+                    || lib.join("libssl_static.lib").is_file()
             });
             let kind = if is_static { "static" } else { "dylib" };
             for name in ["ssl", "crypto"] {

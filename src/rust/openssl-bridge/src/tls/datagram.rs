@@ -253,7 +253,8 @@ unsafe extern "C" fn control(
             ffi::BIO_CTRL_FLUSH => 1,
             // SAFETY: Pure translation of fork-specific numeric macro values.
             _ => match unsafe { ffi::OB_dgram_control_kind(command) } {
-                1 => state.mtu.into(),
+                // MTUs are restricted to 256..=65535, including on Windows.
+                1 => state.mtu as c_long,
                 2 if (256..=65535).contains(&argument) => {
                     state.mtu = argument as u32;
                     argument
