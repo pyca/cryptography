@@ -186,6 +186,22 @@ impl Drop for Ec {
         unsafe { ffi::EC_KEY_free(self.ptr()) };
     }
 }
+
+#[cfg(test)]
+mod validation_tests {
+    use super::*;
+
+    #[test]
+    fn infinity_is_not_a_public_key() {
+        let ec = Ec::new(Curve::P256).unwrap();
+        let point = ec.point().unwrap();
+        // EC_POINT_new initializes a valid point-at-infinity object, which
+        // must be rejected even though it belongs to the correct group.
+        assert!(ec
+            .validate_point(&point, &mut NumberContext::new().unwrap())
+            .is_err());
+    }
+}
 struct Key {
     pkey: NonNull<ffi::EVP_PKEY>,
     curve: Curve,
@@ -328,9 +344,7 @@ impl PrivateKey {
         let mut result: SecretBytes = vec![0; length].into();
         // SAFETY: The destination has the exact size of this positive scalar.
         let written = unsafe { ffi::BN_bn2bin(scalar, result.as_mut().as_mut_ptr()) };
-        if written as usize != length {
-            return Err(Error::InvalidState("unexpected scalar export size"));
-        }
+        crate::error::check_len(written as usize, length)?;
         Ok(result)
     }
     pub fn public_key(&self) -> Result<PublicKey> {
@@ -369,9 +383,7 @@ impl PrivateKey {
                 prehash.len(),
             )
         })?;
-        if length > 2 * self.curve().field_size() + 16 {
-            return Err(Error::InvalidState("unexpected ECDSA signature size"));
-        }
+        crate::error::check_len_at_most(length, 2 * self.curve().field_size() + 16)?;
         let mut output = vec![0; length];
         // SAFETY: Output fits the queried maximum; native API receives its capacity.
         check(unsafe {
@@ -383,9 +395,7 @@ impl PrivateKey {
                 prehash.len(),
             )
         })?;
-        if length > output.len() {
-            return Err(Error::InvalidState("unexpected ECDSA signature length"));
-        }
+        crate::error::check_len_at_most(length, output.len())?;
         output.truncate(length);
         Ok(output)
     }
@@ -405,9 +415,7 @@ impl PrivateKey {
         check(unsafe {
             ffi::EVP_PKEY_derive(operation.ptr(), output.as_mut().as_mut_ptr(), &mut length)
         })?;
-        if length != output.as_ref().len() {
-            return Err(Error::InvalidState("unexpected ECDH output length"));
-        }
+        crate::error::check_len(length, output.as_ref().len())?;
         Ok(output)
     }
 }

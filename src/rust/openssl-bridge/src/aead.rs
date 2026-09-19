@@ -383,9 +383,7 @@ impl Key {
         })?;
         let mut total = usize::try_from(written)
             .map_err(|_| Error::InvalidState("negative AEAD output length"))?;
-        if total > input.len() {
-            return Err(Error::InvalidState("unexpected AEAD update length"));
-        }
+        crate::error::check_len_at_most(total, input.len())?;
         if protocol != Protocol::Ccm {
             // SAFETY: At least one full block remains; this is the first and only
             // finalization. On failure the private output is cleansed by Drop.
@@ -403,9 +401,7 @@ impl Key {
                 )
                 .ok_or(Error::InvalidState("AEAD output overflow"))?;
         }
-        if total != input.len() {
-            return Err(Error::InvalidState("unexpected AEAD output length"));
-        }
+        crate::error::check_len(total, input.len())?;
         if expected.is_none() {
             // SAFETY: Authentication succeeded; tag array covers the requested
             // length, and encryption is complete (CCM finalizes in update).
@@ -484,9 +480,7 @@ impl Key {
                 aad.len(),
             )
         })?;
-        if written != combined.len() {
-            return Err(Error::InvalidState("unexpected AEAD seal length"));
-        }
+        crate::error::check_len(written, combined.len())?;
         output.copy_from_slice(&combined[..input.len()]);
         tag.copy_from_slice(&combined[input.len()..]);
         Ok(())
@@ -521,9 +515,7 @@ impl Key {
                 aad.len(),
             )
         })?;
-        if written != output.len() {
-            return Err(Error::InvalidState("unexpected AEAD open length"));
-        }
+        crate::error::check_len(written, output.len())?;
         output.copy_from_slice(private.as_ref());
         Ok(())
     }

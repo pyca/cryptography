@@ -24,6 +24,22 @@ fn gcm_nist_sp800_38d_known_answer() {
 }
 
 #[test]
+fn gcm_empty_message_known_answer() {
+    let key = Key::new(Algorithm::Aes128Gcm, &[0; 16]).unwrap();
+    let mut tag = [0; 16];
+    key.seal_into(&[0; 12], &[], &[], &mut [], &mut tag)
+        .unwrap();
+    assert_eq!(
+        tag,
+        [
+            0x58, 0xe2, 0xfc, 0xce, 0xfa, 0x7e, 0x30, 0x61, 0x36, 0x7f, 0x1d, 0x57, 0xa4, 0xe7,
+            0x45, 0x5a
+        ]
+    );
+    key.open_into(&[0; 12], &[], &[], &tag, &mut []).unwrap();
+}
+
+#[test]
 fn every_supported_aead_authenticates_before_releasing_plaintext() {
     use Algorithm::*;
     assert!(Aes128Gcm.is_available());

@@ -48,11 +48,9 @@ impl Number {
         let ctx = Context::new()?;
         // SAFETY: The bounded integer is initialized, the context is exclusive,
         // and NULL disables callbacks. Explicit rounds cover adversarial imports.
-        match unsafe { ffi::BN_is_prime_ex(self.ptr(), 64, ctx.0.as_ptr(), ptr::null_mut()) } {
-            1 => Ok(true),
-            0 => Ok(false),
-            _ => Err(Error::capture()),
-        }
+        crate::error::check_bool(unsafe {
+            ffi::BN_is_prime_ex(self.ptr(), 64, ctx.0.as_ptr(), ptr::null_mut())
+        })
     }
     pub(crate) fn modulo(&self, modulus: &Self) -> Result<Self> {
         if !modulus.positive() {
@@ -81,9 +79,7 @@ impl Number {
         let mut out: SecretBytes = vec![0; self.bits().div_ceil(8)].into();
         // SAFETY: Output length is exactly the unsigned number's encoding size.
         let written = unsafe { ffi::BN_bn2bin(self.ptr(), out.as_mut().as_mut_ptr()) };
-        if written as usize != out.as_ref().len() {
-            return Err(Error::InvalidState("unexpected integer length"));
-        }
+        crate::error::check_len(written as usize, out.as_ref().len())?;
         Ok(out)
     }
     /// The caller must provide a live, initialized BIGNUM for the duration of the copy.

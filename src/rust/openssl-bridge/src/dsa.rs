@@ -306,9 +306,7 @@ impl PrivateKey {
                 digest.len(),
             )
         })?;
-        if length > 2 * self.params.0.q.len() + 16 {
-            return Err(Error::InvalidState("unexpected DSA signature size"));
-        }
+        crate::error::check_len_at_most(length, 2 * self.params.0.q.len() + 16)?;
         let mut output = vec![0; length];
         // SAFETY: Output fits the native maximum and its capacity is supplied.
         check(unsafe {
@@ -320,9 +318,7 @@ impl PrivateKey {
                 digest.len(),
             )
         })?;
-        if length > output.len() {
-            return Err(Error::InvalidState("unexpected DSA signature length"));
-        }
+        crate::error::check_len_at_most(length, output.len())?;
         output.truncate(length);
         Ok(output)
     }

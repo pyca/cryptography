@@ -77,6 +77,7 @@ fn nist_signature_and_native_generation() {
     let digest=hash::digest(md,&hex("3b46736d559bd4e0c2c1b2553a33ad3c6cf23cac998d3d0c0e8fa4b19bca06f2f386db2dcff9dca4f40ad8f561ffc308b46c5f31a7735b5fa7e0f9e6cb512e63d7eea05538d66a75cd0d4234b5ccf6c1715ccaaf9cdc0a2228135f716ee9bdee7fc13ec27a03a6d11c5c5b3685f51900b1337153bc6c4e8f52920c33fa37f4e7")).unwrap();
     let signature=hex("302d021450ed0e810e3f1c7cb6ac62332058448bd8b284c0021500c6aded17216b46b7e4b6f2a97c1ad7cc3da83fde");
     assert!(public.verify_digest(md, &digest, &signature).unwrap());
+    assert!(public.verify_digest(md, &[], &signature).is_err());
     assert!(!public
         .verify_digest(md, &digest, &signature[..signature.len() - 1])
         .unwrap());

@@ -27,6 +27,11 @@ fn finite_field_exchange_is_padded_and_peer_checked() {
     assert_eq!(params.bits(), 2048);
     let alice = PrivateKey::from_scalar(params.clone(), &[2]).unwrap();
     let bob = PrivateKey::from_scalar(params.clone(), &[3]).unwrap();
+    assert_eq!(alice.parameters().bits(), 2048);
+    assert_eq!(alice.scalar(), &[2]);
+    assert_eq!(alice.public_key().parameters().components().p, p);
+    let material: openssl_bridge::dh::PublicKeyMaterial = alice.public_key().into();
+    assert_eq!(material.validate().unwrap().public_value(), &[4]);
     assert_eq!(alice.public_key().public_value(), &[4]);
     let a = alice.exchange(&bob.public_key()).unwrap();
     let b = bob.exchange(&alice.public_key()).unwrap();

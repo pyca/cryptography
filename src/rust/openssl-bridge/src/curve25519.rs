@@ -57,9 +57,7 @@ impl Key {
         check(unsafe {
             ffi::EVP_PKEY_get_raw_public_key(self.0.as_ptr(), output.as_mut_ptr(), &mut size)
         })?;
-        if size != output.len() {
-            return Err(Error::InvalidState("unexpected public key length"));
-        }
+        crate::error::check_len(size, output.len())?;
         Ok(output)
     }
     fn seed(&self) -> Result<Secret<32>> {
@@ -69,9 +67,7 @@ impl Key {
         check(unsafe {
             ffi::EVP_PKEY_get_raw_private_key(self.0.as_ptr(), output.0.as_mut_ptr(), &mut size)
         })?;
-        if size != output.0.len() {
-            return Err(Error::InvalidState("unexpected private key length"));
-        }
+        crate::error::check_len(size, output.0.len())?;
         Ok(output)
     }
 }
@@ -144,9 +140,7 @@ impl Ed25519SigningKey {
                 message.len(),
             )
         })?;
-        if size != output.len() {
-            return Err(Error::InvalidState("unexpected Ed25519 signature length"));
-        }
+        crate::error::check_len(size, output.len())?;
         Ok(output)
     }
 }
@@ -184,14 +178,7 @@ impl Ed25519VerifyingKey {
                 message.len(),
             )
         };
-        match result {
-            1 => Ok(true),
-            0 => {
-                let _ = Error::capture();
-                Ok(false)
-            }
-            _ => Err(Error::capture()),
-        }
+        crate::error::verification_result(result)
     }
 }
 
@@ -234,9 +221,7 @@ impl X25519SecretKey {
         // SAFETY: The context is initialized with both keys and output fits the
         // algorithm's 32-byte result. Its capacity is also supplied to the backend.
         check(unsafe { ffi::EVP_PKEY_derive(ctx.0.as_ptr(), output.0.as_mut_ptr(), &mut size) })?;
-        if size != output.0.len() {
-            return Err(Error::InvalidState("unexpected X25519 secret length"));
-        }
+        crate::error::check_len(size, output.0.len())?;
         if crate::constant_time_eq(&output.0, &[0; 32]) {
             return Err(Error::InvalidInput("X25519 shared secret is all zero"));
         }

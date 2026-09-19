@@ -283,9 +283,7 @@ impl PrivateKey {
         check(unsafe {
             ffi::EVP_PKEY_derive(op.0.as_ptr(), output.as_mut().as_mut_ptr(), &mut length)
         })?;
-        if length > output.as_ref().len() {
-            return Err(Error::InvalidState("unexpected DH result size"));
-        }
+        crate::error::check_len_at_most(length, output.as_ref().len())?;
         let pad = output.as_ref().len() - length;
         output.as_mut().copy_within(..length, pad);
         output.as_mut()[..pad].fill(0);

@@ -24,6 +24,12 @@ concurrency, and native-library assumptions. APIs expose owned values and
 borrowed slices rather than raw native objects; context copies are fallible,
 finalization consumes state, and output bounds are checked before entering C.
 
+One-shot authenticated encryption uses `aead::Key` for every supported
+algorithm, including AES-GCM. The `gcm` module provides streaming GCM states;
+its decryptor makes unverified plaintext explicit until authentication finishes.
+Native output-length checks and failure cleanup are shared internally, keeping
+the same validation and secret-erasure rules across algorithms.
+
 The initial implementation and cryptography/CFFI/TLS migration were imported
 from [clanker-experiments commit c970d78](https://github.com/reaperhulk/clanker-experiments/tree/c970d7830550134aeddc30ec3144a06fc592fce2/openssl-bridge).
 That revision retains the historical backend acceptance reports. New CI results

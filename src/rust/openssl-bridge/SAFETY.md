@@ -173,7 +173,7 @@ are checked, and failed operations poison the context. Encryption finalization
 returns a 128-bit tag. `UnverifiedGcmDecrypt` explicitly exposes untrusted output
 for cryptography's existing streaming protocol; it cannot be finalized without
 an expected tag. Authentication failure cannot revoke bytes already observed by
-a streaming caller. The one-shot `AesGcm::open` interface withholds plaintext
+a streaming caller. The one-shot `aead::Key::open_into` interface withholds plaintext
 and erases it on authentication failure.
 
 Streaming GCM requires at least a four-byte tag, matching the existing Python

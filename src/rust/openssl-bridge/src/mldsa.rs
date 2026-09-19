@@ -100,9 +100,7 @@ impl PrivateKey {
                     mu.len(),
                 )
             })?;
-            if length != signature.len() {
-                return Err(Error::InvalidState("unexpected ML-DSA signature size"));
-            }
+            crate::error::check_len(length, signature.len())?;
             Ok(signature)
         }
         #[cfg(backend = "openssl")]
@@ -232,9 +230,7 @@ fn digest_sign(
             data.len(),
         )
     })?;
-    if length != signature.len() {
-        return Err(Error::InvalidState("unexpected ML-DSA signature size"));
-    }
+    crate::error::check_len(length, signature.len())?;
     Ok(signature)
 }
 fn digest_verify(

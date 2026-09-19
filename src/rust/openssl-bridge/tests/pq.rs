@@ -27,6 +27,7 @@ fn mldsa_message_context_and_external_mu() {
         let arbitrary_mu = [8; 64];
         let mu_signature = key.sign_mu(&arbitrary_mu).unwrap();
         assert!(public.verify_mu(&arbitrary_mu, &mu_signature).unwrap());
+        assert!(!public.verify_mu(&arbitrary_mu, &mu_signature[1..]).unwrap());
         assert!(!public.verify_mu(&[9; 64], &mu_signature).unwrap());
         #[cfg(not(backend = "boringssl"))]
         {

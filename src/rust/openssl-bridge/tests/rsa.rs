@@ -9,6 +9,12 @@ fn rsa_signatures_padding_and_components() {
     assert_eq!(key.bits(), 1024);
     let public = key.public_key().unwrap();
     let exported = key.export_components().unwrap();
+    for (bits, exponent) in [(511, 65537), (1024, 1), (1024, 2)] {
+        assert!(PrivateKey::generate(bits, exponent).is_err());
+    }
+    let mut invalid = exported.components();
+    invalid.p = &[2];
+    assert!(PrivateKey::from_components(invalid).is_err());
     let restored = PrivateKey::from_components(exported.components()).unwrap();
     let sha256 = Algorithm::from_name("sha256").unwrap();
     let digest = hash::digest(sha256, b"message").unwrap();
@@ -23,6 +29,42 @@ fn rsa_signatures_padding_and_components() {
     assert!(public.verify_pkcs1v15_block(b"raw block", &raw).unwrap());
     assert!(!public.verify_pkcs1v15_block(b"other block", &raw).unwrap());
     assert_eq!(public.recover_pkcs1v15(&raw, None).unwrap(), b"raw block");
+    assert!(public.recover_pkcs1v15(&raw[1..], None).is_err());
+    if let Ok(shake) = Algorithm::from_name("SHAKE128") {
+        assert!(!key.signature_digest_supported(shake).unwrap());
+        assert!(!public.signature_digest_supported(shake).unwrap());
+        assert!(public.recover_pkcs1v15(&raw, Some(shake)).is_err());
+        assert!(key
+            .sign_digest(
+                sha256,
+                &digest,
+                SigningPadding::Pss {
+                    mgf1: shake,
+                    salt: SaltLength::Digest
+                }
+            )
+            .is_err());
+        assert!(public
+            .encrypt(
+                b"secret",
+                EncryptionPadding::Oaep {
+                    digest: sha256,
+                    mgf1: shake,
+                    label: b""
+                }
+            )
+            .is_err());
+        assert!(public
+            .encrypt(
+                b"secret",
+                EncryptionPadding::Oaep {
+                    digest: shake,
+                    mgf1: sha256,
+                    label: b""
+                }
+            )
+            .is_err());
+    }
     for (sign, verify) in [
         (SigningPadding::Pkcs1v15, VerificationPadding::Pkcs1v15),
         (
@@ -121,6 +163,9 @@ fn rsa_oaep_label_and_digest_are_binding() {
     assert!(guarded[1..129].iter().all(|b| *b == 0));
     assert_eq!((guarded[0], guarded[129]), (0x55, 0x55));
     assert!(key.decrypt(&encrypted[..127], padding).is_err());
+    assert!(key
+        .decrypt_into(&encrypted, padding, &mut [0; 127])
+        .is_err());
     assert!(public.encrypt(&[0; 63], padding).is_err());
     let encrypted = public
         .encrypt(b"secret", EncryptionPadding::Pkcs1v15)

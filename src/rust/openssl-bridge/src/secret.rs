@@ -29,3 +29,30 @@ pub fn erase(bytes: &mut [u8]) {
     // SAFETY: The exclusive slice is writable for its exact initialized length.
     unsafe { ffi::OPENSSL_cleanse(bytes.as_mut_ptr().cast(), bytes.len()) };
 }
+
+/// Discard caller-owned output when a native operation or length check fails.
+pub(crate) fn clear_on_error<T>(result: crate::Result<T>, output: &mut [u8]) -> crate::Result<T> {
+    if result.is_err() {
+        erase(output);
+    }
+    result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn errors_erase_only_the_borrowed_output() {
+        let mut buffer = [0xa5; 18];
+        assert_eq!(clear_on_error(Ok(16), &mut buffer[1..17]).unwrap(), 16);
+        assert_eq!(buffer, [0xa5; 18]);
+        let error = crate::Error::InvalidState("native failure");
+        assert_eq!(
+            clear_on_error::<()>(Err(error.clone()), &mut buffer[1..17]),
+            Err(error)
+        );
+        assert_eq!(&buffer[1..17], &[0; 16]);
+        assert_eq!((buffer[0], buffer[17]), (0xa5, 0xa5));
+    }
+}

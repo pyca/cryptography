@@ -453,9 +453,7 @@ impl PrivateKey {
                 data.len(),
             )
         })?;
-        if written != output.len() {
-            return Err(Error::InvalidState("unexpected RSA signature length"));
-        }
+        crate::error::check_len(written, output.len())?;
         Ok(output)
     }
     pub fn decrypt(&self, ciphertext: &[u8], padding: EncryptionPadding<'_>) -> Result<Plaintext> {
@@ -500,14 +498,11 @@ impl PrivateKey {
                 ciphertext.len(),
             )
         });
-        if let Err(error) = result {
-            cleanse(output);
-            return Err(error);
-        }
-        if written > output.len() {
-            cleanse(output);
-            return Err(Error::InvalidState("unexpected RSA plaintext length"));
-        }
+        crate::secret::clear_on_error(result, output)?;
+        crate::secret::clear_on_error(
+            crate::error::check_len_at_most(written, output.len()),
+            output,
+        )?;
         cleanse(&mut output[written..]);
         Ok(written)
     }
@@ -556,7 +551,7 @@ impl PublicKey {
         check(unsafe { ffi::EVP_PKEY_verify_init(ctx.ptr()) })?;
         signature_parameters(&mut ctx, &self.0, digest, padding)?;
         // SAFETY: Input slices cover their lengths; context is fully initialized.
-        match unsafe {
+        crate::error::verification_result(unsafe {
             ffi::EVP_PKEY_verify(
                 ctx.ptr(),
                 signature.as_ptr(),
@@ -564,14 +559,7 @@ impl PublicKey {
                 data.as_ptr(),
                 data.len(),
             )
-        } {
-            1 => Ok(true),
-            0 => {
-                let _ = Error::capture();
-                Ok(false)
-            }
-            _ => Err(Error::capture()),
-        }
+        })
     }
     /// Recover a verified PKCS1 v1.5 signature's payload. A digest requests
     /// validation and removal of DigestInfo; None returns the complete block.
@@ -599,9 +587,7 @@ impl PublicKey {
                 signature.len(),
             )
         })?;
-        if written > output.len() {
-            return Err(Error::InvalidState("unexpected RSA recovery length"));
-        }
+        crate::error::check_len_at_most(written, output.len())?;
         output.truncate(written);
         Ok(output)
     }
@@ -624,9 +610,7 @@ impl PublicKey {
                 plaintext.len(),
             )
         })?;
-        if written != output.len() {
-            return Err(Error::InvalidState("unexpected RSA ciphertext length"));
-        }
+        crate::error::check_len(written, output.len())?;
         Ok(output)
     }
 }

@@ -564,3 +564,126 @@ impl Connection {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn connection() -> Connection {
+        let context = ContextBuilder::new(Protocol::Tls, PeerVerification::None)
+            .unwrap()
+            .finish();
+        Connection::memory(context, super::super::Role::Server).unwrap()
+    }
+
+    #[test]
+    fn unattached_native_objects_do_not_dispatch_user_callbacks() {
+        let context = ContextBuilder::new(Protocol::Tls, PeerVerification::None)
+            .unwrap()
+            .finish();
+        let native = Connection::allocate(&context, super::super::Role::Server).unwrap();
+        // SAFETY: The SSL is live but has not yet had callback state attached.
+        assert!(unsafe { dispatch(native.0.as_ptr(), |_, _| Ok(())) }.is_err());
+        // SAFETY: A newly allocated store context has no initiating SSL. The
+        // callback rejects it before accessing a current certificate or chain.
+        unsafe {
+            let store = pointer(ffi::X509_STORE_CTX_new()).unwrap();
+            assert_eq!(verify(1, store.as_ptr()), 0);
+            ffi::X509_STORE_CTX_free(store.as_ptr());
+        }
+    }
+
+    #[test]
+    fn malformed_alpn_and_handshake_records_fail_closed() {
+        for offered in [&[][..], &[0], &[3, b'h']] {
+            let mut connection = connection();
+            let mut output = std::ptr::null();
+            let mut length = 0;
+            // SAFETY: SSL and all explicit input/output slots are live. This
+            // tests bounded malformed wire data without forging any pointers.
+            let result = unsafe {
+                alpn(
+                    connection.native.0.as_ptr(),
+                    &mut output,
+                    &mut length,
+                    offered.as_ptr(),
+                    offered.len() as u32,
+                    std::ptr::null_mut(),
+                )
+            };
+            assert_eq!(
+                result,
+                if offered.is_empty() {
+                    ffi::SSL_TLSEXT_ERR_NOACK as i32
+                } else {
+                    ffi::SSL_TLSEXT_ERR_ALERT_FATAL as i32
+                }
+            );
+            assert!(output.is_null());
+            assert_eq!(length, 0);
+            assert_eq!(connection.callback_result().is_ok(), offered.is_empty());
+        }
+        let mut connection = connection();
+        let truncated = [1u8, 0, 0, 0];
+        // SAFETY: The advertised four bytes exist, but do not contain the
+        // twelve-byte DTLS handshake header, so no native parsing is attempted.
+        unsafe {
+            message(
+                0,
+                ffi::DTLS1_2_VERSION as i32,
+                22,
+                truncated.as_ptr().cast(),
+                truncated.len(),
+                connection.native.0.as_ptr(),
+                std::ptr::null_mut(),
+            )
+        };
+        assert!(connection.callback_result().is_err());
+        assert!(connection.handshake().is_err());
+    }
+
+    struct Cookie(Vec<u8>);
+    impl Callbacks for Cookie {
+        fn generate_cookie(&self, _: &super::metadata::ConnectionInfo) -> Result<Vec<u8>> {
+            Ok(self.0.clone())
+        }
+        fn verify_cookie(
+            &self,
+            _: &super::metadata::ConnectionInfo,
+            cookie: &[u8],
+        ) -> Result<bool> {
+            Ok(cookie == self.0)
+        }
+    }
+
+    #[test]
+    fn callback_cookie_bounds_protect_native_output() {
+        for cookie in [vec![], vec![1; 256]] {
+            let mut connection = connection();
+            connection.set_callbacks(Arc::new(Cookie(cookie))).unwrap();
+            let mut output = [0xa5; 256];
+            let mut length = 0;
+            // SAFETY: The output has the callback contract's full capacity.
+            assert_eq!(
+                unsafe {
+                    cookie_generate(
+                        connection.native.0.as_ptr(),
+                        output.as_mut_ptr(),
+                        &mut length,
+                    )
+                },
+                0
+            );
+            assert_eq!(length, 0);
+            assert_eq!(output, [0xa5; 256]);
+            assert!(connection.callback_result().is_err());
+        }
+        let mut connection = connection();
+        connection.set_callbacks(Arc::new(Cookie(vec![]))).unwrap();
+        // SAFETY: An empty cookie requires no input access.
+        assert_eq!(
+            unsafe { cookie_verify(connection.native.0.as_ptr(), std::ptr::null(), 0) },
+            1
+        );
+    }
+}

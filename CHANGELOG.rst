@@ -14,6 +14,9 @@ Changelog
   CFFI binding remains as a compatibility shim for downstream consumers and
   links to the same native library through the new FFI crate.
 
+* The bridge's X.509 name components preserve unregistered attribute OIDs as
+  numeric strings instead of returning OpenSSL's ``UNDEF`` sentinel.
+
 * Mutable input buffers are copied before native operations. Output-buffer
   APIs publish successful results from separate storage, allowing overlapping
   input and output views without aliased native buffers. Failed one-shot

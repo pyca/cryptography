@@ -27,6 +27,67 @@ class TestOpenSSL:
         context = pyopenssl.TLSContext(False)
         assert pyopenssl.TLSConnection(context, False)
 
+    @pytest.mark.parametrize("count", [0, 11, 255])
+    def test_test_error_queue_bounds(self, count):
+        with pytest.raises(ValueError):
+            test_support.queue_test_errors(count)
+
+    def test_tls_context_freezes_and_validates_policy(self):
+        context = pyopenssl.TLSContext(False)
+        with pytest.raises(ValueError, match="verification flags"):
+            context.set_verify(8)
+        context.set_verify(7)
+        assert context.get_verify_mode() == 7
+        connection = pyopenssl.TLSConnection(context, False)
+        assert context.get_verify_mode() == connection.get_verify_mode() == 7
+        assert pyopenssl.TLSConnection(context, True)
+        with pytest.raises(ValueError, match="cannot be mutated"):
+            context.set_verify(0)
+        with pytest.raises(ValueError, match="verification flags"):
+            connection.set_verify(8)
+        connection.set_verify(0)
+        assert connection.get_verify_mode() == 0
+        assert context.get_verify_mode() == 7
+
+    def test_tls_buffer_and_state_validation(self):
+        connection = pyopenssl.TLSConnection(
+            pyopenssl.TLSContext(False), False
+        )
+        with pytest.raises(OverflowError, match="INT_MAX"):
+            connection.read(None, 2**31, False)
+        with pytest.raises(OverflowError, match="INT_MAX"):
+            connection.drain_ciphertext(2**31)
+        with pytest.raises(ValueError, match="shutdown state"):
+            connection.set_shutdown_state(4)
+        assert connection.read(None, 0, False) == b""
+        assert connection.drain_ciphertext(0) == b""
+        assert connection.feed_ciphertext(b"") == 0
+        assert connection.write(None, b"") == 0
+        for getter in [connection.dtls_timeout, connection.data_mtu]:
+            with pytest.raises(ValueError):
+                getter()
+        with pytest.raises(ValueError):
+            connection.dtls_handle_timeout(None)
+        with pytest.raises(ValueError):
+            connection.dtls_listen(None)
+        with pytest.raises(ValueError):
+            connection.set_ciphertext_mtu(1500)
+        with pytest.raises(ValueError):
+            connection.set_context(pyopenssl.TLSContext(True))
+
+    def test_dtls_initial_state(self):
+        connection = pyopenssl.TLSConnection(pyopenssl.TLSContext(True), False)
+        assert connection.dtls_timeout() is None
+        assert connection.dtls_handle_timeout(None) is False
+        with pytest.raises(ValueError):
+            connection.dtls_listen(None)
+        with pytest.raises(ValueError):
+            connection.data_mtu()
+        connection.set_ciphertext_mtu(1200)
+        connection.input_eof()
+        with pytest.raises(ValueError):
+            connection.feed_ciphertext(b"packet")
+
     def test_ssl_ctx_options(self):
         options = pyopenssl.tls_constants()["SSL_OP_ALL"]
         if not (
@@ -190,6 +251,25 @@ class TestOwnedObjects:
         loaded.set_time(1_800_000_000)
         assert loaded.verify(der, []) == [der]
         loaded.load_locations(directory=os.fsencode(tmp_path))
+        context = pyopenssl.TLSContext(False)
+        context.set_verification_time(1_800_000_000)
+        with pytest.raises(pyopenssl.VerificationError):
+            context.verify(der, [])
+        context.add_trusted_certificate_der(der)
+        context.set_verification_flags(0)
+        assert context.verify(der, []) == [der]
+        context.load_verify_locations(file=os.fsencode(path))
+        context.load_verify_locations(directory=os.fsencode(tmp_path))
+        for kwargs in [{"file": b"nul\x00"}, {"directory": b"nul\x00"}]:
+            with pytest.raises(ValueError):
+                context.load_verify_locations(**kwargs)
+        with pytest.raises((ValueError, pyopenssl.NativeError)):
+            context.add_crl_der(b"invalid")
+        connection = pyopenssl.TLSConnection(context, False)
+        assert context.verify(der, []) == [der]
+        connection.use_certificate_der(der)
+        connection.use_private_key_der(private_der)
+        assert connection.certificate(False) == der
         for encoding in [0, 65535]:
             with pytest.raises(ValueError):
                 pyopenssl.Certificate.decode(der, encoding)

@@ -158,9 +158,7 @@ pub(crate) unsafe fn export_private_key(key: *mut ffi::EVP_PKEY) -> Result<Secre
             ffi::OB_private_key_pkcs8(key, output.as_mut().as_mut_ptr(), capacity, &mut length)
         };
         if status == 1 {
-            if length > capacity {
-                return Err(Error::InvalidState("PKCS#8 output exceeded its capacity"));
-            }
+            crate::error::check_len_at_most(length, capacity)?;
             return Ok(SecretBytes::from(output.as_ref()[..length].to_vec()));
         }
         let error = Error::capture();

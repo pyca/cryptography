@@ -8,8 +8,6 @@ use std::{
     ptr::{self, NonNull},
 };
 
-pub use crate::gcm::AesGcm;
-
 #[derive(Clone, Copy, Debug)]
 pub enum Direction {
     Encrypt,
@@ -519,9 +517,7 @@ impl Stream {
         })?;
         let written = usize::try_from(written)
             .map_err(|_| Error::InvalidState("negative cipher output length"))?;
-        if written > output.len() {
-            return Err(Error::InvalidState("unexpected cipher output length"));
-        }
+        crate::error::check_len_at_most(written, output.len())?;
         self.remaining = remaining;
         self.poisoned = false;
         Ok(written)
@@ -534,16 +530,13 @@ impl Stream {
         let result = check(unsafe {
             ffi::EVP_CipherFinal_ex(self.ctx.ptr(), output.as_mut_ptr(), &mut written)
         });
-        if let Err(error) = result {
-            cleanse(&mut output);
-            return Err(error);
-        }
+        crate::secret::clear_on_error(result, &mut output)?;
         let written = usize::try_from(written)
             .map_err(|_| Error::InvalidState("negative final output length"))?;
-        if written > output.len() {
-            cleanse(&mut output);
-            return Err(Error::InvalidState("unexpected final output length"));
-        }
+        crate::secret::clear_on_error(
+            crate::error::check_len_at_most(written, output.len()),
+            &mut output,
+        )?;
         cleanse(&mut output[written..]);
         output.truncate(written);
         Ok(output)
@@ -610,9 +603,7 @@ impl XtsDataUnit {
                 input.len() as i32,
             )
         })?;
-        if written != input.len() as i32 {
-            return Err(Error::InvalidState("unexpected XTS output length"));
-        }
+        crate::error::check_len(written as usize, input.len())?;
         let mut final_block = [0; 32];
         let mut final_written = 0;
         // SAFETY: A complete block is available; XTS must produce no final bytes.
@@ -620,9 +611,7 @@ impl XtsDataUnit {
             ffi::EVP_CipherFinal_ex(self.ctx.ptr(), final_block.as_mut_ptr(), &mut final_written)
         })?;
         cleanse(&mut final_block);
-        if final_written != 0 {
-            return Err(Error::InvalidState("unexpected XTS final output"));
-        }
+        crate::error::check_len(final_written as usize, 0)?;
         Ok(written as usize)
     }
 }

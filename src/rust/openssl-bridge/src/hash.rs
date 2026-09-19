@@ -144,11 +144,7 @@ impl Hasher {
         check(unsafe {
             ffi::EVP_DigestFinal_ex(self.ctx.as_ptr(), output.as_mut_ptr(), &mut written)
         })?;
-        if written as usize != output.len() {
-            return Err(Error::InvalidState(
-                "backend returned an unexpected digest length",
-            ));
-        }
+        crate::error::check_len(written as usize, output.len())?;
         Ok(output)
     }
 

@@ -87,9 +87,7 @@ impl PrivateKey {
                 ciphertext.len(),
             )
         })?;
-        if size != secret.0.len() {
-            return Err(Error::InvalidState("unexpected ML-KEM shared secret size"));
-        }
+        crate::error::check_len(size, secret.0.len())?;
         Ok(secret)
     }
 }
@@ -128,11 +126,8 @@ impl PublicKey {
                 &mut ss_size,
             )
         })?;
-        if ct_size != ciphertext.len() || ss_size != secret.0.len() {
-            return Err(Error::InvalidState(
-                "unexpected ML-KEM encapsulation output size",
-            ));
-        }
+        crate::error::check_len(ct_size, ciphertext.len())?;
+        crate::error::check_len(ss_size, secret.0.len())?;
         Ok((ciphertext, secret))
     }
 }

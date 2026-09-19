@@ -1,6 +1,6 @@
 use openssl_bridge::{
     cipher::{Cipher, Direction, Stream, XtsDataUnit},
-    gcm::{AesGcm, GcmCipher, GcmEncrypt, UnverifiedGcmDecrypt},
+    gcm::{GcmCipher, GcmEncrypt, UnverifiedGcmDecrypt},
 };
 
 #[test]
@@ -96,7 +96,18 @@ fn streaming_gcm_checks_order_bounds_and_authentication() {
     let key = [0; 16];
     let nonce = [1; 12];
     let plaintext = [3; 47];
-    let (expected, tag) = AesGcm::seal(&key, &nonce, &plaintext, b"firstsecond").unwrap();
+    let aead =
+        openssl_bridge::aead::Key::new(openssl_bridge::aead::Algorithm::Aes128Gcm, &key).unwrap();
+    let mut expected = [0; 47];
+    let mut tag = [0; 16];
+    aead.seal_into(
+        &nonce,
+        &[b"firstsecond"],
+        &plaintext,
+        &mut expected,
+        &mut tag,
+    )
+    .unwrap();
     let mut enc = GcmEncrypt::new(GcmCipher::Aes128, &key, &nonce).unwrap();
     enc.authenticate(b"first").unwrap();
     enc.authenticate(b"second").unwrap();

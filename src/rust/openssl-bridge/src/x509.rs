@@ -316,8 +316,11 @@ impl Name {
             for index in 0..ffi::X509_NAME_entry_count(self.0.as_ptr()) {
                 let entry = pointer(ffi::X509_NAME_get_entry(self.0.as_ptr(), index) as *mut _)?;
                 let object = ffi::X509_NAME_ENTRY_get_object(entry.as_ptr());
-                let short = ffi::OBJ_nid2sn(ffi::OBJ_obj2nid(object));
-                let name = if short.is_null() {
+                let nid = ffi::OBJ_obj2nid(object);
+                let short = ffi::OBJ_nid2sn(nid);
+                // NID_undef has the non-null short name "UNDEF". Preserve an
+                // unregistered attribute's numeric OID instead of that label.
+                let name = if nid == 0 || short.is_null() {
                     let len = ffi::OBJ_obj2txt(ptr::null_mut(), 0, object, 1);
                     if len < 0 || len == i32::MAX {
                         return Err(Error::capture());

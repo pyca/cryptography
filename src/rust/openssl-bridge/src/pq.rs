@@ -128,9 +128,7 @@ impl Key {
             };
             let key = NonNull::new(raw).map(Self);
             check(status)?;
-            if size != seed.len() {
-                return Err(Error::InvalidState("unexpected ML-KEM seed size"));
-            }
+            crate::error::check_len(size, seed.len())?;
             key.ok_or_else(Error::capture)
         }
         #[cfg(backend = "openssl")]
@@ -219,11 +217,7 @@ impl Key {
         check(unsafe {
             ffi::EVP_PKEY_get_raw_public_key(self.ptr(), bytes.as_mut_ptr(), &mut length)
         })?;
-        if length != bytes.len() {
-            return Err(Error::InvalidState(
-                "unexpected post-quantum public key size",
-            ));
-        }
+        crate::error::check_len(length, bytes.len())?;
         Ok(bytes)
     }
     pub(crate) fn context(&self) -> Result<Context> {

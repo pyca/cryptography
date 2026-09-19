@@ -471,3 +471,154 @@ fn validate_mtu(mtu: u32) -> Result<()> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn packet_queue_preserves_boundaries_backpressure_and_eof() {
+        let (native, queue) = bio(1200).unwrap();
+        assert_eq!(queue.feed(&[]).unwrap(), 0);
+        assert!(queue.feed(&vec![0; MAX_PACKET + 1]).is_err());
+        let packet = vec![0x5a; MAX_PACKET];
+        for _ in 0..MAX_BUFFER / MAX_PACKET {
+            queue.feed(&packet).unwrap();
+        }
+        assert!(matches!(queue.feed(&packet), Err(IoError::WantWrite)));
+        assert!(queue.drain(&mut [0xa5; 4]).is_err());
+        let mut output = vec![0; MAX_PACKET];
+        assert_eq!(queue.drain(&mut output).unwrap(), MAX_PACKET);
+        assert_eq!(output, packet);
+        queue.mtu(1400).unwrap();
+        queue.eof().unwrap();
+        assert!(queue.feed(b"after EOF").is_err());
+        // Pending packets remain readable after EOF and after the native owner
+        // is dropped; the queue holds an independent Arc reference.
+        drop(native);
+        assert_eq!(queue.drain(&mut output).unwrap(), MAX_PACKET);
+    }
+
+    #[test]
+    fn native_bio_callbacks_handle_empty_truncated_and_full_packets() {
+        let (native, queue) = bio(1200).unwrap();
+        let p = native.0.as_ptr();
+        let mut out = [0xa5; 16];
+        // SAFETY: The BIO and all non-null buffers are live and exclusive.
+        // Null/zero buffers exercise the callbacks' explicit no-access cases.
+        unsafe {
+            assert_eq!(destroy(std::ptr::null_mut()), 0);
+            assert_eq!(read(p, std::ptr::null_mut(), 0), 0);
+            assert_eq!(read(p, std::ptr::null_mut(), 1), 0);
+            assert_eq!(read(p, out.as_mut_ptr().cast(), 16), -1);
+            assert_eq!(write(p, std::ptr::null(), 0), 0);
+            assert_eq!(write(p, std::ptr::null(), 1), -1);
+            let oversized = vec![0; MAX_PACKET + 1];
+            assert_eq!(
+                write(p, oversized.as_ptr().cast(), oversized.len() as i32),
+                -1
+            );
+            assert_eq!(write(p, b"packet".as_ptr().cast(), 6), 6);
+            assert_eq!(read(p, out.as_mut_ptr().cast(), 3), 3);
+            assert_eq!(&out[..3], b"pac");
+            assert!(out[3..].iter().all(|b| *b == 0xa5));
+            assert_eq!(read(p, out.as_mut_ptr().cast(), 16), -1);
+            let packet = vec![0; MAX_PACKET];
+            for _ in 0..MAX_BUFFER / MAX_PACKET {
+                queue.feed(&packet).unwrap();
+            }
+            assert_eq!(write(p, packet.as_ptr().cast(), MAX_PACKET as i32), -1);
+            assert_eq!(
+                control(p, ffi::BIO_CTRL_RESET as i32, 0, std::ptr::null_mut()),
+                1
+            );
+            queue.eof().unwrap();
+            assert_eq!(read(p, out.as_mut_ptr().cast(), 16), 0);
+            assert_eq!(
+                control(p, ffi::BIO_CTRL_EOF as i32, 0, std::ptr::null_mut()),
+                1
+            );
+        }
+    }
+
+    #[test]
+    fn native_bio_controls_and_peek_do_not_lose_packets() {
+        let (native, queue) = bio(1200).unwrap();
+        let p = native.0.as_ptr();
+        let mut out = [0; 8];
+        queue.feed(b"packet").unwrap();
+        // SAFETY: All calls use the owned BIO and bounded initialized storage.
+        unsafe {
+            assert_eq!(
+                control(p, ffi::BIO_CTRL_PENDING as i32, 0, std::ptr::null_mut()),
+                6
+            );
+            assert_eq!(
+                control(p, ffi::BIO_CTRL_WPENDING as i32, 0, std::ptr::null_mut()),
+                0
+            );
+            assert_eq!(
+                control(p, ffi::BIO_CTRL_FLUSH as i32, 0, std::ptr::null_mut()),
+                1
+            );
+            assert_eq!(control(p, -1, 0, std::ptr::null_mut()), 0);
+            // These command numbers differ between backends. Exercise every
+            // control supported by the selected headers through their shim.
+            for command in 0..=200 {
+                match ffi::OB_dgram_control_kind(command) {
+                    1 => assert_eq!(
+                        control(p, command, 0, std::ptr::null_mut()),
+                        queue.0.lock().unwrap().mtu as c_long
+                    ),
+                    2 => {
+                        assert_eq!(control(p, command, 1400, std::ptr::null_mut()), 1400);
+                        assert_eq!(control(p, command, 0, std::ptr::null_mut()), 0);
+                    }
+                    3 => {
+                        assert_eq!(control(p, command, 1, std::ptr::null_mut()), 1);
+                        assert_eq!(read(p, out.as_mut_ptr().cast(), 8), 6);
+                        assert_eq!(read(p, out.as_mut_ptr().cast(), 8), 6);
+                        assert_eq!(control(p, command, 0, std::ptr::null_mut()), 1);
+                    }
+                    4 => assert_eq!(control(p, command, 0, std::ptr::null_mut()), 1),
+                    5 => assert_eq!(control(p, command, 0, std::ptr::null_mut()), 0),
+                    _ => {}
+                }
+            }
+        }
+        assert_eq!(queue.drain(&mut out).unwrap(), 6);
+        assert_eq!(&out[..6], b"packet");
+    }
+
+    #[test]
+    fn poisoned_queue_is_rejected_by_rust_and_native_entry_points() {
+        let (native, queue) = bio(1200).unwrap();
+        let poisoned = queue.clone();
+        assert!(std::thread::spawn(move || {
+            let _guard = poisoned.0.lock().unwrap();
+            panic!("simulate a failed transport operation");
+        })
+        .join()
+        .is_err());
+        assert!(queue.feed(b"packet").is_err());
+        assert!(queue.drain(&mut [0; 8]).is_err());
+        assert!(queue.eof().is_err());
+        assert!(queue.mtu(1400).is_err());
+        let mut out = [0; 8];
+        // SAFETY: A poisoned mutex is still a live allocation; callbacks must
+        // translate the failed lock without unwinding across the C ABI.
+        unsafe {
+            assert_eq!(read(native.0.as_ptr(), out.as_mut_ptr().cast(), 8), -1);
+            assert_eq!(write(native.0.as_ptr(), b"packet".as_ptr().cast(), 6), -1);
+            assert_eq!(
+                control(
+                    native.0.as_ptr(),
+                    ffi::BIO_CTRL_PENDING as i32,
+                    0,
+                    std::ptr::null_mut()
+                ),
+                0
+            );
+        }
+    }
+}

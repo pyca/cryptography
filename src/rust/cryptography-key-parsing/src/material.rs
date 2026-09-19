@@ -65,42 +65,6 @@ pub enum PrivateKeyRef<'a> {
     ))]
     MlKem(&'a bridge::mlkem::PrivateKey),
 }
-impl ParsedPrivateKey {
-    pub fn as_key_ref(&self) -> PrivateKeyRef<'_> {
-        match self {
-            Self::Rsa(key) => PrivateKeyRef::Rsa(key.components()),
-            Self::Ec(key) => PrivateKeyRef::Ec(key),
-            Self::Dsa(key) => PrivateKeyRef::Dsa(key),
-            Self::Dh(key) => PrivateKeyRef::Dh(key),
-            Self::Ed25519(key) => PrivateKeyRef::Ed25519(key),
-            Self::X25519(key) => PrivateKeyRef::X25519(key),
-            #[cfg(not(any(
-                CRYPTOGRAPHY_IS_LIBRESSL,
-                CRYPTOGRAPHY_IS_BORINGSSL,
-                CRYPTOGRAPHY_IS_AWSLC
-            )))]
-            Self::Ed448(key) => PrivateKeyRef::Ed448(key),
-            #[cfg(not(any(
-                CRYPTOGRAPHY_IS_LIBRESSL,
-                CRYPTOGRAPHY_IS_BORINGSSL,
-                CRYPTOGRAPHY_IS_AWSLC
-            )))]
-            Self::X448(key) => PrivateKeyRef::X448(key),
-            #[cfg(any(
-                CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
-                CRYPTOGRAPHY_IS_BORINGSSL,
-                CRYPTOGRAPHY_IS_AWSLC
-            ))]
-            Self::MlDsa(key) => PrivateKeyRef::MlDsa(key),
-            #[cfg(any(
-                CRYPTOGRAPHY_OPENSSL_350_OR_GREATER,
-                CRYPTOGRAPHY_IS_BORINGSSL,
-                CRYPTOGRAPHY_IS_AWSLC
-            ))]
-            Self::MlKem(key) => PrivateKeyRef::MlKem(key),
-        }
-    }
-}
 pub enum ParsedPublicKey {
     Rsa(bridge::rsa::PublicKey),
     Ec(bridge::ec::PublicKey),

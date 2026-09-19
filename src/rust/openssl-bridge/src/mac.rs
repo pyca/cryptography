@@ -86,11 +86,7 @@ impl Hmac {
         let mut written = 0;
         // SAFETY: The output fits the selected digest; this consumes the context.
         check(unsafe { ffi::HMAC_Final(self.ctx.as_ptr(), output.as_mut_ptr(), &mut written) })?;
-        if written as usize != output.len() {
-            return Err(Error::InvalidState(
-                "backend returned an unexpected MAC length",
-            ));
-        }
+        crate::error::check_len(written as usize, output.len())?;
         Ok(output)
     }
 }
@@ -264,9 +260,7 @@ impl Cmac {
         // SAFETY: The output fits the selected cipher's block size. Context is
         // initialized, has not been finalized, and is consumed by this method.
         check(unsafe { ffi::CMAC_Final(self.ctx.as_ptr(), output.as_mut_ptr(), &mut written) })?;
-        if written != output.len() {
-            return Err(Error::InvalidState("unexpected CMAC output length"));
-        }
+        crate::error::check_len(written, output.len())?;
         Ok(output)
     }
 }

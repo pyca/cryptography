@@ -96,9 +96,7 @@ impl Poly1305 {
                     output.len(),
                 )
             })?;
-            if written != output.len() {
-                return Err(Error::InvalidState("unexpected Poly1305 tag size"));
-            }
+            crate::error::check_len(written, output.len())?;
             self.poisoned = true;
         }
         #[cfg(not(backend = "openssl"))]

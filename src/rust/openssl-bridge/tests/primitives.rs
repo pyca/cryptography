@@ -1,5 +1,5 @@
 use openssl_bridge::{
-    cipher::{AesGcm, Cipher, Direction, Stream},
+    cipher::{Cipher, Direction, Stream},
     hash::{self, Algorithm, Hasher},
     mac::Hmac,
     Error,
@@ -112,34 +112,6 @@ fn cipher_bounds_checks_leave_canaries_untouched() {
         false
     )
     .is_err());
-}
-
-#[test]
-fn gcm_nist_vector_and_authentication_failure() {
-    let (ciphertext, tag) = AesGcm::seal(&[0; 16], &[0; 12], &[0; 16], &[]).unwrap();
-    assert_eq!(ciphertext, hex("0388dace60b6a392f328c2b971b2fe78"));
-    assert_eq!(tag.to_vec(), hex("ab6e47d42cec13bdf53a67b21257bddf"));
-    assert_eq!(
-        AesGcm::open(&[0; 16], &[0; 12], &ciphertext, &[], &tag).unwrap(),
-        [0; 16]
-    );
-    for index in 0..tag.len() {
-        let mut bad_tag = tag;
-        bad_tag[index] ^= 1;
-        assert!(AesGcm::open(&[0; 16], &[0; 12], &ciphertext, &[], &bad_tag).is_err());
-    }
-    assert!(AesGcm::open(&[0; 16], &[0; 12], &ciphertext, b"wrong aad", &tag).is_err());
-}
-
-#[test]
-fn gcm_empty_payload_and_aad() {
-    let (ciphertext, tag) = AesGcm::seal(&[0; 16], &[0; 12], &[], &[]).unwrap();
-    assert!(ciphertext.is_empty());
-    assert_eq!(tag.to_vec(), hex("58e2fccefa7e3061367f1d57a4e7455a"));
-    assert!(AesGcm::open(&[0; 16], &[0; 12], &ciphertext, &[], &tag)
-        .unwrap()
-        .is_empty());
-    assert!(AesGcm::seal(&[0; 16], &[], &[], &[]).is_err());
 }
 
 #[test]

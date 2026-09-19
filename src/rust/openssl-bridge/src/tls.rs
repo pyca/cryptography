@@ -61,6 +61,108 @@ pub fn default_verify_paths() -> (Vec<u8>, Vec<u8>) {
     }
 }
 
+#[cfg(test)]
+mod state_tests {
+    use super::*;
+
+    fn context(protocol: Protocol) -> Context {
+        ContextBuilder::new(protocol, PeerVerification::None)
+            .unwrap()
+            .finish()
+    }
+
+    #[test]
+    fn transports_and_pending_writes_restrict_operations() {
+        let dtls = context(Protocol::Dtls);
+        assert!(Connection::memory(dtls.clone(), Role::Client).is_err());
+        let tls = context(Protocol::Tls);
+        assert!(Connection::datagrams(tls.clone(), Role::Client, 1200).is_err());
+        let mut stream = Connection::memory(tls, Role::Client).unwrap();
+        assert_eq!(stream.context().protocol(), Protocol::Tls);
+        assert_eq!(stream.role(), Role::Client);
+        assert!(stream.set_sni(c"").is_err());
+        assert!(stream.set_reference_dns_name(c"").is_err());
+        assert!(stream.set_reference_dns_name(c"example.com").is_err());
+        assert!(stream.set_context(context(Protocol::Dtls)).is_err());
+        stream.set_context(context(Protocol::Tls)).unwrap();
+        let policy = PeerVerification::Chain {
+            require_certificate: false,
+            once: false,
+        };
+        stream.set_peer_verification(policy).unwrap();
+        assert_eq!(stream.verification(), policy);
+        stream.set_reference_dns_name(c"example.com").unwrap();
+        assert!(stream
+            .set_peer_verification(PeerVerification::None)
+            .is_err());
+        assert_eq!(stream.write(&[]).unwrap(), 0);
+        assert_eq!(stream.read(&mut [], false).unwrap(), 0);
+        assert_eq!(stream.feed_ciphertext(&[]).unwrap(), 0);
+        assert_eq!(stream.drain_ciphertext(&mut []).unwrap(), 0);
+        assert!(stream.dtls_timeout().is_err());
+        assert!(stream.dtls_handle_timeout().is_err());
+        assert!(stream.dtls_listen().is_err());
+        assert!(stream.dtls_data_mtu().is_err());
+        assert!(stream.set_ciphertext_mtu(1200).is_err());
+        // A pending native write owns its original bytes. These guards must
+        // prevent any operation which would invalidate that retry contract.
+        stream.pending_write = Some(b"pending".to_vec().into());
+        stream.write_wants_write = true;
+        assert!(stream.read(&mut [0; 1], false).is_err());
+        assert!(stream.set_ciphertext_mtu(1200).is_err());
+        assert!(stream.request_renegotiation().is_err());
+        assert!(stream.dtls_handle_timeout().is_err());
+
+        let mut packets = Connection::datagrams(dtls, Role::Client, 1200).unwrap();
+        assert!(packets.dtls_listen().is_err());
+        assert!(packets.dtls_data_mtu().is_err());
+        packets.set_ciphertext_mtu(1400).unwrap();
+        assert!(packets.dtls_timeout().unwrap().is_none());
+        assert!(!packets.dtls_handle_timeout().unwrap());
+        packets.input_eof().unwrap();
+        assert!(packets.feed_ciphertext(b"after EOF").is_err());
+    }
+
+    #[test]
+    fn context_configuration_checks_modes_and_owned_inputs() {
+        let mut builder = ContextBuilder::new(Protocol::Tls, PeerVerification::None).unwrap();
+        assert!(builder.set_modes(u64::MAX).is_err());
+        assert!(builder.clear_modes(u64::MAX).is_err());
+        assert!(builder.add_crl_der(b"invalid").is_err());
+        builder.set_verification_flags(0).unwrap();
+        builder.set_default_verify_paths().unwrap();
+        assert!(builder.set_srtp_profiles(c"not-a-profile").is_err());
+        assert!(builder.use_dh_parameters_pem(b"invalid").is_err());
+        builder.set_max_version(ffi::TLS1_2_VERSION as i32).unwrap();
+        builder.set_client_ca_names(&[]).unwrap();
+        assert!(builder.set_client_ca_names(&[b"invalid".to_vec()]).is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn socket_transport_rejects_memory_bio_operations_and_dtls() {
+        use std::os::fd::AsRawFd;
+        use std::os::unix::net::UnixStream;
+        let (socket, _peer) = UnixStream::pair().unwrap();
+        assert!(Connection::socket(
+            context(Protocol::Dtls),
+            Role::Client,
+            SocketTransport::duplicate(socket.as_raw_fd()).unwrap()
+        )
+        .is_err());
+        let (socket, _peer) = UnixStream::pair().unwrap();
+        let mut connection = Connection::socket(
+            context(Protocol::Tls),
+            Role::Client,
+            SocketTransport::duplicate(socket.as_raw_fd()).unwrap(),
+        )
+        .unwrap();
+        assert!(connection.feed_ciphertext(b"packet").is_err());
+        assert!(connection.drain_ciphertext(&mut [0; 32]).is_err());
+        assert!(connection.input_eof().is_err());
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Protocol {
     Tls,

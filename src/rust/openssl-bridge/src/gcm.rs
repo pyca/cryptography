@@ -2,183 +2,6 @@ use crate::cipher::{cleanse, Context, Direction};
 use crate::{error::check, ffi, Error, Result};
 use std::ptr;
 
-/// AES-GCM with a 128-bit authentication tag. `open` never returns unauthenticated
-/// plaintext, even if the native API writes it before detecting a bad tag.
-pub struct AesGcm;
-impl AesGcm {
-    fn context(key: &[u8], nonce: &[u8], direction: Direction) -> Result<Context> {
-        // SAFETY: These getters return process-lifetime immutable descriptors.
-        let descriptor = unsafe {
-            match key.len() {
-                16 => ffi::EVP_aes_128_gcm(),
-                24 => ffi::EVP_aes_192_gcm(),
-                32 => ffi::EVP_aes_256_gcm(),
-                _ => {
-                    return Err(Error::InvalidInput(
-                        "AES-GCM key must be 16, 24, or 32 bytes",
-                    ))
-                }
-            }
-        };
-        if descriptor.is_null() {
-            return Err(Error::Unsupported("AES-GCM unavailable"));
-        }
-        let nonce_len: i32 = nonce
-            .len()
-            .try_into()
-            .map_err(|_| Error::InvalidInput("nonce is too long"))?;
-        if nonce_len == 0 {
-            return Err(Error::InvalidInput("nonce cannot be empty"));
-        }
-        let mut ctx = Context::new()?;
-        let encrypt = matches!(direction, Direction::Encrypt) as i32;
-        // SAFETY: This owned context selects a cipher before setting its IV length.
-        check(unsafe {
-            ffi::EVP_CipherInit_ex(
-                ctx.ptr(),
-                descriptor,
-                ptr::null_mut(),
-                ptr::null(),
-                ptr::null(),
-                encrypt,
-            )
-        })?;
-        // SAFETY: This GCM control takes an integer length and no data pointer.
-        check(unsafe {
-            ffi::EVP_CIPHER_CTX_ctrl(
-                ctx.ptr(),
-                ffi::EVP_CTRL_GCM_SET_IVLEN as i32,
-                nonce_len,
-                ptr::null_mut(),
-            )
-        })?;
-        // SAFETY: key matches the selected cipher and nonce matches the configured
-        // IV length; both slices remain live for the duration of initialization.
-        check(unsafe {
-            ffi::EVP_CipherInit_ex(
-                ctx.ptr(),
-                ptr::null(),
-                ptr::null_mut(),
-                key.as_ptr(),
-                nonce.as_ptr(),
-                encrypt,
-            )
-        })?;
-        Ok(ctx)
-    }
-
-    fn update(ctx: &mut Context, input: &[u8], aad: &[u8]) -> Result<Vec<u8>> {
-        let input_len: i32 = input
-            .len()
-            .try_into()
-            .map_err(|_| Error::InvalidInput("input exceeds INT_MAX"))?;
-        let aad_len: i32 = aad
-            .len()
-            .try_into()
-            .map_err(|_| Error::InvalidInput("AAD exceeds INT_MAX"))?;
-        let mut written = 0;
-        // SAFETY: A null output means AAD for an initialized GCM context;
-        // aad is readable for aad_len. The context has not processed payload yet.
-        check(unsafe {
-            ffi::EVP_CipherUpdate(
-                ctx.ptr(),
-                ptr::null_mut(),
-                &mut written,
-                aad.as_ptr(),
-                aad_len,
-            )
-        })?;
-        let mut output = vec![0; input.len()];
-        // SAFETY: GCM writes exactly input_len bytes and has no block buffering.
-        let result = check(unsafe {
-            ffi::EVP_CipherUpdate(
-                ctx.ptr(),
-                output.as_mut_ptr(),
-                &mut written,
-                input.as_ptr(),
-                input_len,
-            )
-        });
-        if let Err(error) = result {
-            cleanse(&mut output);
-            return Err(error);
-        }
-        if written != input_len {
-            cleanse(&mut output);
-            return Err(Error::InvalidState("unexpected GCM output length"));
-        }
-        Ok(output)
-    }
-
-    pub fn seal(
-        key: &[u8],
-        nonce: &[u8],
-        plaintext: &[u8],
-        aad: &[u8],
-    ) -> Result<(Vec<u8>, [u8; 16])> {
-        let mut ctx = Self::context(key, nonce, Direction::Encrypt)?;
-        let output = Self::update(&mut ctx, plaintext, aad)?;
-        let mut final_buffer = [0; 16];
-        let mut written = 0;
-        // SAFETY: A full block is available for finalization, which writes zero
-        // bytes in GCM. The initialized context has not been finalized before.
-        check(unsafe {
-            ffi::EVP_CipherFinal_ex(ctx.ptr(), final_buffer.as_mut_ptr(), &mut written)
-        })?;
-        if written != 0 {
-            return Err(Error::InvalidState("unexpected GCM final output"));
-        }
-        let mut tag = [0; 16];
-        // SAFETY: GET_TAG runs after encryption finalization; tag fits 16 bytes.
-        check(unsafe {
-            ffi::EVP_CIPHER_CTX_ctrl(
-                ctx.ptr(),
-                ffi::EVP_CTRL_GCM_GET_TAG as i32,
-                16,
-                tag.as_mut_ptr().cast(),
-            )
-        })?;
-        Ok((output, tag))
-    }
-
-    pub fn open(
-        key: &[u8],
-        nonce: &[u8],
-        ciphertext: &[u8],
-        aad: &[u8],
-        tag: &[u8; 16],
-    ) -> Result<Vec<u8>> {
-        let mut ctx = Self::context(key, nonce, Direction::Decrypt)?;
-        let mut tag = *tag;
-        // SAFETY: SET_TAG copies exactly 16 bytes from a live, writable local copy.
-        check(unsafe {
-            ffi::EVP_CIPHER_CTX_ctrl(
-                ctx.ptr(),
-                ffi::EVP_CTRL_GCM_SET_TAG as i32,
-                16,
-                tag.as_mut_ptr().cast(),
-            )
-        })?;
-        let mut plaintext = Self::update(&mut ctx, ciphertext, aad)?;
-        let mut final_buffer = [0; 16];
-        let mut written = 0;
-        // SAFETY: Context has payload and expected tag; output fits one block.
-        let result = check(unsafe {
-            ffi::EVP_CipherFinal_ex(ctx.ptr(), final_buffer.as_mut_ptr(), &mut written)
-        });
-        cleanse(&mut final_buffer);
-        if let Err(error) = result {
-            cleanse(&mut plaintext);
-            return Err(error);
-        }
-        if written != 0 {
-            cleanse(&mut plaintext);
-            return Err(Error::InvalidState("unexpected GCM final output"));
-        }
-        Ok(plaintext)
-    }
-}
-
 /// Algorithms with the same GCM protocol. Other authenticated modes are not
 /// accepted here: their ordering rules and output bounds differ.
 #[derive(Clone, Copy, Debug)]
@@ -331,14 +154,11 @@ impl GcmState {
                 input.len() as i32,
             )
         });
-        if let Err(error) = result {
-            cleanse(&mut output[..input.len()]);
-            return Err(error);
-        }
-        if written != input.len() as i32 {
-            cleanse(&mut output[..input.len()]);
-            return Err(Error::InvalidState("unexpected GCM output length"));
-        }
+        crate::secret::clear_on_error(result, &mut output[..input.len()])?;
+        crate::secret::clear_on_error(
+            crate::error::check_len(written as usize, input.len()),
+            &mut output[..input.len()],
+        )?;
         self.data_remaining = remaining;
         self.payload_started = true;
         self.poisoned = false;
@@ -356,9 +176,7 @@ impl GcmState {
         });
         cleanse(&mut output);
         result?;
-        if written != 0 {
-            return Err(Error::InvalidState("unexpected GCM final output"));
-        }
+        crate::error::check_len(written as usize, 0)?;
         Ok(())
     }
 }
@@ -393,7 +211,7 @@ impl GcmEncrypt {
 
 /// An explicit compatibility interface for protocols that expose streamed GCM
 /// plaintext. **All output remains untrusted until `finish` succeeds.** Prefer
-/// `AesGcm::open`, which withholds plaintext until authentication succeeds.
+/// `crate::aead::Key::open_into`, which withholds plaintext until authentication succeeds.
 ///
 /// AAD cannot follow payload, and finalization always requires an expected tag.
 /// Failed authentication cannot erase plaintext already copied by the caller.

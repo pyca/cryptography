@@ -1,8 +1,8 @@
 use openssl_bridge::{
     aead,
-    cipher::{Cipher, Direction, Stream, XtsDataUnit},
+    cipher::{Cipher, CipherKey, Direction, Stream, XtsDataUnit},
     containers::Pkcs12Error,
-    gcm::{AesGcm, GcmCipher, GcmEncrypt},
+    gcm::{GcmCipher, GcmEncrypt},
     hash::{Algorithm, Hasher},
     kdf,
     mac::{Cmac, CmacCipher},
@@ -36,15 +36,6 @@ fn rejected_aead_inputs_leave_output_untouched() {
 
 #[test]
 fn gcm_key_sizes_and_invalid_initialization() {
-    for size in [16, 24, 32] {
-        let key = vec![0; size];
-        let (ciphertext, tag) = AesGcm::seal(&key, &[0; 12], b"payload", b"aad").unwrap();
-        assert_eq!(
-            AesGcm::open(&key, &[0; 12], &ciphertext, b"aad", &tag).unwrap(),
-            b"payload"
-        );
-    }
-    assert!(AesGcm::seal(&[0; 15], &[0; 12], &[], &[]).is_err());
     assert!(GcmCipher::from_name("AES-128-CBC").is_err());
     assert!(GcmEncrypt::new(GcmCipher::Aes128, &[0; 15], &[0; 12]).is_err());
     assert!(GcmEncrypt::new(GcmCipher::Aes128, &[0; 16], &[]).is_err());
@@ -64,6 +55,22 @@ fn streaming_cipher_metadata_and_xts_bounds() {
     assert_eq!(ctx.iv_size(), 16);
     assert!(ctx.update_capacity(usize::MAX).is_err());
     assert!(XtsDataUnit::new(Direction::Encrypt, &[0; 31], &[0; 16]).is_err());
+    let key = CipherKey::new(Cipher::Aes128Cbc, &[0; 16], false).unwrap();
+    assert!(key.start(Direction::Encrypt, &[0; 15]).is_err());
+    let key = CipherKey::new(Cipher::Aes128Ecb, &[0; 16], false).unwrap();
+    assert!(key
+        .start(Direction::Encrypt, &[])
+        .unwrap()
+        .finish()
+        .unwrap()
+        .is_empty());
+    if XtsDataUnit::is_available(32) {
+        let key: Vec<u8> = (0..32).collect();
+        let xts = XtsDataUnit::new(Direction::Encrypt, &key, &[0; 16]).unwrap();
+        let mut guarded = [0xa5; 15];
+        assert!(xts.crypt_into(&[0; 16], &mut guarded).is_err());
+        assert_eq!(guarded, [0xa5; 15]);
+    }
 }
 
 #[test]
