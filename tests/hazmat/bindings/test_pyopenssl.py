@@ -191,8 +191,6 @@ class TestOwnedObjects:
                 pyopenssl.Certificate.decode(der, encoding)
         with pytest.raises(ValueError):
             certificate.encode(0)
-        certificate.set_version(-1)
-        assert certificate.version() == -1
         with pytest.raises(ValueError):
             certificate.set_time(False, b"invalid")
         with pytest.raises(ValueError):

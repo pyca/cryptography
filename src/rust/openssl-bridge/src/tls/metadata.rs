@@ -390,7 +390,20 @@ impl Connection {
             ShutdownState::Received => ffi::SSL_RECEIVED_SHUTDOWN,
             ShutdownState::Both => ffi::SSL_SENT_SHUTDOWN | ffi::SSL_RECEIVED_SHUTDOWN,
         };
-        // SAFETY: Exclusive connection; only documented shutdown bits are set.
+        #[cfg(any(backend = "boringssl", backend = "awslc"))]
+        {
+            // These forks assert that shutdown is monotonic. Reject clearing
+            // flags before entering C, including in debug native builds.
+            // SAFETY: Read-only query of this exclusively borrowed connection.
+            let previous = unsafe { ffi::SSL_get_shutdown(self.native.0.as_ptr()) } as u32;
+            if previous & bits != previous {
+                return Err(Error::InvalidInput(
+                    "this backend cannot clear TLS shutdown flags",
+                ));
+            }
+        }
+        // SAFETY: Exclusive connection; documented bits and backend state rules
+        // are validated above.
         unsafe { ffi::SSL_set_shutdown(self.native.0.as_ptr(), bits as i32) };
         Ok(())
     }

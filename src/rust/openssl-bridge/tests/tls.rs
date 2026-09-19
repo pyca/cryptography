@@ -730,7 +730,7 @@ fn context_configuration_bounds_and_unconnected_metadata() {
         server().certificate_der().unwrap(),
         include_bytes!("vectors/tls-localhost.der")
     );
-    let mut connection = Connection::memory(context, Role::Client).unwrap();
+    let mut connection = Connection::memory(context.clone(), Role::Client).unwrap();
     assert_eq!(connection.pending(), 0);
     assert!(connection.peer_certificate_der().unwrap().is_none());
     assert!(connection.peer_chain_der().unwrap().is_none());
@@ -742,8 +742,20 @@ fn context_configuration_bounds_and_unconnected_metadata() {
         ShutdownState::Received,
         ShutdownState::Both,
     ] {
-        connection.set_shutdown_state(state).unwrap();
-        assert_eq!(connection.shutdown_state(), state);
+        let mut independent = Connection::memory(context.clone(), Role::Client).unwrap();
+        independent.set_shutdown_state(state).unwrap();
+        assert_eq!(independent.shutdown_state(), state);
+    }
+    connection.set_shutdown_state(ShutdownState::Both).unwrap();
+    if matches!(
+        openssl_bridge::BACKEND,
+        openssl_bridge::Backend::BoringSsl | openssl_bridge::Backend::AwsLc
+    ) {
+        assert!(connection.set_shutdown_state(ShutdownState::Open).is_err());
+        assert_eq!(connection.shutdown_state(), ShutdownState::Both);
+    } else {
+        connection.set_shutdown_state(ShutdownState::Open).unwrap();
+        assert_eq!(connection.shutdown_state(), ShutdownState::Open);
     }
     assert!(!connection.renegotiation_pending());
     assert_eq!(connection.total_renegotiations(), 0);

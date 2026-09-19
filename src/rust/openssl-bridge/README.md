@@ -33,3 +33,8 @@ has its own downstream CI job. The existing CFFI binding remains for released
 pyOpenSSL, Twisted, and mitmproxy consumers; it gets native build metadata and
 linkage from `openssl-bridge-sys`, not the original `openssl-sys` crate. New Rust
 cryptographic operations and the typed TLS adapter use the independent bridge.
+
+The typed TLS socket transport currently supports Unix descriptors. Other
+platforms use its memory BIO transport; existing CFFI consumers retain their
+platform socket support. BoringSSL and AWS-LC reject clearing TLS shutdown flags
+through the safe API, because their native API requires monotonic shutdown.
