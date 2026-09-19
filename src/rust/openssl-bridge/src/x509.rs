@@ -681,18 +681,12 @@ impl TrustStore {
         check(unsafe { ffi::X509_STORE_set_flags(self.0.as_ptr(), flags) })
     }
     pub fn set_time(&mut self, unix_seconds: i64) -> Result<()> {
-        #[allow(clippy::useless_conversion)]
-        let time = unix_seconds
-            .try_into()
-            .map_err(|_| Error::InvalidInput("verification time is out of range"))?;
-        // SAFETY: The independent parameters object is copied into the store
-        // and freed on all paths. Its time value has the checked native width.
-        unsafe {
-            let param = pointer(ffi::X509_VERIFY_PARAM_new())?;
-            ffi::X509_VERIFY_PARAM_set_time(param.as_ptr(), time);
-            let result = ffi::X509_STORE_set1_param(self.0.as_ptr(), param.as_ptr());
-            ffi::X509_VERIFY_PARAM_free(param.as_ptr());
-            check(result)
+        // SAFETY: Exclusive live store. The C shim checks the native time_t
+        // width using the target C compiler, copies the parameters into the
+        // store, and frees them. Only fixed-width integers cross the Rust ABI.
+        match unsafe { ffi::OB_store_set_time(self.0.as_ptr(), unix_seconds) } {
+            -1 => Err(Error::InvalidInput("verification time is out of range")),
+            result => check(result),
         }
     }
     pub fn load_locations(&mut self, file: Option<&CStr>, directory: Option<&CStr>) -> Result<()> {

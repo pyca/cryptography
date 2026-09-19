@@ -50,6 +50,7 @@ void OB_CBS_init(CBS *cbs, const unsigned char *data, size_t length);
 #endif
 
 int OB_md_size(const EVP_MD *md);
+int OB_store_set_time(X509_STORE *store, int64_t unix_seconds);
 int OB_md_block_size(const EVP_MD *md);
 int OB_md_is_xof(const EVP_MD *md);
 int OB_err_lib(unsigned long code);

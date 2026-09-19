@@ -175,6 +175,10 @@ class TestOwnedObjects:
         store.add_certificate_der(der)
         store.set_flags(0)
         assert store.verify(der, []) == [der]
+        store.set_time(1_600_000_000)
+        with pytest.raises(pyopenssl.VerificationError):
+            store.verify(der, [])
+        store.set_time(1_800_000_000)
         certificate.set_serial(b"\x02")
         assert store.verify(der, []) == [der]
         with pytest.raises((pyopenssl.NativeError, ValueError)):
