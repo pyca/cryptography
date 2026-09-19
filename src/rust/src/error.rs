@@ -250,9 +250,9 @@ impl From<CryptographyError> for pyo3::PyErr {
                     Ok(errors) => {
                         exceptions::InternalError::new_err((e.to_string(), errors.unbind()))
                     }
+                    // NO-COVERAGE-START
                     // Building the native error list can fail only while allocating
                     // Python-owned error records.
-                    // NO-COVERAGE-START
                     Err(error) => error,
                     // NO-COVERAGE-END
                 })

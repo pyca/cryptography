@@ -416,9 +416,9 @@ impl Stream {
                 },
                 encrypt,
             )
+            // NO-COVERAGE-START
             // The stored key and IV sizes are validated; this propagation edge needs native
             // initialization/allocation failure.
-            // NO-COVERAGE-START
         })?;
         // NO-COVERAGE-END
         // SAFETY: Padding is configured exactly once, before any payload.
@@ -671,9 +671,9 @@ impl CipherKey {
                 },
                 -1,
             )
+            // NO-COVERAGE-START
             // The stored key and IV sizes are validated; this propagation edge needs native
             // initialization/allocation failure.
-            // NO-COVERAGE-START
         })?;
         // NO-COVERAGE-END
         Ok(Stream {

@@ -124,9 +124,9 @@ impl Implementation {
         }
         let descriptor = Descriptor::lookup(algorithm.name())?;
         if descriptor.sizes()?.0 != algorithm.key_size() {
+            // NO-COVERAGE-START
             // The closed algorithm table fixes key sizes; this guards a broken native
             // descriptor contract.
-            // NO-COVERAGE-START
             return Err(Error::Unsupported("unexpected AEAD descriptor parameters"));
             // NO-COVERAGE-END
         }
@@ -328,9 +328,9 @@ impl Key {
                         ptr::null_mut()
                     },
                 )
+                // NO-COVERAGE-START
                 // Keys, tags and nonce lengths are validated before initialization; this
                 // native failure edge requires a provider or allocation failure.
-                // NO-COVERAGE-START
             })?;
             // NO-COVERAGE-END
         }
@@ -349,9 +349,9 @@ impl Key {
                 },
                 encrypt,
             )
+            // NO-COVERAGE-START
             // Keys, tags and nonce lengths are validated before initialization; this native
             // failure edge requires a provider or allocation failure.
-            // NO-COVERAGE-START
         })?;
         // NO-COVERAGE-END
         let mut written = 0;
@@ -449,17 +449,17 @@ impl Key {
                 Algorithm::ChaCha20Poly1305 => ffi::EVP_aead_chacha20_poly1305(),
                 Algorithm::Aes128GcmSiv => ffi::EVP_aead_aes_128_gcm_siv(),
                 Algorithm::Aes256GcmSiv => ffi::EVP_aead_aes_256_gcm_siv(),
+                // NO-COVERAGE-START
                 // Implementation::new selects the native AEAD path only for the three
                 // algorithms above.
-                // NO-COVERAGE-START
                 _ => return Err(Error::Unsupported("unsupported native AEAD")),
                 // NO-COVERAGE-END
             }
         };
         if descriptor.is_null() {
+            // NO-COVERAGE-START
             // These backend getters return static descriptors; NULL would violate their
             // native contract.
-            // NO-COVERAGE-START
             return Err(Error::Unsupported("native AEAD is unavailable"));
             // NO-COVERAGE-END
         }

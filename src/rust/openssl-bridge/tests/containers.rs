@@ -57,8 +57,8 @@ fn pkcs7_certificates_and_wrong_content() {
             assert_eq!(certs.len(), 2);
             assert!(certs.iter().all(|cert| cert.first() == Some(&0x30)));
         }
-        // A passing test cannot execute its failure diagnostic.
         // NO-COVERAGE-START
+        // A passing test cannot execute its failure diagnostic.
         _ => panic!("expected signed certificate collection"),
         // NO-COVERAGE-END
     }

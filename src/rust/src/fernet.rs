@@ -110,9 +110,9 @@ impl Fernet {
         let hmac = openssl_bridge::mac::Hmac::new(
             openssl_bridge::hash::Algorithm::from_name("sha256")?,
             signing_key,
+            // NO-COVERAGE-START
             // The fixed SHA-256 algorithm and key have been validated; this propagation
             // edge requires native initialization/allocation failure.
-            // NO-COVERAGE-START
         )?;
         // NO-COVERAGE-END
         let cipher = openssl_bridge::cipher::CipherKey::new(

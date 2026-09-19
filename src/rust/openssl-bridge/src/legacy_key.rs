@@ -59,9 +59,9 @@ pub fn dsa_private_key_der(bits: u32) -> Result<SecretBytes> {
     struct Dsa(*mut ffi::DSA);
     impl Drop for Dsa {
         fn drop(&mut self) {
+            // NO-COVERAGE-START
             // LLVM assigns an unexecuted unwind region to this destructor safety
             // comment; normal destruction is covered.
-            // NO-COVERAGE-START
             // SAFETY: Sole reference to a native DSA allocation.
             // NO-COVERAGE-END
             unsafe { ffi::DSA_free(self.0) };
@@ -77,17 +77,17 @@ pub fn dsa_private_key_der(bits: u32) -> Result<SecretBytes> {
             dsa.0,
             bits as _,
             ptr::null(),
+            // NO-COVERAGE-START
             // Sizes are validated before generation; LLVM assigns its native
             // RNG/allocation failure edge to these source positions.
-            // NO-COVERAGE-START
             0,
             // NO-COVERAGE-END
             ptr::null_mut(),
             ptr::null_mut(),
             ptr::null_mut(),
+            // NO-COVERAGE-START
             // Sizes are validated before generation; LLVM assigns its native RNG/allocation
             // failure edge to these source positions.
-            // NO-COVERAGE-START
         )
     })?;
     // NO-COVERAGE-END

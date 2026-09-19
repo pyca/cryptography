@@ -39,20 +39,43 @@ class RustCoverageFileReporter(coverage.FileReporter):
 
 def get_excluded_lines(filename: str) -> list[int]:
     """
-    Parse source file for NO-COVERAGE-START/END pairs and return excluded
-    lines.
+    Return complete exclusion ranges, including their marker comments.
+
+    LLVM can assign coverage to comments at Rust expression boundaries. Reject
+    malformed markers rather than silently excluding the rest of a source file.
     """
     excluded = []
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         in_excluded_block = False
         for line_num, line in enumerate(f, start=1):
             stripped = line.strip()
+            if (
+                "NO-COVERAGE-START" in stripped
+                or "NO-COVERAGE-END" in stripped
+            ) and stripped not in {
+                "// NO-COVERAGE-START",
+                "// NO-COVERAGE-END",
+            }:
+                raise ValueError(
+                    f"{filename}:{line_num}: coverage marker must stand alone"
+                )
             if stripped == "// NO-COVERAGE-START":
+                if in_excluded_block:
+                    raise ValueError(
+                        f"{filename}:{line_num}: nested coverage exclusion"
+                    )
                 in_excluded_block = True
             elif stripped == "// NO-COVERAGE-END":
-                in_excluded_block = False
-            elif in_excluded_block:
+                if not in_excluded_block:
+                    raise ValueError(
+                        f"{filename}:{line_num}: unmatched coverage end"
+                    )
                 excluded.append(line_num)
+                in_excluded_block = False
+            if in_excluded_block:
+                excluded.append(line_num)
+    if in_excluded_block:
+        raise ValueError(f"{filename}: unclosed coverage exclusion")
     return excluded
 
 

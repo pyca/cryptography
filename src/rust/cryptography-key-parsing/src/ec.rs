@@ -125,9 +125,9 @@ pub(crate) fn ec_params_to_group(
                 _ => return Err(KeyParsingError::ExplicitCurveUnsupported),
             };
             if !curve_nid.is_available() {
+                // NO-COVERAGE-START
                 // Supported backends all include these three NIST curves; this guard
                 // needs native initialization or allocation failure.
-                // NO-COVERAGE-START
                 return Err(KeyParsingError::UnsupportedEllipticCurve(oid));
                 // NO-COVERAGE-END
             }

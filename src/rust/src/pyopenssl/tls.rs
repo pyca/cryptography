@@ -196,8 +196,8 @@ struct Config {
     cache_mode: i64,
     timeout: i64,
 }
-// PyO3 generates fallible type-registration machinery for this declaration.
 // NO-COVERAGE-START
+// PyO3 generates fallible type-registration machinery for this declaration.
 #[pyclass(
     module = "cryptography.hazmat.bindings._rust.pyopenssl",
     name = "TLSContext"
@@ -622,8 +622,8 @@ impl tls::Callbacks for PythonCallbacks {
     }
 }
 
-// PyO3 generates fallible type-registration machinery for this declaration.
 // NO-COVERAGE-START
+// PyO3 generates fallible type-registration machinery for this declaration.
 #[pyclass(
     module = "cryptography.hazmat.bindings._rust.pyopenssl",
     name = "TLSSession"
@@ -632,8 +632,8 @@ impl tls::Callbacks for PythonCallbacks {
 struct PySession {
     inner: Mutex<tls::Session>,
 }
-// PyO3 generates fallible type-registration machinery for this declaration.
 // NO-COVERAGE-START
+// PyO3 generates fallible type-registration machinery for this declaration.
 #[pyclass(
     module = "cryptography.hazmat.bindings._rust.pyopenssl",
     name = "TLSConnection"

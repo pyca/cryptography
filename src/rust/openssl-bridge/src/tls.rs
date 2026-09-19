@@ -169,8 +169,8 @@ mod state_tests {
             Err(IoError::WantRead)
         ));
         let Transport::Memory { output, .. } = connection.transport else {
-            // Failure-only test diagnostic.
             // NO-COVERAGE-START
+            // Failure-only test diagnostic.
             unreachable!()
             // NO-COVERAGE-END
         };
@@ -413,9 +413,9 @@ impl ContextBuilder {
         // the local owner frees the certificate. No Rust pointer escapes.
         check(unsafe {
             ffi::OB_tls_context_add_chain_cert(self.native.0.as_ptr(), certificate.0.as_ptr())
+            // NO-COVERAGE-START
             // A valid owned certificate is transferred here; this edge requires native
             // reference/allocation failure.
-            // NO-COVERAGE-START
         })?;
         // NO-COVERAGE-END
         std::mem::forget(certificate);

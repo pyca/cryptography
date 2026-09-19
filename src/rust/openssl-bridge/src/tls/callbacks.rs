@@ -126,9 +126,9 @@ fn ex_index() -> Result<i32> {
         unsafe { ffi::OB_tls_ex_index() }
     });
     if index < 0 {
+        // NO-COVERAGE-START
         // Process-wide native ex-data index exhaustion/allocation failure cannot be
         // induced without disrupting other TLS users.
-        // NO-COVERAGE-START
         Err(Error::InvalidState(
             "could not allocate TLS callback storage index",
         ))

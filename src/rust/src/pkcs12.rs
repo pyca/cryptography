@@ -379,9 +379,9 @@ fn serialize_safebags<'p>(
         encryption_details.mac_kdf_iter,
         mac_algorithm_md.output_size()?,
         mac_algorithm_md,
+        // NO-COVERAGE-START
         // Algorithms and lengths are validated above. LLVM attributes the native KDF
         // allocation/provider failure edge to this delimiter.
-        // NO-COVERAGE-START
     )?;
     // NO-COVERAGE-END
     let mac_digest = {

@@ -379,9 +379,9 @@ impl Name {
             let mut out = ptr::null_mut();
             let len = ffi::ASN1_STRING_to_UTF8(&mut out, data);
             if len < 0 {
+                // NO-COVERAGE-START
                 // Decoded and added names have already passed native string validation;
                 // this conversion failure requires native allocation failure.
-                // NO-COVERAGE-START
                 ffi::OB_free(out.cast());
                 return Err(Error::capture());
                 // NO-COVERAGE-END
@@ -413,19 +413,19 @@ impl Name {
                 let name = if nid == 0 || short.is_null() {
                     let len = ffi::OBJ_obj2txt(ptr::null_mut(), 0, object, 1);
                     if len < 0 || len == i32::MAX {
+                        // NO-COVERAGE-START
                         // The immutable decoded OID has bounded, stable text length;
                         // these guards protect against a violated native encoder
                         // contract.
-                        // NO-COVERAGE-START
                         return Err(Error::capture());
                         // NO-COVERAGE-END
                     }
                     let mut buf = vec![0u8; len as usize + 1];
                     if ffi::OBJ_obj2txt(buf.as_mut_ptr().cast(), len + 1, object, 1) != len {
+                        // NO-COVERAGE-START
                         // The immutable decoded OID has bounded, stable text length;
                         // these guards protect against a violated native encoder
                         // contract.
-                        // NO-COVERAGE-START
                         return Err(Error::capture());
                         // NO-COVERAGE-END
                     }
@@ -521,7 +521,11 @@ impl Certificate {
                 Encoding::Pem => ffi::PEM_write_bio_X509(bio.0.as_ptr(), self.0.as_ptr()),
                 Encoding::Text => ffi::X509_print_ex(bio.0.as_ptr(), self.0.as_ptr(), 0, 0),
             }
+            // NO-COVERAGE-START
+            // Required fields were checked above; the owned memory BIO can fail
+            // here only in native encoding/allocation, not caller callbacks.
         })?;
+        // NO-COVERAGE-END
         bio.bytes()
     }
     pub fn try_clone(&mut self) -> Result<Self> {
@@ -589,18 +593,18 @@ impl Certificate {
         unsafe {
             let alg = ffi::X509_get0_tbs_sigalg(self.0.as_ptr());
             if alg.is_null() {
+                // NO-COVERAGE-START
                 // X509_new and successful decoders initialize these algorithm fields,
                 // even for an undefined OID; retain native NULL guards.
-                // NO-COVERAGE-START
                 return Err(Error::InvalidState("undefined signature algorithm"));
                 // NO-COVERAGE-END
             }
             let mut object = ptr::null();
             ffi::X509_ALGOR_get0(&mut object, ptr::null_mut(), ptr::null_mut(), alg);
             if object.is_null() {
+                // NO-COVERAGE-START
                 // X509_new and successful decoders initialize these algorithm fields,
                 // even for an undefined OID; retain native NULL guards.
-                // NO-COVERAGE-START
                 return Err(Error::InvalidState("undefined signature algorithm"));
                 // NO-COVERAGE-END
             }
@@ -793,9 +797,9 @@ impl TrustStore {
         // width using the target C compiler and updates the store's owned
         // parameters. Only fixed-width integers cross the Rust ABI.
         match unsafe { ffi::OB_store_set_time(self.0.as_ptr(), unix_seconds) } {
+            // NO-COVERAGE-START
             // All CI targets use 64-bit native time_t; the C shim also protects
             // platforms with narrower time_t.
-            // NO-COVERAGE-START
             -1 => Err(Error::InvalidInput("verification time is out of range")),
             // NO-COVERAGE-END
             result => check(result),
@@ -845,9 +849,9 @@ impl TrustStore {
                 let depth = ffi::X509_STORE_CTX_get_error_depth(ctx.0.as_ptr());
                 let message = ffi::X509_verify_cert_error_string(code.into());
                 let message = if message.is_null() {
+                    // NO-COVERAGE-START
                     // Supported backends return static text even for unknown
                     // verification codes; retain a NULL diagnostic fallback.
-                    // NO-COVERAGE-START
                     "unknown certificate verification failure".into()
                     // NO-COVERAGE-END
                 } else {
@@ -855,9 +859,9 @@ impl TrustStore {
                 };
                 let cert = ffi::X509_STORE_CTX_get_current_cert(ctx.0.as_ptr());
                 let certificate_der = if cert.is_null() {
+                    // NO-COVERAGE-START
                     // Normal verification failures identify the supplied leaf or an
                     // issuer; NULL is a native internal-failure diagnostic fallback.
-                    // NO-COVERAGE-START
                     None
                     // NO-COVERAGE-END
                 } else {

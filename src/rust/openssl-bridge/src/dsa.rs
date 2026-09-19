@@ -56,9 +56,9 @@ fn retain_validated_group(data: ParameterData) -> Parameters {
             cache.pop_front();
         }
         cache.push_back(data.clone());
+        // NO-COVERAGE-START
         // No application code runs under this cache lock. LLVM attributes the defensive
         // poisoned-lock bypass to this delimiter.
-        // NO-COVERAGE-START
     }
     // NO-COVERAGE-END
     Parameters(data)

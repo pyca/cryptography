@@ -92,9 +92,9 @@ impl EncryptionAlgorithm {
                     cipher_kdf_iter,
                     24,
                     openssl_bridge::hash::Algorithm::from_name("sha1")?,
+                    // NO-COVERAGE-START
                     // Algorithms and lengths are validated above. LLVM attributes the
                     // native KDF allocation/provider failure edge to this delimiter.
-                    // NO-COVERAGE-START
                 )?;
                 // NO-COVERAGE-END
                 let iv = cryptography_crypto::pkcs12::kdf(
@@ -104,9 +104,9 @@ impl EncryptionAlgorithm {
                     cipher_kdf_iter,
                     8,
                     openssl_bridge::hash::Algorithm::from_name("sha1")?,
+                    // NO-COVERAGE-START
                     // Algorithms and lengths are validated above. LLVM attributes the
                     // native KDF allocation/provider failure edge to this delimiter.
-                    // NO-COVERAGE-START
                 )?;
                 // NO-COVERAGE-END
 
@@ -132,9 +132,9 @@ impl EncryptionAlgorithm {
                             "invalid PBKDF2 iteration count",
                         ))?,
                     &mut key,
+                    // NO-COVERAGE-START
                     // Algorithms and lengths are validated above. LLVM attributes the
                     // native KDF allocation/provider failure edge to this delimiter.
-                    // NO-COVERAGE-START
                 )?;
                 // NO-COVERAGE-END
 

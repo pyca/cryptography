@@ -311,9 +311,9 @@ fn pkcs12_pbe_decrypt(
         params.iterations,
         cipher.default_key_size()?,
         hash,
+        // NO-COVERAGE-START
         // Algorithms and lengths are validated above. LLVM attributes the native KDF
         // allocation/provider failure edge to this delimiter.
-        // NO-COVERAGE-START
     )?;
     // NO-COVERAGE-END
     let iv = cryptography_crypto::pkcs12::kdf(
@@ -323,9 +323,9 @@ fn pkcs12_pbe_decrypt(
         params.iterations,
         cipher.iv_size()?,
         hash,
+        // NO-COVERAGE-START
         // Algorithms and lengths are validated above. LLVM attributes the native KDF
         // allocation/provider failure edge to this delimiter.
-        // NO-COVERAGE-START
     )?;
     // NO-COVERAGE-END
 

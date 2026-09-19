@@ -105,9 +105,9 @@ fn method() -> Result<&'static Method> {
             unsafe {
                 let index = ffi::BIO_get_new_index();
                 if index < 0 {
+                    // NO-COVERAGE-START
                     // This requires exhausting the process-wide native BIO method index
                     // space.
-                    // NO-COVERAGE-START
                     return Err(Error::capture());
                     // NO-COVERAGE-END
                 }
@@ -123,9 +123,9 @@ fn method() -> Result<&'static Method> {
                     check(ffi::BIO_meth_set_ctrl(method.as_ptr(), Some(control)))
                 })();
                 if let Err(error) = result {
+                    // NO-COVERAGE-START
                     // Supported backends return success when installing these static
                     // callbacks on a valid method; retain defensive cleanup.
-                    // NO-COVERAGE-START
                     ffi::BIO_meth_free(method.as_ptr());
                     return Err(error);
                     // NO-COVERAGE-END
@@ -365,9 +365,9 @@ impl Connection {
         match unsafe { ffi::OB_dtls_timeout(self.native.0.as_ptr(), &mut micros) } {
             0 => Ok(None),
             1 => Ok(Some(Duration::from_micros(micros))),
+            // NO-COVERAGE-START
             // The shim rejects malformed native timeval fields; supported backends
             // return normalized nonnegative timers.
-            // NO-COVERAGE-START
             _ => Err(Error::InvalidState("native DTLS timer is invalid")),
             // NO-COVERAGE-END
         }
@@ -468,9 +468,9 @@ impl Connection {
             info.version,
             info.cipher.as_ref().map(|c| c.name.as_str()),
             mtu,
+            // NO-COVERAGE-START
             // LLVM attributes an inlined fallback return here; fallback protocol/cipher
             // boundaries are exercised directly below.
-            // NO-COVERAGE-START
         )
         // NO-COVERAGE-END
     }

@@ -188,9 +188,9 @@ impl CipherContext {
                 format!("Nonce must be {} bytes long", self.iv_size),
             )
             .into(),
+            // NO-COVERAGE-START
             // The remaining bridge errors require native failure after validated nonce
             // input; preserve backend diagnostics.
-            // NO-COVERAGE-START
             error => error.into(),
             // NO-COVERAGE-END
         })
@@ -250,8 +250,8 @@ impl CipherContext {
                 Operation::GcmDecrypt(ctx) => {
                     ctx.update_unverified_into(chunk, &mut buf[written..])?
                 }
-                // XTS returns before entering this loop.
                 // NO-COVERAGE-START
+                // XTS returns before entering this loop.
                 Operation::Xts(_) => unreachable!(),
                 // NO-COVERAGE-END
             };
