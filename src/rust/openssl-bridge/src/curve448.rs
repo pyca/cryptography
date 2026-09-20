@@ -7,7 +7,7 @@ use crate::{
 };
 use std::ptr::{self, NonNull};
 
-use crate::curve25519::Secret;
+use crate::secret::Secret;
 
 struct Key(NonNull<ffi::EVP_PKEY>);
 // SAFETY: Keys are immutable after construction; operations use separate contexts.

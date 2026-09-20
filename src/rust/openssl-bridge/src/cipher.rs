@@ -545,7 +545,7 @@ impl Stream {
             crate::error::check_len_at_most(written, output.len()),
             &mut output,
         )?;
-        cleanse(&mut output[written..]);
+        crate::secret::erase(&mut output[written..]);
         output.truncate(written);
         Ok(output)
     }
@@ -618,15 +618,10 @@ impl XtsDataUnit {
         check(unsafe {
             ffi::EVP_CipherFinal_ex(self.ctx.ptr(), final_block.as_mut_ptr(), &mut final_written)
         })?;
-        cleanse(&mut final_block);
+        crate::secret::erase(&mut final_block);
         crate::error::check_len(final_written as usize, 0)?;
         Ok(written as usize)
     }
-}
-
-pub(crate) fn cleanse(bytes: &mut [u8]) {
-    // SAFETY: bytes is exclusively writable for the declared length.
-    unsafe { ffi::OPENSSL_cleanse(bytes.as_mut_ptr().cast(), bytes.len()) };
 }
 
 /// An immutable key schedule for repeated conventional-cipher operations. Each

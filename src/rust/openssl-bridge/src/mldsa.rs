@@ -1,9 +1,9 @@
 //! ML-DSA signatures with distinct roles and bounded context strings.
 use crate::{
-    curve25519::Secret,
     error::{check, pointer},
     ffi,
     pq::{self, Key},
+    secret::Secret,
     Error, Result,
 };
 use std::ptr;

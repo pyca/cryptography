@@ -1,4 +1,4 @@
-use crate::cipher::{cleanse, Context, Direction};
+use crate::cipher::{Context, Direction};
 use crate::{error::check, ffi, Error, Result};
 use std::ptr;
 
@@ -170,7 +170,7 @@ impl GcmState {
         let result = check(unsafe {
             ffi::EVP_CipherFinal_ex(self.ctx.ptr(), output.as_mut_ptr(), &mut written)
         });
-        cleanse(&mut output);
+        crate::secret::erase(&mut output);
         result?;
         crate::error::check_len(written as usize, 0)?;
         Ok(())

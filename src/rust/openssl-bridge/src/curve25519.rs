@@ -2,23 +2,11 @@
 //! agreement keys cannot sign. Foreign contexts never cross the public API.
 use crate::{
     error::{check, pointer},
-    ffi, Result,
+    ffi,
+    secret::Secret,
+    Result,
 };
 use std::ptr::{self, NonNull};
-
-/// Secret material is erased when dropped and has no Debug or Clone implementation.
-pub struct Secret<const N: usize>(pub(crate) [u8; N]);
-impl<const N: usize> AsRef<[u8]> for Secret<N> {
-    fn as_ref(&self) -> &[u8] {
-        &self.0
-    }
-}
-impl<const N: usize> Drop for Secret<N> {
-    fn drop(&mut self) {
-        // SAFETY: The inline array is writable for its exact size.
-        unsafe { ffi::OPENSSL_cleanse(self.0.as_mut_ptr().cast(), N) };
-    }
-}
 
 struct Key(NonNull<ffi::EVP_PKEY>);
 // SAFETY: Keys are immutable after construction; operations use separate contexts.

@@ -274,7 +274,7 @@ impl PrivateExport {
 impl Drop for PrivateExport {
     fn drop(&mut self) {
         for part in &mut self.parts {
-            cleanse(part);
+            crate::secret::erase(part);
         }
     }
 }
@@ -288,12 +288,8 @@ impl AsRef<[u8]> for Plaintext {
 }
 impl Drop for Plaintext {
     fn drop(&mut self) {
-        cleanse(&mut self.0);
+        crate::secret::erase(&mut self.0);
     }
-}
-fn cleanse(bytes: &mut [u8]) {
-    // SAFETY: Exclusive slice covers exactly the memory to erase.
-    unsafe { ffi::OPENSSL_cleanse(bytes.as_mut_ptr().cast(), bytes.len()) };
 }
 
 #[derive(Clone, Copy)]
@@ -508,7 +504,7 @@ impl PrivateKey {
             crate::error::check_len_at_most(written, output.len()),
             output,
         )?;
-        cleanse(&mut output[written..]);
+        crate::secret::erase(&mut output[written..]);
         Ok(written)
     }
 }

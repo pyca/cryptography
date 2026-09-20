@@ -1,10 +1,10 @@
 //! ML-KEM key encapsulation. Decapsulation uses implicit rejection: a correctly
 //! sized invalid ciphertext yields a different secret, not an authentication error.
 use crate::{
-    curve25519::Secret,
     error::check,
     ffi,
     pq::{self, Key},
+    secret::Secret,
     Error, Result,
 };
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

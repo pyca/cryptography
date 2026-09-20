@@ -1,6 +1,19 @@
 //! Owned secret buffers without implicit copying or diagnostic formatting.
 use crate::ffi;
 
+/// Secret material is erased when dropped and has no Debug or Clone implementation.
+pub struct Secret<const N: usize>(pub(crate) [u8; N]);
+impl<const N: usize> AsRef<[u8]> for Secret<N> {
+    fn as_ref(&self) -> &[u8] {
+        &self.0
+    }
+}
+impl<const N: usize> Drop for Secret<N> {
+    fn drop(&mut self) {
+        erase(&mut self.0);
+    }
+}
+
 pub struct SecretBytes(Vec<u8>);
 impl From<Vec<u8>> for SecretBytes {
     fn from(bytes: Vec<u8>) -> Self {
@@ -19,8 +32,7 @@ impl AsMut<[u8]> for SecretBytes {
 }
 impl Drop for SecretBytes {
     fn drop(&mut self) {
-        // SAFETY: This uniquely owns the initialized bytes of the allocation.
-        unsafe { ffi::OPENSSL_cleanse(self.0.as_mut_ptr().cast(), self.0.len()) };
+        erase(&mut self.0);
     }
 }
 
