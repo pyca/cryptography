@@ -3,8 +3,11 @@
 //! Native objects never escape a call. Results own their DER bytes, and private
 //! key bytes are erased on drop. Decoding a certificate does not verify trust;
 //! decoding a private key does not grant permission to use it without validation.
-use crate::{error::pointer, ffi, secret::SecretBytes, Error, Result};
+use crate::{encoding::encode, error::pointer, ffi, secret::SecretBytes, Error, Result};
 use std::{ffi::CStr, ptr};
+
+#[cfg(any(backend = "openssl", backend = "libressl"))]
+use crate::encoding::encode_secret;
 
 pub struct Certificate {
     pub der: Vec<u8>,
@@ -205,16 +208,10 @@ mod export_tests {
     }
 }
 
-// SAFETY: The encoder satisfies x509::encode_with's bounded i2d contract.
-unsafe fn encode_secret(encoder: impl FnMut(*mut *mut u8) -> i32) -> Result<SecretBytes> {
-    // SAFETY: Exactly sized secret storage is erased on every failure path.
-    unsafe { crate::x509::encode_with(encoder, |len| SecretBytes::from(vec![0; len])) }
-}
-
 // SAFETY: cert is a live, non-null X509 with no concurrent accesses.
 unsafe fn export_certificate(cert: *mut ffi::X509) -> Result<Certificate> {
     // SAFETY: The caller keeps cert live and unchanged for both encoding calls.
-    let encoded = unsafe { encode_secret(|out| ffi::i2d_X509(cert, out)) }?;
+    let encoded = unsafe { encode(|out| ffi::i2d_X509(cert, out)) }?;
     let mut alias_length = 0;
     // SAFETY: cert is live; alias_length is a writable output slot.
     let alias = unsafe { ffi::X509_alias_get0(cert, &mut alias_length) };
@@ -228,7 +225,7 @@ unsafe fn export_certificate(cert: *mut ffi::X509) -> Result<Certificate> {
         Some(unsafe { std::slice::from_raw_parts(alias, length) }.to_vec())
     };
     Ok(Certificate {
-        der: encoded.as_ref().to_vec(),
+        der: encoded,
         alias,
     })
 }

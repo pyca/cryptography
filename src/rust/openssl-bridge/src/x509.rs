@@ -5,6 +5,7 @@
 //! exclusive access when native implementations can populate cached encodings.
 //! These objects are movable between threads, but are deliberately not Sync.
 use crate::{
+    encoding::encode,
     error::{check, pointer},
     ffi,
     hash::Algorithm,
@@ -129,32 +130,6 @@ mod tests {
     }
 
     #[test]
-    fn encoders_check_query_write_length_and_cursor() {
-        // These encoders never exceed the queried capacity, including on error.
-        for failure in [-1, 0] {
-            assert!(unsafe { encode(|_| failure) }.is_err());
-        }
-        for (written, advance) in [(-1, 0), (1, 1), (2, 1), (2, 2)] {
-            let result = unsafe {
-                encode(|out| {
-                    if out.is_null() {
-                        return 2;
-                    }
-                    // The queried allocation is two bytes and remains live.
-                    (*out).write_bytes(0x42, 2);
-                    *out = (*out).add(advance);
-                    written
-                })
-            };
-            if written == 2 && advance == 2 {
-                assert_eq!(result.unwrap(), [0x42; 2]);
-            } else {
-                assert!(result.is_err());
-            }
-        }
-    }
-
-    #[test]
     fn rejecting_password_callback_never_writes_output() {
         let mut out = [0x42u8; 16];
         for writing in [0, 1] {
@@ -253,32 +228,6 @@ pub(crate) extern "C" fn no_password(
     _: *mut std::ffi::c_void,
 ) -> i32 {
     0
-}
-
-// SAFETY contract: encoder is an i2d-style function on an exclusively held,
-// initialized native object. It may fail, but must never write beyond the queried
-// capacity. On success it advances the cursor by exactly the returned length.
-pub(crate) unsafe fn encode(encoder: impl FnMut(*mut *mut u8) -> i32) -> Result<Vec<u8>> {
-    // SAFETY: The caller supplies the encoder contract; the allocation is exact.
-    unsafe { encode_with(encoder, |len| vec![0; len]) }
-}
-
-// SAFETY: Same encoder contract as encode. allocate must return exactly len bytes.
-pub(crate) unsafe fn encode_with<T: AsMut<[u8]>>(
-    mut encoder: impl FnMut(*mut *mut u8) -> i32,
-    allocate: impl FnOnce(usize) -> T,
-) -> Result<T> {
-    let len = encoder(ptr::null_mut());
-    if len <= 0 {
-        return Err(Error::capture());
-    }
-    let mut out = allocate(len as usize);
-    let bytes = out.as_mut();
-    let mut cursor = bytes.as_mut_ptr();
-    if encoder(&mut cursor) != len || cursor != bytes.as_mut_ptr().wrapping_add(bytes.len()) {
-        return Err(Error::InvalidState("inconsistent native encoding length"));
-    }
-    Ok(out)
 }
 
 // SAFETY: value is NULL or a live native ASN1_STRING for this call, with no mutation.

@@ -13,6 +13,7 @@ pub mod curve448;
 pub mod dh;
 pub mod dsa;
 pub mod ec;
+mod encoding;
 pub mod error;
 pub mod gcm;
 pub mod hash;
