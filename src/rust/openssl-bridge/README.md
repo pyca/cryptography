@@ -19,6 +19,9 @@ the Python suite, and all workspace Rust tests. The `rust` CI session also runs
 this crate's integration and documentation tests. Pushes to `openssl-bridge`
 run the repository's CI workflow.
 
+[REVIEW.md](REVIEW.md) maps the integration into review units and explains which
+API distinctions and validation gates must stay together.
+
 [SAFETY.md](SAFETY.md) describes ownership, state, bounds, secret storage,
 concurrency, and native-library assumptions. APIs expose owned values and
 borrowed slices rather than raw native objects; context copies are fallible,
