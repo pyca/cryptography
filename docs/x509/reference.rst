@@ -1539,6 +1539,19 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
+    .. method:: public_key(public_key)
+
+        .. versionadded:: 51.0
+
+        Sets the public key to be included in the Certificate Signing Request.
+        This method may be used to include a public key generated with a
+        non-signature algorithm.
+
+        :param public_key: The public key to be included. One of
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.PublicKeyTypes`.
+        :returns: A new
+            :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
+
     .. method:: add_extension(extension, critical)
 
         :param extension: An extension conforming to the
@@ -1560,10 +1573,12 @@ X.509 CSR (Certificate Signing Request) Builder Object
 
     .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic=None)
 
-        :param private_key: The private key
-            that will be used to sign the request.  When the request is
-            signed by a certificate authority, the private key's associated
-            public key will be stored in the resulting certificate. One of
+        :param private_key: The private key that will be used to sign the
+            request. If no public key was previously explictly set using
+            :meth:`public_key`, the public key associated with specified
+            private key will be included. When the request is signed by
+            a certificate authority, the private key's associated public key
+            will be stored in the resulting certificate. One of
             :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificateIssuerPrivateKeyTypes`.
 
         :param algorithm: The
