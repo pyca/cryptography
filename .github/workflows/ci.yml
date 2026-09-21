@@ -52,8 +52,8 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "b75f405cde1cc3c9fb811be155eecabe38f379bb"}}
           # Latest tag of AWS-LC main branch, as of Sep 16, 2026.
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.9.0"}}
-          # Latest commit on the OpenSSL master branch, as of Sep 19, 2026.
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "859aea422b5be17ee9fc0f7678e9de302eb67b72"}}
+          # Latest commit on the OpenSSL master branch, as of Sep 21, 2026.
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "63c7eba73dd20e77507472285a8ea2ec582110da"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # - 1.85: 2024 edition
