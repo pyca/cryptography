@@ -1574,7 +1574,7 @@ X.509 CSR (Certificate Signing Request) Builder Object
     .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic=None)
 
         :param private_key: The private key that will be used to sign the
-            request. If no public key was previously explictly set using
+            request. If no public key was previously explicitly set using
             :meth:`public_key`, the public key associated with specified
             private key will be included. When the request is signed by
             a certificate authority, the private key's associated public key
