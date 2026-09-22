@@ -5,6 +5,7 @@
 use std::sync::OnceLock;
 
 use cryptography_x509::certificate::Certificate;
+use cryptography_x509::crl::CertificateRevocationList;
 
 pub struct VerificationCertificate<'a, B: CryptoOps> {
     cert: &'a Certificate<'a>,
@@ -86,6 +87,14 @@ pub trait CryptoOps {
     /// if the key is malformed.
     fn public_key(&self, cert: &Certificate<'_>) -> Result<Self::Key, Self::Err>;
 
+    /// Verifies the signature on `CertificateRevocationList` using
+    /// the given `Key`.
+    fn verify_crl_signed_by(
+        &self,
+        crl: &CertificateRevocationList<'_>,
+        key: &Self::Key,
+    ) -> Result<(), Self::Err>;
+
     /// Verifies the signature on `Certificate` using the given
     /// `Key`.
     fn verify_signed_by(&self, cert: &Certificate<'_>, key: &Self::Key) -> Result<(), Self::Err>;
@@ -100,9 +109,46 @@ pub trait CryptoOps {
 #[cfg(test)]
 pub(crate) mod tests {
     use cryptography_x509::certificate::Certificate;
+    use cryptography_x509::crl::CertificateRevocationList;
 
-    use super::VerificationCertificate;
+    use super::{CryptoOps, VerificationCertificate};
     use crate::certificate::tests::PublicKeyErrorOps;
+
+    /// A `CryptoOps` whose public key extraction and signature verification
+    /// always succeed, so that `valid_issuer` can be driven to completion
+    /// without real cryptographic material.
+    pub(crate) struct NullOps;
+
+    impl CryptoOps for NullOps {
+        type Key = ();
+        type Err = ();
+        type CertificateExtra = ();
+        type PolicyExtra = ();
+
+        fn public_key(&self, _cert: &Certificate<'_>) -> Result<Self::Key, Self::Err> {
+            Ok(())
+        }
+
+        fn verify_crl_signed_by(
+            &self,
+            _crl: &CertificateRevocationList<'_>,
+            _key: &Self::Key,
+        ) -> Result<(), Self::Err> {
+            Ok(())
+        }
+
+        fn verify_signed_by(
+            &self,
+            _cert: &Certificate<'_>,
+            _key: &Self::Key,
+        ) -> Result<(), Self::Err> {
+            Ok(())
+        }
+
+        fn clone_public_key(_key: &Self::Key) -> Self::Key {}
+
+        fn clone_extra(_extra: &Self::CertificateExtra) -> Self::CertificateExtra {}
+    }
 
     pub(crate) fn v1_cert_pem() -> pem::Pem {
         pem::parse(
@@ -127,6 +173,10 @@ zl9HYIMxATFyqSiD9jsx
 
     pub(crate) fn cert(cert_pem: &pem::Pem) -> Certificate<'_> {
         asn1::parse_single(cert_pem.contents()).unwrap()
+    }
+
+    pub(crate) fn crl(crl_pem: &pem::Pem) -> CertificateRevocationList<'_> {
+        asn1::parse_single(crl_pem.contents()).unwrap()
     }
 
     #[test]
