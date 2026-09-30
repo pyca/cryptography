@@ -35,6 +35,7 @@ criticalities
 crypto
 cryptographic
 cryptographically
+Cygwin
 de
 Debian
 deallocated
