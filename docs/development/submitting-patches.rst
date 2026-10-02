@@ -24,6 +24,22 @@ running ``ruff`` against it. If you've installed the development requirements
 this will automatically use our configuration. You can also run the ``nox``
 job with ``nox -e flake``.
 
+We type check with both ``mypy`` and ``ty``. The two use different suppression
+comments, so a line that needs suppressing in both must carry both, with the
+``mypy`` one first (``mypy`` only recognizes ``# type: ignore`` when it is the
+first comment on the line):
+
+.. code-block:: python
+
+    key1 < key2  # type: ignore[operator]  # ty: ignore[unsupported-operator]
+
+``ty`` does not understand ``mypy``'s error codes (see `ty#3127`_) and ignores
+a ``# type: ignore[...]`` comment that has any codes in brackets, so a
+``mypy``-only suppression needs nothing extra. A bare ``# type: ignore``, on
+the other hand, is honored by both, and needs no ``ty`` comment.
+
+Don't add a ``# ty: ignore`` that isn't needed: ``ty`` reports unused ones.
+
 `Write comments as complete sentences.`_
 
 Class names which contains acronyms or initialisms should always be
@@ -148,3 +164,4 @@ So, specifically:
 .. _`syntax`: https://www.sphinx-doc.org/en/master/usage/restructuredtext/domains.html#info-field-lists
 .. _`Studies have shown`: https://smartbear.com/learn/code-review/best-practices-for-peer-code-review/
 .. _`our mailing list`: https://mail.python.org/mailman/listinfo/cryptography-dev
+.. _`ty#3127`: https://github.com/astral-sh/ty/issues/3127
