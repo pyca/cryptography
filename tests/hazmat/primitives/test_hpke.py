@@ -400,9 +400,7 @@ class TestHPKE:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        ciphertext = suite.encrypt(
-            b"Secret message", pk_r, aad=b"correct aad"
-        )
+        ciphertext = suite.encrypt(b"Secret message", pk_r, aad=b"correct aad")
         assert (
             suite.decrypt(ciphertext, sk_r, aad=b"correct aad")
             == b"Secret message"
