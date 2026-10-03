@@ -70,6 +70,7 @@ class Suite:
         | MLKEM768X25519PublicKey
         | MLKEM1024P384PublicKey,
         info: Buffer | None = None,
+        aad: Buffer | None = None,
     ) -> bytes: ...
     def decrypt(
         self,
@@ -81,6 +82,7 @@ class Suite:
         | MLKEM768X25519PrivateKey
         | MLKEM1024P384PrivateKey,
         info: Buffer | None = None,
+        aad: Buffer | None = None,
     ) -> bytes: ...
 
 def _encrypt_with_aad(

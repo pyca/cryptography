@@ -1031,26 +1031,28 @@ impl Suite {
         })
     }
 
-    #[pyo3(signature = (plaintext, public_key, info=None))]
+    #[pyo3(signature = (plaintext, public_key, info=None, aad=None))]
     fn encrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         plaintext: CffiBuf<'_>,
         public_key: &pyo3::Bound<'p, pyo3::PyAny>,
         info: Option<CffiBuf<'_>>,
+        aad: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        self.encrypt_inner(py, plaintext, public_key, info, None)
+        self.encrypt_inner(py, plaintext, public_key, info, aad)
     }
 
-    #[pyo3(signature = (ciphertext, private_key, info=None))]
+    #[pyo3(signature = (ciphertext, private_key, info=None, aad=None))]
     fn decrypt<'p>(
         &self,
         py: pyo3::Python<'p>,
         ciphertext: CffiBuf<'_>,
         private_key: &pyo3::Bound<'p, pyo3::PyAny>,
         info: Option<CffiBuf<'_>>,
+        aad: Option<CffiBuf<'_>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
-        self.decrypt_inner(py, ciphertext, private_key, info, None)
+        self.decrypt_inner(py, ciphertext, private_key, info, aad)
     }
 }
 
