@@ -187,14 +187,21 @@ impl CertificateSigningRequest {
     #[getter]
     fn is_signature_valid(&self, py: pyo3::Python<'_>) -> CryptographyResult<bool> {
         let public_key = self.public_key(py)?;
-        Ok(sign::verify_signature_with_signature_algorithm(
+        Ok(self.verify_directly_signed_by(py, public_key).is_ok())
+    }
+
+    fn verify_directly_signed_by<'p>(
+        &self,
+        py: pyo3::Python<'p>,
+        public_key: pyo3::Bound<'p, pyo3::PyAny>,
+    ) -> CryptographyResult<()> {
+        sign::verify_signature_with_signature_algorithm(
             py,
             public_key,
             &self.raw.borrow_dependent().signature_alg,
             self.raw.borrow_dependent().signature.as_bytes(),
             &asn1::write_single(&self.raw.borrow_dependent().csr_info)?,
         )
-        .is_ok())
     }
 }
 
@@ -265,8 +272,12 @@ pub(crate) fn create_x509_csr(
         rsa_padding.clone(),
     )?;
 
-    let spki_bytes = private_key
-        .call_method0(pyo3::intern!(py, "public_key"))?
+    let public_key = match builder.getattr(pyo3::intern!(py, "_public_key"))? {
+        pk if pk.is_none() => private_key.call_method0(pyo3::intern!(py, "public_key"))?,
+        pk => pk,
+    };
+
+    let spki_bytes = public_key
         .call_method1(
             pyo3::intern!(py, "public_bytes"),
             (
