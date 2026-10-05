@@ -27,7 +27,7 @@ runs:
   using: "composite"
 
   steps:
-    - uses: dawidd6/action-download-artifact@634d83b91986fcec9be314054943fa5c976aeb0e # v25
+    - uses: dawidd6/action-download-artifact@27e4ae67c24b67d3b54bc6d6a45475be1e28031b # v26
       id: download
       with:
         repo: pyca/infra
