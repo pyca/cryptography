@@ -390,8 +390,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Oct 05, 2026.
-            REF: d7679d96eed8d28ad5d926e3138f99a1332f2af2
+            # Latest commit on the twisted trunk branch, as of Oct 06, 2026.
+            REF: c7a4e7ee3b7e6727549fe80973a493b93b53a109
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -410,8 +410,8 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Oct 04, 2026.
-            REF: 3368a0a06ae6195aad817a1ece1aaeb6fe0353a1
+            # Latest commit on the mitmproxy main branch, as of Oct 06, 2026.
+            REF: 5253dcbd1d8f0522de097bfe56918fe12a0f267a
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
