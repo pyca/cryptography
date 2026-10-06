@@ -7448,3 +7448,63 @@ def test_load_pem_x509_certificates():
     assert len(certs) == 2
     assert certs[0].serial_number == 16160
     assert certs[1].serial_number == 146039
+
+
+def test_csr_decoupled_signing_key():
+    subject_private_key = rsa.generate_private_key(
+        public_exponent=65537, key_size=2048
+    )
+    signing_private_key = ec.generate_private_key(ec.SECP256R1())
+
+    builder = (
+        x509.CertificateSigningRequestBuilder()
+        .subject_name(
+            x509.Name(
+                [x509.NameAttribute(NameOID.COMMON_NAME, "RFC 9883 Test")]
+            )
+        )
+        .public_key(subject_private_key.public_key())
+    )
+
+    csr = builder.sign(signing_private_key, hashes.SHA256())
+
+    # 1. Subject public key in CSR matches subject_private_key
+    assert csr.public_key().public_bytes(
+        serialization.Encoding.DER,
+        serialization.PublicFormat.SubjectPublicKeyInfo,
+    ) == subject_private_key.public_key().public_bytes(
+        serialization.Encoding.DER,
+        serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+
+    # 2. Self-signature validation using embedded SPKI returns False
+    # (expected for decoupled signing key)
+    assert not csr.is_signature_valid
+
+
+def test_csr_statement_of_possession_attribute():
+    raw_pop_bytes = b"sample_pop_structure"
+
+    builder = (
+        x509.CertificateSigningRequestBuilder()
+        .subject_name(
+            x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "SoP Test")])
+        )
+        .add_attribute(
+            x509.oid.AttributeOID.STATEMENT_OF_POSSESSION,
+            raw_pop_bytes,
+        )
+    )
+
+    csr = builder.sign(
+        rsa.generate_private_key(public_exponent=65537, key_size=2048),
+        hashes.SHA256(),
+    )
+    der = csr.public_bytes(serialization.Encoding.DER)
+
+    parsed_csr = x509.load_der_x509_csr(der)
+
+    attr = parsed_csr.attributes.get_attribute_for_oid(
+        x509.oid.AttributeOID.STATEMENT_OF_POSSESSION
+    )
+    assert attr.value == raw_pop_bytes

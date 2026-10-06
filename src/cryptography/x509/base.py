@@ -34,7 +34,15 @@ from cryptography.x509.extensions import (
     _make_sequence_methods,
 )
 from cryptography.x509.name import Name, _ASN1Type
-from cryptography.x509.oid import ObjectIdentifier
+from cryptography.x509.oid import AttributeOID, ObjectIdentifier
+
+if typing.TYPE_CHECKING:
+    from cryptography.hazmat.primitives.asymmetric.types import (
+        CertificateIssuerPrivateKeyTypes,
+    )
+    from cryptography.hazmat.primitives.asymmetric.types import (
+        CertificatePublicKeyTypes as PublicKeyTypes,
+    )
 
 _EARLIEST_UTC_TIME = datetime.datetime(1950, 1, 1)
 
@@ -159,6 +167,20 @@ class InvalidVersion(Exception):
         self.parsed_version = parsed_version
 
 
+class StatementOfPossession(Attribute):
+    def __init__(self, value: bytes) -> None:
+        if not isinstance(value, bytes):
+            raise TypeError("value must be bytes")
+        super().__init__(
+            AttributeOID.STATEMENT_OF_POSSESSION,
+            value,
+            _type=0x30,  # 0x30 = ASN.1 SEQUENCE tag
+        )
+
+    def __repr__(self) -> str:
+        return f"<StatementOfPossession(value={self.value!r})>"
+
+
 Certificate = rust_x509.Certificate
 RevokedCertificate = rust_x509.RevokedCertificate
 
@@ -185,6 +207,7 @@ class CertificateSigningRequestBuilder:
         subject_name: Name | None = None,
         extensions: list[Extension[ExtensionType]] = [],
         attributes: list[tuple[ObjectIdentifier, bytes, int | None]] = [],
+        public_key: PublicKeyTypes | None = None,
     ):
         """
         Creates an empty X.509 certificate request (v1).
@@ -192,6 +215,7 @@ class CertificateSigningRequestBuilder:
         self._subject_name = subject_name
         self._extensions = extensions
         self._attributes = attributes
+        self._public_key = public_key
 
     def subject_name(self, name: Name) -> CertificateSigningRequestBuilder:
         """
@@ -202,7 +226,10 @@ class CertificateSigningRequestBuilder:
         if self._subject_name is not None:
             raise ValueError("The subject name may only be set once.")
         return CertificateSigningRequestBuilder(
-            name, self._extensions, self._attributes
+            name,
+            self._extensions,
+            self._attributes,
+            public_key=self._public_key,
         )
 
     def add_extension(
@@ -221,6 +248,7 @@ class CertificateSigningRequestBuilder:
             self._subject_name,
             [*self._extensions, extension],
             self._attributes,
+            public_key=self._public_key,
         )
 
     def add_attribute(
@@ -253,6 +281,7 @@ class CertificateSigningRequestBuilder:
             self._subject_name,
             self._extensions,
             [*self._attributes, (oid, value, tag)],
+            public_key=self._public_key,
         )
 
     def sign(
@@ -288,6 +317,18 @@ class CertificateSigningRequestBuilder:
             algorithm,
             rsa_padding,
             ecdsa_deterministic,
+        )
+
+    def public_key(
+        self, public_key: PublicKeyTypes
+    ) -> CertificateSigningRequestBuilder:
+        if self._public_key is not None:
+            raise ValueError("The public key has already been set")
+        return CertificateSigningRequestBuilder(
+            subject_name=self._subject_name,
+            extensions=self._extensions,
+            attributes=self._attributes,
+            public_key=public_key,
         )
 
 
