@@ -30,8 +30,7 @@ jobs:
       matrix:
         PYTHON:
           - {VERSION: "3.9", NOXSESSION: "flake"}
-          - {VERSION: "3.14", NOXSESSION: "flake"}
-          - {VERSION: "3.14", NOXSESSION: "rust"}
+          - {VERSION: "3.14", NOXSESSION: "flake,rust"}
           - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1"}}
           - {VERSION: "3.14t", NOXSESSION: "rust,tests"}
           - {VERSION: "3.15", NOXSESSION: "rust,tests"}
