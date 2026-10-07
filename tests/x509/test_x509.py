@@ -7508,3 +7508,26 @@ def test_csr_statement_of_possession_attribute():
         x509.oid.AttributeOID.STATEMENT_OF_POSSESSION
     )
     assert attr.value == raw_pop_bytes
+
+
+def test_statement_of_possession_invalid_type_and_repr():
+    # (TypeError guard)
+    with pytest.raises(TypeError, match="value must be bytes"):
+        x509.StatementOfPossession("not_bytes")  # type: ignore[arg-type]
+
+    # (__repr__)
+    raw_val = b"\x30\x00"
+    sop = x509.StatementOfPossession(raw_val)
+    assert repr(sop) == f"<StatementOfPossession(value={raw_val!r})>"
+
+
+def test_csr_builder_public_key_already_set():
+    # (ValueError on duplicate public key assignment)
+    builder = x509.CertificateSigningRequestBuilder()
+    key = ec.generate_private_key(ec.SECP256R1()).public_key()
+
+    builder = builder.public_key(key)
+    with pytest.raises(
+        ValueError, match="The public key has already been set"
+    ):
+        builder.public_key(key)
