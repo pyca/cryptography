@@ -399,8 +399,8 @@ jobs:
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Oct 01, 2026.
-            REF: 15809b002f109b8f1be5c64779049c33ec8f7f86
+            # Latest commit on the certbot main branch, as of Oct 08, 2026.
+            REF: 0201ba5ce70ba8b7545380064abddd4bc3a10c15
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
