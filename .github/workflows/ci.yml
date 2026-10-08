@@ -47,19 +47,19 @@ jobs:
           - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.4"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.1"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.3.2"}}
-          # Latest commit on the BoringSSL main branch, as of Oct 07, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "304dad33464fb248512cab647b30b1c601c8d142"}}
+          # Latest commit on the BoringSSL main branch, as of Oct 08, 2026.
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "4f3b183c5d4a8f8fcaba4c0ab4435df181df6978"}}
           # Latest tag of AWS-LC main branch, as of Oct 02, 2026.
           - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.11.0"}}
-          # Latest commit on the OpenSSL master branch, as of Oct 07, 2026.
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "35b8874b1d45aed1a5a604cca75d7af3c1c72067"}}
+          # Latest commit on the OpenSSL master branch, as of Oct 08, 2026.
+          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "41eecc7c7cd4069b1b29bca49b9d97825c6bf648"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # - 1.85: 2024 edition
           # - 1.95: cfg_select
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0"}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.11.0"}}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "304dad33464fb248512cab647b30b1c601c8d142"}}
+          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "4f3b183c5d4a8f8fcaba4c0ab4435df181df6978"}}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.14", NOXSESSION: "tests-rust-debug"}
