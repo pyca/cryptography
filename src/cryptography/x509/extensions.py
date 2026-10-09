@@ -2510,7 +2510,7 @@ class UnrecognizedExtension(ExtensionType):
         self._value = value
 
     @property
-    def oid(self) -> ObjectIdentifier:  # type: ignore[override]
+    def oid(self) -> ObjectIdentifier:  # type: ignore[override]  # ty: ignore[invalid-attribute-override]
         return self._oid
 
     @property
