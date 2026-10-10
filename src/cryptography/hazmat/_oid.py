@@ -240,6 +240,7 @@ class CertificatePoliciesOID:
 class AttributeOID:
     CHALLENGE_PASSWORD = ObjectIdentifier("1.2.840.113549.1.9.7")
     UNSTRUCTURED_NAME = ObjectIdentifier("1.2.840.113549.1.9.2")
+    STATEMENT_OF_POSSESSION = ObjectIdentifier("1.3.6.1.5.5.7.11.2")
 
 
 _OID_NAMES = {
