@@ -1570,6 +1570,36 @@ class TestPEMSerialization:
         )
         assert isinstance(compat_loaded_key, ed25519.Ed25519PrivateKey)
 
+    def test_rsa_openssh_private_key_with_comment(self):
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        pem = key.private_bytes(
+            encoding=serialization.Encoding.SSH,
+            format=serialization.PrivateFormat.OpenSSH,
+            encryption_algorithm=serialization.NoEncryption(),
+            comment=b"my-rsa-comment",
+        )
+        assert b"my-rsa-comment" in pem
+
+    def test_dsa_openssh_private_key_with_comment(self):
+        key = dsa.generate_private_key(key_size=2048)
+        pem = key.private_bytes(
+            encoding=serialization.Encoding.SSH,
+            format=serialization.PrivateFormat.OpenSSH,
+            encryption_algorithm=serialization.NoEncryption(),
+            comment=b"my-dsa-comment",
+        )
+        assert b"my-dsa-comment" in pem
+
+    def test_ecdsa_openssh_private_key_with_comment(self):
+        key = ec.generate_private_key(ec.SECP256R1())
+        pem = key.private_bytes(
+            encoding=serialization.Encoding.SSH,
+            format=serialization.PrivateFormat.OpenSSH,
+            encryption_algorithm=serialization.NoEncryption(),
+            comment=b"my-ec-comment",
+        )
+        assert b"my-ec-comment" in pem
+
 
 class TestKeySerializationEncryptionTypes:
     def test_non_bytes_password(self):
