@@ -1600,6 +1600,7 @@ class TestPEMSerialization:
         )
         assert pem.startswith(b"-----BEGIN OPENSSH PRIVATE KEY-----")
 
+
 class TestKeySerializationEncryptionTypes:
     def test_non_bytes_password(self):
         with pytest.raises(ValueError):
