@@ -50,7 +50,7 @@ specifying auxiliary authenticated information.
     :param aead: The authenticated encryption algorithm.
     :type aead: :class:`AEAD`
 
-    .. method:: encrypt(plaintext, public_key, info=b"")
+    .. method:: encrypt(plaintext, public_key, info=b"", aad=b"")
 
         Encrypt a message using HPKE.
 
@@ -70,10 +70,13 @@ specifying auxiliary authenticated information.
             and :class:`MLKEM1024P384PublicKey` for :attr:`KEM.MLKEM1024_P384`.
         :param bytes info: Application-specific context string for binding the
             encryption to a specific application or protocol.
+        :param bytes aad: Additional authenticated data passed to the AEAD.
+            It is authenticated with the ciphertext and is not mixed into the
+            key schedule. This is a different input from ``info``.
         :returns: The encapsulated key concatenated with ciphertext (enc || ct).
         :rtype: bytes
 
-    .. method:: decrypt(ciphertext, private_key, info=b"")
+    .. method:: decrypt(ciphertext, private_key, info=b"", aad=b"")
 
         Decrypt a message using HPKE.
 
@@ -93,6 +96,8 @@ specifying auxiliary authenticated information.
             and :class:`MLKEM1024P384PrivateKey` for :attr:`KEM.MLKEM1024_P384`.
         :param bytes info: Application-specific context string (must match the
             value used during encryption).
+        :param bytes aad: Additional authenticated data (must match the value
+            used during encryption).
         :returns: The decrypted plaintext.
         :rtype: bytes
         :raises cryptography.exceptions.InvalidTag: If decryption fails.

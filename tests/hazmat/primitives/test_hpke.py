@@ -400,14 +400,14 @@ class TestHPKE:
         sk_r = x25519.X25519PrivateKey.generate()
         pk_r = sk_r.public_key()
 
-        ciphertext = rust_openssl.hpke._encrypt_with_aad(
-            suite, b"Secret message", pk_r, aad=b"correct aad"
+        ciphertext = suite.encrypt(b"Secret message", pk_r, aad=b"correct aad")
+        assert (
+            suite.decrypt(ciphertext, sk_r, aad=b"correct aad")
+            == b"Secret message"
         )
 
         with pytest.raises(InvalidTag):
-            rust_openssl.hpke._decrypt_with_aad(
-                suite, ciphertext, sk_r, aad=b"wrong aad"
-            )
+            suite.decrypt(ciphertext, sk_r, aad=b"wrong aad")
 
     def test_info_mismatch_fails(self):
         suite = Suite(KEM.X25519, KDF.HKDF_SHA256, AEAD.AES_128_GCM)

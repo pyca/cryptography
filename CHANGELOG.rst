@@ -8,6 +8,10 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* :meth:`~cryptography.hazmat.primitives.hpke.Suite.encrypt` and
+  :meth:`~cryptography.hazmat.primitives.hpke.Suite.decrypt` accept ``aad``,
+  additional authenticated data for the AEAD. It is separate from ``info``,
+  which is mixed into the key schedule.
 * :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
   and :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
   now accept :rfc:`5958` ``OneAsymmetricKey`` (PKCS8 version 2).
