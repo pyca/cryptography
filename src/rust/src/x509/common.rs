@@ -336,9 +336,9 @@ pub(crate) fn parse_general_name<'p>(
     Ok(py_gn)
 }
 
-pub(crate) fn parse_general_names<'a>(
+pub(crate) fn parse_general_names<'a, const MINIMUM_LEN: usize>(
     py: pyo3::Python<'a>,
-    gn_seq: &asn1::SequenceOf<'a, GeneralName<'a>>,
+    gn_seq: &asn1::SequenceOf<'a, GeneralName<'a>, MINIMUM_LEN>,
 ) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let gns = pyo3::types::PyList::empty(py);
     for gn in gn_seq.clone() {
