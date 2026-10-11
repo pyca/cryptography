@@ -1766,10 +1766,8 @@ class TestX448Serialization:
             comment=custom_comment,
         )
 
-        loaded_key, comment = (
-            serialization.load_ssh_private_key_with_comment(
-                serialized, password=None
-            )
+        loaded_key, comment = serialization.load_ssh_private_key_with_comment(
+            serialized, password=None
         )
 
         assert comment == custom_comment

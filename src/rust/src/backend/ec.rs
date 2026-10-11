@@ -364,7 +364,7 @@ impl ECPrivateKey {
             encryption_algorithm,
             true,
             false,
-            comment_bytes,
+            Some(comment_bytes),
         )
     }
 

@@ -124,7 +124,7 @@ impl Ed25519PrivateKey {
             encryption_algorithm,
             true,
             true,
-            comment_bytes,
+            Some(comment_bytes),
         )
     }
 

@@ -4,7 +4,6 @@
 
 use cryptography_openssl::mldsa::MlDsaVariant;
 use pyo3::types::PyAnyMethods;
-use pyo3::types::PyBytesMethods;
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;
@@ -132,6 +131,7 @@ impl MlDsa44PrivateKey {
     }
 
     #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
+    #[allow(unused_variables)]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
@@ -147,11 +147,6 @@ impl MlDsa44PrivateKey {
             return slf.borrow().private_bytes_raw(py);
         }
 
-        let comment_bytes = match comment {
-            Some(b) => b.as_bytes(),
-            None => b"",
-        };
-
         utils::pkey_private_bytes(
             py,
             slf,
@@ -159,9 +154,9 @@ impl MlDsa44PrivateKey {
             encoding,
             format,
             encryption_algorithm,
-            true,
             false,
-            comment_bytes,
+            false,
+            None,
         )
     }
 
@@ -388,6 +383,7 @@ impl MlDsa65PrivateKey {
     }
 
     #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
+    #[allow(unused_variables)]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
@@ -406,11 +402,6 @@ impl MlDsa65PrivateKey {
             return slf.borrow().private_bytes_raw(py);
         }
 
-        let comment_bytes = match comment {
-            Some(b) => b.as_bytes(),
-            None => b"",
-        };
-
         utils::pkey_private_bytes(
             py,
             slf,
@@ -418,9 +409,9 @@ impl MlDsa65PrivateKey {
             encoding,
             format,
             encryption_algorithm,
-            true,
             false,
-            comment_bytes,
+            false,
+            None,
         )
     }
 
@@ -647,6 +638,7 @@ impl MlDsa87PrivateKey {
     }
 
     #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
+    #[allow(unused_variables)]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
@@ -662,11 +654,6 @@ impl MlDsa87PrivateKey {
             return slf.borrow().private_bytes_raw(py);
         }
 
-        let comment_bytes = match comment {
-            Some(b) => b.as_bytes(),
-            None => b"",
-        };
-
         utils::pkey_private_bytes(
             py,
             slf,
@@ -674,9 +661,9 @@ impl MlDsa87PrivateKey {
             encoding,
             format,
             encryption_algorithm,
-            true,
             false,
-            comment_bytes,
+            false,
+            None,
         )
     }
 
