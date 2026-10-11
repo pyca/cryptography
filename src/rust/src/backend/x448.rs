@@ -5,6 +5,7 @@
 use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
+use pyo3::types::PyBytesMethods;
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.x448")]
 pub(crate) struct X448PrivateKey {
@@ -98,13 +99,20 @@ impl X448PrivateKey {
         Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
     }
 
+    #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+        comment: Option<&pyo3::Bound<'p, pyo3::types::PyBytes>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let comment_bytes = match comment {
+            Some(b) => b.as_bytes(),
+            None => b"",
+        };
+
         utils::pkey_private_bytes(
             py,
             slf,
@@ -114,6 +122,7 @@ impl X448PrivateKey {
             encryption_algorithm,
             false,
             true,
+            comment_bytes,
         )
     }
 

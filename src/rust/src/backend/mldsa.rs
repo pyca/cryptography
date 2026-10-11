@@ -4,6 +4,7 @@
 
 use cryptography_openssl::mldsa::MlDsaVariant;
 use pyo3::types::PyAnyMethods;
+use pyo3::types::PyBytesMethods;
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;
@@ -130,12 +131,14 @@ impl MlDsa44PrivateKey {
         Ok(pyo3::types::PyBytes::new(py, &seed))
     }
 
+    #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+        comment: Option<&pyo3::Bound<'p, pyo3::types::PyBytes>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         if encoding == crate::serialization::Encoding::Raw
             && format == crate::serialization::PrivateFormat::Raw
@@ -143,6 +146,12 @@ impl MlDsa44PrivateKey {
         {
             return slf.borrow().private_bytes_raw(py);
         }
+
+        let comment_bytes = match comment {
+            Some(b) => b.as_bytes(),
+            None => b"",
+        };
+
         utils::pkey_private_bytes(
             py,
             slf,
@@ -152,6 +161,7 @@ impl MlDsa44PrivateKey {
             encryption_algorithm,
             true,
             false,
+            comment_bytes,
         )
     }
 
@@ -377,12 +387,14 @@ impl MlDsa65PrivateKey {
         Ok(pyo3::types::PyBytes::new(py, &seed))
     }
 
+    #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+        comment: Option<&pyo3::Bound<'p, pyo3::types::PyBytes>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         // Intercept Raw/Raw/NoEncryption so we return the seed.
         // The generic pkey_private_bytes raw path calls raw_private_key()
@@ -393,6 +405,12 @@ impl MlDsa65PrivateKey {
         {
             return slf.borrow().private_bytes_raw(py);
         }
+
+        let comment_bytes = match comment {
+            Some(b) => b.as_bytes(),
+            None => b"",
+        };
+
         utils::pkey_private_bytes(
             py,
             slf,
@@ -402,6 +420,7 @@ impl MlDsa65PrivateKey {
             encryption_algorithm,
             true,
             false,
+            comment_bytes,
         )
     }
 
@@ -627,12 +646,14 @@ impl MlDsa87PrivateKey {
         Ok(pyo3::types::PyBytes::new(py, &seed))
     }
 
+    #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+        comment: Option<&pyo3::Bound<'p, pyo3::types::PyBytes>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         if encoding == crate::serialization::Encoding::Raw
             && format == crate::serialization::PrivateFormat::Raw
@@ -640,6 +661,12 @@ impl MlDsa87PrivateKey {
         {
             return slf.borrow().private_bytes_raw(py);
         }
+
+        let comment_bytes = match comment {
+            Some(b) => b.as_bytes(),
+            None => b"",
+        };
+
         utils::pkey_private_bytes(
             py,
             slf,
@@ -649,6 +676,7 @@ impl MlDsa87PrivateKey {
             encryption_algorithm,
             true,
             false,
+            comment_bytes,
         )
     }
 

@@ -1542,6 +1542,34 @@ class TestPEMSerialization:
             assert len(exc_info.value.__notes__) == 1
             assert "PKCS#8 format" in exc_info.value.__notes__[0]
 
+    def test_ssh_private_key_round_trip_with_comment(self):
+        # Generate a test Ed25519 private key
+        key = ed25519.Ed25519PrivateKey.generate()
+        custom_comment = b"developer@workstation-victus7"
+
+        # 1. Test serialization with comment
+        pem_data = key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.OpenSSH,
+            encryption_algorithm=serialization.NoEncryption(),
+            comment=custom_comment,
+        )
+
+        # 2. Test deserialization with load_ssh_private_key_with_comment
+        loaded_key, comment = serialization.load_ssh_private_key_with_comment(
+            pem_data, password=None
+        )
+
+        # Verify key type and comment match
+        assert isinstance(loaded_key, ed25519.Ed25519PrivateKey)
+        assert comment == custom_comment
+
+        # 3. Test backward-compatible load_ssh_private_key wrapper still works
+        compat_loaded_key = serialization.load_ssh_private_key(
+            pem_data, password=None
+        )
+        assert isinstance(compat_loaded_key, ed25519.Ed25519PrivateKey)
+
 
 class TestKeySerializationEncryptionTypes:
     def test_non_bytes_password(self):
@@ -1726,6 +1754,26 @@ class TestX448Serialization:
             key.private_bytes(
                 Encoding.PEM, PrivateFormat.OpenSSH, NoEncryption()
             )
+
+    def test_ssh_private_key_with_comment(self) -> None:
+        key = ed25519.Ed25519PrivateKey.generate()
+        custom_comment = b"test-user@host"
+
+        serialized = key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.OpenSSH,
+            encryption_algorithm=serialization.NoEncryption(),
+            comment=custom_comment,
+        )
+
+        loaded_key, comment = (
+            serialization.load_ssh_private_key_with_comment(
+                serialized, password=None
+            )
+        )
+
+        assert comment == custom_comment
+        assert isinstance(loaded_key, ed25519.Ed25519PrivateKey)
 
 
 @pytest.mark.supported(

@@ -4,6 +4,7 @@
 
 use cryptography_x509::common;
 use pyo3::types::PyAnyMethods;
+use pyo3::types::PyBytesMethods;
 
 use crate::asn1::encode_der_data;
 use crate::backend::utils;
@@ -263,12 +264,14 @@ impl DHPrivateKey {
         })
     }
 
+    #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+        comment: Option<&pyo3::Bound<'p, pyo3::types::PyBytes>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         if format != crate::serialization::PrivateFormat::PKCS8 {
             return Err(CryptographyError::from(
@@ -277,6 +280,11 @@ impl DHPrivateKey {
                 ),
             ));
         }
+
+        let comment_bytes = match comment {
+            Some(b) => b.as_bytes(),
+            None => b"",
+        };
 
         utils::pkey_private_bytes(
             py,
@@ -287,6 +295,7 @@ impl DHPrivateKey {
             encryption_algorithm,
             true,
             false,
+            comment_bytes,
         )
     }
 

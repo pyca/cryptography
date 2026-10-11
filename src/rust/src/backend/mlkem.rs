@@ -4,6 +4,7 @@
 
 use cryptography_openssl::mlkem::MlKemVariant;
 use pyo3::types::PyAnyMethods;
+use pyo3::types::PyBytesMethods;
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;
@@ -127,12 +128,14 @@ impl MlKem768PrivateKey {
         Ok(pyo3::types::PyBytes::new(py, &seed))
     }
 
+    #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+        comment: Option<&pyo3::Bound<'p, pyo3::types::PyBytes>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         // Intercept Raw/Raw/NoEncryption so we return the seed.
         // The generic pkey_private_bytes raw path calls raw_private_key()
@@ -143,6 +146,12 @@ impl MlKem768PrivateKey {
         {
             return slf.borrow().private_bytes_raw(py);
         }
+
+        let comment_bytes = match comment {
+            Some(b) => b.as_bytes(),
+            None => b"",
+        };
+
         utils::pkey_private_bytes(
             py,
             slf,
@@ -152,6 +161,7 @@ impl MlKem768PrivateKey {
             encryption_algorithm,
             true,
             false,
+            comment_bytes,
         )
     }
 
@@ -277,12 +287,14 @@ impl MlKem1024PrivateKey {
         Ok(pyo3::types::PyBytes::new(py, &seed))
     }
 
+    #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+        comment: Option<&pyo3::Bound<'p, pyo3::types::PyBytes>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         // Intercept Raw/Raw/NoEncryption so we return the seed.
         // The generic pkey_private_bytes raw path calls raw_private_key()
@@ -293,6 +305,12 @@ impl MlKem1024PrivateKey {
         {
             return slf.borrow().private_bytes_raw(py);
         }
+
+        let comment_bytes = match comment {
+            Some(b) => b.as_bytes(),
+            None => b"",
+        };
+
         utils::pkey_private_bytes(
             py,
             slf,
@@ -302,6 +320,7 @@ impl MlKem1024PrivateKey {
             encryption_algorithm,
             true,
             false,
+            comment_bytes,
         )
     }
 
