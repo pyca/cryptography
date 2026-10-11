@@ -374,8 +374,8 @@ jobs:
         include:
           - DOWNSTREAM: paramiko
             REPO: paramiko/paramiko
-            # Latest commit on the paramiko main branch, as of Aug 30, 2026.
-            REF: 142f593e40ad767c5e3556cbace66dc84589620c
+            # Latest commit on the paramiko main branch, as of Oct 11, 2026.
+            REF: d87f9c01c158588fe3ecb635ca7c0d7c0c1a26cc
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
@@ -414,8 +414,8 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Oct 10, 2026.
-            REF: 6173a18888901c1953744edc08557cfb5e8b5fd8
+            # Latest commit on the scapy master branch, as of Oct 11, 2026.
+            REF: 5376fcc86aaba7c516fb4aa19576b03b387d217a
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
