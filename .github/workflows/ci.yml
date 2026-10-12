@@ -30,42 +30,42 @@ jobs:
       matrix:
         PYTHON:
           - {VERSION: "3.9", NOXSESSION: "flake"}
-          - {VERSION: "3.14", NOXSESSION: "flake,rust"}
-          - {VERSION: "3.12", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "4.0.1"}}
+          - {VERSION: "3.15", NOXSESSION: "flake,rust"}
+          - {VERSION: "3.15", NOXSESSION: "docs", OPENSSL: {TYPE: "openssl", VERSION: "4.0.3"}}
           - {VERSION: "3.14t", NOXSESSION: "rust,tests"}
           - {VERSION: "3.15", NOXSESSION: "rust,tests"}
           - {VERSION: "3.15t", NOXSESSION: "rust,tests"}
           - {VERSION: "pypy3.11", NOXSESSION: "tests-nocoverage"}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "0"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.4"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.0.22"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.4.7"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.8"}}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2"}}
-          - {VERSION: "3.14", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.4"}}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.1"}}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.3.2"}}
+          - {VERSION: "3.15", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.3", CONFIG_FLAGS: "no-engine no-rc2 no-srtp no-ct no-psk"}}
+          - {VERSION: "3.15", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.3", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "0"}}
+          - {VERSION: "3.15", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.3", CONFIG_FLAGS: "no-legacy", NO_LEGACY: "1"}}
+          - {VERSION: "3.15", NOXSESSION: "tests", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.4"}}
+          - {VERSION: "3.15", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.4.8"}}
+          - {VERSION: "3.15", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "3.5.9"}}
+          - {VERSION: "3.15", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "4.1.0-beta2"}}
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "openssl", VERSION: "4.0.3"}}
+          - {VERSION: "3.15", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.5"}}
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.2.2"}}
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.3.3"}}
           # Latest commit on the BoringSSL main branch, as of Oct 12, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "5b83e5d1abf0ae0033ae52ab579d906b67633b2c"}}
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "5b83e5d1abf0ae0033ae52ab579d906b67633b2c"}}
           # Latest tag of AWS-LC main branch, as of Oct 02, 2026.
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.11.0"}}
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.11.0"}}
           # Latest commit on the OpenSSL master branch, as of Oct 12, 2026.
-          - {VERSION: "3.14", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "122db7eb076bf0625df87b91bcc2dccfaccc4900"}}
+          - {VERSION: "3.15", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "122db7eb076bf0625df87b91bcc2dccfaccc4900"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # - 1.85: 2024 edition
           # - 1.95: cfg_select
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0"}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.11.0"}}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "5b83e5d1abf0ae0033ae52ab579d906b67633b2c"}}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "beta"}
-          - {VERSION: "3.14", NOXSESSION: "rust,tests", RUST: "nightly"}
-          - {VERSION: "3.14", NOXSESSION: "tests-rust-debug"}
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", RUST: "1.83.0"}
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.11.0"}}
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "5b83e5d1abf0ae0033ae52ab579d906b67633b2c"}}
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", RUST: "beta"}
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", RUST: "nightly"}
+          - {VERSION: "3.15", NOXSESSION: "tests-rust-debug"}
           # Not actually an MSRV, just for coverage on this
-          - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2"}}
-          - {VERSION: "3.14", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.4"}}
+          - {VERSION: "3.15", NOXSESSION: "tests", RUST: "1.87", OPENSSL: {TYPE: "openssl", VERSION: "4.0.2"}}
+          - {VERSION: "3.15", NOXSESSION: "tests", RUST: "1.87", NOXARGS: "--enable-fips=1", OPENSSL: {TYPE: "openssl", CONFIG_FLAGS: "enable-fips", VERSION: "3.6.4"}}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -266,7 +266,6 @@ jobs:
       matrix:
         PYTHON:
           - {VERSION: "3.9", NOXSESSION: "tests"}
-          - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
           - {VERSION: "3.15", NOXSESSION: "tests"}
           - {VERSION: "3.15t", NOXSESSION: "tests"}
@@ -342,7 +341,6 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64', RUNNER: 'windows-latest'}
         PYTHON:
           - {VERSION: "3.9", NOXSESSION: "tests-nocoverage"}
-          - {VERSION: "3.14", NOXSESSION: "tests"}
           - {VERSION: "3.14t", NOXSESSION: "tests"}
           - {VERSION: "3.15", NOXSESSION: "tests"}
           - {VERSION: "3.15t", NOXSESSION: "tests"}
