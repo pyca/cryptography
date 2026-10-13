@@ -1748,6 +1748,38 @@ class TestRSACertificate:
             [x509.TLSFeatureType.status_request]
         )
 
+    def test_tls_feature_unknown_value(self, rsa_key_2048: rsa.RSAPrivateKey):
+        # A TLSFeature extension carrying a value that is not a known
+        # TLSFeatureType must raise a ValueError, not a bare KeyError.
+        private_key = rsa_key_2048
+        cert = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "x")])
+            )
+            .issuer_name(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "x")])
+            )
+            .public_key(private_key.public_key())
+            .serial_number(1)
+            .not_valid_before(datetime.datetime(2020, 1, 1))
+            .not_valid_after(datetime.datetime(2030, 1, 1))
+            .add_extension(
+                # SEQUENCE { INTEGER 99 }; 99 is not a valid TLSFeatureType.
+                x509.UnrecognizedExtension(
+                    x509.ObjectIdentifier("1.3.6.1.5.5.7.1.24"),
+                    b"\x30\x03\x02\x01\x63",
+                ),
+                critical=False,
+            )
+            .sign(private_key, hashes.SHA256())
+        )
+        cert = x509.load_der_x509_certificate(
+            cert.public_bytes(serialization.Encoding.DER)
+        )
+        with pytest.raises(ValueError):
+            cert.extensions
+
     def test_verify_directly_issued_by_rsa_pss(
         self, rsa_key_2048: rsa.RSAPrivateKey
     ):
