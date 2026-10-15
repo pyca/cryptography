@@ -129,7 +129,7 @@ platformdirs==4.12.4 ; python_full_version >= '3.10'
     # via
     #   nox
     #   virtualenv
-pluggy==1.6.0
+pluggy==1.7.0
     # via
     #   pytest
     #   pytest-cov
