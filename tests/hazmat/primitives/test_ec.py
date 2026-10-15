@@ -763,7 +763,7 @@ class TestECEquality:
         assert key1 != key3
         assert key1 != object()
         with pytest.raises(TypeError):
-            key1 < key2  # type: ignore[operator]
+            key1 < key2  # type: ignore[operator]  # ty: ignore[unsupported-operator]
 
     def test_public_key_copy(self, backend):
         _skip_curve_unsupported(backend, ec.SECP256R1())
