@@ -205,7 +205,7 @@ impl PolicyBuilder {
         };
 
         let policy_definition = OwnedPolicyDefinition::try_new(None, |_subject| {
-            let mut policy_definition = PolicyDefinition::client(
+            PolicyDefinition::client(
                 PyCryptoOps {},
                 time,
                 self.max_chain_depth,
@@ -216,12 +216,14 @@ impl PolicyBuilder {
                     .as_ref()
                     .map(|p| p.get().clone_inner_policy()),
             )
-            .map_err(pyo3::exceptions::PyValueError::new_err)?;
-            if let Some(extended_key_usage) = &self.extended_key_usage {
-                policy_definition =
-                    policy_definition.with_extended_key_usage(extended_key_usage.clone());
-            }
-            Ok(policy_definition)
+            .map(|policy_definition| {
+                if let Some(extended_key_usage) = &self.extended_key_usage {
+                    policy_definition.with_extended_key_usage(extended_key_usage.clone())
+                } else {
+                    policy_definition
+                }
+            })
+            .map_err(pyo3::exceptions::PyValueError::new_err)
         })?;
 
         let py_policy = PyPolicy {
@@ -266,7 +268,7 @@ impl PolicyBuilder {
                         .expect("subject_owner for ServerVerifier can not be None"),
                 )?;
 
-                let mut policy_definition = PolicyDefinition::server(
+                PolicyDefinition::server(
                     PyCryptoOps {},
                     subject,
                     time,
@@ -278,12 +280,14 @@ impl PolicyBuilder {
                         .as_ref()
                         .map(|p| p.get().clone_inner_policy()),
                 )
-                .map_err(pyo3::exceptions::PyValueError::new_err)?;
-                if let Some(extended_key_usage) = &self.extended_key_usage {
-                    policy_definition =
-                        policy_definition.with_extended_key_usage(extended_key_usage.clone());
-                }
-                Ok(policy_definition)
+                .map(|policy_definition| {
+                    if let Some(extended_key_usage) = &self.extended_key_usage {
+                        policy_definition.with_extended_key_usage(extended_key_usage.clone())
+                    } else {
+                        policy_definition
+                    }
+                })
+                .map_err(pyo3::exceptions::PyValueError::new_err)
             })?;
 
         let py_policy = PyPolicy {
