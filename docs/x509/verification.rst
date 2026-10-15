@@ -261,7 +261,7 @@ the root of trust:
 
     .. method:: extended_key_usage(extended_key_usage)
 
-        Sets the Extended Key Usage OID checked by the default validators.
+        Sets the Extended Key Usage OID used for checking certificates.
         Under the default extension policies, an end-entity certificate may
         omit the EKU extension; if present, it must include this OID.
         If this method is not called, client and server verifiers require

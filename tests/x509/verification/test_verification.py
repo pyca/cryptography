@@ -55,6 +55,33 @@ class TestPolicyBuilder:
         with pytest.raises(ValueError):
             PolicyBuilder().max_chain_depth(8).max_chain_depth(9)
 
+    def test_extended_key_usage_already_set(self):
+        builder = PolicyBuilder().extended_key_usage(
+            ExtendedKeyUsageOID.CODE_SIGNING
+        )
+        with pytest.raises(ValueError):
+            builder.extended_key_usage(ExtendedKeyUsageOID.CODE_SIGNING)
+
+    def test_extended_key_usage_bad_type(self):
+        with pytest.raises(TypeError):
+            PolicyBuilder().extended_key_usage(
+                typing.cast(typing.Any, "not an object identifier")
+            )
+
+    def test_extended_key_usage(self):
+        extended_key_usage = ExtendedKeyUsageOID.CODE_SIGNING
+        builder = PolicyBuilder().store(dummy_store()).extended_key_usage(
+            extended_key_usage
+        )
+
+        server_verifier = builder.build_server_verifier(
+            DNSName("cryptography.io")
+        )
+        client_verifier = builder.build_client_verifier()
+
+        assert server_verifier.policy.extended_key_usage == extended_key_usage
+        assert client_verifier.policy.extended_key_usage == extended_key_usage
+
     def test_ipaddress_subject(self):
         verifier = (
             PolicyBuilder()
