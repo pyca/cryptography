@@ -318,6 +318,12 @@ impl<'a, B: CryptoOps + 'a> PolicyDefinition<'a, B> {
         Ok(retval)
     }
 
+    /// Set the Extended Key Usage required by this policy.
+    pub fn with_extended_key_usage(mut self, extended_key_usage: ObjectIdentifier) -> Self {
+        self.extended_key_usage = extended_key_usage;
+        self
+    }
+
     /// Create a new policy with suitable defaults for client certification
     /// validation.
     ///

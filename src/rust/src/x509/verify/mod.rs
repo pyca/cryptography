@@ -17,6 +17,7 @@ pub(crate) use extension_policy::{PyCriticality, PyExtensionPolicy};
 pub(crate) use policy::PyPolicy;
 
 use super::parse_general_names;
+use crate::asn1::py_oid_to_oid;
 use crate::backend::keys;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::types;
@@ -85,6 +86,7 @@ pub(crate) struct PolicyBuilder {
     time: Option<asn1::DateTime>,
     store: Option<pyo3::Py<PyStore>>,
     max_chain_depth: Option<u8>,
+    extended_key_usage: Option<asn1::ObjectIdentifier>,
     ca_ext_policy: Option<pyo3::Py<PyExtensionPolicy>>,
     ee_ext_policy: Option<pyo3::Py<PyExtensionPolicy>>,
 }
@@ -95,6 +97,7 @@ impl PolicyBuilder {
             time: self.time.clone(),
             store: self.store.as_ref().map(|s| s.clone_ref(py)),
             max_chain_depth: self.max_chain_depth,
+            extended_key_usage: self.extended_key_usage.clone(),
             ca_ext_policy: self.ca_ext_policy.as_ref().map(|p| p.clone_ref(py)),
             ee_ext_policy: self.ee_ext_policy.as_ref().map(|p| p.clone_ref(py)),
         }
@@ -109,6 +112,7 @@ impl PolicyBuilder {
             time: None,
             store: None,
             max_chain_depth: None,
+            extended_key_usage: None,
             ca_ext_policy: None,
             ee_ext_policy: None,
         }
@@ -153,6 +157,19 @@ impl PolicyBuilder {
         })
     }
 
+    fn extended_key_usage(
+        &self,
+        py: pyo3::Python<'_>,
+        extended_key_usage: pyo3::Bound<'_, pyo3::PyAny>,
+    ) -> CryptographyResult<PolicyBuilder> {
+        policy_builder_set_once_check!(self, extended_key_usage, "extended key usage");
+
+        Ok(PolicyBuilder {
+            extended_key_usage: Some(py_oid_to_oid(extended_key_usage)?),
+            ..self.py_clone(py)
+        })
+    }
+
     #[pyo3(signature = (*, ca_policy, ee_policy))]
     fn extension_policies(
         &self,
@@ -188,7 +205,7 @@ impl PolicyBuilder {
         };
 
         let policy_definition = OwnedPolicyDefinition::try_new(None, |_subject| {
-            PolicyDefinition::client(
+            let mut policy_definition = PolicyDefinition::client(
                 PyCryptoOps {},
                 time,
                 self.max_chain_depth,
@@ -199,7 +216,12 @@ impl PolicyBuilder {
                     .as_ref()
                     .map(|p| p.get().clone_inner_policy()),
             )
-            .map_err(pyo3::exceptions::PyValueError::new_err)
+            .map_err(pyo3::exceptions::PyValueError::new_err)?;
+            if let Some(extended_key_usage) = &self.extended_key_usage {
+                policy_definition =
+                    policy_definition.with_extended_key_usage(extended_key_usage.clone());
+            }
+            Ok(policy_definition)
         })?;
 
         let py_policy = PyPolicy {
@@ -244,7 +266,7 @@ impl PolicyBuilder {
                         .expect("subject_owner for ServerVerifier can not be None"),
                 )?;
 
-                PolicyDefinition::server(
+                let mut policy_definition = PolicyDefinition::server(
                     PyCryptoOps {},
                     subject,
                     time,
@@ -256,7 +278,12 @@ impl PolicyBuilder {
                         .as_ref()
                         .map(|p| p.get().clone_inner_policy()),
                 )
-                .map_err(pyo3::exceptions::PyValueError::new_err)
+                .map_err(pyo3::exceptions::PyValueError::new_err)?;
+                if let Some(extended_key_usage) = &self.extended_key_usage {
+                    policy_definition =
+                        policy_definition.with_extended_key_usage(extended_key_usage.clone());
+                }
+                Ok(policy_definition)
             })?;
 
         let py_policy = PyPolicy {
