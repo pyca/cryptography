@@ -277,6 +277,8 @@ jobs:
           - {VERSION: "pypy3.11"}
         include:
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
+            PYTHON: {VERSION: "3.14", "ABI_VERSION": "abi3-py39"}
+          - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "3.14", "ABI_VERSION": "abi3-py311"}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "3.14t"}

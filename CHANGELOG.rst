@@ -8,6 +8,9 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Restored publication of ``win_arm64`` wheels, dropped in 46.0.4.
+  Published wheels cover CPython 3.9+ (``abi3``), CPython 3.11+ (``abi3``),
+  free-threaded CPython 3.14, and free-threaded CPython 3.15.
 * Require CFFI 2.1.1 or newer on Python 3.15 to avoid an ABI issue in
   earlier CFFI releases.
 * :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
