@@ -26,6 +26,8 @@ Changelog
   empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
   RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
   applied to ``extendedKeyUsage``.
+* Added ``abi3`` wheels targeting Python 3.12 so PyPy 8.0.0 on Python 3.12 can
+  use the CPython stable ABI.
 
 .. _v50-0-2:
 
