@@ -70,8 +70,10 @@ class TestPolicyBuilder:
 
     def test_extended_key_usage(self):
         extended_key_usage = ExtendedKeyUsageOID.CODE_SIGNING
-        builder = PolicyBuilder().store(dummy_store()).extended_key_usage(
-            extended_key_usage
+        builder = (
+            PolicyBuilder()
+            .store(dummy_store())
+            .extended_key_usage(extended_key_usage)
         )
 
         server_verifier = builder.build_server_verifier(
