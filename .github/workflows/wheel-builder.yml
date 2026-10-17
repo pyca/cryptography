@@ -72,7 +72,7 @@ jobs:
       matrix:
         PYTHON:
           - { VERSION: "cp311-cp311", ABI_VERSION: 'abi3-py39' }
-          - { VERSION: "cp311-cp311", ABI_VERSION: 'abi3-py311' }
+          - { VERSION: "cp312-cp312", ABI_VERSION: 'abi3-py312' }
           - { VERSION: "cp314-cp314t" }
           - { VERSION: "cp315-cp315t", ABI_VERSION: 'abi3t-py315' }
           - { VERSION: "pp311-pypy311_pp73" }
@@ -189,7 +189,7 @@ jobs:
       matrix:
         PYTHON:
           - {VERSION: '3.14', ABI_VERSION: 'abi3-py39'}
-          - {VERSION: '3.14', ABI_VERSION: 'abi3-py311'}
+          - {VERSION: '3.14', ABI_VERSION: 'abi3-py312'}
           - {VERSION: '3.14t'}
           - {VERSION: '3.15t', ABI_VERSION: 'abi3t-py315'}
           - {VERSION: 'pypy3.11'}
@@ -271,13 +271,13 @@ jobs:
           - {ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc', RUNNER: 'windows-latest'}
         PYTHON:
           - {VERSION: "3.14", "ABI_VERSION": "abi3-py39"}
-          - {VERSION: "3.14", "ABI_VERSION": "abi3-py311"}
+          - {VERSION: "3.14", "ABI_VERSION": "abi3-py312"}
           - {VERSION: "3.14t"}
           - {VERSION: "3.15t", "ABI_VERSION": "abi3t-py315"}
           - {VERSION: "pypy3.11"}
         include:
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.14", "ABI_VERSION": "abi3-py311"}
+            PYTHON: {VERSION: "3.14", "ABI_VERSION": "abi3-py312"}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "3.14t"}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
