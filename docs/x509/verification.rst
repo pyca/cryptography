@@ -259,6 +259,23 @@ the root of trust:
 
         :returns: A new instance of :class:`PolicyBuilder`
 
+    .. method:: extended_key_usage(extended_key_usage)
+
+        Sets the Extended Key Usage OID used for checking certificates.
+        Under the default extension policies, an end-entity certificate may
+        omit the EKU extension; if present, it must include this OID.
+        If this method is not called, client and server verifiers require
+        ``clientAuth`` and ``serverAuth``, respectively.
+
+        The configured OID is also checked when a CA certificate includes an
+        EKU extension.
+
+        :param extended_key_usage: An
+            :class:`~cryptography.x509.ObjectIdentifier` for the required
+            Extended Key Usage
+
+        :returns: A new instance of :class:`PolicyBuilder`
+
     .. method:: extension_policies(*, ee_policy, ca_policy)
 
         .. versionadded:: 45.0.0
