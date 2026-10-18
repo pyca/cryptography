@@ -63,7 +63,6 @@ pub(crate) mod ed448;
 pub(crate) mod ed448;
 pub(crate) mod hashes;
 pub(crate) mod hmac;
-#[cfg(feature = "openssl")]
 pub(crate) mod hpke;
 pub(crate) mod kdf;
 pub(crate) mod keys;
