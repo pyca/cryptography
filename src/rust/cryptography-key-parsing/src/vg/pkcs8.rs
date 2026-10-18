@@ -227,24 +227,35 @@ fn parse_private_key_inner(k: &PrivateKeyInfo<'_>) -> KeyParsingResult<PrivateKe
 
 fn pkcs12_pbe_decrypt(
     data: &[u8],
-    password: &[u8],
+    password: Option<&[u8]>,
     cipher: Cipher,
     params: &Pkcs12PbeParams<'_>,
 ) -> KeyParsingResult<Vec<u8>> {
-    let Ok(password) = std::str::from_utf8(password) else {
-        return Err(KeyParsingError::IncorrectPassword);
+    // The password as a BMPString with its NUL trailer; an absent password
+    // is the empty string, without one.
+    let password = match password {
+        None => vec![],
+        Some(p) => {
+            let Ok(p) = std::str::from_utf8(p) else {
+                return Err(KeyParsingError::IncorrectPassword);
+            };
+            p.encode_utf16()
+                .chain([0])
+                .flat_map(|v| v.to_be_bytes())
+                .collect()
+        }
     };
     let hash = cryptography_crypto::hash::MessageDigest::sha1();
-    let key = cryptography_crypto::pkcs12::kdf(
-        password,
+    let key = cryptography_crypto::pkcs12::kdf_bmp(
+        &password,
         params.salt,
         cryptography_crypto::pkcs12::KDF_ENCRYPTION_KEY_ID,
         params.iterations,
         cipher.key_len(),
         hash,
     )?;
-    let iv = cryptography_crypto::pkcs12::kdf(
-        password,
+    let iv = cryptography_crypto::pkcs12::kdf_bmp(
+        &password,
         params.salt,
         cryptography_crypto::pkcs12::KDF_IV_ID,
         params.iterations,
@@ -326,23 +337,40 @@ pub fn parse_encrypted_private_key(
         None | Some(b"") => return Err(KeyParsingError::EncryptedKeyWithoutPassword),
         Some(p) => p,
     };
+    let plaintext = pbe_decrypt(
+        &epki.encryption_algorithm,
+        epki.encrypted_data,
+        Some(password),
+    )?;
+    parse_private_key(&plaintext)
+}
 
-    let plaintext = match epki.encryption_algorithm.params {
+/// Decrypts `data`, encrypted with a password-based scheme of PKCS #5
+/// (PBES1, PBES2) or PKCS #12, as OpenSSL accepts them. A `None` password
+/// is PKCS #12's absent password (which PKCS #5 and PBES2 take as empty).
+pub fn pbe_decrypt(
+    algorithm: &AlgorithmIdentifier<'_>,
+    data: &[u8],
+    password: Option<&[u8]>,
+) -> KeyParsingResult<Vec<u8>> {
+    let pkcs12_password = password;
+    let password = password.unwrap_or(b"");
+    Ok(match &algorithm.params {
         AlgorithmParameters::PbeWithMd5AndDesCbc(params) => pkcs5_pbe_decrypt(
-            epki.encrypted_data,
+            data,
             password,
             Cipher::DesCbc,
             cryptography_crypto::hash::MessageDigest::md5(),
-            &params,
+            params,
         )?,
         AlgorithmParameters::PbeWithShaAnd3KeyTripleDesCbc(params) => {
-            pkcs12_pbe_decrypt(epki.encrypted_data, password, Cipher::DesEde3Cbc, &params)?
+            pkcs12_pbe_decrypt(data, pkcs12_password, Cipher::DesEde3Cbc, params)?
         }
         AlgorithmParameters::PbeWithShaAnd40BitRc2Cbc(params) => {
-            pkcs12_pbe_decrypt(epki.encrypted_data, password, Cipher::Rc2_40Cbc, &params)?
+            pkcs12_pbe_decrypt(data, pkcs12_password, Cipher::Rc2_40Cbc, params)?
         }
         AlgorithmParameters::PbeWithShaAnd128BitRc4(params) => {
-            pkcs12_pbe_decrypt(epki.encrypted_data, password, Cipher::Rc4, &params)?
+            pkcs12_pbe_decrypt(data, pkcs12_password, Cipher::Rc4, params)?
         }
         AlgorithmParameters::Pbes2(params) => {
             let (cipher, iv) = match params.encryption_scheme.params {
@@ -366,7 +394,7 @@ pub fn parse_encrypted_private_key(
             };
 
             let mut key = vec![0; cipher.key_len()];
-            match params.key_derivation_func.params {
+            match &params.key_derivation_func.params {
                 AlgorithmParameters::Pbkdf2(pbkdf2_params) => {
                     let iterations: usize = pbkdf2_params
                         .iteration_count
@@ -410,17 +438,15 @@ pub fn parse_encrypted_private_key(
             };
 
             cipher
-                .decrypt(&key, iv, epki.encrypted_data)
+                .decrypt(&key, iv, data)
                 .map_err(|_| KeyParsingError::IncorrectPassword)?
         }
         _ => {
             return Err(KeyParsingError::UnsupportedEncryptionAlgorithm(
-                epki.encryption_algorithm.oid().clone(),
+                algorithm.oid().clone(),
             ))
         }
-    };
-
-    parse_private_key(&plaintext)
+    })
 }
 
 /// Serializes `key`; an EC key's `public_point` must be present.

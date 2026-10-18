@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 import pytest
 
 from cryptography import utils, x509
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.decrepit.ciphers.algorithms import RC2
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -108,6 +109,14 @@ class TestPKCS12Loading:
     )
     def test_load_pkcs12_ec_keys_rc2(self, filename, password):
         if filename == "no-password.p12":
+            if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+                # verified-garbage builds read PKCS#12 as DER only, and
+                # this file is BER.
+                with pytest.raises(
+                    ValueError, match="Could not deserialize PKCS12 data"
+                ):
+                    self._test_load_pkcs12_ec_keys(filename, password)
+                return
             ctx: typing.Any = pytest.warns(UserWarning)
         else:
             ctx = contextlib.nullcontext()
@@ -351,6 +360,12 @@ class TestPKCS12Creation:
     ):
         if ktype == ec.EllipticCurvePrivateKey:
             _skip_curve_unsupported(backend, *kparam)
+
+        if (
+            ktype == dsa.DSAPrivateKey
+            and not backend.dsa_parameter_generation_supported()
+        ):
+            pytest.skip("Does not support DSA parameter generation")
 
         key = kgenerator(*kparam)
 

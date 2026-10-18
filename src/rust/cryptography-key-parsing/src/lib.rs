@@ -23,6 +23,9 @@ pub mod pem;
 #[cfg(feature = "verified-garbage")]
 #[path = "vg/pem.rs"]
 pub mod pem;
+#[cfg(feature = "verified-garbage")]
+#[path = "vg/pkcs12.rs"]
+pub mod pkcs12;
 #[cfg(feature = "openssl")]
 pub mod pkcs8;
 #[cfg(feature = "verified-garbage")]

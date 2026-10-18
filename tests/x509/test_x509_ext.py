@@ -1738,7 +1738,11 @@ class TestSubjectKeyIdentifierExtension:
         only_if=lambda backend: backend.dsa_supported(),
         skip_message="Does not support DSA.",
     )
-    def test_from_dsa_public_key(self):
+    def test_from_dsa_public_key(self, backend):
+        if not backend.dsa_key_size_supported(2048, 160):
+            pytest.skip(
+                "Does not support DSA with a 2048-bit p and a 160-bit q"
+            )
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
             x509.load_pem_x509_certificate,
