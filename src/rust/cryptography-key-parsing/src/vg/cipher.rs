@@ -240,20 +240,41 @@ mod tests {
         }
     }
 
+    fn hex(s: &str) -> Vec<u8> {
+        (0..s.len())
+            .step_by(2)
+            .map(|i| u8::from_str_radix(&s[i..i + 2], 16).unwrap())
+            .collect()
+    }
+
     #[test]
     fn test_des_known_answer() {
-        // FIPS 81 Appendix B, Table B1 (CBC mode): key 0123456789abcdef,
-        // IV 1234567890abcdef, "Now is the time for all " (no padding: the
-        // padding block is dropped).
-        let key = [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef];
-        let iv = [0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef];
-        let ct = Cipher::DesCbc.encrypt(&key, &iv, b"Now is the time for all ");
-        assert_eq!(
-            &ct[..24],
-            &[
-                0xe5, 0xc7, 0xcd, 0xde, 0x87, 0x2b, 0xf2, 0x7c, 0x43, 0xe9, 0x34, 0x00, 0x8c, 0x38,
-                0x9c, 0x0f, 0x68, 0x37, 0x88, 0x49, 0x9a, 0x7c, 0x05, 0xf6
-            ]
-        );
+        // NIST's TDES known-answer tests with K1 = K2 = K3 (`KEYs`), which
+        // are single DES: the encryption cases of the variable-key and
+        // variable-plaintext files.
+        for rsp in [
+            include_str!(
+                "../../../../../vectors/cryptography_vectors/ciphers/3DES/CBC/TCBCvarkey.rsp"
+            ),
+            include_str!(
+                "../../../../../vectors/cryptography_vectors/ciphers/3DES/CBC/TCBCvartext.rsp"
+            ),
+        ] {
+            let encrypt = rsp.split("[DECRYPT]").next().unwrap();
+            let mut cases = 0;
+            for case in encrypt.split("COUNT = ").skip(1) {
+                let field = |name: &str| {
+                    let line = case.lines().find(|l| l.starts_with(name)).unwrap();
+                    hex(line.split(" = ").nth(1).unwrap().trim())
+                };
+                let (key, iv) = (field("KEYs"), field("IV"));
+                let (pt, expected) = (field("PLAINTEXT"), field("CIPHERTEXT"));
+                let ct = Cipher::DesCbc.encrypt(&key, &iv, &pt);
+                // The padding block follows the one-block message.
+                assert_eq!(&ct[..8], &expected[..]);
+                cases += 1;
+            }
+            assert!(cases > 0);
+        }
     }
 }
