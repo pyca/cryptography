@@ -6,6 +6,7 @@
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 #![allow(unknown_lints, clippy::result_large_err)]
 
+pub(crate) mod common;
 #[cfg(feature = "openssl")]
 pub mod dsa;
 #[cfg(feature = "verified-garbage")]
@@ -41,6 +42,12 @@ pub mod spki;
 pub mod spki;
 #[cfg(feature = "openssl")]
 pub(crate) mod utils;
+#[cfg(feature = "verified-garbage")]
+#[path = "vg/cipher.rs"]
+pub(crate) mod vg_cipher;
+#[cfg(feature = "verified-garbage")]
+#[path = "vg/util.rs"]
+pub(crate) mod vg_util;
 
 pub const MIN_DH_MODULUS_SIZE: u32 = 512;
 
@@ -63,6 +70,10 @@ pub enum KeyParsingError {
     PemUnableToDeriveKey,
     PemUnsupportedCipher,
     PemInvalidProcType,
+    /// A verified-garbage operation failed unexpectedly (the counterpart of
+    /// `OpenSSL`).
+    #[cfg(feature = "verified-garbage")]
+    VerifiedGarbage(&'static str),
 }
 
 impl From<asn1::ParseError> for KeyParsingError {
@@ -75,6 +86,13 @@ impl From<asn1::ParseError> for KeyParsingError {
 impl From<openssl::error::ErrorStack> for KeyParsingError {
     fn from(e: openssl::error::ErrorStack) -> KeyParsingError {
         KeyParsingError::OpenSSL(e)
+    }
+}
+
+#[cfg(feature = "verified-garbage")]
+impl From<cryptography_crypto::hash::Error> for KeyParsingError {
+    fn from(_: cryptography_crypto::hash::Error) -> KeyParsingError {
+        KeyParsingError::VerifiedGarbage("hash")
     }
 }
 
@@ -139,13 +157,16 @@ impl From<raw::RsaPublicKey> for ParsedPublicKey {
 }
 
 impl ParsedPublicKey {
-    /// Whether this is an RSA key (`rsaEncryption`, not RSA-PSS).
+    /// Whether this is an RSA key. `id-RSASSA-PSS` keys count: as with
+    /// OpenSSL, which parses them into plain RSA keys.
     pub fn is_rsa(&self) -> bool {
         match self {
             #[cfg(feature = "openssl")]
             ParsedPublicKey::Pkey(pkey) => pkey.id() == openssl::pkey::Id::RSA,
             #[cfg(feature = "verified-garbage")]
-            ParsedPublicKey::Raw(key) => matches!(key, raw::PublicKey::Rsa(_)),
+            ParsedPublicKey::Raw(key) => {
+                matches!(key, raw::PublicKey::Rsa(_) | raw::PublicKey::RsaPss(_))
+            }
         }
     }
 }
@@ -155,6 +176,17 @@ pub enum KeySerializationError {
     Write(asn1::WriteError),
     #[cfg(feature = "openssl")]
     OpenSSL(openssl::error::ErrorStack),
+    /// A verified-garbage operation (or the system's random number
+    /// generator) failed unexpectedly.
+    #[cfg(feature = "verified-garbage")]
+    VerifiedGarbage(&'static str),
+}
+
+#[cfg(feature = "verified-garbage")]
+impl From<cryptography_crypto::hash::Error> for KeySerializationError {
+    fn from(_: cryptography_crypto::hash::Error) -> KeySerializationError {
+        KeySerializationError::VerifiedGarbage("hash")
+    }
 }
 
 impl From<asn1::WriteError> for KeySerializationError {

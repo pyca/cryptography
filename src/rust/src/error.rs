@@ -86,6 +86,10 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
             cryptography_key_parsing::KeyParsingError::Parse(e) => CryptographyError::KeyParsing(e),
             #[cfg(feature = "openssl")]
             cryptography_key_parsing::KeyParsingError::OpenSSL(e) => CryptographyError::OpenSSL(e),
+            #[cfg(feature = "verified-garbage")]
+            cryptography_key_parsing::KeyParsingError::VerifiedGarbage(what) => {
+                CryptographyError::VerifiedGarbage(what)
+            }
             cryptography_key_parsing::KeyParsingError::InvalidKey => {
                 CryptographyError::Py(pyo3::exceptions::PyValueError::new_err("Invalid key"))
             }
@@ -173,6 +177,10 @@ impl From<cryptography_key_parsing::KeySerializationError> for CryptographyError
             #[cfg(feature = "openssl")]
             cryptography_key_parsing::KeySerializationError::OpenSSL(e) => {
                 CryptographyError::OpenSSL(e)
+            }
+            #[cfg(feature = "verified-garbage")]
+            cryptography_key_parsing::KeySerializationError::VerifiedGarbage(what) => {
+                CryptographyError::VerifiedGarbage(what)
             }
         }
     }
