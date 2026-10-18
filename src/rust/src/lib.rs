@@ -309,12 +309,10 @@ mod _rust {
         #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::hpke::hpke;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::kdf::kdf;
         #[pymodule_export]
         use crate::backend::keys::keys;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::keywrap::keywrap;
         #[cfg(any(

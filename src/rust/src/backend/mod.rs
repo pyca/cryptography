@@ -65,10 +65,8 @@ pub(crate) mod hashes;
 pub(crate) mod hmac;
 #[cfg(feature = "openssl")]
 pub(crate) mod hpke;
-#[cfg(feature = "openssl")]
 pub(crate) mod kdf;
 pub(crate) mod keys;
-#[cfg(feature = "openssl")]
 pub(crate) mod keywrap;
 #[cfg(any(
     CRYPTOGRAPHY_IS_BORINGSSL,
