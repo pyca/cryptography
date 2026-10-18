@@ -279,7 +279,7 @@ class Backend:
     def x448_supported(self) -> bool:
         if self._fips_enabled:
             return False
-        return (
+        return rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE or (
             not rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
             and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
             and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC
@@ -287,14 +287,16 @@ class Backend:
 
     def mlkem_supported(self) -> bool:
         return (
-            rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE
+            or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
             or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
             or rust_openssl.CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
         )
 
     def mldsa_supported(self) -> bool:
         return (
-            rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+            rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE
+            or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
             or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
             or rust_openssl.CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
         )
@@ -303,7 +305,7 @@ class Backend:
         return True
 
     def ed448_supported(self) -> bool:
-        return (
+        return rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE or (
             not rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
             and not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
             and not rust_openssl.CRYPTOGRAPHY_IS_AWSLC

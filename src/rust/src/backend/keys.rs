@@ -268,11 +268,41 @@ fn private_key_from_raw(
     key: cryptography_key_parsing::raw::PrivateKey,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
-    // TODO(verified-garbage): dispatch to each key type's module.
-    let _ = (py, key, unsafe_skip_rsa_key_validation);
-    Err(CryptographyError::from(
-        exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
-    ))
+    use cryptography_key_parsing::raw::PrivateKey;
+    // TODO(verified-garbage): dispatch the other key types to their modules.
+    let _ = unsafe_skip_rsa_key_validation;
+    match key {
+        PrivateKey::X25519(k) => Ok(crate::backend::x25519::private_key_from_raw_bytes(&k)
+            .into_pyobject(py)?
+            .into_any()),
+        PrivateKey::X448(k) => Ok(crate::backend::x448::private_key_from_raw_bytes(&k)
+            .into_pyobject(py)?
+            .into_any()),
+        PrivateKey::Ed25519(k) => Ok(crate::backend::ed25519::private_key_from_raw_bytes(&k)
+            .into_pyobject(py)?
+            .into_any()),
+        PrivateKey::Ed448(k) => Ok(crate::backend::ed448::private_key_from_raw_bytes(&k)
+            .into_pyobject(py)?
+            .into_any()),
+        PrivateKey::MlKem768(k) => Ok(crate::backend::mlkem::mlkem768_private_key_from_raw(&k)?
+            .into_pyobject(py)?
+            .into_any()),
+        PrivateKey::MlKem1024(k) => Ok(crate::backend::mlkem::mlkem1024_private_key_from_raw(&k)?
+            .into_pyobject(py)?
+            .into_any()),
+        PrivateKey::MlDsa44(k) => Ok(crate::backend::mldsa::mldsa44_private_key_from_raw(&k)?
+            .into_pyobject(py)?
+            .into_any()),
+        PrivateKey::MlDsa65(k) => Ok(crate::backend::mldsa::mldsa65_private_key_from_raw(&k)?
+            .into_pyobject(py)?
+            .into_any()),
+        PrivateKey::MlDsa87(k) => Ok(crate::backend::mldsa::mldsa87_private_key_from_raw(&k)?
+            .into_pyobject(py)?
+            .into_any()),
+        _ => Err(CryptographyError::from(
+            exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
+        )),
+    }
 }
 
 /// The Python object for a public key parsed into its raw components.
@@ -281,11 +311,40 @@ fn public_key_from_raw(
     py: pyo3::Python<'_>,
     key: cryptography_key_parsing::raw::PublicKey,
 ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
-    // TODO(verified-garbage): dispatch to each key type's module.
-    let _ = (py, key);
-    Err(CryptographyError::from(
-        exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
-    ))
+    use cryptography_key_parsing::raw::PublicKey;
+    // TODO(verified-garbage): dispatch the other key types to their modules.
+    match key {
+        PublicKey::X25519(k) => Ok(crate::backend::x25519::public_key_from_raw_bytes(&k)
+            .into_pyobject(py)?
+            .into_any()),
+        PublicKey::X448(k) => Ok(crate::backend::x448::public_key_from_raw_bytes(&k)
+            .into_pyobject(py)?
+            .into_any()),
+        PublicKey::Ed25519(k) => Ok(crate::backend::ed25519::public_key_from_raw_bytes(&k)
+            .into_pyobject(py)?
+            .into_any()),
+        PublicKey::Ed448(k) => Ok(crate::backend::ed448::public_key_from_raw_bytes(&k)
+            .into_pyobject(py)?
+            .into_any()),
+        PublicKey::MlKem768(k) => Ok(crate::backend::mlkem::mlkem768_public_key_from_raw(&k)?
+            .into_pyobject(py)?
+            .into_any()),
+        PublicKey::MlKem1024(k) => Ok(crate::backend::mlkem::mlkem1024_public_key_from_raw(&k)?
+            .into_pyobject(py)?
+            .into_any()),
+        PublicKey::MlDsa44(k) => Ok(crate::backend::mldsa::mldsa44_public_key_from_raw(&k)?
+            .into_pyobject(py)?
+            .into_any()),
+        PublicKey::MlDsa65(k) => Ok(crate::backend::mldsa::mldsa65_public_key_from_raw(&k)?
+            .into_pyobject(py)?
+            .into_any()),
+        PublicKey::MlDsa87(k) => Ok(crate::backend::mldsa::mldsa87_public_key_from_raw(&k)?
+            .into_pyobject(py)?
+            .into_any()),
+        _ => Err(CryptographyError::from(
+            exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
+        )),
+    }
 }
 
 #[pyo3::pyfunction]
@@ -494,6 +553,64 @@ mod tests {
         pyo3::Python::attach(|py| {
             let pkey = openssl::pkey::PKey::hmac(&[0; 32]).unwrap();
             assert!(private_key_from_pkey(py, &pkey, false).is_err());
+        });
+    }
+}
+
+#[cfg(all(test, feature = "verified-garbage"))]
+mod vg_tests {
+    use cryptography_key_parsing::raw::{PrivateKey, PublicKey};
+    use pyo3::types::PyAnyMethods;
+
+    use super::{private_key_from_raw, public_key_from_raw};
+
+    #[test]
+    fn test_raw_key_dispatch() {
+        pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
+            let private_keys = [
+                PrivateKey::X25519([1; 32]),
+                PrivateKey::X448([1; 56]),
+                PrivateKey::Ed25519([1; 32]),
+                PrivateKey::Ed448([1; 57]),
+                PrivateKey::MlKem768([1; 64]),
+                PrivateKey::MlKem1024([1; 64]),
+                PrivateKey::MlDsa44([1; 32]),
+                PrivateKey::MlDsa65([1; 32]),
+                PrivateKey::MlDsa87([1; 32]),
+            ];
+            for key in private_keys {
+                let obj = private_key_from_raw(py, key.clone(), false)
+                    .ok()
+                    .expect("a key object");
+                // The object's public key serializes to the derived public
+                // key's raw bytes, which load back as a public key object.
+                let public = obj.call_method0("public_key").unwrap();
+                let raw = public
+                    .call_method0("public_bytes_raw")
+                    .unwrap()
+                    .extract::<Vec<u8>>()
+                    .unwrap();
+                let parsed = match key {
+                    PrivateKey::X25519(_) => PublicKey::X25519(raw.try_into().unwrap()),
+                    PrivateKey::X448(_) => PublicKey::X448(raw.try_into().unwrap()),
+                    PrivateKey::Ed25519(_) => PublicKey::Ed25519(raw.try_into().unwrap()),
+                    PrivateKey::Ed448(_) => PublicKey::Ed448(raw.try_into().unwrap()),
+                    PrivateKey::MlKem768(_) => PublicKey::MlKem768(raw),
+                    PrivateKey::MlKem1024(_) => PublicKey::MlKem1024(raw),
+                    PrivateKey::MlDsa44(_) => PublicKey::MlDsa44(raw),
+                    PrivateKey::MlDsa65(_) => PublicKey::MlDsa65(raw),
+                    PrivateKey::MlDsa87(_) => PublicKey::MlDsa87(raw),
+                    _ => unreachable!(),
+                };
+                let loaded = public_key_from_raw(py, parsed).ok().expect("a key object");
+                assert!(loaded.eq(&public).unwrap());
+            }
+
+            // A malformed encapsulation key is a ValueError.
+            assert!(public_key_from_raw(py, PublicKey::MlKem768(vec![0xff; 1184])).is_err());
+            assert!(public_key_from_raw(py, PublicKey::MlDsa44(vec![0; 1311])).is_err());
         });
     }
 }
