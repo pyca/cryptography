@@ -8,9 +8,15 @@
 use base64::engine::general_purpose::{GeneralPurpose, GeneralPurposeConfig, URL_SAFE};
 use base64::engine::{DecodePaddingMode, Engine};
 use cryptography_crypto::constant_time;
+#[cfg(feature = "openssl")]
 use cryptography_openssl::OpenSSLResult;
+#[cfg(feature = "openssl")]
 use openssl::hash::MessageDigest;
+#[cfg(feature = "openssl")]
 use openssl::symm::Mode;
+
+#[cfg(feature = "verified-garbage")]
+use crate::backend::ciphers::Mode;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyStringMethods};
 
 use crate::backend::run_with_gil_detached;
@@ -102,11 +108,82 @@ fn unverified_token_data(
 pub(crate) struct Fernet {
     // Keyed contexts that every operation starts from a copy of. Keying a
     // context is much more expensive than copying one.
+    #[cfg(feature = "openssl")]
     hmac: cryptography_openssl::hmac::Hmac,
+    #[cfg(feature = "openssl")]
     encryptor: openssl::cipher_ctx::CipherCtx,
+    #[cfg(feature = "openssl")]
     decryptor: openssl::cipher_ctx::CipherCtx,
+    #[cfg(feature = "verified-garbage")]
+    hmac: cryptography_crypto::hmac::Hmac,
+    #[cfg(feature = "verified-garbage")]
+    cbc: verified_garbage::aes_cbc::AesCbc,
 }
 
+#[cfg(feature = "verified-garbage")]
+impl Fernet {
+    fn from_key(key: &[u8]) -> CryptographyResult<Fernet> {
+        let (signing_key, encryption_key) = key.split_at(KEY_LEN / 2);
+        let hmac = cryptography_crypto::hmac::Hmac::new(
+            signing_key,
+            cryptography_crypto::hash::MessageDigest::sha256(),
+        )?;
+        let cbc = verified_garbage::aes_cbc::AesCbc::new(encryption_key)
+            .map_err(|_| CryptographyError::VerifiedGarbage("invalid AES key"))?;
+        Ok(Fernet { hmac, cbc })
+    }
+
+    fn hmac(&self, data: &[u8]) -> CryptographyResult<cryptography_crypto::hmac::DigestBytes> {
+        let mut h = self.hmac.copy()?;
+        h.update(data)?;
+        Ok(h.finish()?)
+    }
+
+    /// AES-128-CBC with PKCS7 padding. `output` must have room for
+    /// `input.len() + BLOCK_LEN` bytes. Returns the number of bytes written.
+    fn aes_cbc(
+        &self,
+        mode: Mode,
+        iv: &[u8],
+        input: &[u8],
+        output: &mut [u8],
+    ) -> CryptographyResult<usize> {
+        let mut iv: [u8; IV_LEN] = iv
+            .try_into()
+            .map_err(|_| CryptographyError::VerifiedGarbage("invalid IV"))?;
+        match mode {
+            Mode::Encrypt => {
+                // PKCS7 padding always adds at least one byte.
+                let n = (input.len() / BLOCK_LEN + 1) * BLOCK_LEN;
+                let pad = (n - input.len()) as u8;
+                output[..input.len()].copy_from_slice(input);
+                output[input.len()..n].fill(pad);
+                self.cbc
+                    .encrypt(&mut iv, &mut output[..n])
+                    .map_err(|_| CryptographyError::VerifiedGarbage("AES-CBC failed"))?;
+                Ok(n)
+            }
+            Mode::Decrypt => {
+                let n = input.len();
+                if n == 0 || n % BLOCK_LEN != 0 {
+                    return Err(CryptographyError::VerifiedGarbage(
+                        "AES-CBC input is not whole blocks",
+                    ));
+                }
+                output[..n].copy_from_slice(input);
+                self.cbc
+                    .decrypt(&mut iv, &mut output[..n])
+                    .map_err(|_| CryptographyError::VerifiedGarbage("AES-CBC failed"))?;
+                if !crate::padding::check_pkcs7_padding(&output[n - BLOCK_LEN..n]) {
+                    return Err(CryptographyError::VerifiedGarbage("invalid padding"));
+                }
+                Ok(n - usize::from(output[n - 1]))
+            }
+        }
+    }
+}
+
+#[cfg(feature = "openssl")]
 impl Fernet {
     fn from_key(key: &[u8]) -> OpenSSLResult<Fernet> {
         let (signing_key, encryption_key) = key.split_at(KEY_LEN / 2);
@@ -152,7 +229,9 @@ impl Fernet {
         let n = ctx.cipher_update(input, Some(output))?;
         Ok(n + ctx.cipher_final(&mut output[n..])?)
     }
+}
 
+impl Fernet {
     /// Builds the raw (not yet base64-encoded) token.
     fn encrypt_from_parts(
         &self,
@@ -254,7 +333,8 @@ impl Fernet {
         if key.len() != KEY_LEN {
             return Err(invalid_key());
         }
-        Ok(Fernet::from_key(&key)?)
+        let fernet = Fernet::from_key(&key)?;
+        Ok(fernet)
     }
 
     #[classmethod]
@@ -262,7 +342,7 @@ impl Fernet {
         cls: &pyo3::Bound<'p, pyo3::types::PyType>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut key = [0u8; KEY_LEN];
-        cryptography_openssl::rand::rand_bytes(&mut key)?;
+        crate::backend::rand::fill_random(&mut key)?;
         b64encode(cls.py(), &key)
     }
 
@@ -281,7 +361,7 @@ impl Fernet {
         current_time: u64,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let mut iv = [0u8; IV_LEN];
-        cryptography_openssl::rand::rand_bytes(&mut iv)?;
+        crate::backend::rand::fill_random(&mut iv)?;
         let token = self.encrypt_from_parts(py, data.as_bytes(), current_time, &iv)?;
         b64encode(py, &token)
     }
@@ -412,7 +492,7 @@ impl MultiFernet {
             .ok_or_else(invalid_token)?;
 
         let mut iv = [0u8; IV_LEN];
-        cryptography_openssl::rand::rand_bytes(&mut iv)?;
+        crate::backend::rand::fill_random(&mut iv)?;
         let token = self.fernets[0]
             .get()
             .encrypt_from_parts(py, &plaintext, timestamp, &iv)?;
@@ -467,4 +547,50 @@ impl MultiFernet {
 pub(crate) mod fernet_mod {
     #[pymodule_export]
     use super::{Fernet, MultiFernet};
+}
+
+#[cfg(test)]
+mod tests {
+    use base64::engine::Engine;
+
+    use super::{Fernet, Mode, BLOCK_LEN, HEADER_LEN, HMAC_LEN, URL_SAFE_LENIENT};
+
+    /// A string field of the (single-object) Fernet spec vector.
+    fn field<'a>(json: &'a str, name: &str) -> &'a str {
+        let start = json.find(&format!("\"{name}\": \"")).unwrap() + name.len() + 5;
+        let end = start + json[start..].find('"').unwrap();
+        &json[start..end]
+    }
+
+    #[test]
+    fn test_spec_vector() {
+        let json = include_str!("../../../vectors/cryptography_vectors/fernet/generate.json");
+        let token = URL_SAFE_LENIENT.decode(field(json, "token")).unwrap();
+        let secret = URL_SAFE_LENIENT.decode(field(json, "secret")).unwrap();
+        let src = field(json, "src").as_bytes();
+
+        let fernet = Fernet::from_key(&secret).unwrap_or_else(|_| panic!());
+        let iv = &token[9..HEADER_LEN];
+        let mut ct = vec![0; src.len() + BLOCK_LEN];
+        let n = fernet
+            .aes_cbc(Mode::Encrypt, iv, src, &mut ct)
+            .unwrap_or_else(|_| panic!());
+        let body_len = token.len() - HMAC_LEN;
+        assert_eq!(&ct[..n], &token[HEADER_LEN..body_len]);
+        let mac = fernet.hmac(&token[..body_len]).unwrap_or_else(|_| panic!());
+        assert_eq!(&mac[..], &token[body_len..]);
+
+        let mut pt = vec![0; n + BLOCK_LEN];
+        let m = fernet
+            .aes_cbc(Mode::Decrypt, iv, &ct[..n], &mut pt)
+            .unwrap_or_else(|_| panic!());
+        assert_eq!(&pt[..m], src);
+        // Bad padding and partial blocks fail.
+        let mut bad = ct[..n].to_vec();
+        bad[n - 1] ^= 0xff;
+        assert!(fernet.aes_cbc(Mode::Decrypt, iv, &bad, &mut pt).is_err());
+        assert!(fernet
+            .aes_cbc(Mode::Decrypt, iv, &ct[..n - 1], &mut pt)
+            .is_err());
+    }
 }

@@ -58,6 +58,15 @@ fn extract_aad(aad: Option<Aad<'_>>) -> CryptographyResult<(ExtractedAad<'_>, us
     }
 }
 
+// With verified-garbage, the classes below hold its AEADs, with the
+// interface of `EvpCipherAead`.
+#[cfg(feature = "verified-garbage")]
+#[path = "vg/aead_ctx.rs"]
+mod vg_aead_ctx;
+#[cfg(feature = "verified-garbage")]
+use vg_aead_ctx::VgAead as EvpCipherAead;
+
+#[cfg(feature = "openssl")]
 pub(crate) enum AeadCipher {
     Static(&'static openssl::cipher::CipherRef),
     #[cfg(not(any(
@@ -68,6 +77,7 @@ pub(crate) enum AeadCipher {
     Fetched(openssl::cipher::Cipher),
 }
 
+#[cfg(feature = "openssl")]
 impl std::ops::Deref for AeadCipher {
     type Target = openssl::cipher::CipherRef;
 
@@ -84,6 +94,7 @@ impl std::ops::Deref for AeadCipher {
     }
 }
 
+#[cfg(feature = "openssl")]
 /// Describes how a cipher's key schedule relates to the direction of
 /// operation. This determines how many contexts we pre-key at construction
 /// time.
@@ -104,6 +115,7 @@ pub(crate) enum KeySchedule {
     PerDirection,
 }
 
+#[cfg(feature = "openssl")]
 /// Pre-keyed contexts with the cipher and key set, but no per-operation
 /// state. Each operation copies the appropriate one and then sets the
 /// direction and nonce on the copy, so the key schedule is computed only once
@@ -125,6 +137,7 @@ enum BaseCtxs {
     },
 }
 
+#[cfg(feature = "openssl")]
 impl BaseCtxs {
     fn for_encryption(&self) -> Option<&openssl::cipher_ctx::CipherCtx> {
         match self {
@@ -153,6 +166,7 @@ impl BaseCtxs {
     }
 }
 
+#[cfg(feature = "openssl")]
 pub(crate) struct EvpCipherAead {
     cipher: AeadCipher,
     key: pyo3::Py<pyo3::PyAny>,
@@ -162,6 +176,7 @@ pub(crate) struct EvpCipherAead {
     is_ccm: bool,
 }
 
+#[cfg(feature = "openssl")]
 impl EvpCipherAead {
     pub(crate) fn new(
         py: pyo3::Python<'_>,
@@ -512,6 +527,7 @@ impl ChaCha20Poly1305 {
                 pyo3::exceptions::PyValueError::new_err("ChaCha20Poly1305 key must be 32 bytes."),
             ));
         }
+        #[cfg(feature = "openssl")]
         if cryptography_openssl::fips::is_enabled() {
             return Err(CryptographyError::from(
                 exceptions::UnsupportedAlgorithm::new_err((
@@ -522,7 +538,11 @@ impl ChaCha20Poly1305 {
         }
 
         cfg_if::cfg_if! {
-            if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
+            if #[cfg(feature = "verified-garbage")] {
+                Ok(ChaCha20Poly1305 {
+                    ctx: EvpCipherAead::chacha20_poly1305(key_buf.as_bytes())?,
+                })
+            } else if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
                 Ok(ChaCha20Poly1305 {
                     ctx: EvpAead::new(
                         cryptography_openssl::aead::AeadType::ChaCha20Poly1305,
@@ -697,19 +717,26 @@ impl AesGcm {
         key: pyo3::Py<pyo3::PyAny>,
     ) -> CryptographyResult<AesGcm> {
         let key_buf = key.extract::<CffiBuf<'_>>(py)?;
+        if !matches!(key_buf.as_bytes().len(), 16 | 24 | 32) {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "AESGCM key must be 128, 192, or 256 bits.",
+                ),
+            ));
+        }
+        #[cfg(feature = "verified-garbage")]
+        return Ok(AesGcm {
+            ctx: EvpCipherAead::aes_gcm(key_buf.as_bytes())?,
+        });
+
+        #[cfg(feature = "openssl")]
         let cipher = match key_buf.as_bytes().len() {
             16 => openssl::cipher::Cipher::aes_128_gcm(),
             24 => openssl::cipher::Cipher::aes_192_gcm(),
-            32 => openssl::cipher::Cipher::aes_256_gcm(),
-            _ => {
-                return Err(CryptographyError::from(
-                    pyo3::exceptions::PyValueError::new_err(
-                        "AESGCM key must be 128, 192, or 256 bits.",
-                    ),
-                ))
-            }
+            _ => openssl::cipher::Cipher::aes_256_gcm(),
         };
 
+        #[cfg(feature = "openssl")]
         Ok(AesGcm {
             ctx: EvpCipherAead::new(
                 py,
@@ -901,6 +928,7 @@ impl AesCcm {
                 ))
             } else {
                 let key_buf = key.extract::<CffiBuf<'_>>(py)?;
+                #[cfg(feature = "openssl")]
                 let cipher = match key_buf.as_bytes().len() {
                     16 => openssl::cipher::Cipher::aes_128_ccm(),
                     24 => openssl::cipher::Cipher::aes_192_ccm(),
@@ -913,6 +941,14 @@ impl AesCcm {
                         ))
                     }
                 };
+                #[cfg(feature = "verified-garbage")]
+                if !matches!(key_buf.as_bytes().len(), 16 | 24 | 32) {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "AESCCM key must be 128, 192, or 256 bits.",
+                        ),
+                    ));
+                }
                 let tag_length = tag_length.unwrap_or(16);
                 if ![4, 6, 8, 10, 12, 14, 16].contains(&tag_length) {
                     return Err(CryptographyError::from(
@@ -920,6 +956,13 @@ impl AesCcm {
                     ));
                 }
 
+                #[cfg(feature = "verified-garbage")]
+                return Ok(AesCcm {
+                    ctx: EvpCipherAead::aes_ccm(key_buf.as_bytes(), tag_length)?,
+                    tag_length,
+                });
+
+                #[cfg(feature = "openssl")]
                 Ok(AesCcm {
                     ctx: EvpCipherAead::new(
                         py,
@@ -1132,7 +1175,12 @@ impl AesSiv {
         };
 
         cfg_if::cfg_if! {
-            if #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))] {
+            if #[cfg(feature = "verified-garbage")] {
+                _ = cipher_name;
+                Ok(AesSiv {
+                    ctx: EvpCipherAead::aes_siv(key_buf.as_bytes())?,
+                })
+            } else if #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))] {
                 if cryptography_openssl::fips::is_enabled() {
                     return Err(CryptographyError::from(
                         exceptions::UnsupportedAlgorithm::new_err((
@@ -1308,7 +1356,18 @@ impl AesOcb3 {
     fn new(py: pyo3::Python<'_>, key: pyo3::Py<pyo3::PyAny>) -> CryptographyResult<AesOcb3> {
         let key_buf = key.extract::<CffiBuf<'_>>(py)?;
         cfg_if::cfg_if! {
-            if #[cfg(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
+            if #[cfg(feature = "verified-garbage")] {
+                if !matches!(key_buf.as_bytes().len(), 16 | 24 | 32) {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "AESOCB3 key must be 128, 192, or 256 bits.",
+                        ),
+                    ));
+                }
+                Ok(AesOcb3 {
+                    ctx: EvpCipherAead::aes_ocb3(key_buf.as_bytes())?,
+                })
+            } else if #[cfg(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
                 _ = key_buf;
                 _ = key;
 
@@ -1533,7 +1592,20 @@ impl AesGcmSiv {
         };
 
         cfg_if::cfg_if! {
-            if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
+            if #[cfg(feature = "verified-garbage")] {
+                let _ = cipher_name;
+                if key_buf.as_bytes().len() == 24 {
+                    return Err(CryptographyError::from(
+                        exceptions::UnsupportedAlgorithm::new_err((
+                            "Only 128-bit and 256-bit keys are supported for AES-GCM-SIV with verified-garbage",
+                            exceptions::Reasons::UNSUPPORTED_CIPHER,
+                        )),
+                    ));
+                }
+                Ok(AesGcmSiv {
+                    ctx: EvpCipherAead::aes_gcm_siv(key_buf.as_bytes())?,
+                })
+            } else if #[cfg(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))] {
                 let _ = cipher_name;
                 let aead_type = match key_buf.as_bytes().len() {
                     16 => cryptography_openssl::aead::AeadType::Aes128GcmSiv,

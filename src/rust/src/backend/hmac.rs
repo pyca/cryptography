@@ -9,6 +9,15 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
+#[cfg(feature = "verified-garbage")]
+pub(crate) use cryptography_crypto::hmac::DigestBytes;
+#[cfg(feature = "verified-garbage")]
+use cryptography_crypto::hmac::Hmac as HmacCtx;
+#[cfg(feature = "openssl")]
+pub(crate) use cryptography_openssl::hmac::DigestBytes;
+#[cfg(feature = "openssl")]
+use cryptography_openssl::hmac::Hmac as HmacCtx;
+
 #[pyo3::pyclass(
     module = "cryptography.hazmat.bindings._rust.openssl.hmac",
     name = "HMAC"
@@ -16,7 +25,7 @@ use crate::exceptions;
 pub(crate) struct Hmac {
     #[pyo3(get)]
     algorithm: pyo3::Py<pyo3::PyAny>,
-    ctx: Option<cryptography_openssl::hmac::Hmac>,
+    ctx: Option<HmacCtx>,
 }
 
 impl Hmac {
@@ -26,7 +35,7 @@ impl Hmac {
         algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
     ) -> CryptographyResult<Hmac> {
         let md = message_digest_from_algorithm(py, algorithm)?;
-        let ctx = cryptography_openssl::hmac::Hmac::new(key, md).map_err(|_| {
+        let ctx = HmacCtx::new(key, md).map_err(|_| {
             exceptions::UnsupportedAlgorithm::new_err((
                 "Digest is not supported for HMAC",
                 exceptions::Reasons::UNSUPPORTED_HASH,
@@ -49,22 +58,20 @@ impl Hmac {
         Ok(())
     }
 
-    pub(crate) fn finalize_bytes(
-        &mut self,
-    ) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
+    pub(crate) fn finalize_bytes(&mut self) -> CryptographyResult<DigestBytes> {
         let data = self.get_mut_ctx()?.finish()?;
         self.ctx = None;
         Ok(data)
     }
 
-    fn get_ctx(&self) -> CryptographyResult<&cryptography_openssl::hmac::Hmac> {
+    fn get_ctx(&self) -> CryptographyResult<&HmacCtx> {
         if let Some(ctx) = self.ctx.as_ref() {
             return Ok(ctx);
         };
         Err(exceptions::already_finalized_error())
     }
 
-    fn get_mut_ctx(&mut self) -> CryptographyResult<&mut cryptography_openssl::hmac::Hmac> {
+    fn get_mut_ctx(&mut self) -> CryptographyResult<&mut HmacCtx> {
         if let Some(ctx) = self.ctx.as_mut() {
             return Ok(ctx);
         }

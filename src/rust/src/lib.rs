@@ -54,12 +54,10 @@ use crate::error::CryptographyResult;
 mod asn1;
 mod backend;
 mod buf;
-#[cfg(feature = "openssl")]
 mod cobblestone;
 mod declarative_asn1;
 mod error;
 mod exceptions;
-#[cfg(feature = "openssl")]
 mod fernet;
 pub(crate) mod oid;
 mod padding;
@@ -188,12 +186,10 @@ mod _rust {
 
     #[pymodule_export]
     use crate::asn1::asn1_mod;
-    #[cfg(feature = "openssl")]
     #[pymodule_export]
     use crate::cobblestone::cobblestone_mod;
     #[pymodule_export]
     use crate::exceptions::exceptions;
-    #[cfg(feature = "openssl")]
     #[pymodule_export]
     use crate::fernet::fernet_mod;
     #[pymodule_export]
@@ -278,13 +274,10 @@ mod _rust {
         use super::super::enable_fips;
         #[pymodule_export]
         use super::super::{is_fips_enabled, openssl_version, openssl_version_text};
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::aead::aead;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::ciphers::ciphers;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::cmac::cmac;
         #[pymodule_export]
@@ -307,18 +300,15 @@ mod _rust {
         use crate::backend::ed448::ed448;
         #[pymodule_export]
         use crate::backend::hashes::hashes;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::hmac::hmac;
         #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::hpke::hpke;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::kdf::kdf;
         #[pymodule_export]
         use crate::backend::keys::keys;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::keywrap::keywrap;
         #[cfg(any(
@@ -337,7 +327,6 @@ mod _rust {
         ))]
         #[pymodule_export]
         use crate::backend::mlkem::mlkem;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::poly1305::poly1305;
         #[pymodule_export]

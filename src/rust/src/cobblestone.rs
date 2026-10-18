@@ -224,7 +224,7 @@ impl ChunkedEncryptor {
     ) -> CryptographyResult<Self> {
         check_key_length(params, key)?;
         let mut salt = [0; SALT_LEN];
-        cryptography_openssl::rand::rand_bytes(&mut salt)?;
+        crate::backend::rand::fill_random(&mut salt)?;
         let keys = derive_keys(py, params, key, &salt, context)?;
         let cipher = ChunkCipher::new(py, params, &keys)?;
         let mut header = [0; HEADER_LEN];
