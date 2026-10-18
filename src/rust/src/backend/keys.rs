@@ -268,11 +268,27 @@ fn private_key_from_raw(
     key: cryptography_key_parsing::raw::PrivateKey,
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
-    // TODO(verified-garbage): dispatch to each key type's module.
-    let _ = (py, key, unsafe_skip_rsa_key_validation);
-    Err(CryptographyError::from(
-        exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
-    ))
+    use cryptography_key_parsing::raw::PrivateKey;
+    match key {
+        PrivateKey::Rsa(rsa) | PrivateKey::RsaPss(rsa) => Ok(
+            crate::backend::rsa::private_key_from_raw(&rsa, unsafe_skip_rsa_key_validation)?
+                .into_pyobject(py)?
+                .into_any(),
+        ),
+        PrivateKey::Ec(ec) => Ok(crate::backend::ec::private_key_from_raw(py, &ec)?
+            .into_pyobject(py)?
+            .into_any()),
+        PrivateKey::Dsa(dsa) => Ok(crate::backend::dsa::private_key_from_raw(py, &dsa)?
+            .into_pyobject(py)?
+            .into_any()),
+        PrivateKey::Dh(dh) => Ok(crate::backend::dh::private_key_from_raw(py, &dh)?
+            .into_pyobject(py)?
+            .into_any()),
+        // TODO(verified-garbage): dispatch the other key types.
+        _ => Err(CryptographyError::from(
+            exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
+        )),
+    }
 }
 
 /// The Python object for a public key parsed into its raw components.
@@ -281,11 +297,27 @@ fn public_key_from_raw(
     py: pyo3::Python<'_>,
     key: cryptography_key_parsing::raw::PublicKey,
 ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
-    // TODO(verified-garbage): dispatch to each key type's module.
-    let _ = (py, key);
-    Err(CryptographyError::from(
-        exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
-    ))
+    use cryptography_key_parsing::raw::PublicKey;
+    match key {
+        PublicKey::Rsa(rsa) | PublicKey::RsaPss(rsa) => {
+            Ok(crate::backend::rsa::public_key_from_raw(&rsa)?
+                .into_pyobject(py)?
+                .into_any())
+        }
+        PublicKey::Ec(ec) => Ok(crate::backend::ec::public_key_from_raw(py, &ec)?
+            .into_pyobject(py)?
+            .into_any()),
+        PublicKey::Dsa(dsa) => Ok(crate::backend::dsa::public_key_from_raw(py, &dsa)?
+            .into_pyobject(py)?
+            .into_any()),
+        PublicKey::Dh(dh) => Ok(crate::backend::dh::public_key_from_raw(py, &dh)?
+            .into_pyobject(py)?
+            .into_any()),
+        // TODO(verified-garbage): dispatch the other key types.
+        _ => Err(CryptographyError::from(
+            exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
+        )),
+    }
 }
 
 #[pyo3::pyfunction]

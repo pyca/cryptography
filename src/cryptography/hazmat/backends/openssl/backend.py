@@ -181,6 +181,20 @@ class Backend:
         if self._fips_enabled and isinstance(algorithm, hashes.SHA1):
             return False
 
+        if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+            return isinstance(
+                algorithm,
+                (
+                    hashes.SHA1,
+                    hashes.SHA224,
+                    hashes.SHA256,
+                    hashes.SHA384,
+                    hashes.SHA512,
+                    hashes.SHA512_224,
+                    hashes.SHA512_256,
+                ),
+            )
+
         return isinstance(
             algorithm,
             (
@@ -206,8 +220,31 @@ class Backend:
                 and padding._salt_length != PSS.DIGEST_LENGTH
             ):
                 return False
+            if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+                # verified-garbage's PSS uses MGF1 over the signature's hash
+                # function, which must be one of these.
+                return isinstance(
+                    padding._mgf._algorithm,
+                    (
+                        hashes.MD5,
+                        hashes.SHA1,
+                        hashes.SHA224,
+                        hashes.SHA256,
+                        hashes.SHA384,
+                        hashes.SHA512,
+                        hashes.SHA512_224,
+                        hashes.SHA512_256,
+                    ),
+                )
             return self.hash_supported(padding._mgf._algorithm)
         elif isinstance(padding, OAEP) and isinstance(padding._mgf, MGF1):
+            if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE and not (
+                isinstance(padding._mgf._algorithm, hashes.SHA1)
+                or type(padding._mgf._algorithm) is type(padding._algorithm)
+            ):
+                # verified-garbage has OAEP with MGF1 over the same hash
+                # function or over SHA-1 only.
+                return False
             return self._oaep_hash_supported(
                 padding._mgf._algorithm
             ) and self._oaep_hash_supported(padding._algorithm)
@@ -221,6 +258,9 @@ class Backend:
             return self.rsa_padding_supported(padding)
 
     def dsa_supported(self) -> bool:
+        # verified-garbage signs and verifies with DSA (for the (p, q) sizes
+        # (1024, 160), (2048, 224), (2048, 256) and (3072, 256) bits) but
+        # cannot generate DSA parameters.
         return (
             not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
             and not self._fips_enabled
@@ -310,6 +350,11 @@ class Backend:
         )
 
     def ecdsa_deterministic_supported(self) -> bool:
+        # verified-garbage signs deterministically (RFC 6979) only with the
+        # one hash function it pairs with each curve (and P-256 with
+        # SHA-384), not with every hash, so it does not claim support.
+        if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+            return False
         return (
             rust_openssl.CRYPTOGRAPHY_OPENSSL_320_OR_GREATER
             and not self._fips_enabled
