@@ -4,7 +4,10 @@
 
 use std::borrow::Cow;
 use std::collections::HashMap;
-#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))
+))]
 use std::ffi::CString;
 use std::mem;
 use std::ops::Deref;
@@ -15,10 +18,16 @@ use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters};
 use cryptography_x509::csr::Attribute;
 use cryptography_x509::pkcs7::PKCS7_DATA_OID;
 use cryptography_x509::{common, oid, pkcs7};
-#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))
+))]
 use openssl::pkcs7::Pkcs7;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
-#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))
+))]
 use pyo3::PyTypeInfo;
 
 use crate::asn1::encode_der_data;
@@ -28,7 +37,10 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::padding::PKCS7UnpaddingContext;
 use crate::pkcs12::symmetric_encrypt;
 use crate::x509::certificate;
-#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))
+))]
 use crate::x509::certificate::load_der_x509_certificate;
 use crate::{exceptions, types, x509};
 
@@ -377,6 +389,7 @@ fn check_decrypt_parameters<'p>(
     options: &pyo3::Bound<'p, pyo3::types::PyList>,
 ) -> Result<(), CryptographyError> {
     // Check if RSA encryption with PKCS1 v1.5 padding is supported (dependent of FIPS mode)
+    #[cfg(feature = "openssl")]
     if cryptography_openssl::fips::is_enabled() {
         return Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err((
@@ -446,8 +459,7 @@ pub(crate) fn symmetric_decrypt(
         .getattr(pyo3::intern!(py, "block_size"))?
         .extract()?;
 
-    let mut cipher =
-        ciphers::CipherContext::new(py, algorithm, mode, openssl::symm::Mode::Decrypt)?;
+    let mut cipher = ciphers::CipherContext::new(py, algorithm, mode, ciphers::Mode::Decrypt)?;
 
     // Decrypt the data
     let mut decrypted_data = vec![0; data.len() + (block_size / 8)];
@@ -723,7 +735,10 @@ fn smime_canonicalize(data: &[u8], text_mode: bool) -> (Cow<'_, [u8]>, Cow<'_, [
     }
 }
 
-#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))
+))]
 fn load_pkcs7_certificates(
     py: pyo3::Python<'_>,
     pkcs7: Pkcs7,
@@ -848,25 +863,28 @@ fn load_der_pkcs7_certificates(
     data: pyo3::Py<pyo3::types::PyBytes>,
 ) -> CryptographyResult<pyo3::Bound<'_, pyo3::types::PyList>> {
     cfg_if::cfg_if! {
-        if #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))] {
-            let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_der(data.as_bytes(py)).map_err(|_| {
-                CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-                    "Unable to parse PKCS7 data",
-                ))
-            })?;
-            let result = load_pkcs7_certificates(py, pkcs7_decoded)?;
-            if let Err(e) =  load_pkcs7_certificates_rust(py, data) {
-                let err = pyo3::PyErr::from(e);
-                let warning_cls = pyo3::exceptions::PyUserWarning::type_object(py);
-                let message = CString::new(format!("PKCS#7 certificates could not be parsed as DER, falling back to parsing as BER. In the future, this may become an exception. Error details: {err}")).unwrap();
-                pyo3::PyErr::warn(py, &warning_cls, &message, 1)?;
-            }
+            if #[cfg(all(
+        feature = "openssl",
+        not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))
+    ))] {
+                let pkcs7_decoded = openssl::pkcs7::Pkcs7::from_der(data.as_bytes(py)).map_err(|_| {
+                    CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+                        "Unable to parse PKCS7 data",
+                    ))
+                })?;
+                let result = load_pkcs7_certificates(py, pkcs7_decoded)?;
+                if let Err(e) =  load_pkcs7_certificates_rust(py, data) {
+                    let err = pyo3::PyErr::from(e);
+                    let warning_cls = pyo3::exceptions::PyUserWarning::type_object(py);
+                    let message = CString::new(format!("PKCS#7 certificates could not be parsed as DER, falling back to parsing as BER. In the future, this may become an exception. Error details: {err}")).unwrap();
+                    pyo3::PyErr::warn(py, &warning_cls, &message, 1)?;
+                }
 
-            Ok(result)
-        } else {
-            load_pkcs7_certificates_rust(py, data)
+                Ok(result)
+            } else {
+                load_pkcs7_certificates_rust(py, data)
+            }
         }
-    }
 }
 
 #[pyo3::pymodule(gil_used = false)]

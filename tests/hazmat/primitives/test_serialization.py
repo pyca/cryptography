@@ -397,7 +397,13 @@ class TestDERSerialization:
             ),
         ],
     )
-    def test_load_der_dsa_public_key(self, key_file):
+    def test_load_der_dsa_public_key(self, key_file, backend):
+        if key_file.endswith(
+            "dsa_public_key.der"
+        ) and not backend.dsa_key_size_supported(2048, 160):
+            pytest.skip(
+                "Does not support DSA with a 2048-bit p and a 160-bit q"
+            )
         with pytest.warns(utils.DeprecatedIn51):
             key = load_vectors_from_file(
                 key_file,
@@ -836,6 +842,14 @@ class TestPEMSerialization:
     )
     def test_load_dsa_private_key(self, key_path, password, backend):
         _skip_fips_format(key_path, password, backend)
+        if key_path[
+            -1
+        ] == "dsa_private_key.pem" and not backend.dsa_key_size_supported(
+            2048, 160
+        ):
+            pytest.skip(
+                "Does not support DSA with a 2048-bit p and a 160-bit q"
+            )
         with pytest.warns(utils.DeprecatedIn51):
             key = load_vectors_from_file(
                 os.path.join("asymmetric", *key_path),
@@ -934,7 +948,13 @@ class TestPEMSerialization:
             ),
         ],
     )
-    def test_load_pem_dsa_public_key(self, key_file):
+    def test_load_pem_dsa_public_key(self, key_file, backend):
+        if key_file.endswith(
+            "dsa_public_key.pem"
+        ) and not backend.dsa_key_size_supported(2048, 160):
+            pytest.skip(
+                "Does not support DSA with a 2048-bit p and a 160-bit q"
+            )
         with pytest.warns(utils.DeprecatedIn51):
             key = load_vectors_from_file(
                 key_file,
