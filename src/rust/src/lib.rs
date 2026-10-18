@@ -296,15 +296,16 @@ mod _rust {
         #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::ec::ec;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::ed25519::ed25519;
-        #[cfg(not(any(
-            CRYPTOGRAPHY_IS_LIBRESSL,
-            CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC
-        )))]
-        #[cfg(feature = "openssl")]
+        #[cfg(any(
+            feature = "verified-garbage",
+            not(any(
+                CRYPTOGRAPHY_IS_LIBRESSL,
+                CRYPTOGRAPHY_IS_BORINGSSL,
+                CRYPTOGRAPHY_IS_AWSLC
+            ))
+        ))]
         #[pymodule_export]
         use crate::backend::ed448::ed448;
         #[pymodule_export]
@@ -324,19 +325,19 @@ mod _rust {
         #[pymodule_export]
         use crate::backend::keywrap::keywrap;
         #[cfg(any(
+            feature = "verified-garbage",
             CRYPTOGRAPHY_IS_BORINGSSL,
             CRYPTOGRAPHY_IS_AWSLC,
             CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
         ))]
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::mldsa::mldsa;
         #[cfg(any(
+            feature = "verified-garbage",
             CRYPTOGRAPHY_IS_BORINGSSL,
             CRYPTOGRAPHY_IS_AWSLC,
             CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
         ))]
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::mlkem::mlkem;
         #[cfg(feature = "openssl")]
@@ -345,15 +346,16 @@ mod _rust {
         #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::rsa::rsa;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::x25519::x25519;
-        #[cfg(not(any(
-            CRYPTOGRAPHY_IS_LIBRESSL,
-            CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC
-        )))]
-        #[cfg(feature = "openssl")]
+        #[cfg(any(
+            feature = "verified-garbage",
+            not(any(
+                CRYPTOGRAPHY_IS_LIBRESSL,
+                CRYPTOGRAPHY_IS_BORINGSSL,
+                CRYPTOGRAPHY_IS_AWSLC
+            ))
+        ))]
         #[pymodule_export]
         use crate::backend::x448::x448;
         #[cfg(feature = "openssl")]
