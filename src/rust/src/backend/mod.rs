@@ -23,46 +23,70 @@ where
     }
 }
 
+#[cfg(feature = "openssl")]
 pub(crate) mod aead;
+#[cfg(feature = "openssl")]
 pub(crate) mod cipher_registry;
+#[cfg(feature = "openssl")]
 pub(crate) mod ciphers;
+#[cfg(feature = "openssl")]
 pub(crate) mod cmac;
+#[cfg(feature = "openssl")]
 pub(crate) mod dh;
+#[cfg(feature = "openssl")]
 pub(crate) mod dsa;
+#[cfg(feature = "openssl")]
 pub(crate) mod ec;
+#[cfg(feature = "openssl")]
 pub(crate) mod ed25519;
+#[cfg(feature = "openssl")]
 #[cfg(not(any(
     CRYPTOGRAPHY_IS_LIBRESSL,
     CRYPTOGRAPHY_IS_BORINGSSL,
     CRYPTOGRAPHY_IS_AWSLC
 )))]
+#[cfg(feature = "openssl")]
 pub(crate) mod ed448;
 pub(crate) mod hashes;
+#[cfg(feature = "openssl")]
 pub(crate) mod hmac;
+#[cfg(feature = "openssl")]
 pub(crate) mod hpke;
+#[cfg(feature = "openssl")]
 pub(crate) mod kdf;
 pub(crate) mod keys;
+#[cfg(feature = "openssl")]
 pub(crate) mod keywrap;
+#[cfg(feature = "openssl")]
 #[cfg(any(
     CRYPTOGRAPHY_IS_BORINGSSL,
     CRYPTOGRAPHY_IS_AWSLC,
     CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
 ))]
+#[cfg(feature = "openssl")]
 pub(crate) mod mldsa;
+#[cfg(feature = "openssl")]
 #[cfg(any(
     CRYPTOGRAPHY_IS_BORINGSSL,
     CRYPTOGRAPHY_IS_AWSLC,
     CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
 ))]
+#[cfg(feature = "openssl")]
 pub(crate) mod mlkem;
+#[cfg(feature = "openssl")]
 pub(crate) mod poly1305;
+#[cfg(feature = "openssl")]
 pub(crate) mod rand;
+#[cfg(feature = "openssl")]
 pub(crate) mod rsa;
 pub(crate) mod utils;
+#[cfg(feature = "openssl")]
 pub(crate) mod x25519;
+#[cfg(feature = "openssl")]
 #[cfg(not(any(
     CRYPTOGRAPHY_IS_LIBRESSL,
     CRYPTOGRAPHY_IS_BORINGSSL,
     CRYPTOGRAPHY_IS_AWSLC
 )))]
+#[cfg(feature = "openssl")]
 pub(crate) mod x448;

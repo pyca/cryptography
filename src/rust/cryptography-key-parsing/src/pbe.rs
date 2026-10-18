@@ -2,7 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-use crate::{KeySerializationError, KeySerializationResult};
+#[cfg(feature = "openssl")]
+use crate::KeySerializationError;
+use crate::KeySerializationResult;
 
 pub enum EncryptionAlgorithm {
     PBESHA1And3KeyTripleDESCBC,
@@ -80,6 +82,12 @@ impl EncryptionAlgorithm {
         iv: &[u8],
         data: &[u8],
     ) -> KeySerializationResult<Vec<u8>> {
+        #[cfg(not(feature = "openssl"))]
+        {
+            let _ = (password, cipher_kdf_iter, salt, iv, data);
+            unimplemented!("TODO(verified-garbage): PBE encryption")
+        }
+        #[cfg(feature = "openssl")]
         match self {
             EncryptionAlgorithm::PBESHA1And3KeyTripleDESCBC => {
                 let password = std::str::from_utf8(password)

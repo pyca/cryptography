@@ -11,19 +11,42 @@ license.workspace = true
 asn1.workspace = true
 base64.workspace = true
 cfg-if.workspace = true
-cryptography-cffi = { path = "cryptography-cffi" }
-cryptography-crypto = { path = "cryptography-crypto" }
+cryptography-cffi = { path = "cryptography-cffi", optional = true }
+cryptography-crypto = { path = "cryptography-crypto", default-features = false }
 cryptography-keepalive = { path = "cryptography-keepalive" }
-cryptography-key-parsing = { path = "cryptography-key-parsing" }
-cryptography-openssl = { path = "cryptography-openssl" }
+cryptography-key-parsing = { path = "cryptography-key-parsing", default-features = false }
+cryptography-openssl = { path = "cryptography-openssl", optional = true }
 cryptography-x509 = { path = "cryptography-x509" }
 cryptography-x509-verification = { path = "cryptography-x509-verification" }
 foreign-types-shared.workspace = true
-openssl.workspace = true
-openssl-sys.workspace = true
+getrandom = { workspace = true, optional = true }
+openssl = { workspace = true, optional = true }
+openssl-sys = { workspace = true, optional = true }
 pem.workspace = true
 pyo3.workspace = true
 self_cell.workspace = true
+verified-garbage = { workspace = true, optional = true }
+
+[features]
+# Exactly one crypto backend must be enabled. OpenSSL (or LibreSSL,
+# BoringSSL, AWS-LC) is the default; build with
+# `--no-default-features --features verified-garbage` to use
+# verified-garbage instead, without linking OpenSSL at all.
+default = ["openssl"]
+openssl = [
+    "dep:openssl",
+    "dep:openssl-sys",
+    "dep:cryptography-openssl",
+    "dep:cryptography-cffi",
+    "cryptography-crypto/openssl",
+    "cryptography-key-parsing/openssl",
+]
+verified-garbage = [
+    "dep:verified-garbage",
+    "dep:getrandom",
+    "cryptography-crypto/verified-garbage",
+    "cryptography-key-parsing/verified-garbage",
+]
 
 [build-dependencies]
 pyo3-build-config.workspace = true

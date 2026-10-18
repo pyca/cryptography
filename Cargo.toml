@@ -33,6 +33,8 @@ pem = { version = "4", default-features = false }
 pyo3 = { version = "0.29", features = ["abi3", "abi3t"] }
 pyo3-build-config = { version = "0.29" }
 self_cell = "1"
+getrandom = "0.4"
+verified-garbage = { path = "../verified-garbage", features = ["std"] }
 
 [profile.release]
 overflow-checks = true

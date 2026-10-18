@@ -4,8 +4,9 @@
 
 from __future__ import annotations
 
+import typing
+
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
-from cryptography.hazmat.bindings.openssl import binding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives._asymmetric import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric import ec
@@ -67,12 +68,22 @@ class Backend:
     _fips_dh_min_modulus = 1 << _fips_dh_min_key_size
 
     def __init__(self) -> None:
-        self._binding = binding.Binding()
-        self._ffi = self._binding.ffi
-        self._lib = self._binding.lib
+        self._binding: typing.Any = None
+        self._ffi: typing.Any = None
+        self._lib: typing.Any = None
+        # Builds with verified-garbage as the crypto backend do not link
+        # OpenSSL, so they have no CFFI bindings to it.
+        if not rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+            from cryptography.hazmat.bindings.openssl import binding
+
+            self._binding = binding.Binding()
+            self._ffi = self._binding.ffi
+            self._lib = self._binding.lib
         self._fips_enabled = rust_openssl.is_fips_enabled()
 
     def __repr__(self) -> str:
+        if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+            return "<VerifiedGarbageBackend>"
         return (
             f"<OpenSSLBackend(version: {self.openssl_version_text()}, "
             f"FIPS: {self._fips_enabled}, "
@@ -80,6 +91,8 @@ class Backend:
         )
 
     def openssl_assert(self, ok: bool) -> None:
+        from cryptography.hazmat.bindings.openssl import binding
+
         return binding._openssl_assert(ok)
 
     def _enable_fips(self) -> None:
@@ -256,6 +269,8 @@ class Backend:
         return not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
 
     def dh_x942_serialization_supported(self) -> bool:
+        if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+            return True
         return self._lib.Cryptography_HAS_EVP_PKEY_DHX == 1
 
     def x25519_supported(self) -> bool:

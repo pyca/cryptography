@@ -6,6 +6,8 @@ use std::borrow::Cow;
 
 use pyo3::types::PyAnyMethods;
 
+use cryptography_crypto::hash as backend_hash;
+
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
@@ -14,18 +16,18 @@ use crate::{exceptions, types};
 pub(crate) struct Hash {
     #[pyo3(get)]
     algorithm: pyo3::Py<pyo3::PyAny>,
-    ctx: Option<openssl::hash::Hasher>,
+    ctx: Option<backend_hash::Hasher>,
 }
 
 impl Hash {
-    fn get_ctx(&self) -> CryptographyResult<&openssl::hash::Hasher> {
+    fn get_ctx(&self) -> CryptographyResult<&backend_hash::Hasher> {
         if let Some(ctx) = self.ctx.as_ref() {
             return Ok(ctx);
         };
         Err(exceptions::already_finalized_error())
     }
 
-    fn get_mut_ctx(&mut self) -> CryptographyResult<&mut openssl::hash::Hasher> {
+    fn get_mut_ctx(&mut self) -> CryptographyResult<&mut backend_hash::Hasher> {
         if let Some(ctx) = self.ctx.as_mut() {
             return Ok(ctx);
         }
@@ -36,7 +38,7 @@ impl Hash {
 pub(crate) fn message_digest_from_algorithm(
     py: pyo3::Python<'_>,
     algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
-) -> CryptographyResult<openssl::hash::MessageDigest> {
+) -> CryptographyResult<backend_hash::MessageDigest> {
     if !algorithm.is_instance(&types::HASH_ALGORITHM.get(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err("Expected instance of hashes.HashAlgorithm."),
@@ -55,7 +57,7 @@ pub(crate) fn message_digest_from_algorithm(
         Cow::Borrowed(name.as_ref())
     };
 
-    match openssl::hash::MessageDigest::from_name(&openssl_name) {
+    match backend_hash::MessageDigest::from_name(&openssl_name) {
         Some(md) => Ok(md),
         None => Err(CryptographyError::from(
             exceptions::UnsupportedAlgorithm::new_err((
@@ -95,7 +97,7 @@ impl Hash {
         let _ = backend;
 
         let md = message_digest_from_algorithm(py, algorithm)?;
-        let ctx = openssl::hash::Hasher::new(md)?;
+        let ctx = backend_hash::Hasher::new(md)?;
 
         Ok(Hash {
             algorithm: algorithm.clone().unbind(),
@@ -156,7 +158,7 @@ impl Hash {
                     .getattr(pyo3::intern!(py, "digest_size"))?
                     .extract::<usize>()?;
                 let result = pyo3::types::PyBytes::new_with(py, digest_size, |b| {
-                    openssl::hash::hash_xof(md, data.as_bytes(), b)
+                    hash_xof(md, data.as_bytes(), b)
                         .map_err(CryptographyError::from)?;
                     Ok(())
                 })?;
@@ -166,7 +168,7 @@ impl Hash {
 
         let data = data.as_bytes();
         let digest = crate::backend::run_with_gil_detached(py, data.len(), || {
-            openssl::hash::hash(md, data)
+            backend_hash::hash(md, data)
         })?;
         Ok(pyo3::types::PyBytes::new(py, &digest))
     }
@@ -176,7 +178,7 @@ impl Hash {
 pub(crate) struct XOFHash {
     #[pyo3(get)]
     algorithm: pyo3::Py<pyo3::PyAny>,
-    ctx: openssl::hash::Hasher,
+    ctx: backend_hash::Hasher,
     bytes_remaining: u64,
     squeezed: bool,
 }
@@ -204,7 +206,8 @@ impl XOFHash {
         cfg_if::cfg_if! {
             if #[cfg(not(any(
                 CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
-                CRYPTOGRAPHY_IS_AWSLC
+                CRYPTOGRAPHY_IS_AWSLC,
+                feature = "verified-garbage"
             )))] {
                 let _ = py;
                 let _ = algorithm;
@@ -222,7 +225,7 @@ impl XOFHash {
                     ));
                 }
                 let md = message_digest_from_algorithm(py, algorithm)?;
-                let ctx = openssl::hash::Hasher::new(md)?;
+                let ctx = backend_hash::Hasher::new(md)?;
                 // We treat digest_size as the maximum total output for this API
                 let bytes_remaining = algorithm
                     .getattr(pyo3::intern!(py, "digest_size"))?
@@ -246,7 +249,11 @@ impl XOFHash {
         }
         self.update_bytes(py, data.as_bytes())
     }
-    #[cfg(any(CRYPTOGRAPHY_OPENSSL_330_OR_GREATER, CRYPTOGRAPHY_IS_AWSLC))]
+    #[cfg(any(
+        CRYPTOGRAPHY_OPENSSL_330_OR_GREATER,
+        CRYPTOGRAPHY_IS_AWSLC,
+        feature = "verified-garbage"
+    ))]
     fn squeeze<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -276,6 +283,24 @@ impl XOFHash {
             bytes_remaining: self.bytes_remaining,
             squeezed: self.squeezed,
         })
+    }
+}
+
+#[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL)))]
+fn hash_xof(
+    md: backend_hash::MessageDigest,
+    data: &[u8],
+    out: &mut [u8],
+) -> Result<(), backend_hash::Error> {
+    #[cfg(feature = "openssl")]
+    {
+        openssl::hash::hash_xof(md, data, out)
+    }
+    #[cfg(not(feature = "openssl"))]
+    {
+        let mut h = backend_hash::Hasher::new(md)?;
+        h.update(data)?;
+        h.finish_xof(out)
     }
 }
 
