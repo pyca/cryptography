@@ -307,6 +307,31 @@ VERIFIED_GARBAGE_CARGO_ARGS = [
 ]
 
 
+@nox.session(name="rust-verified-garbage")
+def rust_verified_garbage(session: nox.Session) -> None:
+    # Formats, lints and tests the Rust code of the verified-garbage build
+    # (without building or testing the Python package).
+    if "CARGO_INCREMENTAL" not in os.environ:
+        session.env["CARGO_INCREMENTAL"] = "1"
+    session.run("cargo", "fmt", "--all", external=True)
+    session.run(
+        "cargo",
+        "clippy",
+        *VERIFIED_GARBAGE_CARGO_ARGS,
+        "--",
+        "-D",
+        "warnings",
+        external=True,
+    )
+    session.run(
+        "cargo",
+        "test",
+        *VERIFIED_GARBAGE_CARGO_ARGS,
+        *session.posargs,
+        external=True,
+    )
+
+
 @nox.session
 @nox.session(name="local-verified-garbage")
 def local(session: nox.Session):
