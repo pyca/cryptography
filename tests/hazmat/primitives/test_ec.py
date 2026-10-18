@@ -1405,6 +1405,12 @@ class TestEllipticCurvePEMPublicKeySerialization:
             load_nist_vectors,
         ),
     )
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            backend.elliptic_curve_compressed_points_supported()
+        ),
+        skip_message="Does not support compressed elliptic curve points.",
+    )
     def test_from_encoded_point_compressed(self, vector, backend):
         curve = {b"SECP256R1": ec.SECP256R1(), b"SECP256K1": ec.SECP256K1()}[
             vector["curve"]
@@ -1483,6 +1489,12 @@ class TestEllipticCurvePEMPublicKeySerialization:
             os.path.join("asymmetric", "EC", "compressed_points.txt"),
             load_nist_vectors,
         ),
+    )
+    @pytest.mark.supported(
+        only_if=lambda backend: (
+            backend.elliptic_curve_compressed_points_supported()
+        ),
+        skip_message="Does not support compressed elliptic curve points.",
     )
     def test_serialize_point(self, vector, backend):
         curve = {b"SECP256R1": ec.SECP256R1(), b"SECP256K1": ec.SECP256K1()}[

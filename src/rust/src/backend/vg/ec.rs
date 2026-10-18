@@ -562,7 +562,11 @@ pub(crate) fn private_key_from_raw(
     let curve = Curve::from_oid(&key.curve).ok_or_else(|| Curve::unsupported(&key.curve))?;
     let py_curve = py_curve_from_curve(py, curve)?.unbind();
     let private_key = ECPrivateKey::from_scalar(curve, &key.private_value, py_curve)
-        .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("Invalid EC key"))?;
+        .ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err(
+                "Invalid key: the EC private value must be in [1, n - 1] (its public point would be the point at infinity or undefined)",
+            )
+        })?;
     if let Some(encoded) = &key.public_point {
         if encoded.as_slice() == [0] {
             return Err(infinity_error());
