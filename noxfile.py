@@ -408,9 +408,7 @@ def local(session: nox.Session):
     )
 
     session.run("cargo", "test", "--all", external=True)
-    session.run(
-        "cargo", "test", *VERIFIED_GARBAGE_CARGO_ARGS, external=True
-    )
+    session.run("cargo", "test", *VERIFIED_GARBAGE_CARGO_ARGS, external=True)
 
 
 LCOV_SOURCEFILE_RE = re.compile(
