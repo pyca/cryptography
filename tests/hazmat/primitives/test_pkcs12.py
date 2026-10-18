@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 import pytest
 
 from cryptography import utils, x509
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.decrepit.ciphers.algorithms import RC2
 from cryptography.hazmat.primitives import hashes, serialization
@@ -40,7 +41,7 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
 )
 
 from ...doubles import DummyKeySerializationEncryption
-from ...utils import load_vectors_from_file
+from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 # Accessing attributes of the dsa module emits the DSA deprecation warning;
 # these are evaluated at collection time, so suppress it there. Loading the
@@ -774,6 +775,21 @@ class TestPKCS12Creation:
             serialize_key_and_certificates(
                 b"name", key, cacert, [], encryption
             )
+
+    @pytest.mark.parametrize(
+        "mac_alg",
+        [hashes.MD5(), hashes.SHA512_256(), hashes.SHA3_256(), hashes.SM3()],
+    )
+    def test_key_serialization_encryption_unsupported_mac(self, mac_alg):
+        # Hashes without an algorithm identifier for the MAC are refused.
+        encryption = (
+            serialization.PrivateFormat.PKCS12.encryption_builder()
+            .hmac_hash(mac_alg)
+            .build(b"password")
+        )
+        key = ec.generate_private_key(ec.SECP256R1())
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            serialize_key_and_certificates(b"name", key, None, [], encryption)
 
     @pytest.mark.parametrize(
         "encryption_algorithm",
