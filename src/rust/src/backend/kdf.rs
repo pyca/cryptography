@@ -202,7 +202,10 @@ impl Scrypt {
         .map_err(|_| {
             // memory required formula explained here:
             // https://blog.filippo.io/the-scrypt-parameters/
-            let min_memory = 128 * self.n * self.r / (1024 * 1024);
+            // 128 * n * r bytes, in MB. `n` and `r` can each be up to
+            // 2**64 - 1, so this is computed in 128 bits (as
+            // n * r / 8192, which does not overflow).
+            let min_memory = u128::from(self.n) * u128::from(self.r) / 8192;
             CryptographyError::from(pyo3::exceptions::PyMemoryError::new_err(format!(
                 "Not enough memory to derive key. These parameters require {min_memory}MB of memory."
             )))
