@@ -66,6 +66,7 @@ name = "cryptography-crypto"
 version = "0.51.0-dev1"
 dependencies = [
  "openssl",
+ "verified-garbage",
 ]
 
 [[package]]
@@ -87,6 +88,7 @@ dependencies = [
  "openssl",
  "openssl-sys",
  "pem",
+ "verified-garbage",
 ]
 
 [[package]]
@@ -115,12 +117,14 @@ dependencies = [
  "cryptography-x509",
  "cryptography-x509-verification",
  "foreign-types-shared",
+ "getrandom",
  "openssl",
  "openssl-sys",
  "pem",
  "pyo3",
  "pyo3-build-config",
  "self_cell",
+ "verified-garbage",
 ]
 
 [[package]]
@@ -159,6 +163,17 @@ name = "foreign-types-shared"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
+
+[[package]]
+name = "getrandom"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "300e883d756b2e4ec94e02791f39b04b522276138852cfc41d9fb7e904106099"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "r-efi",
+]
 
 [[package]]
 name = "heck"
@@ -318,6 +333,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "r-efi"
+version = "6.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
+
+[[package]]
 name = "self_cell"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -357,3 +378,10 @@ name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
+
+[[package]]
+name = "verified-garbage"
+version = "0.0.0"
+dependencies = [
+ "getrandom",
+]
