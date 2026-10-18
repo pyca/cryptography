@@ -19,7 +19,7 @@ if openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
         "which does not link OpenSSL, so there are no OpenSSL bindings."
     )
 
-from cryptography.hazmat.bindings._rust import _openssl  # noqa: E402
+from cryptography.hazmat.bindings._rust import _openssl
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 
