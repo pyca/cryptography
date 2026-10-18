@@ -158,8 +158,7 @@ impl Hash {
                     .getattr(pyo3::intern!(py, "digest_size"))?
                     .extract::<usize>()?;
                 let result = pyo3::types::PyBytes::new_with(py, digest_size, |b| {
-                    hash_xof(md, data.as_bytes(), b)
-                        .map_err(CryptographyError::from)?;
+                    hash_xof(md, data.as_bytes(), b).map_err(CryptographyError::from)?;
                     Ok(())
                 })?;
                 return Ok(result);
@@ -167,9 +166,8 @@ impl Hash {
         }
 
         let data = data.as_bytes();
-        let digest = crate::backend::run_with_gil_detached(py, data.len(), || {
-            backend_hash::hash(md, data)
-        })?;
+        let digest =
+            crate::backend::run_with_gil_detached(py, data.len(), || backend_hash::hash(md, data))?;
         Ok(pyo3::types::PyBytes::new(py, &digest))
     }
 }

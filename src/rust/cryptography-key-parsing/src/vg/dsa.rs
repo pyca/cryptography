@@ -8,17 +8,13 @@
 use crate::raw::DsaPrivateKey;
 use crate::{KeyParsingError, KeyParsingResult, KeySerializationResult};
 
-/// Serializes `key`, with its public value `y` (which the format includes).
-pub fn serialize_pkcs1_private_key(
-    key: &DsaPrivateKey,
-    y: &[u8],
-) -> KeySerializationResult<Vec<u8>> {
-    let _ = (key, y);
+/// Serializes `key`, whose `y` must be present (the format includes it).
+pub fn serialize_pkcs1_private_key(key: &DsaPrivateKey) -> KeySerializationResult<Vec<u8>> {
+    let _ = key;
     unimplemented!("verified-garbage: DSA private key serialization")
 }
 
-/// Parses a key; the backend checks that its `y` (dropped) is `g^x mod p`
-/// by recomputing it.
+/// Parses a key, with its `y`, which the backend must check is `g^x mod p`.
 pub fn parse_pkcs1_private_key(data: &[u8]) -> KeyParsingResult<DsaPrivateKey> {
     let _ = data;
     Err(KeyParsingError::InvalidKey)
