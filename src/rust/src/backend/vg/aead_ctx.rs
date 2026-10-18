@@ -137,32 +137,32 @@ impl VgAead {
         data: &mut [u8],
         tag: &mut [u8],
     ) -> CryptographyResult<()> {
-        let single = single_aad(aad);
+        let single = || single_aad(aad);
         let nonce12 = || -> CryptographyResult<&[u8; 12]> {
             nonce.and_then(|n| n.try_into().ok()).ok_or_else(bad_nonce)
         };
         match &self.key {
             Key::ChaCha20Poly1305(k) => tag.copy_from_slice(
-                &k.encrypt_in_place(nonce12()?, single, data)
+                &k.encrypt_in_place(nonce12()?, single(), data)
                     .map_err(failed)?,
             ),
             Key::AesGcm(k) => tag.copy_from_slice(
-                &k.encrypt_in_place(nonce.ok_or_else(bad_nonce)?, single, data)
+                &k.encrypt_in_place(nonce.ok_or_else(bad_nonce)?, single(), data)
                     .map_err(failed)?,
             ),
             Key::AesGcmSiv(k) => tag.copy_from_slice(
-                &k.encrypt_in_place(nonce12()?, single, data)
+                &k.encrypt_in_place(nonce12()?, single(), data)
                     .map_err(failed)?,
             ),
             Key::AesOcb(k) => tag.copy_from_slice(
-                &k.encrypt_in_place::<16>(nonce.ok_or_else(bad_nonce)?, single, data)
+                &k.encrypt_in_place::<16>(nonce.ok_or_else(bad_nonce)?, single(), data)
                     .map_err(failed)?,
             ),
             Key::AesCcm(k) => {
                 let nonce = nonce.ok_or_else(bad_nonce)?;
                 ccm_tag_length!(tag.len(), T => {
                     tag.copy_from_slice(
-                        &k.encrypt_in_place::<T>(nonce, single, data).map_err(failed)?,
+                        &k.encrypt_in_place::<T>(nonce, single(), data).map_err(failed)?,
                     );
                     Ok(())
                 })?
@@ -184,7 +184,7 @@ impl VgAead {
         data: &mut [u8],
         tag: &[u8],
     ) -> CryptographyResult<bool> {
-        let single = single_aad(aad);
+        let single = || single_aad(aad);
         let nonce12 = || -> CryptographyResult<&[u8; 12]> {
             nonce.and_then(|n| n.try_into().ok()).ok_or_else(bad_nonce)
         };
@@ -194,21 +194,21 @@ impl VgAead {
         };
         Ok(match &self.key {
             Key::ChaCha20Poly1305(k) => k
-                .decrypt_in_place(nonce12()?, single, data, tag16()?)
+                .decrypt_in_place(nonce12()?, single(), data, tag16()?)
                 .is_ok(),
             Key::AesGcm(k) => k
-                .decrypt_in_place(nonce.ok_or_else(bad_nonce)?, single, data, tag16()?)
+                .decrypt_in_place(nonce.ok_or_else(bad_nonce)?, single(), data, tag16()?)
                 .is_ok(),
             Key::AesGcmSiv(k) => k
-                .decrypt_in_place(nonce12()?, single, data, tag16()?)
+                .decrypt_in_place(nonce12()?, single(), data, tag16()?)
                 .is_ok(),
             Key::AesOcb(k) => k
-                .decrypt_in_place::<16>(nonce.ok_or_else(bad_nonce)?, single, data, tag16()?)
+                .decrypt_in_place::<16>(nonce.ok_or_else(bad_nonce)?, single(), data, tag16()?)
                 .is_ok(),
             Key::AesCcm(k) => {
                 let nonce = nonce.ok_or_else(bad_nonce)?;
                 ccm_tag_length!(tag.len(), T => {
-                    Ok(k.decrypt_in_place::<T>(nonce, single, data, tag.try_into().unwrap())
+                    Ok(k.decrypt_in_place::<T>(nonce, single(), data, tag.try_into().unwrap())
                         .is_ok())
                 })?
             }
