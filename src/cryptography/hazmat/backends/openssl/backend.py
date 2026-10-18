@@ -190,6 +190,9 @@ class Backend:
         return rust_openssl.ciphers.cipher_supported(cipher, mode)
 
     def _consume_errors(self) -> list[rust_openssl.OpenSSLError]:
+        # verified-garbage has no error stack to consume.
+        if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+            return []
         return rust_openssl.capture_error_stack()
 
     def _oaep_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
