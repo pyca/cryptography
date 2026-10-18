@@ -2,17 +2,8 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
+use crate::common::DsaPrivateKey;
 use crate::{KeyParsingResult, KeySerializationResult};
-
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-struct DsaPrivateKey<'a> {
-    version: u8,
-    p: asn1::BigUint<'a>,
-    q: asn1::BigUint<'a>,
-    g: asn1::BigUint<'a>,
-    pub_key: asn1::BigUint<'a>,
-    priv_key: asn1::BigUint<'a>,
-}
 
 pub fn serialize_pkcs1_private_key(
     dsa: &openssl::dsa::DsaRef<openssl::pkey::Private>,
@@ -37,10 +28,7 @@ pub fn serialize_pkcs1_private_key(
 pub fn parse_pkcs1_private_key(
     data: &[u8],
 ) -> KeyParsingResult<openssl::pkey::PKey<openssl::pkey::Private>> {
-    let dsa_private_key = asn1::parse_single::<DsaPrivateKey<'_>>(data)?;
-    if dsa_private_key.version != 0 {
-        return Err(crate::KeyParsingError::InvalidKey);
-    }
+    let dsa_private_key = crate::common::parse_dsa_private_key(data)?;
     let p = openssl::bn::BigNum::from_slice(dsa_private_key.p.as_bytes())?;
     let q = openssl::bn::BigNum::from_slice(dsa_private_key.q.as_bytes())?;
     let g = openssl::bn::BigNum::from_slice(dsa_private_key.g.as_bytes())?;

@@ -5,61 +5,24 @@
 use cryptography_x509::common::{
     AlgorithmIdentifier, AlgorithmParameters, PbeParams, Pkcs12PbeParams, SubjectPublicKeyInfo,
 };
-use cryptography_x509::csr::Attributes;
 use cryptography_x509::pkcs8::EncryptedPrivateKeyInfo;
 
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use crate::MIN_DH_MODULUS_SIZE;
 use crate::{ec, pbe, rsa, KeyParsingError, KeyParsingResult, ParsedPrivateKey, ParsedPublicKey};
 
-// RFC 5208 Section 5 (PrivateKeyInfo), extended by RFC 5958 Section 2
-// (OneAsymmetricKey), which adds version v2 and an optional public key.
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub struct PrivateKeyInfo<'a> {
-    pub version: u8,
-    pub algorithm: AlgorithmIdentifier<'a>,
-    pub private_key: &'a [u8],
-    #[implicit(0)]
-    pub attributes: Option<Attributes<'a>>,
-    #[implicit(1)]
-    pub public_key: Option<asn1::BitString<'a>>,
-}
-
-const PKCS8_VERSION_V1: u8 = 0;
-const PKCS8_VERSION_V2: u8 = 1;
-
-// RFC 9935 Section 6
+pub use crate::common::PrivateKeyInfo;
+use crate::common::KDF_ITERATION_COUNT;
+use crate::common::PKCS8_VERSION_V1;
 #[cfg(any(
     CRYPTOGRAPHY_IS_BORINGSSL,
     CRYPTOGRAPHY_IS_AWSLC,
     CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
 ))]
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub enum MlKemPrivateKey {
-    #[implicit(0)]
-    Seed([u8; 64]),
-}
-
-// RFC 9881 Section 6.5
-#[cfg(any(
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC,
-    CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
-))]
-#[derive(asn1::Asn1Read, asn1::Asn1Write)]
-pub enum MlDsaPrivateKey {
-    #[implicit(0)]
-    Seed([u8; 32]),
-}
+pub use crate::common::{MlDsaPrivateKey, MlKemPrivateKey};
 
 pub fn parse_private_key(data: &[u8]) -> KeyParsingResult<ParsedPrivateKey> {
-    let k = asn1::parse_single::<PrivateKeyInfo<'_>>(data)?;
-    // RFC 5958 Section 2: v1 is used for keys with no public key, v2 is used
-    // when a public key is present (but the public key remains optional).
-    match (k.version, &k.public_key) {
-        (PKCS8_VERSION_V1, None) | (PKCS8_VERSION_V2, _) => {}
-        _ => return Err(crate::KeyParsingError::InvalidKey),
-    }
+    let k = crate::common::parse_private_key_info(data)?;
     let key = parse_private_key_inner(&k)?;
     if let Some(public_key) = k.public_key {
         // The key is always constructed from the private key. If a public
@@ -632,8 +595,6 @@ pub fn serialize_private_key(key: &ParsedPrivateKey) -> crate::KeySerializationR
     };
     Ok(asn1::write_single(&pki)?)
 }
-
-const KDF_ITERATION_COUNT: u64 = 2048;
 
 pub fn serialize_encrypted_private_key(
     key: &ParsedPrivateKey,
