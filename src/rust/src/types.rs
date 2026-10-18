@@ -597,6 +597,7 @@ pub static GCM: LazyPyImport =
 pub static XTS: LazyPyImport =
     LazyPyImport::new("cryptography.hazmat.primitives.ciphers.modes", &["XTS"]);
 
+#[cfg(feature = "openssl")]
 pub static LEGACY_PROVIDER_LOADED: LazyPyImport = LazyPyImport::new(
     "cryptography.hazmat.bindings._rust",
     &["openssl", "_legacy_provider_loaded"],
