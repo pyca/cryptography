@@ -10,6 +10,16 @@ use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 
+#[cfg(feature = "openssl")]
+pub(crate) use openssl::symm::Mode;
+#[cfg(feature = "verified-garbage")]
+pub(crate) use vg_cipher_ctx::{CipherContext, Mode};
+
+#[cfg(feature = "verified-garbage")]
+#[path = "vg/cipher_ctx.rs"]
+mod vg_cipher_ctx;
+
+#[cfg(feature = "openssl")]
 pub(crate) struct CipherContext {
     ctx: openssl::cipher_ctx::CipherCtx,
     py_mode: pyo3::Py<pyo3::PyAny>,
@@ -18,6 +28,7 @@ pub(crate) struct CipherContext {
     is_xts: bool,
 }
 
+#[cfg(feature = "openssl")]
 impl CipherContext {
     pub(crate) fn new(
         py: pyo3::Python<'_>,
@@ -255,6 +266,16 @@ impl CipherContext {
         })?;
         Ok(pyo3::types::PyBytes::new(py, &out_buf[..n]))
     }
+
+    fn tag(&mut self, buf: &mut [u8]) -> CryptographyResult<()> {
+        self.ctx.tag(buf)?;
+        Ok(())
+    }
+
+    fn set_tag(&mut self, tag: &[u8]) -> CryptographyResult<()> {
+        self.ctx.set_tag(tag)?;
+        Ok(())
+    }
 }
 
 // ChaCha20 generates 64 bytes of keystream per 32-bit block counter value.
@@ -453,7 +474,7 @@ impl PyAEADEncryptionContext {
 
         // XXX: do not hard code 16
         let tag = pyo3::types::PyBytes::new_with(py, 16, |t| {
-            ctx.ctx.tag(t).map_err(CryptographyError::from)?;
+            ctx.tag(t)?;
             Ok(())
         })?;
         self.tag = Some(tag.unbind());
@@ -603,7 +624,7 @@ impl PyAEADDecryptionContext {
             ));
         }
 
-        ctx.ctx.set_tag(tag)?;
+        ctx.set_tag(tag)?;
         let result = ctx.finalize(py)?;
         self.ctx = None;
         Ok(result)
@@ -621,7 +642,7 @@ fn create_encryption_ctx<'p>(
     mode: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let bytes_remaining = chacha20_initial_byte_limit(py, &algorithm)?;
-    let ctx = CipherContext::new(py, algorithm, mode.clone(), openssl::symm::Mode::Encrypt)?;
+    let ctx = CipherContext::new(py, algorithm, mode.clone(), Mode::Encrypt)?;
 
     if mode.is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get(py)?)? {
         Ok(PyAEADEncryptionContext {
@@ -654,14 +675,14 @@ fn create_decryption_ctx<'p>(
     mode: pyo3::Bound<'_, pyo3::PyAny>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
     let bytes_remaining = chacha20_initial_byte_limit(py, &algorithm)?;
-    let mut ctx = CipherContext::new(py, algorithm, mode.clone(), openssl::symm::Mode::Decrypt)?;
+    let mut ctx = CipherContext::new(py, algorithm, mode.clone(), Mode::Decrypt)?;
 
     if mode.is_instance(&types::MODE_WITH_AUTHENTICATION_TAG.get(py)?)? {
         if let Some(tag) = mode
             .getattr(pyo3::intern!(py, "tag"))?
             .extract::<Option<pyo3::pybacked::PyBackedBytes>>()?
         {
-            ctx.ctx.set_tag(&tag)?;
+            ctx.set_tag(&tag)?;
         }
 
         Ok(PyAEADDecryptionContext {
