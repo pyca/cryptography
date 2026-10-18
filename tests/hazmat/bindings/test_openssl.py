@@ -13,7 +13,7 @@ if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
         allow_module_level=True,
     )
 
-from cryptography.hazmat.bindings.openssl.binding import (  # noqa: E402
+from cryptography.hazmat.bindings.openssl.binding import (
     Binding,
     _openssl_assert,
     _verify_package_version,
