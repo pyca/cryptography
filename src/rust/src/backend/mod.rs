@@ -23,7 +23,6 @@ where
     }
 }
 
-#[cfg(feature = "openssl")]
 pub(crate) mod aead;
 #[cfg(feature = "openssl")]
 pub(crate) mod cipher_registry;
@@ -31,7 +30,6 @@ pub(crate) mod cipher_registry;
 #[path = "vg/cipher_registry.rs"]
 pub(crate) mod cipher_registry;
 pub(crate) mod ciphers;
-#[cfg(feature = "openssl")]
 pub(crate) mod cmac;
 #[cfg(feature = "openssl")]
 pub(crate) mod dh;
@@ -92,9 +90,7 @@ pub(crate) mod mlkem;
 #[cfg(feature = "verified-garbage")]
 #[path = "vg/mlkem.rs"]
 pub(crate) mod mlkem;
-#[cfg(feature = "openssl")]
 pub(crate) mod poly1305;
-#[cfg(feature = "openssl")]
 pub(crate) mod rand;
 #[cfg(feature = "openssl")]
 pub(crate) mod rsa;
