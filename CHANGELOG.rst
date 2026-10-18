@@ -31,6 +31,14 @@ Changelog
   curve's order, matching
   :func:`~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key` and
   the private key loading functions.
+* Added experimental support for building with `verified-garbage`_, a
+  formally verified cryptography library, as the crypto backend instead of
+  OpenSSL (``--no-default-features --features verified-garbage``). Such builds
+  do not link OpenSSL, so ``cryptography.hazmat.bindings.openssl.binding`` is
+  unavailable, and some algorithms and parameters are not supported. OpenSSL
+  remains the default backend.
+
+.. _`verified-garbage`: https://github.com/pyca/verified-garbage
 
 .. _v50-0-2:
 
