@@ -4,14 +4,55 @@
 
 use cryptography_crypto::constant_time;
 
+use crate::backend::ciphers::Mode;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
 
-fn ecb_ctx(
-    wrapping_key: &[u8],
-    side: openssl::symm::Mode,
-) -> CryptographyResult<openssl::cipher_ctx::CipherCtx> {
+#[cfg(feature = "openssl")]
+type EcbCtx = openssl::cipher_ctx::CipherCtx;
+
+/// AES-ECB in one direction, with verified-garbage.
+#[cfg(feature = "verified-garbage")]
+struct EcbCtx {
+    key: verified_garbage::aes_ecb::AesEcb,
+    side: Mode,
+}
+
+#[cfg(feature = "verified-garbage")]
+fn ecb_ctx(wrapping_key: &[u8], side: Mode) -> CryptographyResult<EcbCtx> {
+    let key = verified_garbage::aes_ecb::AesEcb::new(wrapping_key).map_err(|_| {
+        pyo3::exceptions::PyValueError::new_err("The wrapping key must be a valid AES key length")
+    })?;
+    Ok(EcbCtx { key, side })
+}
+
+/// Enciphers (or deciphers) one block.
+#[cfg(feature = "verified-garbage")]
+fn ecb_block(ctx: &mut EcbCtx, block: &[u8; 16]) -> CryptographyResult<[u8; 16]> {
+    let mut out = *block;
+    match ctx.side {
+        Mode::Encrypt => ctx.key.encrypt(&mut out),
+        Mode::Decrypt => ctx.key.decrypt(&mut out),
+    }
+    .map_err(|_| CryptographyError::VerifiedGarbage("AES-ECB failed"))?;
+    Ok(out)
+}
+
+/// Enciphers (or deciphers) one block.
+#[cfg(feature = "openssl")]
+fn ecb_block(ctx: &mut EcbCtx, block: &[u8; 16]) -> CryptographyResult<[u8; 16]> {
+    // The safe `cipher_update` API requires room for an extra block, even
+    // though ECB with padding disabled always writes exactly one block of
+    // output per block of input.
+    let mut out = [0u8; 32];
+    let written = ctx.cipher_update(block, Some(&mut out))?;
+    assert_eq!(written, 16);
+    Ok(out[..16].try_into().unwrap())
+}
+
+#[cfg(feature = "openssl")]
+fn ecb_ctx(wrapping_key: &[u8], side: Mode) -> CryptographyResult<EcbCtx> {
     let cipher = match wrapping_key.len() {
         16 => openssl::cipher::Cipher::aes_128_ecb(),
         24 => openssl::cipher::Cipher::aes_192_ecb(),
@@ -27,10 +68,10 @@ fn ecb_ctx(
 
     let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
     match side {
-        openssl::symm::Mode::Encrypt => {
+        Mode::Encrypt => {
             ctx.encrypt_init(Some(cipher), Some(wrapping_key), None)?;
         }
-        openssl::symm::Mode::Decrypt => {
+        Mode::Decrypt => {
             ctx.decrypt_init(Some(cipher), Some(wrapping_key), None)?;
         }
     }
@@ -38,26 +79,17 @@ fn ecb_ctx(
     Ok(ctx)
 }
 
-fn wrap_core(
-    ctx: &mut openssl::cipher_ctx::CipherCtx,
-    mut a: [u8; 8],
-    r: &[u8],
-) -> CryptographyResult<Vec<u8>> {
+fn wrap_core(ctx: &mut EcbCtx, mut a: [u8; 8], r: &[u8]) -> CryptographyResult<Vec<u8>> {
     let n = r.len() / 8;
     let mut result = vec![0u8; 8 + r.len()];
     let data = &mut result[8..];
     data.copy_from_slice(r);
     let mut block = [0u8; 16];
-    // The safe `cipher_update` API requires room for an extra block, even
-    // though ECB with padding disabled always writes exactly one block of
-    // output per block of input.
-    let mut out = [0u8; 32];
     for j in 0..6u64 {
         for i in 0..n {
             block[..8].copy_from_slice(&a);
             block[8..].copy_from_slice(&data[i * 8..i * 8 + 8]);
-            let written = ctx.cipher_update(&block, Some(&mut out))?;
-            assert_eq!(written, 16);
+            let out = ecb_block(ctx, &block)?;
             let t = (n as u64) * j + (i as u64) + 1;
             a = (u64::from_be_bytes(out[..8].try_into().unwrap()) ^ t).to_be_bytes();
             data[i * 8..i * 8 + 8].copy_from_slice(&out[8..16]);
@@ -68,24 +100,15 @@ fn wrap_core(
     Ok(result)
 }
 
-fn unwrap_core(
-    ctx: &mut openssl::cipher_ctx::CipherCtx,
-    mut a: [u8; 8],
-    r: &mut [u8],
-) -> CryptographyResult<[u8; 8]> {
+fn unwrap_core(ctx: &mut EcbCtx, mut a: [u8; 8], r: &mut [u8]) -> CryptographyResult<[u8; 8]> {
     let n = r.len() / 8;
     let mut block = [0u8; 16];
-    // The safe `cipher_update` API requires room for an extra block, even
-    // though ECB with padding disabled always writes exactly one block of
-    // output per block of input.
-    let mut out = [0u8; 32];
     for j in (0..6u64).rev() {
         for i in (0..n).rev() {
             let t = (n as u64) * j + (i as u64) + 1;
             block[..8].copy_from_slice(&(u64::from_be_bytes(a) ^ t).to_be_bytes());
             block[8..].copy_from_slice(&r[i * 8..i * 8 + 8]);
-            let written = ctx.cipher_update(&block, Some(&mut out))?;
-            assert_eq!(written, 16);
+            let out = ecb_block(ctx, &block)?;
             a.copy_from_slice(&out[..8]);
             r[i * 8..i * 8 + 8].copy_from_slice(&out[8..16]);
         }
@@ -105,7 +128,7 @@ fn aes_key_wrap<'p>(
     _ = backend;
     let key_to_wrap = key_to_wrap.as_bytes();
 
-    let mut ctx = ecb_ctx(wrapping_key.as_bytes(), openssl::symm::Mode::Encrypt)?;
+    let mut ctx = ecb_ctx(wrapping_key.as_bytes(), Mode::Encrypt)?;
 
     if key_to_wrap.len() < 16 {
         return Err(CryptographyError::from(
@@ -146,7 +169,7 @@ fn aes_key_unwrap<'p>(
         )));
     }
 
-    let mut ctx = ecb_ctx(wrapping_key.as_bytes(), openssl::symm::Mode::Decrypt)?;
+    let mut ctx = ecb_ctx(wrapping_key.as_bytes(), Mode::Decrypt)?;
 
     let a = wrapped_key[..8].try_into().unwrap();
     let mut r = wrapped_key[8..].to_vec();
@@ -171,7 +194,7 @@ fn aes_key_wrap_with_padding<'p>(
     _ = backend;
     let key_to_wrap = key_to_wrap.as_bytes();
 
-    let mut ctx = ecb_ctx(wrapping_key.as_bytes(), openssl::symm::Mode::Encrypt)?;
+    let mut ctx = ecb_ctx(wrapping_key.as_bytes(), Mode::Encrypt)?;
 
     if key_to_wrap.is_empty() || key_to_wrap.len() as u64 >= (1 << 32) {
         return Err(CryptographyError::from(
@@ -193,10 +216,8 @@ fn aes_key_wrap_with_padding<'p>(
         let mut block = [0u8; 16];
         block[..8].copy_from_slice(&aiv);
         block[8..].copy_from_slice(&r);
-        let mut out = [0u8; 32];
-        let written = ctx.cipher_update(&block, Some(&mut out))?;
-        assert_eq!(written, 16);
-        Ok(pyo3::types::PyBytes::new(py, &out[..16]))
+        let out = ecb_block(&mut ctx, &block)?;
+        Ok(pyo3::types::PyBytes::new(py, &out))
     } else {
         let result = wrap_core(&mut ctx, aiv, &r)?;
         Ok(pyo3::types::PyBytes::new(py, &result))
@@ -225,13 +246,11 @@ fn aes_key_unwrap_with_padding<'p>(
         )));
     }
 
-    let mut ctx = ecb_ctx(wrapping_key.as_bytes(), openssl::symm::Mode::Decrypt)?;
+    let mut ctx = ecb_ctx(wrapping_key.as_bytes(), Mode::Decrypt)?;
 
     let (a, mut data) = if wrapped_key.len() == 16 {
         // RFC 5649 - 4.2 - exactly two 64-bit blocks
-        let mut out = [0u8; 32];
-        let written = ctx.cipher_update(wrapped_key, Some(&mut out))?;
-        assert_eq!(written, 16);
+        let out = ecb_block(&mut ctx, wrapped_key.try_into().unwrap())?;
         let a: [u8; 8] = out[..8].try_into().unwrap();
         (a, out[8..16].to_vec())
     } else {
@@ -271,4 +290,58 @@ pub(crate) mod keywrap {
     use super::{
         aes_key_unwrap, aes_key_unwrap_with_padding, aes_key_wrap, aes_key_wrap_with_padding,
     };
+}
+
+#[cfg(test)]
+mod tests {
+    use cryptography_crypto::encoding::hex_decode;
+
+    use super::{ecb_ctx, unwrap_core, wrap_core};
+    use crate::backend::ciphers::Mode;
+
+    /// The KW-AE vectors of NIST SP 800-38F: (K, P, C).
+    fn vectors(text: &str) -> Vec<(Vec<u8>, Vec<u8>, Vec<u8>)> {
+        let field =
+            |line: &str, name: &str| line.strip_prefix(name).and_then(|v| hex_decode(v.trim()));
+        let mut out = vec![];
+        let mut k = None;
+        let mut p = None;
+        for line in text.lines() {
+            if let Some(v) = field(line, "K = ") {
+                k = Some(v);
+            } else if let Some(v) = field(line, "P = ") {
+                p = Some(v);
+            } else if let Some(c) = field(line, "C = ") {
+                out.push((k.take().unwrap(), p.take().unwrap(), c));
+            }
+        }
+        out
+    }
+
+    #[test]
+    fn test_wrap_core() {
+        for text in [
+            include_str!(
+                "../../../../vectors/cryptography_vectors/keywrap/kwtestvectors/KW_AE_128.txt"
+            ),
+            include_str!(
+                "../../../../vectors/cryptography_vectors/keywrap/kwtestvectors/KW_AE_256.txt"
+            ),
+        ] {
+            let vectors = vectors(text);
+            assert!(!vectors.is_empty());
+            for (k, p, c) in vectors.iter().take(20) {
+                let mut ctx = ecb_ctx(k, Mode::Encrypt).unwrap_or_else(|_| panic!());
+                let wrapped = wrap_core(&mut ctx, [0xa6; 8], p).unwrap_or_else(|_| panic!());
+                assert_eq!(&wrapped, c);
+
+                let mut ctx = ecb_ctx(k, Mode::Decrypt).unwrap_or_else(|_| panic!());
+                let mut r = c[8..].to_vec();
+                let a = unwrap_core(&mut ctx, c[..8].try_into().unwrap(), &mut r)
+                    .unwrap_or_else(|_| panic!());
+                assert_eq!(a, [0xa6; 8]);
+                assert_eq!(&r, p);
+            }
+        }
+    }
 }

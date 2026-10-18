@@ -2,9 +2,9 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-#[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+#[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
 use base64::engine::general_purpose::STANDARD_NO_PAD;
-#[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+#[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
 use base64::engine::Engine;
 use cryptography_crypto::constant_time;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyTypeMethods};
@@ -16,6 +16,10 @@ use crate::buf::{CffiBuf, CffiMutBuf};
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 
+#[cfg(feature = "verified-garbage")]
+#[path = "vg/kdf.rs"]
+mod vg_kdf;
+
 // NO-COVERAGE-START
 #[pyo3::pyclass(
     module = "cryptography.hazmat.primitives.kdf.pbkdf2",
@@ -23,7 +27,7 @@ use crate::{exceptions, types};
 )]
 // NO-COVERAGE-END
 struct Pbkdf2Hmac {
-    md: openssl::hash::MessageDigest,
+    md: cryptography_crypto::hash::MessageDigest,
     salt: pyo3::Py<pyo3::types::PyBytes>,
     iterations: usize,
     length: usize,
@@ -54,7 +58,10 @@ impl Pbkdf2Hmac {
         let salt = self.salt.as_bytes(py);
         let iterations = self.iterations;
         let md = self.md;
+        #[cfg(feature = "openssl")]
         py.detach(|| openssl::pkcs5::pbkdf2_hmac(key_material, salt, iterations, md, output))?;
+        #[cfg(feature = "verified-garbage")]
+        py.detach(|| vg_kdf::pbkdf2_hmac(md, key_material, salt, iterations, output))?;
 
         Ok(self.length)
     }
@@ -81,6 +88,8 @@ impl Pbkdf2Hmac {
             ));
         }
         let md = hashes::message_digest_from_algorithm(py, &algorithm)?;
+        #[cfg(feature = "verified-garbage")]
+        vg_kdf::check_pbkdf2(py, &algorithm, md, iterations)?;
 
         Ok(Pbkdf2Hmac {
             md,
@@ -175,7 +184,8 @@ impl Scrypt {
         let n = self.n;
         let r = self.r;
         let p = self.p;
-        py.detach(|| {
+        #[cfg(feature = "openssl")]
+        let result = py.detach(|| {
             openssl::pkcs5::scrypt(
                 key_material,
                 salt,
@@ -185,7 +195,10 @@ impl Scrypt {
                 (usize::MAX / 2).try_into().unwrap(),
                 output,
             )
-        })
+        });
+        #[cfg(feature = "verified-garbage")]
+        let result = py.detach(|| vg_kdf::scrypt(key_material, salt, n, r, p, output));
+        result
         .map_err(|_| {
             // memory required formula explained here:
             // https://blog.filippo.io/the-scrypt-parameters/
@@ -227,6 +240,7 @@ impl Scrypt {
                     ),
                 ))
             } else {
+                #[cfg(feature = "openssl")]
                 if cryptography_openssl::fips::is_enabled() {
                     return Err(CryptographyError::from(
                         exceptions::UnsupportedAlgorithm::new_err(
@@ -313,7 +327,7 @@ impl Scrypt {
     }
 }
 
-#[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+#[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
 #[derive(Debug, PartialEq)]
 enum Argon2Variant {
     Argon2d,
@@ -322,26 +336,26 @@ enum Argon2Variant {
 }
 
 struct BaseArgon2 {
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     salt: pyo3::Py<pyo3::types::PyBytes>,
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     length: usize,
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     iterations: u32,
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     lanes: u32,
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     memory_cost: u32,
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     ad: Option<pyo3::Py<pyo3::types::PyBytes>>,
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     secret: Option<pyo3::Py<pyo3::types::PyBytes>>,
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     used: bool,
 }
 
 impl BaseArgon2 {
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn derive_into_buffer(
         &mut self,
         py: pyo3::Python<'_>,
@@ -363,10 +377,17 @@ impl BaseArgon2 {
             ));
         }
 
+        #[cfg(feature = "openssl")]
         let derive_fn = match &variant {
             Argon2Variant::Argon2d => openssl::kdf::argon2d,
             Argon2Variant::Argon2i => openssl::kdf::argon2i,
             Argon2Variant::Argon2id => openssl::kdf::argon2id,
+        };
+        #[cfg(feature = "verified-garbage")]
+        let vg_variant = match &variant {
+            Argon2Variant::Argon2d => verified_garbage::argon2::Variant::Argon2d,
+            Argon2Variant::Argon2i => verified_garbage::argon2::Variant::Argon2i,
+            Argon2Variant::Argon2id => verified_garbage::argon2::Variant::Argon2id,
         };
 
         let salt = self.salt.as_bytes(py);
@@ -375,7 +396,8 @@ impl BaseArgon2 {
         let iterations = self.iterations;
         let lanes = self.lanes;
         let memory_cost = self.memory_cost;
-        py.detach(|| {
+        #[cfg(feature = "openssl")]
+        let result = py.detach(|| {
             (derive_fn)(
                 None,
                 key_material,
@@ -387,8 +409,26 @@ impl BaseArgon2 {
                 memory_cost,
                 output,
             )
-        })
-        .map_err(|_| {
+        });
+        #[cfg(feature = "verified-garbage")]
+        let result = py.detach(|| {
+            let params = verified_garbage::argon2::Params {
+                variant: vg_variant,
+                iterations,
+                memory_kib: memory_cost,
+                lanes,
+            };
+            verified_garbage::argon2::derive_keyed(
+                &params,
+                key_material,
+                salt,
+                secret.unwrap_or(b""),
+                ad.unwrap_or(b""),
+                usize::MAX,
+                output,
+            )
+        });
+        result.map_err(|_| {
             // In theory other init issues (e.g. PROV_R_INVALID_THREAD_POOL_SIZE
             // on builds without thread-pool support) can also occur here, but
             // in practice failures from OpenSSL's argon2 provider at this point
@@ -414,7 +454,7 @@ impl BaseArgon2 {
         secret: Option<pyo3::Py<pyo3::types::PyBytes>>,
     ) -> CryptographyResult<Self> {
         cfg_if::cfg_if! {
-            if #[cfg(not(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER))] {
+            if #[cfg(not(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage")))] {
                 _ = py;
                 _ = salt;
                 _ = length;
@@ -430,6 +470,7 @@ impl BaseArgon2 {
                     ),
                 ))
             } else {
+                #[cfg(feature = "openssl")]
                 if cryptography_openssl::fips::is_enabled() {
                     return Err(CryptographyError::from(
                         exceptions::UnsupportedAlgorithm::new_err(
@@ -489,7 +530,7 @@ impl BaseArgon2 {
         }
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -502,7 +543,7 @@ impl BaseArgon2 {
         })?)
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn verify(
         &mut self,
         py: pyo3::Python<'_>,
@@ -523,7 +564,7 @@ impl BaseArgon2 {
         Ok(())
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn derive_phc_encoded<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -551,7 +592,7 @@ impl BaseArgon2 {
         )?)
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn verify_phc_encoded(
         py: pyo3::Python<'_>,
         variant: &Argon2Variant,
@@ -717,7 +758,7 @@ impl Argon2d {
         })
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn derive_into(
         &mut self,
         py: pyo3::Python<'_>,
@@ -733,7 +774,7 @@ impl Argon2d {
         )
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -742,7 +783,7 @@ impl Argon2d {
         self._base.derive(py, &Argon2Variant::Argon2d, key_material)
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn verify(
         &mut self,
         py: pyo3::Python<'_>,
@@ -753,7 +794,7 @@ impl Argon2d {
             .verify(py, &Argon2Variant::Argon2d, key_material, expected_key)
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn derive_phc_encoded<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -763,7 +804,7 @@ impl Argon2d {
             .derive_phc_encoded(py, &Argon2Variant::Argon2d, key_material)
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     #[staticmethod]
     #[pyo3(signature = (key_material, phc_encoded, secret=None))]
     fn verify_phc_encoded(
@@ -787,7 +828,7 @@ impl Argon2i {
     #[new]
     #[pyo3(signature = (salt, length, iterations, lanes, memory_cost, ad=None, secret=None))]
     #[allow(clippy::too_many_arguments)]
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn new(
         py: pyo3::Python<'_>,
         salt: pyo3::Py<pyo3::types::PyBytes>,
@@ -814,7 +855,7 @@ impl Argon2i {
         })
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn derive_into(
         &mut self,
         py: pyo3::Python<'_>,
@@ -830,7 +871,7 @@ impl Argon2i {
         )
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -839,7 +880,7 @@ impl Argon2i {
         self._base.derive(py, &Argon2Variant::Argon2i, key_material)
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn verify(
         &mut self,
         py: pyo3::Python<'_>,
@@ -850,7 +891,7 @@ impl Argon2i {
             .verify(py, &Argon2Variant::Argon2i, key_material, expected_key)
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn derive_phc_encoded<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -860,7 +901,7 @@ impl Argon2i {
             .derive_phc_encoded(py, &Argon2Variant::Argon2i, key_material)
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     #[staticmethod]
     #[pyo3(signature = (key_material, phc_encoded, secret=None))]
     fn verify_phc_encoded(
@@ -910,7 +951,7 @@ impl Argon2id {
         })
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn derive_into(
         &mut self,
         py: pyo3::Python<'_>,
@@ -926,7 +967,7 @@ impl Argon2id {
         )
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn derive<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -936,7 +977,7 @@ impl Argon2id {
             .derive(py, &Argon2Variant::Argon2id, key_material)
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn verify(
         &mut self,
         py: pyo3::Python<'_>,
@@ -947,7 +988,7 @@ impl Argon2id {
             .verify(py, &Argon2Variant::Argon2id, key_material, expected_key)
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     fn derive_phc_encoded<'p>(
         &mut self,
         py: pyo3::Python<'p>,
@@ -957,7 +998,7 @@ impl Argon2id {
             .derive_phc_encoded(py, &Argon2Variant::Argon2id, key_material)
     }
 
-    #[cfg(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER)]
+    #[cfg(any(CRYPTOGRAPHY_OPENSSL_320_OR_GREATER, feature = "verified-garbage"))]
     #[staticmethod]
     #[pyo3(signature = (key_material, phc_encoded, secret=None))]
     fn verify_phc_encoded(
@@ -990,7 +1031,7 @@ pub(crate) fn hkdf_extract(
     algorithm: &pyo3::Py<pyo3::PyAny>,
     salt: Option<&[u8]>,
     key_material: &CffiBuf<'_>,
-) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
+) -> CryptographyResult<crate::backend::hmac::DigestBytes> {
     let algorithm_bound = algorithm.bind(py);
     let digest_size = algorithm_bound
         .getattr(pyo3::intern!(py, "digest_size"))?
@@ -1870,7 +1911,7 @@ fn kbkdf_derive_into_buffer<F>(
     mut prf_fn: F,
 ) -> CryptographyResult<usize>
 where
-    F: FnMut(&[u8]) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes>,
+    F: FnMut(&[u8]) -> CryptographyResult<crate::backend::hmac::DigestBytes>,
 {
     if output.len() != length {
         return Err(CryptographyError::from(
