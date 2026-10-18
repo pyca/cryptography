@@ -287,6 +287,25 @@ fn serialize_safebags<'p>(
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
     let password = std::str::from_utf8(&encryption_details.password)
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("password must be valid UTF-8"))?;
+    // `hmac_hash` takes any hash algorithm, but the MAC can only be encoded
+    // with those that have an algorithm identifier here.
+    let mac_algorithm_name = encryption_details
+        .mac_algorithm
+        .getattr(pyo3::intern!(py, "name"))?
+        .extract::<pyo3::pybacked::PyBackedStr>()?;
+    let mac_algorithm_identifier = crate::x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS
+        .get(&*mac_algorithm_name)
+        .ok_or_else(|| {
+            crate::exceptions::UnsupportedAlgorithm::new_err((
+                format!(
+                    "{} is not supported as a PKCS12 MAC hash",
+                    &*mac_algorithm_name
+                ),
+                crate::exceptions::Reasons::UNSUPPORTED_HASH,
+            ))
+        })?
+        .clone();
+
     let mut auth_safe_contents = vec![];
     let (
         plain_safebag_contents,
@@ -382,12 +401,6 @@ fn serialize_safebags<'p>(
         h.update_bytes(py, &auth_safe_content)?;
         h.finalize(py)?
     };
-    let mac_algorithm_identifier = crate::x509::ocsp::HASH_NAME_TO_ALGORITHM_IDENTIFIERS
-        [&*encryption_details
-            .mac_algorithm
-            .getattr(pyo3::intern!(py, "name"))?
-            .extract::<pyo3::pybacked::PyBackedStr>()?]
-        .clone();
 
     let p12 = cryptography_x509::pkcs12::Pfx {
         version: 3,
