@@ -50,20 +50,26 @@ impl Poly1305Boring {
     }
 }
 
-#[cfg(not(any(
-    CRYPTOGRAPHY_IS_LIBRESSL,
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC
-)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    ))
+))]
 struct Poly1305Open {
     signer: openssl::sign::Signer<'static>,
 }
 
-#[cfg(not(any(
-    CRYPTOGRAPHY_IS_LIBRESSL,
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC
-)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    ))
+))]
 impl Poly1305Open {
     fn new(key: CffiBuf<'_>) -> CryptographyResult<Poly1305Open> {
         if cryptography_openssl::fips::is_enabled() {
@@ -105,6 +111,35 @@ impl Poly1305Open {
     }
 }
 
+#[cfg(feature = "verified-garbage")]
+struct Poly1305Vg {
+    state: verified_garbage::poly1305::Poly1305,
+}
+
+#[cfg(feature = "verified-garbage")]
+impl Poly1305Vg {
+    fn new(key: CffiBuf<'_>) -> CryptographyResult<Poly1305Vg> {
+        let key: &[u8; 32] = key.as_bytes().try_into().map_err(|_| {
+            pyo3::exceptions::PyValueError::new_err("A poly1305 key is 32 bytes long")
+        })?;
+        Ok(Poly1305Vg {
+            state: verified_garbage::poly1305::Poly1305::new(key),
+        })
+    }
+
+    fn update(&mut self, data: CffiBuf<'_>) -> CryptographyResult<()> {
+        self.state.update(data.as_bytes());
+        Ok(())
+    }
+
+    fn finalize<'p>(
+        self,
+        py: pyo3::Python<'p>,
+    ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        Ok(pyo3::types::PyBytes::new(py, &self.state.finalize()))
+    }
+}
+
 #[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust.openssl.poly1305")]
 struct Poly1305 {
     #[cfg(any(
@@ -113,12 +148,17 @@ struct Poly1305 {
         CRYPTOGRAPHY_IS_AWSLC
     ))]
     inner: Option<Poly1305Boring>,
-    #[cfg(not(any(
-        CRYPTOGRAPHY_IS_LIBRESSL,
-        CRYPTOGRAPHY_IS_BORINGSSL,
-        CRYPTOGRAPHY_IS_AWSLC
-    )))]
+    #[cfg(all(
+        feature = "openssl",
+        not(any(
+            CRYPTOGRAPHY_IS_LIBRESSL,
+            CRYPTOGRAPHY_IS_BORINGSSL,
+            CRYPTOGRAPHY_IS_AWSLC
+        ))
+    ))]
     inner: Option<Poly1305Open>,
+    #[cfg(feature = "verified-garbage")]
+    inner: Option<Poly1305Vg>,
 }
 
 #[pyo3::pymethods]
@@ -133,13 +173,20 @@ impl Poly1305 {
         return Ok(Poly1305 {
             inner: Some(Poly1305Boring::new(key)?),
         });
-        #[cfg(not(any(
-            CRYPTOGRAPHY_IS_LIBRESSL,
-            CRYPTOGRAPHY_IS_BORINGSSL,
-            CRYPTOGRAPHY_IS_AWSLC
-        )))]
+        #[cfg(all(
+            feature = "openssl",
+            not(any(
+                CRYPTOGRAPHY_IS_LIBRESSL,
+                CRYPTOGRAPHY_IS_BORINGSSL,
+                CRYPTOGRAPHY_IS_AWSLC
+            ))
+        ))]
         return Ok(Poly1305 {
             inner: Some(Poly1305Open::new(key)?),
+        });
+        #[cfg(feature = "verified-garbage")]
+        return Ok(Poly1305 {
+            inner: Some(Poly1305Vg::new(key)?),
         });
     }
 
@@ -178,9 +225,17 @@ impl Poly1305 {
         &mut self,
         py: pyo3::Python<'p>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        #[cfg(feature = "openssl")]
         let res = self
             .inner
             .as_mut()
+            .map_or(Err(exceptions::already_finalized_error()), |b| {
+                b.finalize(py)
+            });
+        #[cfg(feature = "verified-garbage")]
+        let res = self
+            .inner
+            .take()
             .map_or(Err(exceptions::already_finalized_error()), |b| {
                 b.finalize(py)
             });

@@ -10,15 +10,23 @@ use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::{exceptions, types};
 
+#[cfg(feature = "verified-garbage")]
+use cryptography_crypto::cmac::{Cmac as CmacCtx, DigestBytes};
+#[cfg(feature = "openssl")]
+use cryptography_openssl::cmac::Cmac as CmacCtx;
+#[cfg(feature = "openssl")]
+use cryptography_openssl::hmac::DigestBytes;
+
 #[pyo3::pyclass(
     module = "cryptography.hazmat.bindings._rust.openssl.cmac",
     name = "CMAC"
 )]
 pub(crate) struct Cmac {
-    ctx: Option<cryptography_openssl::cmac::Cmac>,
+    ctx: Option<CmacCtx>,
 }
 
 impl Cmac {
+    #[cfg(feature = "openssl")]
     pub(crate) fn new_bytes(
         key: &[u8],
         cipher: &openssl::cipher::CipherRef,
@@ -39,19 +47,36 @@ impl Cmac {
             ));
         }
 
-        let cipher = cipher_registry::get_cipher(py, algorithm.clone(), types::CBC.get(py)?)?
-            .ok_or_else(|| {
-                exceptions::UnsupportedAlgorithm::new_err((
-                    "CMAC is not supported with this algorithm",
-                    exceptions::Reasons::UNSUPPORTED_CIPHER,
-                ))
-            })?;
+        let cipher = cipher_registry::get_cipher(py, algorithm.clone(), types::CBC.get(py)?)?;
+        // verified-garbage has CMAC with AES and TDEA only.
+        #[cfg(feature = "verified-garbage")]
+        let cipher = cipher.and_then(|c| match c.algorithm {
+            cipher_registry::Algorithm::Aes => Some(cryptography_crypto::cmac::CmacCipher::Aes),
+            cipher_registry::Algorithm::TripleDes => {
+                Some(cryptography_crypto::cmac::CmacCipher::TripleDes)
+            }
+            _ => None,
+        });
+        let cipher = cipher.ok_or_else(|| {
+            exceptions::UnsupportedAlgorithm::new_err((
+                "CMAC is not supported with this algorithm",
+                exceptions::Reasons::UNSUPPORTED_CIPHER,
+            ))
+        })?;
 
         let key = algorithm
             .getattr(pyo3::intern!(py, "key"))?
             .extract::<CffiBuf<'_>>()?;
 
-        Cmac::new_bytes(key.as_bytes(), cipher)
+        #[cfg(feature = "openssl")]
+        {
+            Cmac::new_bytes(key.as_bytes(), cipher)
+        }
+        #[cfg(feature = "verified-garbage")]
+        {
+            let ctx = CmacCtx::new(key.as_bytes(), cipher)?;
+            Ok(Cmac { ctx: Some(ctx) })
+        }
     }
 
     pub(crate) fn update_bytes(&mut self, data: &[u8]) -> CryptographyResult<()> {
@@ -59,22 +84,20 @@ impl Cmac {
         Ok(())
     }
 
-    pub(crate) fn finalize_bytes(
-        &mut self,
-    ) -> CryptographyResult<cryptography_openssl::hmac::DigestBytes> {
+    pub(crate) fn finalize_bytes(&mut self) -> CryptographyResult<DigestBytes> {
         let data = self.get_mut_ctx()?.finish()?;
         self.ctx = None;
         Ok(data)
     }
 
-    fn get_ctx(&self) -> CryptographyResult<&cryptography_openssl::cmac::Cmac> {
+    fn get_ctx(&self) -> CryptographyResult<&CmacCtx> {
         if let Some(ctx) = self.ctx.as_ref() {
             return Ok(ctx);
         }
         Err(exceptions::already_finalized_error())
     }
 
-    fn get_mut_ctx(&mut self) -> CryptographyResult<&mut cryptography_openssl::cmac::Cmac> {
+    fn get_mut_ctx(&mut self) -> CryptographyResult<&mut CmacCtx> {
         if let Some(ctx) = self.ctx.as_mut() {
             return Ok(ctx);
         }

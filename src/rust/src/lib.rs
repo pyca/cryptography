@@ -278,12 +278,10 @@ mod _rust {
         use super::super::enable_fips;
         #[pymodule_export]
         use super::super::{is_fips_enabled, openssl_version, openssl_version_text};
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::aead::aead;
         #[pymodule_export]
         use crate::backend::ciphers::ciphers;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::cmac::cmac;
         #[pymodule_export]
@@ -335,7 +333,6 @@ mod _rust {
         ))]
         #[pymodule_export]
         use crate::backend::mlkem::mlkem;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::poly1305::poly1305;
         #[pymodule_export]
