@@ -10,6 +10,7 @@ import sys
 import pytest
 
 import cryptography
+from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 
 
 def find_all_modules() -> list[str]:
@@ -24,6 +25,11 @@ def find_all_modules() -> list[str]:
 
 @pytest.mark.parametrize("module", find_all_modules())
 def test_no_circular_imports(module):
+    if (
+        rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE
+        and module == "cryptography.hazmat.bindings.openssl.binding"
+    ):
+        pytest.skip("verified-garbage builds have no OpenSSL bindings")
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(sys.path)
 
