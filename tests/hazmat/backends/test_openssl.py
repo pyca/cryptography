@@ -179,6 +179,13 @@ class TestOpenSSLRSA:
             ):
                 continue
 
+            # verified-garbage has OAEP with MGF1 over the same hash function
+            # or over SHA-1 only.
+            expected = (
+                not rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE
+                or isinstance(mgf1alg, hashes.SHA1)
+                or type(mgf1alg) is type(oaepalg)
+            )
             assert (
                 backend.rsa_padding_supported(
                     padding.OAEP(
@@ -187,7 +194,7 @@ class TestOpenSSLRSA:
                         label=None,
                     ),
                 )
-                is True
+                is expected
             )
 
     def test_rsa_padding_unsupported_mgf(self):

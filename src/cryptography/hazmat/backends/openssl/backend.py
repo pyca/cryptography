@@ -269,6 +269,30 @@ class Backend:
         else:
             return False
 
+    def rsa_pss_hash_combination_supported(
+        self,
+        algorithm: hashes.HashAlgorithm,
+        mgf1_algorithm: hashes.HashAlgorithm,
+    ) -> bool:
+        # Whether PSS signatures with the hash function `algorithm` and MGF1
+        # over `mgf1_algorithm` are supported. verified-garbage has MGF1
+        # over the signature's own hash function only.
+        if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE and type(
+            algorithm
+        ) is not type(mgf1_algorithm):
+            return False
+        return self.hash_supported(algorithm) and self.rsa_padding_supported(
+            PSS(mgf=MGF1(mgf1_algorithm), salt_length=PSS.MAX_LENGTH)
+        )
+
+    def rsa_implicit_rejection_supported(self) -> bool:
+        # Whether PKCS #1 v1.5 decryption returns a pseudo-random message
+        # instead of an error for an invalid padding. verified-garbage always
+        # does.
+        if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+            return True
+        return bool(self._lib.Cryptography_HAS_IMPLICIT_RSA_REJECTION)
+
     def rsa_encryption_supported(self, padding: AsymmetricPadding) -> bool:
         if self._fips_enabled and isinstance(padding, PKCS1v15):
             return False
@@ -283,6 +307,24 @@ class Backend:
             not rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
             and not self._fips_enabled
         )
+
+    def dsa_parameter_generation_supported(self) -> bool:
+        # verified-garbage cannot generate DSA parameters.
+        return (
+            self.dsa_supported()
+            and not rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE
+        )
+
+    def dsa_key_size_supported(self, p_bits: int, q_bits: int) -> bool:
+        # verified-garbage supports these (p, q) sizes only.
+        if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+            return (p_bits, q_bits) in (
+                (1024, 160),
+                (2048, 224),
+                (2048, 256),
+                (3072, 256),
+            )
+        return self.dsa_supported()
 
     def dsa_hash_supported(self, algorithm: hashes.HashAlgorithm) -> bool:
         if not self.dsa_supported():
@@ -309,6 +351,11 @@ class Backend:
             return False
 
         return rust_openssl.ec.curve_supported(curve)
+
+    def elliptic_curve_compressed_points_supported(self) -> bool:
+        # Loading a compressed point needs a square root modulo p, which
+        # verified-garbage does not expose.
+        return not rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE
 
     def elliptic_curve_signature_algorithm_supported(
         self,

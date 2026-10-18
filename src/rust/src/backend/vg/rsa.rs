@@ -40,7 +40,11 @@ pub(crate) struct RsaPrivateKey {
     name = "RSAPublicKey"
 )]
 pub(crate) struct RsaPublicKey {
-    key: vg_rsa::PublicKey,
+    /// verified-garbage's key, or why it cannot hold this one (a size or
+    /// exponent outside its limits, or an even modulus): such a key can be
+    /// loaded, compared and serialized, but its operations are refused as
+    /// unsupported.
+    key: Result<vg_rsa::PublicKey, String>,
     /// The modulus and public exponent (verified-garbage's key does not
     /// expose them), without leading zeros.
     n: Vec<u8>,
@@ -69,22 +73,31 @@ fn unsupported_key(msg: String) -> CryptographyError {
     )))
 }
 
-/// Refuses, as unsupported, the keys verified-garbage cannot hold: a
-/// modulus of fewer than 512 or more than 8192 bits, or a public exponent
-/// of `2^33` or more (BoringSSL's limits).
-fn check_supported(n: &[u8], e: &[u8]) -> CryptographyResult<()> {
+/// Why verified-garbage cannot hold a key: a modulus of fewer than 512 or
+/// more than 8192 bits, or a public exponent of `2^33` or more (BoringSSL's
+/// limits).
+fn unsupported_reason(n: &[u8], e: &[u8]) -> Option<String> {
     let bits = bit_length(n);
     if !(8 * vg_rsa::MIN_MODULUS_LEN..=8 * vg_rsa::MAX_MODULUS_LEN).contains(&bits) {
-        return Err(unsupported_key(format!(
+        return Some(format!(
             "RSA keys with a {bits}-bit modulus are not supported by this backend (it supports 512 to 8192 bits)"
-        )));
-    }
-    if bit_length(e) > 33 {
-        return Err(unsupported_key(
-            "RSA public exponents of 2**33 or more are not supported by this backend".to_string(),
         ));
     }
-    Ok(())
+    if bit_length(e) > 33 {
+        return Some(
+            "RSA public exponents of 2**33 or more are not supported by this backend".to_string(),
+        );
+    }
+    None
+}
+
+/// Refuses, as unsupported, the keys verified-garbage cannot hold
+/// (`unsupported_reason`).
+fn check_supported(n: &[u8], e: &[u8]) -> CryptographyResult<()> {
+    match unsupported_reason(n, e) {
+        Some(reason) => Err(unsupported_key(reason)),
+        None => Ok(()),
+    }
 }
 
 /// The checks cryptography makes of every public key.
@@ -112,15 +125,15 @@ fn check_public_key_components(e: &[u8], n: &[u8]) -> CryptographyResult<()> {
 
 fn public_key_from_components(n: &[u8], e: &[u8]) -> CryptographyResult<RsaPublicKey> {
     check_public_key_components(e, n)?;
-    check_supported(n, e)?;
     let (n, e) = (trim_zeros(n), trim_zeros(e));
-    let key = vg_rsa::PublicKey::new(n, e).map_err(|_| {
+    let key = match unsupported_reason(n, e) {
+        Some(reason) => Err(reason),
         // Within the supported sizes, verified-garbage refuses only an even
         // modulus.
-        CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
-            "Invalid RSA public key: the modulus must be odd.",
-        ))
-    })?;
+        None => vg_rsa::PublicKey::new(n, e).map_err(|_| {
+            "RSA keys with an even modulus are not supported by this backend".to_string()
+        }),
+    };
     Ok(RsaPublicKey {
         key,
         n: n.to_vec(),
@@ -637,7 +650,7 @@ impl RsaPrivateKey {
     fn public_key(&self) -> RsaPublicKey {
         let [n, e, ..] = self.key.components();
         RsaPublicKey {
-            key: self.public.clone(),
+            key: Ok(self.public.clone()),
             n: trim_zeros(n).to_vec(),
             e: trim_zeros(e).to_vec(),
         }
@@ -707,6 +720,14 @@ impl RsaPrivateKey {
     }
 }
 
+impl RsaPublicKey {
+    fn vg_key(&self) -> CryptographyResult<&vg_rsa::PublicKey> {
+        self.key
+            .as_ref()
+            .map_err(|reason| unsupported_key(reason.clone()))
+    }
+}
+
 #[pyo3::pymethods]
 impl RsaPublicKey {
     fn verify(
@@ -728,16 +749,15 @@ impl RsaPublicKey {
             }
         };
 
-        let k = self.key.modulus_len();
-        let scheme = signature_scheme(py, padding, &algorithm, k, false)?;
+        let scheme = signature_scheme(py, padding, &algorithm, self.n.len(), false)?;
+        let key = self.vg_key()?;
         let data = data.as_bytes();
         let signature = signature.as_bytes();
         let valid = match scheme {
-            SignatureScheme::Pkcs1(None) => public_op(&self.key, signature)
-                .is_some_and(|em| pkcs1_type1_decoding(&em) == Some(data)),
-            SignatureScheme::Pkcs1(Some(hash)) => {
-                rsa_pkcs1_sig::verify(&self.key, signature, data, hash)
+            SignatureScheme::Pkcs1(None) => {
+                public_op(key, signature).is_some_and(|em| pkcs1_type1_decoding(&em) == Some(data))
             }
+            SignatureScheme::Pkcs1(Some(hash)) => rsa_pkcs1_sig::verify(key, signature, data, hash),
             SignatureScheme::Pss { hash, salt } => {
                 let salt_length = match salt {
                     // OpenSSL accepts any salt length when verifying with
@@ -746,7 +766,7 @@ impl RsaPublicKey {
                     PssSalt::Digest => rsa_pss::SaltLength::Len(hash.digest_len()),
                     PssSalt::Len(len) => rsa_pss::SaltLength::Len(len),
                 };
-                rsa_pss::verify(&self.key, signature, data, hash, hash, salt_length)
+                rsa_pss::verify(key, signature, data, hash, hash, salt_length)
             }
         };
         if !valid {
@@ -765,23 +785,23 @@ impl RsaPublicKey {
         padding: &pyo3::Bound<'p, pyo3::PyAny>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         let scheme = encryption_scheme(py, padding)?;
+        let key = self.vg_key()?;
         let encryption_failed = || {
             CryptographyError::from(pyo3::exceptions::PyValueError::new_err("Encryption failed"))
         };
         let ciphertext = match scheme {
             EncryptionScheme::Pkcs1 => {
-                rsa_pkcs1_enc::encrypt(&self.key, plaintext).map_err(|e| match e {
+                rsa_pkcs1_enc::encrypt(key, plaintext).map_err(|e| match e {
                     rsa_pkcs1_enc::Error::MessageTooLong => encryption_failed(),
                     _ => CryptographyError::VerifiedGarbage("RSA encryption failed"),
                 })?
             }
-            EncryptionScheme::Oaep { hash, mgf1, label } => rsa_oaep::encrypt(
-                &self.key, plaintext, hash, mgf1, &label,
-            )
-            .map_err(|e| match e {
-                rsa_oaep::Error::MessageTooLong => encryption_failed(),
-                _ => CryptographyError::VerifiedGarbage("RSA encryption failed"),
-            })?,
+            EncryptionScheme::Oaep { hash, mgf1, label } => {
+                rsa_oaep::encrypt(key, plaintext, hash, mgf1, &label).map_err(|e| match e {
+                    rsa_oaep::Error::MessageTooLong => encryption_failed(),
+                    _ => CryptographyError::VerifiedGarbage("RSA encryption failed"),
+                })?
+            }
         };
         Ok(pyo3::types::PyBytes::new(py, &ciphertext))
     }
@@ -806,13 +826,12 @@ impl RsaPublicKey {
             ));
         }
 
-        let scheme = signature_scheme(py, padding, algorithm, self.key.modulus_len(), false)?;
+        let scheme = signature_scheme(py, padding, algorithm, self.n.len(), false)?;
+        let key = self.vg_key()?;
         let recovered = match scheme {
-            SignatureScheme::Pkcs1(None) => public_op(&self.key, signature)
+            SignatureScheme::Pkcs1(None) => public_op(key, signature)
                 .and_then(|em| pkcs1_type1_decoding(&em).map(<[u8]>::to_vec)),
-            SignatureScheme::Pkcs1(Some(hash)) => {
-                rsa_pkcs1_sig::recover(&self.key, signature, hash).ok()
-            }
+            SignatureScheme::Pkcs1(Some(hash)) => rsa_pkcs1_sig::recover(key, signature, hash).ok(),
             SignatureScheme::Pss { .. } => {
                 return Err(CryptographyError::from(
                     exceptions::UnsupportedAlgorithm::new_err((
@@ -1093,11 +1112,7 @@ impl RsaPublicNumbers {
     ) -> CryptographyResult<RsaPublicKey> {
         let _ = backend;
 
-        if self.n.bind(py).lt(0)? || self.e.bind(py).lt(0)? {
-            return Err(CryptographyError::from(
-                pyo3::exceptions::PyValueError::new_err("e must be >= 3 and < n."),
-            ));
-        }
+        // A negative value raises OverflowError, as with OpenSSL.
         let n = utils::py_int_to_be_bytes(py, self.n.bind(py))?;
         let e = utils::py_int_to_be_bytes(py, self.e.bind(py))?;
         public_key_from_components(&n, &e)
@@ -1206,6 +1221,12 @@ mod tests {
                 panic!("key of {} bits refused", bit_length(&n));
             };
             let public = public_key_from_components(&n, &e).ok().unwrap();
+            // A key verified-garbage cannot hold still loads.
+            assert!(public_key_from_components(&[10], &[3])
+                .ok()
+                .unwrap()
+                .key
+                .is_err());
             assert_eq!(public.n, private.key.components()[0]);
             let bits = bit_length(&n);
             assert_eq!(examples.len(), 6);
@@ -1218,7 +1239,7 @@ mod tests {
                     rsa_pss::SaltLength::Any,
                 ] {
                     assert!(rsa_pss::verify(
-                        &public.key,
+                        public.key.as_ref().unwrap(),
                         &signature,
                         &digest,
                         hash,
@@ -1227,7 +1248,7 @@ mod tests {
                     ));
                 }
                 assert!(!rsa_pss::verify(
-                    &public.key,
+                    public.key.as_ref().unwrap(),
                     &signature,
                     &digest,
                     hash,
@@ -1238,7 +1259,7 @@ mod tests {
                 let max = pss_max_salt(bits, digest.len()).unwrap();
                 let ours = rsa_pss::sign(&private.key, &digest, hash, hash, max).unwrap();
                 assert!(rsa_pss::verify(
-                    &public.key,
+                    public.key.as_ref().unwrap(),
                     &ours,
                     &digest,
                     hash,
@@ -1253,7 +1274,7 @@ mod tests {
             let em = pkcs1_type1_encoding(b"data", k).unwrap();
             let mut sig = vec![0; k];
             private.key.private_op(&em, &mut sig).unwrap();
-            let recovered = public_op(&public.key, &sig).unwrap();
+            let recovered = public_op(public.key.as_ref().unwrap(), &sig).unwrap();
             assert_eq!(pkcs1_type1_decoding(&recovered), Some(b"data".as_slice()));
             assert!(pkcs1_type1_encoding(&vec![0; k - 10], k).is_none());
             // A key whose values do not match is refused.

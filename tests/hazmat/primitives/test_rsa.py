@@ -578,16 +578,10 @@ class TestRSASignature:
         )
 
     @pytest.mark.supported(
-        only_if=lambda backend: (
-            backend.hash_supported(hashes.SHA512())
-            and backend.rsa_padding_supported(
-                padding.PSS(
-                    mgf=padding.MGF1(hashes.SHA256()),
-                    salt_length=padding.PSS.MAX_LENGTH,
-                )
-            )
+        only_if=lambda backend: backend.rsa_pss_hash_combination_supported(
+            hashes.SHA512(), hashes.SHA256()
         ),
-        skip_message="Does not support SHA512.",
+        skip_message="Does not support SHA512 with MGF1-SHA256 in PSS.",
     )
     @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     def test_pss_minimum_key_size_for_digest(self):
@@ -1778,7 +1772,7 @@ class TestRSADecryption:
     @pytest.mark.supported(
         only_if=lambda backend: (
             backend.rsa_encryption_supported(padding.PKCS1v15())
-            and not backend._lib.Cryptography_HAS_IMPLICIT_RSA_REJECTION
+            and not backend.rsa_implicit_rejection_supported()
         ),
         skip_message="Does not support PKCS1v1.5.",
     )

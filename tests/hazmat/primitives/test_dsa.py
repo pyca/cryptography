@@ -70,6 +70,10 @@ def test_skip_if_dsa_not_supported(backend):
     skip_message="Does not support DSA.",
 )
 class TestDSA:
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_parameter_generation_supported(),
+        skip_message="Does not support DSA parameter generation.",
+    )
     def test_generate_dsa_parameters(self):
         parameters = dsa.generate_parameters(2048)
         assert isinstance(parameters, dsa.DSAParameters)
@@ -109,6 +113,10 @@ class TestDSA:
             skey_parameters.g, numbers.x, skey_parameters.p
         )
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_parameter_generation_supported(),
+        skip_message="Does not support DSA parameter generation.",
+    )
     def test_generate_dsa_private_key_and_parameters(self):
         skey = dsa.generate_private_key(2048)
         assert skey
@@ -368,6 +376,10 @@ class TestDSA:
                 parameter_numbers=dsa.DSAParameterNumbers(p=p, q=q, g=g), y=y
             ).public_key()
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.dsa_key_size_supported(4096, 256),
+        skip_message="Does not support DSA with a 4096-bit p.",
+    )
     def test_large_p(self):
         key = load_vectors_from_file(
             os.path.join("asymmetric", "PEM_Serialization", "dsa_4096.pem"),

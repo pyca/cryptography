@@ -67,6 +67,18 @@ fn check_dh_parameters(
     ffdh::Parameters::from_components(p, g, q).map_err(|_| invalid_parameters())
 }
 
+/// The contents of a DER INTEGER for the unsigned big-endian `v`: minimal,
+/// with a leading zero byte when its top bit is set.
+fn der_uint(v: &[u8]) -> Vec<u8> {
+    let v = trim_zeros(v);
+    let mut out = Vec::with_capacity(v.len() + 1);
+    if v.first().is_none_or(|&b| b & 0x80 != 0) {
+        out.push(0);
+    }
+    out.extend_from_slice(v);
+    out
+}
+
 fn raw_parameters(params: &ffdh::Parameters) -> raw::DhParameters {
     let (p, g, q) = params.components();
     raw::DhParameters {
@@ -382,10 +394,11 @@ impl DHParameters {
         }
 
         let (p, g, q) = self.params.components();
+        let (p, g, q) = (der_uint(p), der_uint(g), q.map(der_uint));
         let asn1dh_params = common::DHParams {
-            p: asn1::BigUint::new(p).unwrap(),
-            q: q.map(|q| asn1::BigUint::new(q).unwrap()),
-            g: asn1::BigUint::new(g).unwrap(),
+            p: asn1::BigUint::new(&p).unwrap(),
+            q: q.as_ref().map(|q| asn1::BigUint::new(q).unwrap()),
+            g: asn1::BigUint::new(&g).unwrap(),
         };
         let data = asn1::write_single(&asn1dh_params)?;
         let tag = if q.is_none() {
