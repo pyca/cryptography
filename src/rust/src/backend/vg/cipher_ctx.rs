@@ -98,8 +98,11 @@ trait Segments: Send + Sync {
 /// Pieces of any length (CFB8, ChaCha20, RC4).
 trait Bytes: Send + Sync {
     fn crypt(&mut self, data: &mut [u8]);
-    /// Restarts with another nonce (ChaCha20).
-    fn reset(&mut self, nonce: &[u8]);
+    /// Restarts with another nonce (ChaCha20); returns whether the cipher
+    /// has one.
+    fn reset(&mut self, _nonce: &[u8]) -> bool {
+        false
+    }
 }
 
 /// verified-garbage's own streaming block-mode encryptors and decryptors.
@@ -225,9 +228,6 @@ macro_rules! impl_cfb8 {
                     self.key.decrypt(&mut self.iv, data);
                 }
             }
-            fn reset(&mut self, _nonce: &[u8]) {
-                unreachable!("CFB8 has no nonce to reset")
-            }
         }
     )*};
 }
@@ -240,17 +240,20 @@ impl Bytes for ChaCha20 {
         // never overflows (`chacha20_byte_limit` in `ciphers.rs`).
         self.apply_keystream(data);
     }
-    fn reset(&mut self, nonce: &[u8]) {
-        self.reset_nonce(nonce.try_into().unwrap());
+    fn reset(&mut self, nonce: &[u8]) -> bool {
+        match nonce.try_into() {
+            Ok(nonce) => {
+                self.reset_nonce(nonce);
+                true
+            }
+            Err(_) => false,
+        }
     }
 }
 
 impl Bytes for Rc4 {
     fn crypt(&mut self, data: &mut [u8]) {
         self.apply_keystream(data);
-    }
-    fn reset(&mut self, _nonce: &[u8]) {
-        unreachable!("RC4 has no nonce to reset")
     }
 }
 
@@ -837,7 +840,11 @@ impl CipherContext {
                 mode.reset(nonce);
                 pending.clear();
             }
-            Engine::Bytes(mode) => mode.reset(nonce),
+            Engine::Bytes(mode) => {
+                if !mode.reset(nonce) {
+                    return Err(bad_parameters());
+                }
+            }
             _ => return Err(bad_parameters()),
         }
         Ok(())
