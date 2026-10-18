@@ -372,8 +372,8 @@ jobs:
         include:
           - DOWNSTREAM: paramiko
             REPO: paramiko/paramiko
-            # Latest commit on the paramiko main branch, as of Oct 11, 2026.
-            REF: d87f9c01c158588fe3ecb635ca7c0d7c0c1a26cc
+            # Latest commit on the paramiko main branch, as of Oct 18, 2026.
+            REF: 0e9ccb91e0f9a68f2587233d523ad7fe46e730fe
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
@@ -387,8 +387,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Oct 13, 2026.
-            REF: bfa1ce9cd66e9b168f127fe3d764c83b841bb669
+            # Latest commit on the twisted trunk branch, as of Oct 18, 2026.
+            REF: be48511c722548ddd4670f4070e7910a321e8a97
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -412,8 +412,8 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Oct 11, 2026.
-            REF: 5376fcc86aaba7c516fb4aa19576b03b387d217a
+            # Latest commit on the scapy master branch, as of Oct 18, 2026.
+            REF: aa87edd5787e6726bb16349e64e0d629dba4375e
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
