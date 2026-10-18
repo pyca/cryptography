@@ -159,6 +159,17 @@ def test_dh_public_numbers_equality():
     assert public != object()
 
 
+def _own_public_value(y: int, p: int, g: int, x: int) -> int:
+    # Some vectors pair a private value x with a y that is not g^x mod p
+    # (the peer's public value). OpenSSL loads such a private key;
+    # verified-garbage checks that y = g^x mod p and refuses it, so on
+    # verified-garbage the private key is given its own public value. The
+    # exchange still uses the vector's y as the peer's key.
+    if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+        return pow(g, x, p)
+    return y
+
+
 @pytest.mark.supported(
     only_if=lambda backend: backend.dh_supported(),
     skip_message="DH not supported",
@@ -239,7 +250,9 @@ class TestDH:
             q = None
 
         params = dh.DHParameterNumbers(p, g, q)
-        public = dh.DHPublicNumbers(1, params)
+        # verified-garbage also refuses the degenerate public value 1
+        # (SP 800-56A's range check), so there both keys use g^2 mod p.
+        public = dh.DHPublicNumbers(_own_public_value(1, p, g, 2), params)
         private = dh.DHPrivateNumbers(2, public)
 
         deserialized_params = params.parameters()
@@ -365,7 +378,10 @@ class TestDH:
         )
         parameters = dh.DHParameterNumbers(p, g)
         public = dh.DHPublicNumbers(y, parameters)
-        private = dh.DHPrivateNumbers(x, public)
+        private = dh.DHPrivateNumbers(
+            x,
+            dh.DHPublicNumbers(_own_public_value(y, p, g, x), parameters),
+        )
         key = private.private_key()
         symkey = key.exchange(public.public_key())
         assert len(symkey) == 512 // 8
@@ -446,9 +462,13 @@ class TestDH:
         if int(vector["p"]).bit_length() < 512:
             pytest.skip("DH keys less than 512 bits are unsupported")
 
-        parameters = dh.DHParameterNumbers(int(vector["p"]), int(vector["g"]))
-        public = dh.DHPublicNumbers(int(vector["y"]), parameters)
-        private = dh.DHPrivateNumbers(int(vector["x"]), public)
+        p, g, x, y = (int(vector[k]) for k in ("p", "g", "x", "y"))
+        parameters = dh.DHParameterNumbers(p, g)
+        public = dh.DHPublicNumbers(y, parameters)
+        private = dh.DHPrivateNumbers(
+            x,
+            dh.DHPublicNumbers(_own_public_value(y, p, g, x), parameters),
+        )
         key = private.private_key(backend)
         symkey = key.exchange(public.public_key(backend))
 

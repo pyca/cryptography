@@ -156,6 +156,13 @@ def test_rsa_pss_signature(backend, wycheproof):
                 wycheproof.testgroup["mgfSha"],
             )
         )
+    if not backend.rsa_pss_hash_combination_supported(digest, mgf_digest):
+        pytest.skip(
+            "PSS with digest={} and MGF digest={} not supported".format(
+                wycheproof.testgroup["sha"],
+                wycheproof.testgroup["mgfSha"],
+            )
+        )
     if backend._fips_enabled and (
         isinstance(digest, hashes.SHA1)
         or isinstance(mgf_digest, hashes.SHA1)
@@ -290,7 +297,7 @@ def test_rsa_pkcs1_encryption(backend, wycheproof):
             binascii.unhexlify(wycheproof.testcase["ct"]), padding.PKCS1v15()
         )
         assert pt == binascii.unhexlify(wycheproof.testcase["msg"])
-    elif backend._lib.Cryptography_HAS_IMPLICIT_RSA_REJECTION:
+    elif backend.rsa_implicit_rejection_supported():
         try:
             assert key.decrypt(
                 binascii.unhexlify(wycheproof.testcase["ct"]),
