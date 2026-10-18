@@ -4,6 +4,7 @@
 
 use std::fmt;
 
+#[cfg(feature = "openssl")]
 use pyo3::types::PyListMethods;
 
 use crate::exceptions;
