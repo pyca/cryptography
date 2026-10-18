@@ -145,6 +145,21 @@ class Backend:
         # FIPS mode still allows SHA1 for HMAC
         if self._fips_enabled and isinstance(algorithm, hashes.SHA1):
             return True
+        if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+            # verified-garbage has HMAC only over MD5, SHA-1 and SHA-2.
+            return isinstance(
+                algorithm,
+                (
+                    hashes.MD5,
+                    hashes.SHA1,
+                    hashes.SHA224,
+                    hashes.SHA256,
+                    hashes.SHA384,
+                    hashes.SHA512,
+                    hashes.SHA512_224,
+                    hashes.SHA512_256,
+                ),
+            )
         if rust_openssl.CRYPTOGRAPHY_IS_AWSLC:
             return isinstance(
                 algorithm,
@@ -232,6 +247,14 @@ class Backend:
         return self.signature_hash_supported(algorithm)
 
     def cmac_algorithm_supported(self, algorithm) -> bool:
+        if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+            # verified-garbage has CMAC only with AES and TripleDES.
+            from cryptography.hazmat.decrepit.ciphers.algorithms import (
+                TripleDES,
+            )
+
+            if not isinstance(algorithm, (AES, TripleDES)):
+                return False
         return self.cipher_supported(
             algorithm, CBC(b"\x00" * algorithm.block_size)
         )

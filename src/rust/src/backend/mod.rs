@@ -27,7 +27,9 @@ where
 pub(crate) mod aead;
 #[cfg(feature = "openssl")]
 pub(crate) mod cipher_registry;
-#[cfg(feature = "openssl")]
+#[cfg(feature = "verified-garbage")]
+#[path = "vg/cipher_registry.rs"]
+pub(crate) mod cipher_registry;
 pub(crate) mod ciphers;
 #[cfg(feature = "openssl")]
 pub(crate) mod cmac;
@@ -48,7 +50,6 @@ pub(crate) mod ed25519;
 #[cfg(feature = "openssl")]
 pub(crate) mod ed448;
 pub(crate) mod hashes;
-#[cfg(feature = "openssl")]
 pub(crate) mod hmac;
 #[cfg(feature = "openssl")]
 pub(crate) mod hpke;

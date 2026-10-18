@@ -281,7 +281,6 @@ mod _rust {
         #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::aead::aead;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::ciphers::ciphers;
         #[cfg(feature = "openssl")]
@@ -309,7 +308,6 @@ mod _rust {
         use crate::backend::ed448::ed448;
         #[pymodule_export]
         use crate::backend::hashes::hashes;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::hmac::hmac;
         #[cfg(feature = "openssl")]
