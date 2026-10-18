@@ -26,6 +26,14 @@ Changelog
   empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
   RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
   applied to ``extendedKeyUsage``.
+* Added experimental support for building with `verified-garbage`_, a
+  formally verified cryptography library, as the crypto backend instead of
+  OpenSSL (``--no-default-features --features verified-garbage``). Such builds
+  do not link OpenSSL, so ``cryptography.hazmat.bindings.openssl.binding`` is
+  unavailable, and some algorithms and parameters are not supported. OpenSSL
+  remains the default backend.
+
+.. _`verified-garbage`: https://github.com/pyca/verified-garbage
 
 .. _v50-0-2:
 
