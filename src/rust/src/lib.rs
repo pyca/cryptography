@@ -302,7 +302,6 @@ mod _rust {
         use crate::backend::hashes::hashes;
         #[pymodule_export]
         use crate::backend::hmac::hmac;
-        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::hpke::hpke;
         #[pymodule_export]
