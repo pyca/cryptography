@@ -106,16 +106,16 @@ predicates).
 
 ## Open decisions
 
-1. **DSA and DH keys loaded from PKCS#8** carry no public value y, and VG
-   can't compute g^x mod p. It is currently computed with Python's `pow`,
-   which is not constant time in the secret x, and VG then checks the result.
-   (Upstream already calls `pow` the same way when validating DSA private
-   numbers.) The alternative is refusing these keys on VG, which means no
-   PKCS#8 DSA or DH private keys load at all.
-2. **ML-DSA `sign_mu` / `verify_mu`** call VG functions that are hidden from
-   its documentation (`sign_internal` / `verify_internal`, described as being
-   for known-answer tests). Either VG makes them a supported API, or
-   cryptography disables these two methods on VG builds.
+* **DSA and DH keys loaded from PKCS#8** carry no public value y, and VG
+  can't compute g^x mod p. It is currently computed with Python's `pow`,
+  which is not constant time in the secret x, and VG then checks the result.
+  (Upstream already calls `pow` the same way when validating DSA private
+  numbers.) The alternative is refusing these keys on VG, which means no
+  PKCS#8 DSA or DH private keys load at all.
+
+ML-DSA `sign_mu` / `verify_mu` use VG's public `sign_mu` / `verify_mu` APIs,
+added in verified-garbage#2788.
+
 
 ## Bugs found that also affect the OpenSSL build
 
