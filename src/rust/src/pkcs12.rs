@@ -9,7 +9,9 @@ use cryptography_key_parsing::pbe;
 use cryptography_x509::common::Utf8StoredBMPString;
 use cryptography_x509::oid::EKU_ANY_KEY_USAGE_OID;
 use pyo3::types::{PyAnyMethods, PyBytesMethods, PyListMethods};
-use pyo3::{IntoPyObject, PyTypeInfo};
+use pyo3::IntoPyObject;
+#[cfg(feature = "openssl")]
+use pyo3::PyTypeInfo;
 
 use crate::backend::{ciphers, hashes, hmac, keys};
 use crate::buf::CffiBuf;
@@ -99,8 +101,7 @@ pub(crate) fn symmetric_encrypt(
         .getattr(pyo3::intern!(py, "block_size"))?
         .extract()?;
 
-    let mut cipher =
-        ciphers::CipherContext::new(py, algorithm, mode, openssl::symm::Mode::Encrypt)?;
+    let mut cipher = ciphers::CipherContext::new(py, algorithm, mode, ciphers::Mode::Encrypt)?;
 
     let mut ciphertext = vec![0; data.len() + (block_size / 8 * 2)];
     let n = cipher.update_into(py, data, &mut ciphertext)?;
@@ -554,11 +555,26 @@ fn serialize_key_and_certificates<'p>(
     serialize_safebags(py, &safebags, &encryption_details)
 }
 
-fn decode_p12(
-    py: pyo3::Python<'_>,
+/// A certificate of a PKCS #12 bundle and its friendly name.
+type DecodedCertificate = (
+    x509::certificate::Certificate,
+    Option<pyo3::Py<pyo3::types::PyBytes>>,
+);
+
+/// The contents of a PKCS #12 bundle: its private key, the certificate
+/// matching it, and the other certificates.
+struct DecodedP12<'p> {
+    key: Option<pyo3::Bound<'p, pyo3::PyAny>>,
+    cert: Option<DecodedCertificate>,
+    additional_certs: Vec<DecodedCertificate>,
+}
+
+#[cfg(feature = "openssl")]
+fn decode_p12<'p>(
+    py: pyo3::Python<'p>,
     data: CffiBuf<'_>,
     password: Option<CffiBuf<'_>>,
-) -> CryptographyResult<openssl::pkcs12::ParsedPkcs12_2> {
+) -> CryptographyResult<DecodedP12<'p>> {
     let p12 = openssl::pkcs12::Pkcs12::from_der(data.as_bytes()).map_err(|_| {
         pyo3::exceptions::PyValueError::new_err("Could not deserialize PKCS12 data")
     })?;
@@ -574,7 +590,7 @@ fn decode_p12(
     };
     // PKCS12_parse runs the MAC and PBE KDFs for however many iterations
     // the bundle specifies, which can take a while, so don't hold the GIL.
-    let parsed = py
+    let p12 = py
         .detach(|| p12.parse2(password))
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid password or PKCS12 data"))?;
 
@@ -584,7 +600,128 @@ fn decode_p12(
         pyo3::PyErr::warn(py, &warning_cls, &message, 1)?;
     }
 
-    Ok(parsed)
+    let decode_cert =
+        |ossl_cert: &openssl::x509::X509Ref| -> CryptographyResult<DecodedCertificate> {
+            let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
+            let cert = x509::certificate::load_der_x509_certificate(py, cert_der, None)?;
+            let alias = ossl_cert
+                .alias()
+                .map(|a| pyo3::types::PyBytes::new(py, a).unbind());
+            Ok((cert, alias))
+        };
+
+    let key = if let Some(pkey) = p12.pkey {
+        let pkey_bytes = pkey.private_key_to_pkcs8()?;
+        Some(keys::load_der_private_key_bytes(
+            py,
+            &pkey_bytes,
+            None,
+            false,
+        )?)
+    } else {
+        None
+    };
+    let cert = p12.cert.as_deref().map(decode_cert).transpose()?;
+    let mut additional_certs = vec![];
+    if let Some(ossl_certs) = p12.ca {
+        cfg_if::cfg_if! {
+            if #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))] {
+                let it = ossl_certs.iter();
+            } else {
+                let it = ossl_certs.iter().rev();
+            }
+        };
+
+        for ossl_cert in it {
+            additional_certs.push(decode_cert(ossl_cert)?);
+        }
+    }
+
+    Ok(DecodedP12 {
+        key,
+        cert,
+        additional_certs,
+    })
+}
+
+#[cfg(feature = "verified-garbage")]
+fn decode_p12<'p>(
+    py: pyo3::Python<'p>,
+    data: CffiBuf<'_>,
+    password: Option<CffiBuf<'_>>,
+) -> CryptographyResult<DecodedP12<'p>> {
+    let invalid = || {
+        CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+            "Invalid password or PKCS12 data",
+        ))
+    };
+
+    let password = if let Some(p) = password.as_ref() {
+        std::str::from_utf8(p.as_bytes())
+            .map_err(|_| pyo3::exceptions::PyUnicodeDecodeError::new_err(()))?
+            .as_bytes()
+    } else {
+        // As with OpenSSL, `password=None` is the same as an empty password,
+        // which tries both an absent and an empty password.
+        b""
+    };
+    let data = data.as_bytes();
+    // The MAC and PBE KDFs run for however many iterations the bundle
+    // specifies, which can take a while, so don't hold the GIL.
+    let contents = py
+        .detach(|| cryptography_key_parsing::pkcs12::parse(data, password))
+        .map_err(|e| match e {
+            // The `asn1` crate reads only DER, while OpenSSL reads BER too.
+            cryptography_key_parsing::pkcs12::Pkcs12Error::Deserialize => CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Could not deserialize PKCS12 data"),
+            ),
+            cryptography_key_parsing::pkcs12::Pkcs12Error::InvalidPasswordOrData => invalid(),
+        })?;
+
+    let key = match &contents.key {
+        Some(der) => {
+            // OpenSSL rejects a key it cannot parse as it reads the bundle.
+            if cryptography_key_parsing::pkcs8::parse_private_key(der).is_err() {
+                return Err(invalid());
+            }
+            Some(keys::load_der_private_key_bytes(py, der, None, false)?)
+        }
+        None => None,
+    };
+
+    // As with OpenSSL's PKCS12_parse, the certificate is the first one whose
+    // public key matches the private key; the others follow in order.
+    let mut cert = None;
+    let mut additional_certs = vec![];
+    for c in contents.certificates {
+        let cert_der = pyo3::types::PyBytes::new(py, &c.der).unbind();
+        let certificate = x509::certificate::load_der_x509_certificate(py, cert_der, None)
+            .map_err(|_| invalid())?;
+        let alias = c
+            .friendly_name
+            .map(|name| pyo3::types::PyBytes::new(py, &name).unbind());
+        if cert.is_none() {
+            if let Some(key) = &key {
+                let matches = certificate
+                    .public_key(py)
+                    .and_then(|public_key| {
+                        Ok(public_key.eq(key.call_method0(pyo3::intern!(py, "public_key"))?)?)
+                    })
+                    .unwrap_or(false);
+                if matches {
+                    cert = Some((certificate, alias));
+                    continue;
+                }
+            }
+        }
+        additional_certs.push((certificate, alias));
+    }
+
+    Ok(DecodedP12 {
+        key,
+        cert,
+        additional_certs,
+    })
 }
 
 #[pyo3::pyfunction]
@@ -603,35 +740,11 @@ fn load_key_and_certificates<'p>(
 
     let p12 = decode_p12(py, data, password)?;
 
-    let private_key = if let Some(pkey) = p12.pkey {
-        let pkey_bytes = pkey.private_key_to_pkcs8()?;
-        keys::load_der_private_key_bytes(py, &pkey_bytes, None, false)?
-    } else {
-        py.None().into_bound(py)
-    };
-    let cert = if let Some(ossl_cert) = p12.cert {
-        let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
-        Some(x509::certificate::load_der_x509_certificate(
-            py, cert_der, None,
-        )?)
-    } else {
-        None
-    };
+    let private_key = p12.key.unwrap_or_else(|| py.None().into_bound(py));
+    let cert = p12.cert.map(|(cert, _)| cert);
     let additional_certs = pyo3::types::PyList::empty(py);
-    if let Some(ossl_certs) = p12.ca {
-        cfg_if::cfg_if! {
-            if #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))] {
-                let it = ossl_certs.iter();
-            } else {
-                let it = ossl_certs.iter().rev();
-            }
-        };
-
-        for ossl_cert in it {
-            let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
-            let cert = x509::certificate::load_der_x509_certificate(py, cert_der, None)?;
-            additional_certs.append(cert)?;
-        }
+    for (cert, _) in p12.additional_certs {
+        additional_certs.append(cert)?;
     }
 
     Ok((private_key, cert, additional_certs))
@@ -649,19 +762,8 @@ fn load_pkcs12<'p>(
 
     let p12 = decode_p12(py, data, password)?;
 
-    let private_key = if let Some(pkey) = p12.pkey {
-        let pkey_bytes = pkey.private_key_to_pkcs8()?;
-        keys::load_der_private_key_bytes(py, &pkey_bytes, None, false)?
-    } else {
-        py.None().into_bound(py)
-    };
-    let cert = if let Some(ossl_cert) = p12.cert {
-        let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
-        let cert = x509::certificate::load_der_x509_certificate(py, cert_der, None)?;
-        let alias = ossl_cert
-            .alias()
-            .map(|a| pyo3::types::PyBytes::new(py, a).unbind());
-
+    let private_key = p12.key.unwrap_or_else(|| py.None().into_bound(py));
+    let cert = if let Some((cert, alias)) = p12.cert {
         PKCS12Certificate::new(pyo3::Py::new(py, cert)?, alias)
             .into_pyobject(py)?
             .into_any()
@@ -670,25 +772,9 @@ fn load_pkcs12<'p>(
         py.None()
     };
     let additional_certs = pyo3::types::PyList::empty(py);
-    if let Some(ossl_certs) = p12.ca {
-        cfg_if::cfg_if! {
-            if #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))] {
-                let it = ossl_certs.iter();
-            } else {
-                let it = ossl_certs.iter().rev();
-            }
-        };
-
-        for ossl_cert in it {
-            let cert_der = pyo3::types::PyBytes::new(py, &ossl_cert.to_der()?).unbind();
-            let cert = x509::certificate::load_der_x509_certificate(py, cert_der, None)?;
-            let alias = ossl_cert
-                .alias()
-                .map(|a| pyo3::types::PyBytes::new(py, a).unbind());
-
-            let p12_cert = PKCS12Certificate::new(pyo3::Py::new(py, cert)?, alias);
-            additional_certs.append(p12_cert)?;
-        }
+    for (cert, alias) in p12.additional_certs {
+        let p12_cert = PKCS12Certificate::new(pyo3::Py::new(py, cert)?, alias);
+        additional_certs.append(p12_cert)?;
     }
 
     Ok(types::PKCS12KEYANDCERTIFICATES

@@ -2843,6 +2843,10 @@ class TestCertificateBuilder:
     ):
         if not backend.signature_hash_supported(alg):
             pytest.skip(f"{alg} signature not supported")
+        if not backend.rsa_pss_hash_combination_supported(alg, mgf_alg):
+            pytest.skip(
+                f"PSS with {alg} and MGF1 over {mgf_alg} not supported"
+            )
         builder = (
             x509.CertificateBuilder()
             .subject_name(
@@ -5800,6 +5804,10 @@ class TestCertificateSigningRequestBuilder:
     ):
         if not backend.signature_hash_supported(alg):
             pytest.skip(f"{alg} signature not supported")
+        if not backend.rsa_pss_hash_combination_supported(alg, mgf_alg):
+            pytest.skip(
+                f"PSS with {alg} and MGF1 over {mgf_alg} not supported"
+            )
         builder = x509.CertificateSigningRequestBuilder().subject_name(
             x509.Name([x509.NameAttribute(NameOID.COUNTRY_NAME, "US")])
         )
@@ -5898,7 +5906,11 @@ class TestDSACertificate:
         ),
         skip_message="Does not support SHA-1 signature.",
     )
-    def test_load_dsa_cert(self):
+    def test_load_dsa_cert(self, backend):
+        if not backend.dsa_key_size_supported(2048, 160):
+            pytest.skip(
+                "Does not support DSA with a 2048-bit p and a 160-bit q"
+            )
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
             x509.load_pem_x509_certificate,
@@ -5975,7 +5987,11 @@ class TestDSACertificate:
         assert r == 215618264820276283222494627481362273536404860490
         assert s == 532023851299196869156027211159466197586787351758
 
-    def test_tbs_certificate_bytes(self):
+    def test_tbs_certificate_bytes(self, backend):
+        if not backend.dsa_key_size_supported(2048, 160):
+            pytest.skip(
+                "Does not support DSA with a 2048-bit p and a 160-bit q"
+            )
         cert = _load_cert(
             os.path.join("x509", "custom", "dsa_selfsigned_ca.pem"),
             x509.load_pem_x509_certificate,
