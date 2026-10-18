@@ -6,7 +6,14 @@ import pytest
 
 from cryptography.exceptions import InternalError
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
-from cryptography.hazmat.bindings.openssl.binding import (
+
+if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+    pytest.skip(
+        "verified-garbage builds have no OpenSSL bindings",
+        allow_module_level=True,
+    )
+
+from cryptography.hazmat.bindings.openssl.binding import (  # noqa: E402
     Binding,
     _openssl_assert,
     _verify_package_version,

@@ -11,7 +11,15 @@ from collections.abc import Callable, Mapping
 
 import cryptography
 from cryptography.exceptions import InternalError
-from cryptography.hazmat.bindings._rust import _openssl, openssl
+from cryptography.hazmat.bindings._rust import openssl
+
+if openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+    raise ImportError(
+        "cryptography was built with verified-garbage as its crypto backend, "
+        "which does not link OpenSSL, so there are no OpenSSL bindings."
+    )
+
+from cryptography.hazmat.bindings._rust import _openssl  # noqa: E402
 from cryptography.hazmat.bindings.openssl._conditional import CONDITIONAL_NAMES
 
 
