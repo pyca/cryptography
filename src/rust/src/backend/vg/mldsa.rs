@@ -167,7 +167,7 @@ macro_rules! ml_dsa {
                 // Hedged `ML-DSA.Sign_internal` on the external mu, with fresh
                 // randomness, as `ML-DSA.Sign` does (FIPS 204 Algorithm 2).
                 let mut rnd = random_bytes::<32>()?;
-                let sig = py.detach(|| self.key.sign_internal(mu_bytes, &rnd));
+                let sig = py.detach(|| self.key.sign_mu(mu_bytes, &rnd));
                 rnd.fill(0);
                 std::hint::black_box(&rnd);
                 let sig = sig.map_err(|_| {
@@ -241,7 +241,7 @@ macro_rules! ml_dsa {
                     .as_bytes()
                     .try_into()
                     .map_err(|_| invalid_signature())?;
-                py.detach(|| self.key.verify_internal(mu_bytes, sig))
+                py.detach(|| self.key.verify_mu(mu_bytes, sig))
                     .map_err(|_| invalid_signature())
             }
 
