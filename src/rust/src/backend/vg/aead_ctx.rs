@@ -240,8 +240,36 @@ impl VgAead {
 
         let (aad, aad_len) = extract_aad(aad)?;
         crate::backend::run_with_gil_detached(py, plaintext.len() + aad_len, || {
-            ciphertext.copy_from_slice(plaintext);
-            self.seal(&aad, nonce, ciphertext, tag)
+            // AES-GCM and ChaCha20-Poly1305 encrypt out of place, saving a
+            // copy of the plaintext; the others encrypt in place.
+            match &self.key {
+                Key::AesGcm(k) => {
+                    let t = k
+                        .encrypt(
+                            nonce.ok_or_else(bad_nonce)?,
+                            single_aad(&aad),
+                            &[plaintext],
+                            ciphertext,
+                        )
+                        .map_err(failed)?;
+                    tag.copy_from_slice(&t);
+                    Ok(())
+                }
+                Key::ChaCha20Poly1305(k) => {
+                    let nonce: &[u8; 12] = nonce
+                        .and_then(|n| n.try_into().ok())
+                        .ok_or_else(bad_nonce)?;
+                    let t = k
+                        .encrypt(nonce, single_aad(&aad), &[plaintext], ciphertext)
+                        .map_err(failed)?;
+                    tag.copy_from_slice(&t);
+                    Ok(())
+                }
+                _ => {
+                    ciphertext.copy_from_slice(plaintext);
+                    self.seal(&aad, nonce, ciphertext, tag)
+                }
+            }
         })
     }
 

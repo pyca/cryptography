@@ -855,8 +855,21 @@ impl CipherContext {
         py: pyo3::Python<'p>,
         data: &[u8],
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let block_size = self.engine.block_size();
+        if block_size == 1 {
+            // Streaming modes always produce exactly data.len() bytes of
+            // output, so encrypt directly into the result PyBytes instead
+            // of into a zeroed scratch Vec that then gets copied (for large
+            // inputs both allocations are fresh pages, which costs more than
+            // the encryption itself).
+            return Ok(pyo3::types::PyBytes::new_with(py, data.len(), |b| {
+                let n = self.update_into(py, data, b)?;
+                assert_eq!(n, data.len());
+                Ok(())
+            })?);
+        }
         let n = self.engine.output_len(data.len());
-        let mut buf = vec![0; data.len() + self.engine.block_size() - 1];
+        let mut buf = vec![0; data.len() + block_size - 1];
         let written = self.update_into(py, data, &mut buf)?;
         assert_eq!(written, n);
         Ok(pyo3::types::PyBytes::new(py, &buf[..written]))
