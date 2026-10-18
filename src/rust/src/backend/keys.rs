@@ -310,8 +310,7 @@ pub(crate) fn load_der_public_key_bytes<'p>(
         // in a subjectPublicKeyInfo)
         Err(e) => {
             // Use the original error.
-            let key =
-                cryptography_key_parsing::rsa::parse_pkcs1_public_key(data).map_err(|_| e)?;
+            let key = cryptography_key_parsing::rsa::parse_pkcs1_public_key(data).map_err(|_| e)?;
             public_key_from_parsed(py, cryptography_key_parsing::ParsedPublicKey::from(key))
         }
     }

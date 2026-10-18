@@ -4,6 +4,9 @@
 
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 #![allow(unknown_lints, non_local_definitions, clippy::result_large_err)]
+// TODO(verified-garbage): remove once every module has its verified-garbage
+// implementation; until then the skeleton leaves shared helpers unused.
+#![cfg_attr(feature = "verified-garbage", allow(dead_code, unused_imports))]
 
 #[cfg(all(feature = "openssl", feature = "verified-garbage"))]
 compile_error!("enable only one crypto backend: `openssl` or `verified-garbage`");

@@ -302,6 +302,317 @@ pub(crate) fn pkey_public_bytes<'p>(
     ))
 }
 
+/// A Python int as unsigned big-endian bytes, without leading zeros.
+#[cfg(feature = "verified-garbage")]
+pub(crate) fn py_int_to_be_bytes(
+    py: pyo3::Python<'_>,
+    v: &pyo3::Bound<'_, pyo3::PyAny>,
+) -> CryptographyResult<Vec<u8>> {
+    let n = v
+        .call_method0(pyo3::intern!(py, "bit_length"))?
+        .extract::<usize>()?
+        .div_ceil(8);
+    let bytes = v
+        .call_method1(pyo3::intern!(py, "to_bytes"), (n, pyo3::intern!(py, "big")))?
+        .extract::<pyo3::pybacked::PyBackedBytes>()?;
+    Ok(bytes.to_vec())
+}
+
+/// Unsigned big-endian bytes as a Python int.
+#[cfg(feature = "verified-garbage")]
+pub(crate) fn be_bytes_to_py_int<'p>(
+    py: pyo3::Python<'p>,
+    b: &[u8],
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::PyAny>> {
+    let int_type = py.get_type::<pyo3::types::PyInt>();
+    Ok(int_type.call_method1(
+        pyo3::intern!(py, "from_bytes"),
+        (b, pyo3::intern!(py, "big")),
+    )?)
+}
+
+/// The raw private key bytes of the key types that have a raw form.
+#[cfg(feature = "verified-garbage")]
+fn raw_private_key_bytes(key: &cryptography_key_parsing::raw::PrivateKey) -> Option<&[u8]> {
+    use cryptography_key_parsing::raw::PrivateKey;
+    match key {
+        PrivateKey::X25519(k) | PrivateKey::Ed25519(k) => Some(k),
+        PrivateKey::X448(k) => Some(k),
+        PrivateKey::Ed448(k) => Some(k),
+        PrivateKey::MlKem768(k) | PrivateKey::MlKem1024(k) => Some(k),
+        PrivateKey::MlDsa44(k) | PrivateKey::MlDsa65(k) | PrivateKey::MlDsa87(k) => Some(k),
+        _ => None,
+    }
+}
+
+/// The raw public key bytes of the key types that have a raw form.
+#[cfg(feature = "verified-garbage")]
+fn raw_public_key_bytes(key: &cryptography_key_parsing::raw::PublicKey) -> Option<&[u8]> {
+    use cryptography_key_parsing::raw::PublicKey;
+    match key {
+        PublicKey::X25519(k) | PublicKey::Ed25519(k) => Some(k),
+        PublicKey::X448(k) => Some(k),
+        PublicKey::Ed448(k) => Some(k),
+        PublicKey::MlKem768(k)
+        | PublicKey::MlKem1024(k)
+        | PublicKey::MlDsa44(k)
+        | PublicKey::MlDsa65(k)
+        | PublicKey::MlDsa87(k) => Some(k),
+        _ => None,
+    }
+}
+
+/// `private_bytes` for a key held as its raw components (the
+/// verified-garbage counterpart of `pkey_private_bytes`). An EC key's
+/// `public_point` and a DSA key's `y` must be present.
+#[allow(clippy::too_many_arguments)]
+#[cfg(feature = "verified-garbage")]
+pub(crate) fn raw_private_bytes<'p>(
+    py: pyo3::Python<'p>,
+    key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
+    key: &cryptography_key_parsing::raw::PrivateKey,
+    encoding: Encoding,
+    format: PrivateFormat,
+    encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+    openssh_allowed: bool,
+    raw_allowed: bool,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    use cryptography_key_parsing::raw::PrivateKey;
+
+    if !encryption_algorithm.is_instance(&types::KEY_SERIALIZATION_ENCRYPTION.get(py)?)? {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyTypeError::new_err(
+                "Encryption algorithm must be a KeySerializationEncryption instance",
+            ),
+        ));
+    }
+
+    if raw_allowed && (encoding == Encoding::Raw || format == PrivateFormat::Raw) {
+        if encoding != Encoding::Raw
+            || format != PrivateFormat::Raw
+            || !encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)?
+        {
+            return Err(CryptographyError::from(pyo3::exceptions::PyValueError::new_err(
+                    "When using Raw both encoding and format must be Raw and encryption_algorithm must be NoEncryption()"
+                )));
+        }
+        let raw_bytes = raw_private_key_bytes(key).ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err("format is invalid with this key")
+        })?;
+        return Ok(pyo3::types::PyBytes::new(py, raw_bytes));
+    }
+
+    let py_password;
+    let password = if encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)? {
+        b"" as &[u8]
+    } else if encryption_algorithm.is_instance(&types::BEST_AVAILABLE_ENCRYPTION.get(py)?)?
+        || (encryption_algorithm.is_instance(&types::ENCRYPTION_BUILDER.get(py)?)?
+            && encryption_algorithm
+                .getattr(pyo3::intern!(py, "_format"))?
+                .extract::<PrivateFormat>()?
+                == format)
+    {
+        py_password = encryption_algorithm
+            .getattr(pyo3::intern!(py, "password"))?
+            .extract::<pyo3::pybacked::PyBackedBytes>()?;
+        &py_password
+    } else {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Unsupported encryption type"),
+        ));
+    };
+
+    if password.len() > 1023 {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "Passwords longer than 1023 bytes are not supported by this backend",
+            ),
+        ));
+    }
+
+    if format == PrivateFormat::PKCS8 {
+        let parsed = cryptography_key_parsing::ParsedPrivateKey::Raw(key.clone());
+        let (tag, der_bytes) = if password.is_empty() {
+            (
+                "PRIVATE KEY",
+                cryptography_key_parsing::pkcs8::serialize_private_key(&parsed)?,
+            )
+        } else {
+            (
+                "ENCRYPTED PRIVATE KEY",
+                cryptography_key_parsing::pkcs8::serialize_encrypted_private_key(
+                    &parsed, password,
+                )?,
+            )
+        };
+
+        return crate::asn1::encode_der_data(py, tag.to_string(), der_bytes, encoding);
+    }
+
+    if format == PrivateFormat::TraditionalOpenSSL {
+        let traditional = match key {
+            PrivateKey::Rsa(rsa) => Some((
+                "RSA PRIVATE KEY",
+                cryptography_key_parsing::rsa::serialize_pkcs1_private_key(rsa)?,
+            )),
+            PrivateKey::Dsa(dsa) => Some((
+                "DSA PRIVATE KEY",
+                cryptography_key_parsing::dsa::serialize_pkcs1_private_key(dsa)?,
+            )),
+            PrivateKey::Ec(ec) => Some((
+                "EC PRIVATE KEY",
+                cryptography_key_parsing::ec::serialize_pkcs1_private_key(ec, true)?,
+            )),
+            _ => None,
+        };
+        if let Some((tag, der_bytes)) = traditional {
+            if encoding == Encoding::PEM {
+                let pem_bytes =
+                    cryptography_key_parsing::pem::encrypt_pem(tag, &der_bytes, password)?;
+                return Ok(pyo3::types::PyBytes::new(py, &pem_bytes));
+            } else if encoding == Encoding::DER {
+                if !password.is_empty() {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "Encryption is not supported for DER encoded traditional OpenSSL keys",
+                        ),
+                    ));
+                }
+
+                return Ok(pyo3::types::PyBytes::new(py, &der_bytes));
+            }
+        }
+    }
+
+    // OpenSSH + PEM
+    if openssh_allowed && format == PrivateFormat::OpenSSH {
+        if encoding == Encoding::PEM {
+            let raw_bytes = types::SERIALIZE_SSH_PRIVATE_KEY
+                .get(py)?
+                .call1((key_obj, password, encryption_algorithm))?
+                .extract()?;
+            return crate::asn1::encode_der_data(
+                py,
+                "OPENSSH PRIVATE KEY".to_string(),
+                raw_bytes,
+                encoding,
+            );
+        }
+
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "OpenSSH private key format can only be used with PEM encoding",
+            ),
+        ));
+    }
+
+    Err(CryptographyError::from(
+        pyo3::exceptions::PyValueError::new_err("format is invalid with this key"),
+    ))
+}
+
+/// Compresses an uncompressed SEC 1 point (`04 || x || y`) to `02/03 || x`.
+#[cfg(feature = "verified-garbage")]
+pub(crate) fn compress_ec_point(point: &[u8]) -> Vec<u8> {
+    assert!(
+        point.len() % 2 == 1 && point[0] == 4,
+        "an uncompressed point"
+    );
+    let coord_len = (point.len() - 1) / 2;
+    let y_odd = point[point.len() - 1] & 1;
+    let mut out = Vec::with_capacity(1 + coord_len);
+    out.push(2 | y_odd);
+    out.extend_from_slice(&point[1..1 + coord_len]);
+    out
+}
+
+/// `public_bytes` for a key held as its raw components (the
+/// verified-garbage counterpart of `pkey_public_bytes`). An EC key's point
+/// must be uncompressed.
+#[cfg(feature = "verified-garbage")]
+pub(crate) fn raw_public_bytes<'p>(
+    py: pyo3::Python<'p>,
+    key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
+    key: &cryptography_key_parsing::raw::PublicKey,
+    encoding: Encoding,
+    format: PublicFormat,
+    openssh_allowed: bool,
+    raw_allowed: bool,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    use cryptography_key_parsing::raw::PublicKey;
+
+    if raw_allowed && (encoding == Encoding::Raw || format == PublicFormat::Raw) {
+        if encoding != Encoding::Raw || format != PublicFormat::Raw {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(
+                    "When using Raw both encoding and format must be Raw",
+                ),
+            ));
+        }
+        let raw_bytes = raw_public_key_bytes(key).ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err("format is invalid with this key")
+        })?;
+        return Ok(pyo3::types::PyBytes::new(py, raw_bytes));
+    }
+
+    // SubjectPublicKeyInfo + PEM/DER
+    if format == PublicFormat::SubjectPublicKeyInfo {
+        let der_bytes = cryptography_key_parsing::spki::serialize_public_key(key)?;
+
+        return crate::asn1::encode_der_data(py, "PUBLIC KEY".to_string(), der_bytes, encoding);
+    }
+
+    if let PublicKey::Ec(ec) = key {
+        if encoding == Encoding::X962 {
+            let data = match format {
+                PublicFormat::UncompressedPoint => ec.point.clone(),
+                PublicFormat::CompressedPoint => compress_ec_point(&ec.point),
+                _ => {
+                    return Err(CryptographyError::from(
+                        pyo3::exceptions::PyValueError::new_err(
+                            "X962 encoding must be used with CompressedPoint or UncompressedPoint format"
+                        )
+                    ));
+                }
+            };
+            return Ok(pyo3::types::PyBytes::new(py, &data));
+        }
+    }
+
+    if let PublicKey::Rsa(rsa) = key {
+        if format == PublicFormat::PKCS1 {
+            let der_bytes = cryptography_key_parsing::rsa::serialize_pkcs1_public_key(rsa)?;
+
+            return crate::asn1::encode_der_data(
+                py,
+                "RSA PUBLIC KEY".to_string(),
+                der_bytes,
+                encoding,
+            );
+        }
+    }
+
+    // OpenSSH + OpenSSH
+    if openssh_allowed && format == PublicFormat::OpenSSH {
+        if encoding == Encoding::OpenSSH {
+            return Ok(types::SERIALIZE_SSH_PUBLIC_KEY
+                .get(py)?
+                .call1((key_obj,))?
+                .extract()?);
+        }
+
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "OpenSSH format must be used with OpenSSH encoding",
+            ),
+        ));
+    }
+
+    Err(CryptographyError::from(
+        pyo3::exceptions::PyValueError::new_err("format is invalid with this key"),
+    ))
+}
+
 pub(crate) enum BytesOrPyBytes<'a> {
     Bytes(&'a [u8]),
     PyBytes(pyo3::Bound<'a, pyo3::types::PyBytes>),

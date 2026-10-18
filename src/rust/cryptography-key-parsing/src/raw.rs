@@ -68,12 +68,14 @@ pub struct DsaPublicKey {
     pub y: Vec<u8>,
 }
 
-/// A DSA private key; PKCS #8 does not carry `y`, so the backend computes
-/// it (`g^x mod p`).
+/// A DSA private key. PKCS #8 does not carry `y`, so parsing it leaves `y`
+/// `None`; the backend computes `y = g^x mod p` (and checks a parsed `y`
+/// against it). Serializing to OpenSSL's traditional format needs `y`.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DsaPrivateKey {
     pub params: DsaParameters,
     pub x: Vec<u8>,
+    pub y: Option<Vec<u8>>,
 }
 
 /// Diffie–Hellman domain parameters; `q` is present for X9.42 (`dhpublicnumber`)

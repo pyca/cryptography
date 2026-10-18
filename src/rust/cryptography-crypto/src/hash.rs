@@ -333,4 +333,3 @@ pub fn invalid_parameter() -> Error {
         Error
     }
 }
-
