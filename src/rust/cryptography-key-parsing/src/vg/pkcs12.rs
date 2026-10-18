@@ -21,6 +21,11 @@ use cryptography_x509::pkcs8::EncryptedPrivateKeyInfo;
 
 const SAFE_CONTENTS_BAG_OID: asn1::ObjectIdentifier =
     asn1::oid!(1, 2, 840, 113549, 1, 12, 10, 1, 6);
+/// How deeply `safeContentsBag`s may nest. Each level recurses, so without
+/// a limit a crafted bundle overflows the stack. OpenSSL's ASN.1 decoder
+/// refuses constructed values nested more than 30 deep, which lets through
+/// at most 28 nested `safeContentsBag`s.
+const MAX_SAFE_CONTENTS_DEPTH: usize = 28;
 const MD5_OID: asn1::ObjectIdentifier = asn1::oid!(1, 2, 840, 113549, 2, 5);
 const SHA512_224_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 2, 5);
 const SHA512_256_OID: asn1::ObjectIdentifier = asn1::oid!(2, 16, 840, 1, 101, 3, 4, 2, 6);
@@ -165,15 +170,19 @@ struct Parser<'p> {
 }
 
 impl Parser<'_> {
-    fn parse_bags(&mut self, data: &[u8]) -> Result<(), Pkcs12Error> {
+    /// Parses a `SafeContents` nested in `depth` `safeContentsBag`s.
+    fn parse_bags(&mut self, data: &[u8], depth: usize) -> Result<(), Pkcs12Error> {
+        if depth > MAX_SAFE_CONTENTS_DEPTH {
+            return Err(Invalid);
+        }
         let bags = asn1::parse_single::<SafeContents<'_>>(data).map_err(|_| Invalid)?;
         for bag in bags {
-            self.parse_bag(bag)?;
+            self.parse_bag(bag, depth)?;
         }
         Ok(())
     }
 
-    fn parse_bag(&mut self, bag: SafeBag<'_>) -> Result<(), Pkcs12Error> {
+    fn parse_bag(&mut self, bag: SafeBag<'_>, depth: usize) -> Result<(), Pkcs12Error> {
         let value = bag.bag_value.into_inner();
         match bag.bag_id {
             KEY_BAG_OID => {
@@ -215,7 +224,7 @@ impl Parser<'_> {
                     friendly_name: name,
                 });
             }
-            SAFE_CONTENTS_BAG_OID => self.parse_bags(value.full_data())?,
+            SAFE_CONTENTS_BAG_OID => self.parse_bags(value.full_data(), depth + 1)?,
             // CRLs, secrets and other bags are ignored.
             _ => {}
         }
@@ -265,7 +274,7 @@ pub fn parse(data: &[u8], password: &[u8]) -> Result<Pkcs12Contents, Pkcs12Error
     for safe in safes {
         match safe.content {
             Content::Data(data) => {
-                parser.parse_bags(data.ok_or(Invalid)?.into_inner())?;
+                parser.parse_bags(data.ok_or(Invalid)?.into_inner(), 0)?;
             }
             Content::EncryptedData(encrypted) => {
                 let info = encrypted.into_inner().encrypted_content_info;
@@ -275,7 +284,7 @@ pub fn parse(data: &[u8], password: &[u8]) -> Result<Pkcs12Contents, Pkcs12Error
                     password,
                 )
                 .map_err(|_| Invalid)?;
-                parser.parse_bags(&plaintext)?;
+                parser.parse_bags(&plaintext, 0)?;
             }
             // Other content types (public-key encryption) are ignored.
             _ => {}
@@ -369,5 +378,61 @@ mod tests {
         assert_eq!(friendly_name(&tlv(b"\x0c\x01a")), Some(b"a".to_vec()));
         assert_eq!(friendly_name(&tlv(b"\x13\x01a")), Some(b"a".to_vec()));
         assert_eq!(friendly_name(&tlv(b"\x04\x01a")), None);
+    }
+
+    /// A DER TLV.
+    fn der(tag: u8, body: &[u8]) -> Vec<u8> {
+        let mut out = vec![tag];
+        if body.len() < 0x80 {
+            out.push(body.len() as u8);
+        } else {
+            let len = body.len().to_be_bytes();
+            let len = &len[len.iter().position(|&b| b != 0).unwrap()..];
+            out.push(0x80 | len.len() as u8);
+            out.extend_from_slice(len);
+        }
+        out.extend_from_slice(body);
+        out
+    }
+
+    /// A bundle without a MAC whose (empty) `SafeContents` is nested in
+    /// `depth` `safeContentsBag`s.
+    fn nested_bundle(depth: usize) -> Vec<u8> {
+        let bag_id = asn1::write_single(&SAFE_CONTENTS_BAG_OID).unwrap();
+        let data_id = asn1::write_single(&cryptography_x509::pkcs7::PKCS7_DATA_OID).unwrap();
+        let mut contents = der(0x30, b"");
+        for _ in 0..depth {
+            let bag = der(0x30, &[&bag_id[..], &der(0xa0, &contents)].concat());
+            contents = der(0x30, &bag);
+        }
+        let safe = der(
+            0x30,
+            &[&data_id[..], &der(0xa0, &der(0x04, &contents))].concat(),
+        );
+        let auth_safe = der(0x30, &safe);
+        let content_info = der(
+            0x30,
+            &[&data_id[..], &der(0xa0, &der(0x04, &auth_safe))].concat(),
+        );
+        der(0x30, &[&b"\x02\x01\x03"[..], &content_info].concat())
+    }
+
+    #[test]
+    fn test_nested_safe_contents() {
+        let empty = Pkcs12Contents {
+            key: None,
+            certificates: vec![],
+        };
+        assert_eq!(parse(&nested_bundle(1), b""), Ok(empty));
+        assert!(parse(&nested_bundle(MAX_SAFE_CONTENTS_DEPTH), b"").is_ok());
+        assert_eq!(
+            parse(&nested_bundle(MAX_SAFE_CONTENTS_DEPTH + 1), b""),
+            Err(Pkcs12Error::InvalidPasswordOrData)
+        );
+        // Deep enough to overflow the stack without the limit.
+        assert_eq!(
+            parse(&nested_bundle(100_000), b""),
+            Err(Pkcs12Error::InvalidPasswordOrData)
+        );
     }
 }
