@@ -28,6 +28,13 @@ from ...utils import raises_unsupported_algorithm
 __all__ = ["rsa_key_2048"]
 
 
+# The parts of the backend that only exist when OpenSSL is linked.
+requires_openssl = pytest.mark.skipif(
+    rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE,
+    reason="verified-garbage builds do not link OpenSSL",
+)
+
+
 class DummyMGF(padding.MGF):
     _salt_length = 0
     _algorithm = hashes.SHA1()
@@ -50,6 +57,9 @@ class TestOpenSSL:
         to be true for every OpenSSL-alike.
         """
         version = backend.openssl_version_text()
+        if rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE:
+            assert version == "verified-garbage"
+            return
         assert version.startswith(
             ("OpenSSL", "LibreSSL", "BoringSSL", "AWS-LC")
         )
@@ -71,6 +81,7 @@ class TestOpenSSL:
         if rust_openssl.CRYPTOGRAPHY_IS_AWSLC:
             assert version.startswith("AWS-LC")
 
+    @requires_openssl
     def test_openssl_version_number(self):
         assert backend.openssl_version_number() > 0
 
@@ -80,11 +91,13 @@ class TestOpenSSL:
             is False
         )
 
+    @requires_openssl
     def test_openssl_assert(self):
         backend.openssl_assert(True)
         with pytest.raises(InternalError):
             backend.openssl_assert(False)
 
+    @requires_openssl
     def test_consume_errors(self):
         for i in range(10):
             backend._lib.ERR_put_error(
@@ -98,12 +111,14 @@ class TestOpenSSL:
         assert backend._lib.ERR_peek_error() == 0
         assert len(errors) == 10
 
+    @requires_openssl
     def test_ssl_ciphers_registered(self):
         meth = backend._lib.TLS_method()
         ctx = backend._lib.SSL_CTX_new(meth)
         assert ctx != backend._ffi.NULL
         backend._lib.SSL_CTX_free(ctx)
 
+    @requires_openssl
     def test_evp_ciphers_registered(self):
         cipher = backend._lib.EVP_get_cipherbyname(b"aes-256-cbc")
         assert cipher != backend._ffi.NULL
