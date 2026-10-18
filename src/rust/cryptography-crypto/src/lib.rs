@@ -5,5 +5,7 @@
 pub mod constant_time;
 pub mod encoding;
 pub mod hash;
+#[cfg(not(feature = "openssl"))]
+pub mod hmac;
 pub mod pbkdf1;
 pub mod pkcs12;
