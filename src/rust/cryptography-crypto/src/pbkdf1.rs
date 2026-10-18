@@ -5,15 +5,15 @@
 /// This is the OpenSSL KDF that's used in decrypting PEM blocks. It is a
 /// generalization of PBKDF1.
 pub fn openssl_kdf(
-    hash_alg: openssl::hash::MessageDigest,
+    hash_alg: crate::hash::MessageDigest,
     password: &[u8],
     salt: [u8; 8],
     length: usize,
-) -> Result<Vec<u8>, openssl::error::ErrorStack> {
+) -> Result<Vec<u8>, crate::hash::Error> {
     let mut key = Vec::with_capacity(length);
 
     while key.len() < length {
-        let mut h = openssl::hash::Hasher::new(hash_alg)?;
+        let mut h = crate::hash::Hasher::new(hash_alg)?;
 
         if !key.is_empty() {
             h.update(&key[key.len() - hash_alg.size()..])?;
@@ -32,24 +32,24 @@ pub fn openssl_kdf(
 
 /// PBKDF1 as defined in RFC 2898 for PKCS#5 v1.5 PBE algorithms
 pub fn pbkdf1(
-    hash_alg: openssl::hash::MessageDigest,
+    hash_alg: crate::hash::MessageDigest,
     password: &[u8],
     salt: [u8; 8],
     iterations: u64,
     length: usize,
-) -> Result<Vec<u8>, openssl::error::ErrorStack> {
+) -> Result<Vec<u8>, crate::hash::Error> {
     if length > hash_alg.size() || iterations == 0 {
-        return Err(openssl::error::ErrorStack::get());
+        return Err(crate::hash::invalid_parameter());
     }
 
-    let mut h = openssl::hash::Hasher::new(hash_alg)?;
+    let mut h = crate::hash::Hasher::new(hash_alg)?;
     h.update(password)?;
     h.update(&salt)?;
     let mut t = h.finish()?;
 
     // Apply hash function for specified iterations
     for _ in 1..iterations {
-        let mut h = openssl::hash::Hasher::new(hash_alg)?;
+        let mut h = crate::hash::Hasher::new(hash_alg)?;
         h.update(&t)?;
         t = h.finish()?;
     }
@@ -66,7 +66,7 @@ mod tests {
     fn test_openssl_kdf() {
         for (md, password, salt, expected) in [
             (
-                openssl::hash::MessageDigest::md5(),
+                crate::hash::MessageDigest::md5(),
                 b"password123" as &[u8],
                 [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
                 &[
@@ -75,7 +75,7 @@ mod tests {
                 ][..],
             ),
             (
-                openssl::hash::MessageDigest::md5(),
+                crate::hash::MessageDigest::md5(),
                 b"diffpassword",
                 [0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x11, 0x22],
                 &[
@@ -84,7 +84,7 @@ mod tests {
                 ],
             ),
             (
-                openssl::hash::MessageDigest::md5(),
+                crate::hash::MessageDigest::md5(),
                 b"secret_key",
                 [0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88],
                 &[
@@ -93,7 +93,7 @@ mod tests {
                 ],
             ),
             (
-                openssl::hash::MessageDigest::md5(),
+                crate::hash::MessageDigest::md5(),
                 b"another_password",
                 [0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00],
                 &[
@@ -102,7 +102,7 @@ mod tests {
                 ],
             ),
             (
-                openssl::hash::MessageDigest::md5(),
+                crate::hash::MessageDigest::md5(),
                 b"very_long_and_complex_password",
                 [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef],
                 &[
@@ -112,7 +112,7 @@ mod tests {
                 ],
             ),
             (
-                openssl::hash::MessageDigest::md5(),
+                crate::hash::MessageDigest::md5(),
                 b"different_secure_password",
                 [0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x10],
                 &[
@@ -129,7 +129,7 @@ mod tests {
 
     #[test]
     fn test_pbkdf1() {
-        assert!(pbkdf1(openssl::hash::MessageDigest::md5(), b"abc", [0; 8], 1, 20).is_err());
-        assert!(pbkdf1(openssl::hash::MessageDigest::md5(), b"abc", [0; 8], 0, 8).is_err());
+        assert!(pbkdf1(crate::hash::MessageDigest::md5(), b"abc", [0; 8], 1, 20).is_err());
+        assert!(pbkdf1(crate::hash::MessageDigest::md5(), b"abc", [0; 8], 0, 8).is_err());
     }
 }

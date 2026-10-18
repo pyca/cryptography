@@ -23,6 +23,7 @@ def _xof_supported() -> bool:
     return (
         rust_openssl.CRYPTOGRAPHY_OPENSSL_330_OR_GREATER
         or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+        or rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE
     )
 
 

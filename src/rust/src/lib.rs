@@ -5,54 +5,79 @@
 #![deny(rust_2018_idioms, clippy::undocumented_unsafe_blocks)]
 #![allow(unknown_lints, non_local_definitions, clippy::result_large_err)]
 
-#[cfg(not(any(
-    CRYPTOGRAPHY_IS_LIBRESSL,
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC
-)))]
+#[cfg(all(feature = "openssl", feature = "verified-garbage"))]
+compile_error!("enable only one crypto backend: `openssl` or `verified-garbage`");
+#[cfg(not(any(feature = "openssl", feature = "verified-garbage")))]
+compile_error!("enable a crypto backend: `openssl` or `verified-garbage`");
+
+#[cfg(all(
+    feature = "openssl",
+    not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    ))
+))]
 use std::env;
 
-#[cfg(not(any(
-    CRYPTOGRAPHY_IS_LIBRESSL,
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC
-)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    ))
+))]
 use openssl::provider;
-#[cfg(not(any(
-    CRYPTOGRAPHY_IS_LIBRESSL,
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC
-)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    ))
+))]
 use pyo3::PyTypeInfo;
 
-#[cfg(not(any(
-    CRYPTOGRAPHY_IS_LIBRESSL,
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC
-)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    ))
+))]
 use crate::error::CryptographyResult;
 mod asn1;
 mod backend;
 mod buf;
+#[cfg(feature = "openssl")]
 mod cobblestone;
 mod declarative_asn1;
 mod error;
 mod exceptions;
+#[cfg(feature = "openssl")]
 mod fernet;
 pub(crate) mod oid;
 mod padding;
+#[cfg(feature = "openssl")]
 mod pkcs12;
+#[cfg(feature = "openssl")]
 mod pkcs7;
 pub(crate) mod serialization;
+#[cfg(feature = "openssl")]
 mod test_support;
 pub(crate) mod types;
 mod x509;
 
-#[cfg(not(any(
-    CRYPTOGRAPHY_IS_LIBRESSL,
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC
-)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    ))
+))]
 #[pyo3::pyclass(module = "cryptography.hazmat.bindings._rust")]
 struct LoadedProviders {
     legacy: Option<provider::Provider>,
@@ -63,24 +88,48 @@ struct LoadedProviders {
 
 #[pyo3::pyfunction]
 fn openssl_version() -> i64 {
-    openssl::version::number()
+    #[cfg(feature = "openssl")]
+    {
+        openssl::version::number()
+    }
+    #[cfg(not(feature = "openssl"))]
+    {
+        0
+    }
 }
 
 #[pyo3::pyfunction]
 fn openssl_version_text() -> &'static str {
-    openssl::version::version()
+    #[cfg(feature = "openssl")]
+    {
+        openssl::version::version()
+    }
+    #[cfg(not(feature = "openssl"))]
+    {
+        "verified-garbage"
+    }
 }
 
 #[pyo3::pyfunction]
 fn is_fips_enabled() -> bool {
-    cryptography_openssl::fips::is_enabled()
+    #[cfg(feature = "openssl")]
+    {
+        cryptography_openssl::fips::is_enabled()
+    }
+    #[cfg(not(feature = "openssl"))]
+    {
+        false
+    }
 }
 
-#[cfg(not(any(
-    CRYPTOGRAPHY_IS_LIBRESSL,
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC
-)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    ))
+))]
 fn _initialize_providers(py: pyo3::Python<'_>) -> CryptographyResult<LoadedProviders> {
     // As of OpenSSL 3.0.0 we must register a legacy cipher provider
     // to get RC2 (needed for junk asymmetric private key
@@ -113,11 +162,14 @@ fn _initialize_providers(py: pyo3::Python<'_>) -> CryptographyResult<LoadedProvi
     })
 }
 
-#[cfg(not(any(
-    CRYPTOGRAPHY_IS_LIBRESSL,
-    CRYPTOGRAPHY_IS_BORINGSSL,
-    CRYPTOGRAPHY_IS_AWSLC
-)))]
+#[cfg(all(
+    feature = "openssl",
+    not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    ))
+))]
 // NO-COVERAGE-START
 #[pyo3::pyfunction]
 // NO-COVERAGE-END
@@ -133,10 +185,12 @@ mod _rust {
 
     #[pymodule_export]
     use crate::asn1::asn1_mod;
+    #[cfg(feature = "openssl")]
     #[pymodule_export]
     use crate::cobblestone::cobblestone_mod;
     #[pymodule_export]
     use crate::exceptions::exceptions;
+    #[cfg(feature = "openssl")]
     #[pymodule_export]
     use crate::fernet::fernet_mod;
     #[pymodule_export]
@@ -146,12 +200,15 @@ mod _rust {
         ANSIX923PaddingContext, ANSIX923UnpaddingContext, PKCS7PaddingContext,
         PKCS7UnpaddingContext,
     };
+    #[cfg(feature = "openssl")]
     #[pymodule_export]
     use crate::pkcs12::pkcs12;
+    #[cfg(feature = "openssl")]
     #[pymodule_export]
     use crate::pkcs7::pkcs7_mod;
     #[pymodule_export]
     use crate::serialization::{Encoding, ParameterFormat, PrivateFormat, PublicFormat};
+    #[cfg(feature = "openssl")]
     #[pymodule_export]
     use crate::test_support::test_support;
 
@@ -213,22 +270,30 @@ mod _rust {
             CRYPTOGRAPHY_IS_BORINGSSL,
             CRYPTOGRAPHY_IS_AWSLC
         )))]
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use super::super::enable_fips;
         #[pymodule_export]
         use super::super::{is_fips_enabled, openssl_version, openssl_version_text};
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::aead::aead;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::ciphers::ciphers;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::cmac::cmac;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::dh::dh;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::dsa::dsa;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::ec::ec;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::ed25519::ed25519;
         #[cfg(not(any(
@@ -236,18 +301,23 @@ mod _rust {
             CRYPTOGRAPHY_IS_BORINGSSL,
             CRYPTOGRAPHY_IS_AWSLC
         )))]
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::ed448::ed448;
         #[pymodule_export]
         use crate::backend::hashes::hashes;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::hmac::hmac;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::hpke::hpke;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::kdf::kdf;
         #[pymodule_export]
         use crate::backend::keys::keys;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::keywrap::keywrap;
         #[cfg(any(
@@ -255,6 +325,7 @@ mod _rust {
             CRYPTOGRAPHY_IS_AWSLC,
             CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
         ))]
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::mldsa::mldsa;
         #[cfg(any(
@@ -262,12 +333,16 @@ mod _rust {
             CRYPTOGRAPHY_IS_AWSLC,
             CRYPTOGRAPHY_OPENSSL_350_OR_GREATER
         ))]
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::mlkem::mlkem;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::poly1305::poly1305;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::rsa::rsa;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::x25519::x25519;
         #[cfg(not(any(
@@ -275,8 +350,10 @@ mod _rust {
             CRYPTOGRAPHY_IS_BORINGSSL,
             CRYPTOGRAPHY_IS_AWSLC
         )))]
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::backend::x448::x448;
+        #[cfg(feature = "openssl")]
         #[pymodule_export]
         use crate::error::{capture_error_stack, raise_openssl_error, OpenSSLError};
 
@@ -295,11 +372,13 @@ mod _rust {
         const CRYPTOGRAPHY_IS_BORINGSSL: bool = cfg!(CRYPTOGRAPHY_IS_BORINGSSL);
         #[pymodule_export]
         const CRYPTOGRAPHY_IS_AWSLC: bool = cfg!(CRYPTOGRAPHY_IS_AWSLC);
+        #[pymodule_export]
+        const CRYPTOGRAPHY_IS_VERIFIED_GARBAGE: bool = cfg!(feature = "verified-garbage");
 
         #[pymodule_init]
         fn init(openssl_mod: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
             cfg_if::cfg_if! {
-                if #[cfg(not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))] {
+                if #[cfg(all(feature = "openssl", not(any(CRYPTOGRAPHY_IS_LIBRESSL, CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC))))] {
                     let providers = super::super::_initialize_providers(openssl_mod.py())?;
                     if providers.legacy.is_some() {
                         openssl_mod.add("_legacy_provider_loaded", true)?;
@@ -333,7 +412,10 @@ mod _rust {
 
     #[pymodule_init]
     fn init(m: &pyo3::Bound<'_, pyo3::types::PyModule>) -> pyo3::PyResult<()> {
+        #[cfg(feature = "openssl")]
         m.add_submodule(&cryptography_cffi::create_module(m.py())?)?;
+        #[cfg(not(feature = "openssl"))]
+        let _ = m;
 
         Ok(())
     }

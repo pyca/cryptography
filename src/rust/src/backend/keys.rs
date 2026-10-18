@@ -42,15 +42,15 @@ pub(crate) fn load_der_private_key_bytes<'p>(
         cryptography_key_parsing::pkcs8::parse_private_key,
         |d| {
             cryptography_key_parsing::ec::parse_pkcs1_private_key(d, None)
-                .map(cryptography_key_parsing::ParsedPrivateKey::Pkey)
+                .map(cryptography_key_parsing::ParsedPrivateKey::from)
         },
         |d| {
             cryptography_key_parsing::rsa::parse_pkcs1_private_key(d)
-                .map(cryptography_key_parsing::ParsedPrivateKey::Pkey)
+                .map(cryptography_key_parsing::ParsedPrivateKey::from)
         },
         |d| {
             cryptography_key_parsing::dsa::parse_pkcs1_private_key(d)
-                .map(cryptography_key_parsing::ParsedPrivateKey::Pkey)
+                .map(cryptography_key_parsing::ParsedPrivateKey::from)
         },
     ];
 
@@ -100,13 +100,13 @@ fn load_pem_private_key<'p>(
 
     let parsed = match p.tag() {
         "PRIVATE KEY" => cryptography_key_parsing::pkcs8::parse_private_key(&data)?,
-        "RSA PRIVATE KEY" => cryptography_key_parsing::rsa::parse_pkcs1_private_key(&data).map(cryptography_key_parsing::ParsedPrivateKey::Pkey).map_err(|e| {
+        "RSA PRIVATE KEY" => cryptography_key_parsing::rsa::parse_pkcs1_private_key(&data).map(cryptography_key_parsing::ParsedPrivateKey::from).map_err(|e| {
             CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
         })?,
-        "EC PRIVATE KEY" => cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None).map(cryptography_key_parsing::ParsedPrivateKey::Pkey).map_err(|e| {
+        "EC PRIVATE KEY" => cryptography_key_parsing::ec::parse_pkcs1_private_key(&data, None).map(cryptography_key_parsing::ParsedPrivateKey::from).map_err(|e| {
             CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
         })?,
-        "DSA PRIVATE KEY" => cryptography_key_parsing::dsa::parse_pkcs1_private_key(&data).map(cryptography_key_parsing::ParsedPrivateKey::Pkey).map_err(|e| {
+        "DSA PRIVATE KEY" => cryptography_key_parsing::dsa::parse_pkcs1_private_key(&data).map(cryptography_key_parsing::ParsedPrivateKey::from).map_err(|e| {
             CryptographyError::from(e).add_note(py, "If your key is in PKCS#8 format, you must use BEGIN/END PRIVATE KEY PEM delimiters")
         })?,
         _ => {
@@ -125,6 +125,7 @@ fn load_pem_private_key<'p>(
     private_key_from_parsed(py, parsed, unsafe_skip_rsa_key_validation)
 }
 
+#[cfg(feature = "openssl")]
 fn private_key_from_pkey<'p>(
     py: pyo3::Python<'p>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
@@ -235,8 +236,13 @@ fn private_key_from_parsed(
     unsafe_skip_rsa_key_validation: bool,
 ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
     match parsed {
+        #[cfg(feature = "openssl")]
         cryptography_key_parsing::ParsedPrivateKey::Pkey(pkey) => {
             private_key_from_pkey(py, &pkey, unsafe_skip_rsa_key_validation)
+        }
+        #[cfg(feature = "verified-garbage")]
+        cryptography_key_parsing::ParsedPrivateKey::Raw(key) => {
+            private_key_from_raw(py, key, unsafe_skip_rsa_key_validation)
         }
     }
 }
@@ -246,10 +252,40 @@ fn public_key_from_parsed(
     parsed: cryptography_key_parsing::ParsedPublicKey,
 ) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
     match parsed {
+        #[cfg(feature = "openssl")]
         cryptography_key_parsing::ParsedPublicKey::Pkey(pkey) => {
             public_key_from_pkey(py, &pkey, pkey.id())
         }
+        #[cfg(feature = "verified-garbage")]
+        cryptography_key_parsing::ParsedPublicKey::Raw(key) => public_key_from_raw(py, key),
     }
+}
+
+/// The Python object for a private key parsed into its raw components.
+#[cfg(feature = "verified-garbage")]
+fn private_key_from_raw(
+    py: pyo3::Python<'_>,
+    key: cryptography_key_parsing::raw::PrivateKey,
+    unsafe_skip_rsa_key_validation: bool,
+) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
+    // TODO(verified-garbage): dispatch to each key type's module.
+    let _ = (py, key, unsafe_skip_rsa_key_validation);
+    Err(CryptographyError::from(
+        exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
+    ))
+}
+
+/// The Python object for a public key parsed into its raw components.
+#[cfg(feature = "verified-garbage")]
+fn public_key_from_raw(
+    py: pyo3::Python<'_>,
+    key: cryptography_key_parsing::raw::PublicKey,
+) -> CryptographyResult<pyo3::Bound<'_, pyo3::PyAny>> {
+    // TODO(verified-garbage): dispatch to each key type's module.
+    let _ = (py, key);
+    Err(CryptographyError::from(
+        exceptions::UnsupportedAlgorithm::new_err("Unsupported key type."),
+    ))
 }
 
 #[pyo3::pyfunction]
@@ -274,9 +310,9 @@ pub(crate) fn load_der_public_key_bytes<'p>(
         // in a subjectPublicKeyInfo)
         Err(e) => {
             // Use the original error.
-            let pkey =
+            let key =
                 cryptography_key_parsing::rsa::parse_pkcs1_public_key(data).map_err(|_| e)?;
-            public_key_from_parsed(py, cryptography_key_parsing::ParsedPublicKey::Pkey(pkey))
+            public_key_from_parsed(py, cryptography_key_parsing::ParsedPublicKey::from(key))
         }
     }
 }
@@ -296,24 +332,18 @@ fn load_pem_public_key<'p>(
             // that fails we try to parse it as an SPKI. This is to match the permissiveness
             // of OpenSSL, which doesn't care about the delimiter.
             match cryptography_key_parsing::rsa::parse_pkcs1_public_key(p.contents()) {
-                Ok(pkey) => cryptography_key_parsing::ParsedPublicKey::Pkey(pkey),
+                Ok(key) => cryptography_key_parsing::ParsedPublicKey::from(key),
                 Err(err) => {
                     let parsed = cryptography_key_parsing::spki::parse_public_key(p.contents())
                         .map_err(|_| err)?;
-                    match parsed {
-                        cryptography_key_parsing::ParsedPublicKey::Pkey(ref pkey)
-                            if pkey.id() == openssl::pkey::Id::RSA =>
-                        {
-                            parsed
-                        }
-                        _ => {
-                            return Err(CryptographyError::from(
-                                pyo3::exceptions::PyValueError::new_err(
-                                    "Incorrect PEM delimiter for key type.",
-                                ),
-                            ));
-                        }
+                    if !parsed.is_rsa() {
+                        return Err(CryptographyError::from(
+                            pyo3::exceptions::PyValueError::new_err(
+                                "Incorrect PEM delimiter for key type.",
+                            ),
+                        ));
                     }
+                    parsed
                 }
             }
         }
@@ -325,6 +355,7 @@ fn load_pem_public_key<'p>(
     public_key_from_parsed(py, parsed)
 }
 
+#[cfg(feature = "openssl")]
 fn public_key_from_pkey<'p>(
     py: pyo3::Python<'p>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
@@ -436,7 +467,7 @@ pub(crate) mod keys {
     };
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "openssl"))]
 mod tests {
     #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
     use super::{private_key_from_pkey, public_key_from_pkey};

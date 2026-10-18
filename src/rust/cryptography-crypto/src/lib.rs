@@ -4,5 +4,6 @@
 
 pub mod constant_time;
 pub mod encoding;
+pub mod hash;
 pub mod pbkdf1;
 pub mod pkcs12;

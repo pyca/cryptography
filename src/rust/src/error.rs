@@ -13,7 +13,13 @@ pub enum CryptographyError {
     Asn1Write(asn1::WriteError),
     KeyParsing(asn1::ParseError),
     Py(pyo3::PyErr),
+    #[cfg(feature = "openssl")]
     OpenSSL(openssl::error::ErrorStack),
+    /// A verified-garbage operation failed in a way the caller did not
+    /// expect (verified-garbage reports expected failures, such as a bad
+    /// signature, as values the callers turn into Python exceptions).
+    #[cfg(feature = "verified-garbage")]
+    VerifiedGarbage(&'static str),
 }
 
 impl From<asn1::ParseError> for CryptographyError {
@@ -52,6 +58,14 @@ impl From<pyo3::pyclass::PyClassGuardError<'_, '_>> for CryptographyError {
     }
 }
 
+#[cfg(feature = "verified-garbage")]
+impl From<cryptography_crypto::hash::Error> for CryptographyError {
+    fn from(_: cryptography_crypto::hash::Error) -> CryptographyError {
+        CryptographyError::VerifiedGarbage("hash operation failed")
+    }
+}
+
+#[cfg(feature = "openssl")]
 impl From<openssl::error::ErrorStack> for CryptographyError {
     fn from(e: openssl::error::ErrorStack) -> CryptographyError {
         CryptographyError::OpenSSL(e)
@@ -70,6 +84,7 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
     fn from(e: cryptography_key_parsing::KeyParsingError) -> CryptographyError {
         match e {
             cryptography_key_parsing::KeyParsingError::Parse(e) => CryptographyError::KeyParsing(e),
+            #[cfg(feature = "openssl")]
             cryptography_key_parsing::KeyParsingError::OpenSSL(e) => CryptographyError::OpenSSL(e),
             cryptography_key_parsing::KeyParsingError::InvalidKey => {
                 CryptographyError::Py(pyo3::exceptions::PyValueError::new_err("Invalid key"))
@@ -155,6 +170,7 @@ impl From<cryptography_key_parsing::KeySerializationError> for CryptographyError
             cryptography_key_parsing::KeySerializationError::Write(e) => {
                 CryptographyError::Asn1Write(e)
             }
+            #[cfg(feature = "openssl")]
             cryptography_key_parsing::KeySerializationError::OpenSSL(e) => {
                 CryptographyError::OpenSSL(e)
             }
@@ -162,6 +178,7 @@ impl From<cryptography_key_parsing::KeySerializationError> for CryptographyError
     }
 }
 
+#[cfg(feature = "openssl")]
 pub(crate) fn list_from_openssl_error<'p>(
     py: pyo3::Python<'p>,
     error_stack: &openssl::error::ErrorStack,
@@ -203,6 +220,16 @@ impl fmt::Display for CryptographyError {
                 )
             }
             CryptographyError::Py(py_error) => write!(f, "{py_error}"),
+            #[cfg(feature = "verified-garbage")]
+            CryptographyError::VerifiedGarbage(what) => {
+                write!(
+                    f,
+                    "Unknown verified-garbage error ({what}). Please file an issue at
+                    https://github.com/pyca/cryptography/issues with
+                    information on how to reproduce this."
+                )
+            }
+            #[cfg(feature = "openssl")]
             CryptographyError::OpenSSL(error_stack) => {
                 write!(
                     f,
@@ -232,6 +259,12 @@ impl From<CryptographyError> for pyo3::PyErr {
                 pyo3::exceptions::PyValueError::new_err(e.to_string())
             }
             CryptographyError::Py(py_error) => py_error,
+            #[cfg(feature = "verified-garbage")]
+            CryptographyError::VerifiedGarbage(_) => pyo3::Python::attach(|py| {
+                let errors = pyo3::types::PyList::empty(py);
+                exceptions::InternalError::new_err((e.to_string(), errors.unbind()))
+            }),
+            #[cfg(feature = "openssl")]
             CryptographyError::OpenSSL(ref error_stack) => pyo3::Python::attach(|py| {
                 let errors = list_from_openssl_error(py, error_stack);
                 exceptions::InternalError::new_err((e.to_string(), errors.unbind()))
@@ -247,7 +280,10 @@ impl CryptographyError {
             CryptographyError::Asn1Parse(e) => CryptographyError::Asn1Parse(e.add_location(loc)),
             CryptographyError::KeyParsing(e) => CryptographyError::KeyParsing(e.add_location(loc)),
             CryptographyError::Asn1Write(e) => CryptographyError::Asn1Write(e),
+            #[cfg(feature = "openssl")]
             CryptographyError::OpenSSL(e) => CryptographyError::OpenSSL(e),
+            #[cfg(feature = "verified-garbage")]
+            CryptographyError::VerifiedGarbage(e) => CryptographyError::VerifiedGarbage(e),
         }
     }
 
@@ -272,16 +308,19 @@ impl CryptographyError {
 // https://github.com/pyca/cryptography/pull/6173
 pub(crate) type CryptographyResult<T> = Result<T, CryptographyError>;
 
+#[cfg(feature = "openssl")]
 #[pyo3::pyfunction]
 pub(crate) fn raise_openssl_error() -> crate::error::CryptographyResult<()> {
     Err(openssl::error::ErrorStack::get().into())
 }
 
+#[cfg(feature = "openssl")]
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl")]
 pub(crate) struct OpenSSLError {
     e: openssl::error::Error,
 }
 
+#[cfg(feature = "openssl")]
 #[pyo3::pymethods]
 impl OpenSSLError {
     #[getter]
@@ -316,6 +355,7 @@ impl OpenSSLError {
     }
 }
 
+#[cfg(feature = "openssl")]
 #[pyo3::pyfunction]
 pub(crate) fn capture_error_stack(
     py: pyo3::Python<'_>,
@@ -327,7 +367,7 @@ pub(crate) fn capture_error_stack(
     Ok(errs)
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "openssl"))]
 mod tests {
     use pyo3::types::PyAnyMethods;
     use pyo3::PyTypeInfo;

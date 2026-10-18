@@ -9,6 +9,7 @@ use crate::error::{CryptographyError, CryptographyResult};
 use crate::serialization::{Encoding, PrivateFormat, PublicFormat};
 use crate::types;
 
+#[cfg(feature = "openssl")]
 pub(crate) fn py_int_to_bn(
     py: pyo3::Python<'_>,
     v: &pyo3::Bound<'_, pyo3::PyAny>,
@@ -25,6 +26,7 @@ pub(crate) fn py_int_to_bn(
     Ok(openssl::bn::BigNum::from_slice(&bytes)?)
 }
 
+#[cfg(feature = "openssl")]
 pub(crate) fn bn_to_py_int<'p>(
     py: pyo3::Python<'p>,
     b: &openssl::bn::BigNumRef,
@@ -39,6 +41,7 @@ pub(crate) fn bn_to_py_int<'p>(
 }
 
 #[allow(clippy::too_many_arguments)]
+#[cfg(feature = "openssl")]
 pub(crate) fn pkey_private_bytes<'p>(
     py: pyo3::Python<'p>,
     key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
@@ -215,6 +218,7 @@ pub(crate) fn pkey_private_bytes<'p>(
     ))
 }
 
+#[cfg(feature = "openssl")]
 pub(crate) fn pkey_public_bytes<'p>(
     py: pyo3::Python<'p>,
     key_obj: &pyo3::Bound<'p, pyo3::PyAny>,

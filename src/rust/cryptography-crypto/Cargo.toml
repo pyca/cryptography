@@ -8,4 +8,10 @@ rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
-openssl.workspace = true
+openssl = { workspace = true, optional = true }
+verified-garbage = { workspace = true, optional = true }
+
+[features]
+default = ["openssl"]
+openssl = ["dep:openssl"]
+verified-garbage = ["dep:verified-garbage"]

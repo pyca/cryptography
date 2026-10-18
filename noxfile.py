@@ -291,7 +291,24 @@ def rust(session: nox.Session) -> None:
         process_rust_coverage(session, rust_tests, prof_location)
 
 
+# The Rust packages that build differently with verified-garbage as the crypto
+# backend (`--no-default-features --features verified-garbage`), which links no
+# OpenSSL.
+VERIFIED_GARBAGE_CARGO_ARGS = [
+    "-p",
+    "cryptography-rust",
+    "-p",
+    "cryptography-key-parsing",
+    "-p",
+    "cryptography-crypto",
+    "--no-default-features",
+    "--features",
+    "cryptography-rust/verified-garbage",
+]
+
+
 @nox.session
+@nox.session(name="local-verified-garbage")
 def local(session: nox.Session):
     if "CARGO_INCREMENTAL" not in os.environ:
         session.env["CARGO_INCREMENTAL"] = "1"
@@ -322,6 +339,15 @@ def local(session: nox.Session):
         "warnings",
         external=True,
     )
+    session.run(
+        "cargo",
+        "clippy",
+        *VERIFIED_GARBAGE_CARGO_ARGS,
+        "--",
+        "-D",
+        "warnings",
+        external=True,
+    )
 
     session.run(
         "mypy",
@@ -332,11 +358,19 @@ def local(session: nox.Session):
         "noxfile.py",
     )
 
+    maturin_args = []
+    if session.name == "local-verified-garbage":
+        maturin_args = [
+            "--no-default-features",
+            "--features",
+            "verified-garbage",
+        ]
     session.run(
         "maturin",
         "develop",
         "--release",
         "--uv",
+        *maturin_args,
     )
 
     session.run(
@@ -349,6 +383,9 @@ def local(session: nox.Session):
     )
 
     session.run("cargo", "test", "--all", external=True)
+    session.run(
+        "cargo", "test", *VERIFIED_GARBAGE_CARGO_ARGS, external=True
+    )
 
 
 LCOV_SOURCEFILE_RE = re.compile(
