@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 import pytest
 
 from cryptography import utils, x509
+from cryptography.exceptions import _Reasons
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.decrepit.ciphers.algorithms import RC2
 from cryptography.hazmat.primitives import hashes, serialization
@@ -40,7 +41,7 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import (
 )
 
 from ...doubles import DummyKeySerializationEncryption
-from ...utils import load_vectors_from_file
+from ...utils import load_vectors_from_file, raises_unsupported_algorithm
 
 # Accessing attributes of the dsa module emits the DSA deprecation warning;
 # these are evaluated at collection time, so suppress it there. Loading the
@@ -56,6 +57,46 @@ with warnings.catch_warnings():
             ":cryptography.utils.CryptographyDeprecationWarning"
         ),
     )
+
+
+def _der_length(n: int) -> bytes:
+    if n < 0x80:
+        return bytes([n])
+    b = n.to_bytes((n.bit_length() + 7) // 8, "big")
+    return bytes([0x80 | len(b)]) + b
+
+
+def _der(tag: int, body: bytes) -> bytes:
+    return bytes([tag]) + _der_length(len(body)) + body
+
+
+def _nested_safe_contents_p12(depth: int) -> bytes:
+    """
+    A PKCS #12 bundle without a MAC whose (empty) SafeContents is nested in
+    `depth` safeContentsBags.
+    """
+    bag_id = bytes.fromhex("060b2a864886f70d010c0a0106")
+    data_id = bytes.fromhex("06092a864886f70d010701")
+    # Each level is a prefix of the next one's encoding, so build the
+    # prefixes from the inside out and join them once.
+    prefixes = []
+    length = 2
+    for _ in range(depth):
+        explicit = b"\xa0" + _der_length(length)
+        bag_header = b"\x30" + _der_length(
+            len(bag_id) + len(explicit) + length
+        )
+        bag_len = len(bag_header) + len(bag_id) + len(explicit) + length
+        prefix = (
+            b"\x30" + _der_length(bag_len) + bag_header + bag_id + explicit
+        )
+        prefixes.append(prefix)
+        length += len(prefix)
+    contents = b"".join(reversed(prefixes)) + b"\x30\x00"
+    safe = _der(0x30, data_id + _der(0xA0, _der(0x04, contents)))
+    auth_safe = _der(0x30, safe)
+    content_info = _der(0x30, data_id + _der(0xA0, _der(0x04, auth_safe)))
+    return _der(0x30, b"\x02\x01\x03" + content_info)
 
 
 def _skip_curve_unsupported(backend, curve):
@@ -174,6 +215,17 @@ class TestPKCS12Loading:
     def test_not_a_pkcs12(self):
         with pytest.raises(ValueError):
             load_key_and_certificates(b"invalid", b"pass")
+
+    def test_nested_safe_contents(self):
+        assert load_key_and_certificates(
+            _nested_safe_contents_p12(2), None
+        ) == (None, None, [])
+        # Deeply nested bags are refused rather than overflowing the stack.
+        for depth in [29, 50_000]:
+            with pytest.raises(ValueError):
+                load_key_and_certificates(
+                    _nested_safe_contents_p12(depth), None
+                )
 
     def test_invalid_password(self):
         with pytest.raises(ValueError):
@@ -723,6 +775,21 @@ class TestPKCS12Creation:
             serialize_key_and_certificates(
                 b"name", key, cacert, [], encryption
             )
+
+    @pytest.mark.parametrize(
+        "mac_alg",
+        [hashes.MD5(), hashes.SHA512_256(), hashes.SHA3_256(), hashes.SM3()],
+    )
+    def test_key_serialization_encryption_unsupported_mac(self, mac_alg):
+        # Hashes without an algorithm identifier for the MAC are refused.
+        encryption = (
+            serialization.PrivateFormat.PKCS12.encryption_builder()
+            .hmac_hash(mac_alg)
+            .build(b"password")
+        )
+        key = ec.generate_private_key(ec.SECP256R1())
+        with raises_unsupported_algorithm(_Reasons.UNSUPPORTED_HASH):
+            serialize_key_and_certificates(b"name", key, None, [], encryption)
 
     @pytest.mark.parametrize(
         "encryption_algorithm",

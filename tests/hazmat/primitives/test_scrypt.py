@@ -113,6 +113,19 @@ class TestScrypt:
         with pytest.raises(MemoryError):
             scrypt.derive(password)
 
+    @pytest.mark.parametrize(
+        ("n", "r", "megabytes"),
+        [
+            (2**62, 8, 2**52),
+            (2**63, 2**64 - 1, (2**63 * (2**64 - 1)) // 8192),
+        ],
+    )
+    def test_memory_error_huge_parameters(self, n, r, megabytes):
+        # The memory these parameters need overflows 64 bits.
+        scrypt = Scrypt(b"NaCl", 64, n, r, 1)
+        with pytest.raises(MemoryError, match=f"require {megabytes}MB"):
+            scrypt.derive(b"password")
+
     def test_password_not_bytes(self):
         password = 1
         work_factor = 1024
