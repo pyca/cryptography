@@ -20,7 +20,19 @@ pub fn kdf(
         .chain([0])
         .flat_map(|v| v.to_be_bytes())
         .collect::<Vec<u8>>();
+    kdf_bmp(&pass, salt, id, rounds, key_len, hash_alg)
+}
 
+/// The PKCS #12 KDF over a password already encoded as a BMPString (with
+/// its NUL trailer, if any): an empty one is PKCS #12's absent password.
+pub fn kdf_bmp(
+    pass: &[u8],
+    salt: &[u8],
+    id: u8,
+    rounds: u64,
+    key_len: usize,
+    hash_alg: crate::hash::MessageDigest,
+) -> Result<Vec<u8>, crate::hash::Error> {
     // Comments are borrowed from BoringSSL.
     // In the spec, |block_size| is called "v", but measured in bits.
     let block_size = hash_alg.block_size();

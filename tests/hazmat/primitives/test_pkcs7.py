@@ -81,9 +81,12 @@ class TestPKCS7Loading:
     def test_load_pkcs7_der(self, filepath):
         loading_fails = False
         if filepath.endswith("p7b"):
+            # BoringSSL, AWS-LC and verified-garbage builds parse PKCS#7
+            # as DER only, and this file is BER.
             if (
                 rust_openssl.CRYPTOGRAPHY_IS_AWSLC
                 or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+                or rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE
             ):
                 ctx: typing.Any = pytest.raises(ValueError)
                 loading_fails = True
