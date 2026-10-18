@@ -1407,11 +1407,12 @@ class TestAESGCMSIV:
                 tag = binascii.unhexlify(vector["tag"])
                 pt = binascii.unhexlify(vector.get("plaintext", b""))
 
-                # AWS-LC and BoringSSL only support AES-GCM-SIV with
-                # 128- and 256-bit keys
+                # AWS-LC, BoringSSL and verified-garbage only support
+                # AES-GCM-SIV with 128- and 256-bit keys
                 if len(key) == 24 and (
                     rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
                     or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+                    or rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE
                 ):
                     continue
 
@@ -1438,11 +1439,12 @@ class TestAESGCMSIV:
                 aad = binascii.unhexlify(vector.get("aad", b""))
                 ct = binascii.unhexlify(vector["ciphertext"])
 
-                # AWS-LC and BoringSSL only support AES-GCM-SIV with
-                # 128- and 256-bit keys
+                # AWS-LC, BoringSSL and verified-garbage only support
+                # AES-GCM-SIV with 128- and 256-bit keys
                 if len(key) == 24 and (
                     rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
                     or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
+                    or rust_openssl.CRYPTOGRAPHY_IS_VERIFIED_GARBAGE
                 ):
                     continue
 
