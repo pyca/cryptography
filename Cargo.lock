@@ -85,6 +85,7 @@ dependencies = [
  "cryptography-crypto",
  "cryptography-openssl",
  "cryptography-x509",
+ "getrandom",
  "openssl",
  "openssl-sys",
  "pem",

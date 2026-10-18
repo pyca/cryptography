@@ -2,9 +2,7 @@
 // 2.0, and the BSD License. See the LICENSE file in the root of this repository
 // for complete details.
 
-#[cfg(feature = "openssl")]
-use crate::KeySerializationError;
-use crate::KeySerializationResult;
+use crate::{KeySerializationError, KeySerializationResult};
 
 pub enum EncryptionAlgorithm {
     PBESHA1And3KeyTripleDESCBC,
@@ -82,10 +80,51 @@ impl EncryptionAlgorithm {
         iv: &[u8],
         data: &[u8],
     ) -> KeySerializationResult<Vec<u8>> {
-        #[cfg(not(feature = "openssl"))]
-        {
-            let _ = (password, cipher_kdf_iter, salt, iv, data);
-            unimplemented!("TODO(verified-garbage): PBE encryption")
+        #[cfg(feature = "verified-garbage")]
+        match self {
+            EncryptionAlgorithm::PBESHA1And3KeyTripleDESCBC => {
+                let password = std::str::from_utf8(password)
+                    .map_err(|_| KeySerializationError::PasswordMustBeUtf8)?;
+
+                let cipher = crate::vg_cipher::Cipher::DesEde3Cbc;
+                let key = cryptography_crypto::pkcs12::kdf(
+                    password,
+                    salt,
+                    cryptography_crypto::pkcs12::KDF_ENCRYPTION_KEY_ID,
+                    cipher_kdf_iter,
+                    cipher.key_len(),
+                    cryptography_crypto::hash::MessageDigest::sha1(),
+                )?;
+                let iv = cryptography_crypto::pkcs12::kdf(
+                    password,
+                    salt,
+                    cryptography_crypto::pkcs12::KDF_IV_ID,
+                    cipher_kdf_iter,
+                    cipher.iv_len(),
+                    cryptography_crypto::hash::MessageDigest::sha1(),
+                )?;
+
+                Ok(cipher.encrypt(&key, &iv, data))
+            }
+            EncryptionAlgorithm::PBESv2SHA256AndAES256CBC => {
+                let cipher = crate::vg_cipher::Cipher::Aes256Cbc;
+                let iterations = u32::try_from(cipher_kdf_iter)
+                    .ok()
+                    .and_then(std::num::NonZeroU32::new)
+                    .ok_or(KeySerializationError::VerifiedGarbage(
+                        "invalid PBKDF2 iteration count",
+                    ))?;
+                if iv.len() != cipher.iv_len() {
+                    return Err(KeySerializationError::VerifiedGarbage("invalid IV length"));
+                }
+
+                let mut key = [0; 32];
+                verified_garbage::pbkdf2::pbkdf2_hmac::<verified_garbage::hashes::sha256::Sha256>(
+                    password, salt, iterations, &mut key,
+                );
+
+                Ok(cipher.encrypt(&key, iv, data))
+            }
         }
         #[cfg(feature = "openssl")]
         match self {
