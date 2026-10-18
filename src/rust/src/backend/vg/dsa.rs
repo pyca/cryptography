@@ -61,6 +61,17 @@ impl Params {
             q: trim_zeros(q).to_vec(),
             g: trim_zeros(g).to_vec(),
         };
+        // Malformed parameters are invalid, not unsupported: p and q odd
+        // and nonzero, and 1 < g < p.
+        let odd = |v: &[u8]| v.last().is_some_and(|b| b & 1 == 1);
+        let g_ok = params.g.len() > 1 || params.g.first().is_some_and(|&b| b > 1);
+        let g_below_p = params.g.len() < params.p.len()
+            || (params.g.len() == params.p.len() && params.g < params.p);
+        if !odd(&params.p) || !odd(&params.q) || !g_ok || !g_below_p {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err("Invalid DSA parameters"),
+            ));
+        }
         params.widths()?;
         Ok(params)
     }

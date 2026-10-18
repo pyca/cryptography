@@ -100,6 +100,13 @@ def test_ecdh_ecpoint(backend, wycheproof):
         ),
     )
 
+    public = binascii.unhexlify(wycheproof.testcase["public"])
+    if (
+        public[:1] in (b"\x02", b"\x03")
+        and not backend.elliptic_curve_compressed_points_supported()
+    ):
+        pytest.skip("Does not support compressed elliptic curve points.")
+
     if wycheproof.invalid:
         with pytest.raises(ValueError):
             ec.EllipticCurvePublicKey.from_encoded_point(
