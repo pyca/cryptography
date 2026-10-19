@@ -49,7 +49,7 @@ coverage==7.16.2 ; python_full_version >= '3.10'
     # via pytest-cov
 dependency-groups==1.3.2
     # via nox
-distlib==0.4.3
+distlib==0.4.4
     # via virtualenv
 docutils==0.21.2 ; python_full_version < '3.11'
     # via
