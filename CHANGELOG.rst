@@ -26,6 +26,10 @@ Changelog
   empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
   RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
   applied to ``extendedKeyUsage``.
+* :func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key`
+  now raises ``ValueError`` if an ECDSA or Ed25519 key's stored public key does
+  not correspond to its private key, matching the check already applied to
+  RSA and DSA keys and to PKCS8 keys that include a public key.
 
 .. _v50-0-2:
 
