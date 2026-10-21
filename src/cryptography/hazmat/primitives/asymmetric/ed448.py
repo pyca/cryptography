@@ -114,6 +114,8 @@ class Ed448PrivateKey(metaclass=abc.ABCMeta):
         encoding: _serialization.Encoding,
         format: _serialization.PrivateFormat,
         encryption_algorithm: _serialization.KeySerializationEncryption,
+        *,
+        comment: bytes = b"",
     ) -> bytes:
         """
         The serialized bytes of the private key.

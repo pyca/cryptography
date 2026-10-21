@@ -48,7 +48,9 @@ pub(crate) fn pkey_private_bytes<'p>(
     encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
     openssh_allowed: bool,
     raw_allowed: bool,
+    comment: Option<&[u8]>,
 ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    let comment = comment.unwrap_or(b"");
     if !encryption_algorithm.is_instance(&types::KEY_SERIALIZATION_ENCRYPTION.get(py)?)? {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyTypeError::new_err(
@@ -193,7 +195,7 @@ pub(crate) fn pkey_private_bytes<'p>(
         if encoding == Encoding::PEM {
             let raw_bytes = types::SERIALIZE_SSH_PRIVATE_KEY
                 .get(py)?
-                .call1((key_obj, password, encryption_algorithm))?
+                .call1((key_obj, password, encryption_algorithm, comment))?
                 .extract()?;
             return crate::asn1::encode_der_data(
                 py,
