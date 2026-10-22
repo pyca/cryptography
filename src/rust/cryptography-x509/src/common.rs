@@ -809,13 +809,20 @@ impl<T: std::hash::Hash> std::hash::Hash for WithTlv<'_, T> {
 mod tests {
     use asn1::Asn1Readable;
 
-    use super::{Asn1ReadableOrWritable, RawTlv, UnvalidatedVisibleString, WithTlv};
+    use super::{Asn1ReadableOrWritable, NumericString, RawTlv, UnvalidatedVisibleString, WithTlv};
 
     #[test]
     #[should_panic]
     fn test_unvalidated_visible_string_write() {
         let v = UnvalidatedVisibleString("foo");
         asn1::write_single(&v).unwrap();
+    }
+
+    #[test]
+    fn test_numeric_string_round_trip() {
+        let v = asn1::parse_single::<NumericString<'_>>(b"\x12\x0512 34").unwrap();
+        assert_eq!(v.as_str(), "12 34");
+        assert_eq!(asn1::write_single(&v).unwrap(), b"\x12\x0512 34");
     }
 
     #[test]
