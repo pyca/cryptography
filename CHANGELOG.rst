@@ -26,6 +26,8 @@ Changelog
   empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
   RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
   applied to ``extendedKeyUsage``.
+* Parsing X.509 ``Name`` structures now rejects ``NumericString`` values that
+  contain characters other than digits and spaces.
 
 .. _v50-0-2:
 
