@@ -4,6 +4,7 @@
 
 
 import typing
+from urllib.parse import parse_qs, unquote, urlsplit
 
 import pytest
 
@@ -114,6 +115,34 @@ class TestTOTP:
             "DGNBVGY3TQOJQGEZDGNBVGY3TQOJQ&algorithm=SHA1&issuer=World"
             "&period=30"
         )
+
+    @pytest.mark.parametrize("issuer", [None, "", "Example/Inc"])
+    @pytest.mark.parametrize(
+        ("account_name", "encoded_account_name"),
+        [
+            ("alice", "alice"),
+            ("alice/smith", "alice%2Fsmith"),
+            ("alice%2Fsmith", "alice%252Fsmith"),
+            ("Alïce / ?#&+%", "Al%C3%AFce%20%2F%20%3F%23%26%2B%25"),
+        ],
+    )
+    def test_get_provisioning_uri_encodes_label(
+        self, account_name, encoded_account_name, issuer
+    ):
+        totp = TOTP(b"12345678901234567890", 6, hashes.SHA1(), 30)
+        uri = urlsplit(totp.get_provisioning_uri(account_name, issuer))
+
+        prefix = "Example%2FInc:" if issuer else ""
+        assert uri.path == f"/{prefix}{encoded_account_name}"
+        label = f"{issuer}:{account_name}" if issuer else account_name
+        assert unquote(uri.path[1:]) == label
+        assert uri.fragment == ""
+        parameters = parse_qs(uri.query, keep_blank_values=True)
+        assert parameters["period"] == ["30"]
+        if issuer is None:
+            assert "issuer" not in parameters
+        else:
+            assert parameters["issuer"] == [issuer]
 
     def test_buffer_protocol(self):
         key = bytearray(b"a long key with lots of entropy goes here")
