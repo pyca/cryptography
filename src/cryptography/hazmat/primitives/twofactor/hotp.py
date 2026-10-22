@@ -35,9 +35,9 @@ def _generate_uri(
     parameters.extend(extra_parameters)
 
     label = (
-        f"{quote(issuer)}:{quote(account_name)}"
+        f"{quote(issuer, safe='')}:{quote(account_name, safe='')}"
         if issuer
-        else quote(account_name)
+        else quote(account_name, safe="")
     )
     return f"otpauth://{type_name}/{label}?{urlencode(parameters)}"
 
