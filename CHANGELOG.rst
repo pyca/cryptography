@@ -26,6 +26,11 @@ Changelog
   empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
   RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
   applied to ``extendedKeyUsage``.
+* Accessing
+  :attr:`~cryptography.x509.CertificateSigningRequest.extensions` now raises
+  ``ValueError`` when a CSR contains more than one extension request
+  attribute. Previously the first one was silently used, while other
+  implementations such as OpenSSL may use a different one.
 
 .. _v50-0-2:
 
