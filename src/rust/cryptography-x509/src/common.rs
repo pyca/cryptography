@@ -220,6 +220,7 @@ pub enum AttributeValue<'a> {
     UniversalString(asn1::UniversalString<'a>),
     BmpString(asn1::BMPString<'a>),
     PrintableString(asn1::PrintableString<'a>),
+    NumericString(NumericString<'a>),
 
     // Must be last, because enums parse things in order.
     AnyString(RawTlv<'a>),
@@ -230,6 +231,7 @@ impl AttributeValue<'_> {
         match self {
             AttributeValue::AnyString(tlv) => tlv.tag(),
             AttributeValue::PrintableString(_) => asn1::PrintableString::TAG,
+            AttributeValue::NumericString(_) => NumericString::TAG,
             AttributeValue::UniversalString(_) => asn1::UniversalString::TAG,
             AttributeValue::BmpString(_) => asn1::BMPString::TAG,
         }
@@ -678,6 +680,39 @@ impl asn1::SimpleAsn1Writable for UnvalidatedVisibleString<'_> {
 
     fn data_length(&self) -> Option<usize> {
         None
+    }
+}
+
+/// A NumericString ASN.1 element, which may only contain digits and spaces.
+#[derive(PartialEq, Eq, Hash, Clone)]
+pub struct NumericString<'a>(&'a str);
+
+impl<'a> NumericString<'a> {
+    pub fn as_str(&self) -> &'a str {
+        self.0
+    }
+}
+
+impl<'a> asn1::SimpleAsn1Readable<'a> for NumericString<'a> {
+    const TAG: asn1::Tag = asn1::Tag::primitive(0x12);
+    fn parse_data(data: &'a [u8]) -> asn1::ParseResult<Self> {
+        if !data.iter().all(|b| b.is_ascii_digit() || *b == b' ') {
+            return Err(asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue));
+        }
+        // All bytes are ASCII, so this cannot fail.
+        Ok(NumericString(std::str::from_utf8(data).unwrap()))
+    }
+}
+
+impl asn1::SimpleAsn1Writable for NumericString<'_> {
+    type Error = asn1::WriteError;
+    const TAG: asn1::Tag = asn1::Tag::primitive(0x12);
+    fn write_data(&self, writer: &mut asn1::WriteBuf) -> asn1::WriteResult {
+        writer.push_slice(self.0.as_bytes())
+    }
+
+    fn data_length(&self) -> Option<usize> {
+        Some(self.0.len())
     }
 }
 
