@@ -486,6 +486,13 @@ class _SSHFormatECDSA:
         if (curve_name, point) != pubfields:
             raise ValueError("Corrupt data: ecdsa field mismatch")
         private_key = ec.derive_private_key(secret, self.curve)
+        public_point = private_key.public_key().public_bytes(
+            Encoding.X962, PublicFormat.UncompressedPoint
+        )
+        if point != public_point:
+            raise ValueError(
+                "Corrupt data: ecdsa public key does not match private key"
+            )
         return private_key, data
 
     def encode_public(
@@ -548,6 +555,13 @@ class _SSHFormatEd25519:
         if point != point2 or (point,) != pubfields:
             raise ValueError("Corrupt data: ed25519 field mismatch")
         private_key = ed25519.Ed25519PrivateKey.from_private_bytes(secret)
+        public_point = private_key.public_key().public_bytes(
+            Encoding.Raw, PublicFormat.Raw
+        )
+        if point != public_point:
+            raise ValueError(
+                "Corrupt data: ed25519 public key does not match private key"
+            )
         return private_key, data
 
     def encode_public(

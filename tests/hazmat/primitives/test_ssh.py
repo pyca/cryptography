@@ -49,6 +49,15 @@ from .test_rsa import rsa_key_2048
 
 __all__ = ["rsa_key_2048"]
 
+# A nistp256 private scalar and its matching uncompressed public point, used
+# as the default key in TestOpenSSHSerialization.make_file.
+_EC_SECRET = b"\x7f" * 32
+_EC_POINT = (
+    ec.derive_private_key(int.from_bytes(_EC_SECRET, "big"), ec.SECP256R1())
+    .public_key()
+    .public_bytes(Encoding.X962, PublicFormat.UncompressedPoint)
+)
+
 
 class TestOpenSSHSerialization:
     @pytest.mark.parametrize(
@@ -411,10 +420,10 @@ class TestOpenSSHSerialization:
         pub_type=b"ecdsa-sha2-nistp256",
         pub_fields=(
             b"nistp256",
-            b"\x04" * 65,
+            _EC_POINT,
         ),
         priv_type=None,
-        priv_fields=(b"nistp256", b"\x04" * 65, b"\x7f" * 32),
+        priv_fields=(b"nistp256", _EC_POINT, _EC_SECRET),
         comment=b"comment",
         checkval1=b"1234",
         checkval2=b"1234",
@@ -580,6 +589,40 @@ class TestOpenSSHSerialization:
             ),
         )
         with pytest.raises(ValueError):
+            load_ssh_private_key(data, None)
+
+    def test_ssh_errors_public_key_not_derived_from_private(self):
+        # ecdsa: the public point is a valid point that both sections agree
+        # on, but it does not belong to the private scalar
+        other_point = (
+            ec.derive_private_key(1, ec.SECP256R1())
+            .public_key()
+            .public_bytes(Encoding.X962, PublicFormat.UncompressedPoint)
+        )
+        data = self.make_file(
+            pub_fields=(b"nistp256", other_point),
+            priv_fields=(b"nistp256", other_point, _EC_SECRET),
+        )
+        with pytest.raises(
+            ValueError, match="ecdsa public key does not match private key"
+        ):
+            load_ssh_private_key(data, None)
+
+        # ed25519: same, for the public key stored alongside the seed
+        sk = b"x" * 32
+        pk = (
+            ed25519.Ed25519PrivateKey.from_private_bytes(b"y" * 32)
+            .public_key()
+            .public_bytes(Encoding.Raw, PublicFormat.Raw)
+        )
+        data = self.make_file(
+            pub_type=b"ssh-ed25519",
+            pub_fields=(pk,),
+            priv_fields=(pk, sk + pk),
+        )
+        with pytest.raises(
+            ValueError, match="ed25519 public key does not match private key"
+        ):
             load_ssh_private_key(data, None)
 
     def test_ssh_errors_bad_wrapper(self):
