@@ -490,7 +490,9 @@ class _SSHFormatECDSA:
             Encoding.X962, PublicFormat.UncompressedPoint
         )
         if point != public_point:
-            raise ValueError("Corrupt data: ecdsa field mismatch")
+            raise ValueError(
+                "Corrupt data: ecdsa public key does not match private key"
+            )
         return private_key, data
 
     def encode_public(
@@ -557,7 +559,9 @@ class _SSHFormatEd25519:
             Encoding.Raw, PublicFormat.Raw
         )
         if point != public_point:
-            raise ValueError("Corrupt data: ed25519 field mismatch")
+            raise ValueError(
+                "Corrupt data: ed25519 public key does not match private key"
+            )
         return private_key, data
 
     def encode_public(

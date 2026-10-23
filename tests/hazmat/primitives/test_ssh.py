@@ -603,7 +603,9 @@ class TestOpenSSHSerialization:
             pub_fields=(b"nistp256", other_point),
             priv_fields=(b"nistp256", other_point, _EC_SECRET),
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="ecdsa public key does not match private key"
+        ):
             load_ssh_private_key(data, None)
 
         # ed25519: same, for the public key stored alongside the seed
@@ -618,7 +620,9 @@ class TestOpenSSHSerialization:
             pub_fields=(pk,),
             priv_fields=(pk, sk + pk),
         )
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="ed25519 public key does not match private key"
+        ):
             load_ssh_private_key(data, None)
 
     def test_ssh_errors_bad_wrapper(self):
