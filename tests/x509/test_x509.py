@@ -2128,6 +2128,14 @@ class TestRSACertificateRequest:
 
         assert exc.value.oid == ExtensionOID.BASIC_CONSTRAINTS
 
+    def test_multiple_extension_requests(self):
+        request = _load_cert(
+            os.path.join("x509", "requests", "two-extension-requests.pem"),
+            x509.load_pem_x509_csr,
+        )
+        with pytest.raises(ValueError):
+            request.extensions
+
     def test_unsupported_critical_extension(self):
         request = _load_cert(
             os.path.join(

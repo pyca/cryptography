@@ -24,17 +24,23 @@ impl CertificationRequestInfo<'_> {
     pub fn get_extension_attribute(
         &self,
     ) -> Result<Option<extensions::RawExtensions<'_>>, asn1::ParseError> {
+        let mut result = None;
         for attribute in self.attributes.unwrap_read().clone() {
             if attribute.type_id == oid::EXTENSION_REQUEST_OID
                 || attribute.type_id == oid::MS_EXTENSION_REQUEST
             {
+                // Implementations disagree on which extension request wins
+                // when more than one is present (OpenSSL prefers the PKCS#9
+                // one, Go merges them), so reject the CSR instead of picking.
+                if result.is_some() {
+                    return Err(asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue));
+                }
                 check_attribute_length(attribute.values.unwrap_read().clone())?;
                 let val = attribute.values.unwrap_read().clone().next().unwrap();
-                let exts = asn1::parse_single(val.full_data())?;
-                return Ok(Some(exts));
+                result = Some(asn1::parse_single(val.full_data())?);
             }
         }
-        Ok(None)
+        Ok(result)
     }
 }
 
