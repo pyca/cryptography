@@ -266,6 +266,7 @@ class TestChaCha20Poly1305:
         buf = bytearray(len(pt))
         with pytest.raises(InvalidTag):
             chacha.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
+        assert buf == bytearray(len(pt))
 
     @pytest.mark.parametrize("offset", [0, 1, 12, 16])
     def test_encrypt_into_overlapping_buffer(self, offset):
@@ -545,6 +546,7 @@ class TestAESCCM:
         buf = bytearray(len(pt))
         with pytest.raises(InvalidTag):
             aesccm.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
+        assert buf == bytearray(len(pt))
 
     def test_decrypt_into_nonce_too_long(self):
         key = AESCCM.generate_key(128)
@@ -777,6 +779,7 @@ class TestAESGCM:
         buf = bytearray(len(pt))
         with pytest.raises(InvalidTag):
             aesgcm.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
+        assert buf == bytearray(len(pt))
 
     @pytest.mark.parametrize("offset", [0, 12])
     def test_encrypt_into_overlapping_buffer(self, offset):
@@ -1063,6 +1066,7 @@ class TestAESOCB3:
         buf = bytearray(len(pt))
         with pytest.raises(InvalidTag):
             aesocb3.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
+        assert buf == bytearray(len(pt))
 
     def test_decrypt_into_data_too_short(self):
         key = AESOCB3.generate_key(128)
@@ -1294,6 +1298,7 @@ class TestAESSIV:
         buf = bytearray(len(pt))
         with pytest.raises(InvalidTag):
             aessiv.decrypt_into(bytes(corrupted_ct), ad, buf)
+        assert buf == bytearray(len(pt))
 
     @pytest.mark.parametrize("offset", [0, 16])
     def test_encrypt_into_overlapping_buffer(self, offset):
@@ -1580,6 +1585,7 @@ class TestAESGCMSIV:
         buf = bytearray(len(pt))
         with pytest.raises(InvalidTag):
             aesgcmsiv.decrypt_into(nonce, bytes(corrupted_ct), ad, buf)
+        assert buf == bytearray(len(pt))
 
     def test_decrypt_into_data_too_short(self):
         key = AESGCMSIV.generate_key(256)

@@ -59,6 +59,15 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.hashes.SHAKE256.xof` and
   :meth:`~cryptography.hazmat.asn1.TLV.parse`. Previously, type checkers
   treated their return values as ``Any``.
+* The AEAD ``decrypt_into`` methods, and ``update_into`` on the
+  :doc:`/cobblestone` decryption classes, now zero the output buffer when
+  authentication fails. Previously,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCMSIV`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESOCB3` could leave
+  unauthenticated plaintext in the buffer after raising
+  :class:`~cryptography.exceptions.InvalidTag`.
 
 .. _v50-0-2:
 
