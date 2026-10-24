@@ -830,7 +830,12 @@ pub fn parse_cert_ext<'p>(
 
             let features = pyo3::types::PyList::empty(py);
             for feature in ext.value::<asn1::SequenceOf<'_, u64>>()? {
-                let py_feature = tls_feature_type_to_enum.get_item(feature)?;
+                // A value that is not a known TLSFeatureType cannot be
+                // represented, so surface it as a parse error rather than
+                // letting the dict lookup raise a bare KeyError.
+                let py_feature = tls_feature_type_to_enum
+                    .get_item(feature)
+                    .map_err(|_| asn1::ParseError::new(asn1::ParseErrorKind::InvalidValue))?;
                 features.append(py_feature)?;
             }
             Ok(Some(types::TLS_FEATURE.get(py)?.call1((features,))?))
