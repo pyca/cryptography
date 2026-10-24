@@ -26,6 +26,11 @@ Changelog
   empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
   RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
   applied to ``extendedKeyUsage``.
+* X.509 path validation now measures the bit length of an issuer's RSA modulus
+  when enforcing
+  :attr:`~cryptography.x509.verification.Policy.minimum_rsa_modulus`.
+  Previously the size of its DER encoding was used, so a modulus between 2040
+  and 2047 bits was accepted with the default minimum of 2048.
 
 .. _v50-0-2:
 
