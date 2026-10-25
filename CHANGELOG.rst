@@ -26,6 +26,11 @@ Changelog
   empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
   RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
   applied to ``extendedKeyUsage``.
+* :func:`~cryptography.x509.ocsp.load_der_ocsp_response` now raises
+  ``ValueError`` for a response whose ``responseStatus`` is not
+  ``successful`` but which still carries ``responseBytes``. Previously the
+  properties of such a response returned the embedded ``BasicOCSPResponse``
+  data instead of raising, contrary to their documentation.
 
 .. _v50-0-2:
 
