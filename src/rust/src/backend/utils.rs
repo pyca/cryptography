@@ -70,33 +70,8 @@ pub(crate) fn pkey_private_bytes<'p>(
         return Ok(pyo3::types::PyBytes::new(py, &raw_bytes));
     }
 
-    let py_password;
-    let password = if encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)? {
-        b"" as &[u8]
-    } else if encryption_algorithm.is_instance(&types::BEST_AVAILABLE_ENCRYPTION.get(py)?)?
-        || (encryption_algorithm.is_instance(&types::ENCRYPTION_BUILDER.get(py)?)?
-            && encryption_algorithm
-                .getattr(pyo3::intern!(py, "_format"))?
-                .extract::<PrivateFormat>()?
-                == format)
-    {
-        py_password = encryption_algorithm
-            .getattr(pyo3::intern!(py, "password"))?
-            .extract::<pyo3::pybacked::PyBackedBytes>()?;
-        &py_password
-    } else {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err("Unsupported encryption type"),
-        ));
-    };
-
-    if password.len() > 1023 {
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err(
-                "Passwords longer than 1023 bytes are not supported by this backend",
-            ),
-        ));
-    }
+    let py_password = private_key_password(py, encryption_algorithm, format)?;
+    let password = py_password.as_deref().unwrap_or(b"");
 
     if format == PrivateFormat::PKCS8 {
         let parsed = cryptography_key_parsing::ParsedPrivateKey::Pkey(pkey.to_owned());
@@ -190,19 +165,59 @@ pub(crate) fn pkey_private_bytes<'p>(
 
     // OpenSSH + PEM
     if openssh_allowed && format == PrivateFormat::OpenSSH {
-        if encoding == Encoding::PEM {
-            let raw_bytes = types::SERIALIZE_SSH_PRIVATE_KEY
-                .get(py)?
-                .call1((key_obj, password, encryption_algorithm))?
-                .extract()?;
-            return crate::asn1::encode_der_data(
-                py,
-                "OPENSSH PRIVATE KEY".to_string(),
-                raw_bytes,
-                encoding,
-            );
-        }
+        return openssh_private_bytes(py, key_obj, encoding, password, encryption_algorithm);
+    }
 
+    Err(CryptographyError::from(
+        pyo3::exceptions::PyValueError::new_err("format is invalid with this key"),
+    ))
+}
+
+// The password to encrypt a private key with, None for NoEncryption().
+pub(crate) fn private_key_password(
+    py: pyo3::Python<'_>,
+    encryption_algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
+    format: PrivateFormat,
+) -> CryptographyResult<Option<pyo3::pybacked::PyBackedBytes>> {
+    let password = if encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)? {
+        None
+    } else if encryption_algorithm.is_instance(&types::BEST_AVAILABLE_ENCRYPTION.get(py)?)?
+        || (encryption_algorithm.is_instance(&types::ENCRYPTION_BUILDER.get(py)?)?
+            && encryption_algorithm
+                .getattr(pyo3::intern!(py, "_format"))?
+                .extract::<PrivateFormat>()?
+                == format)
+    {
+        Some(
+            encryption_algorithm
+                .getattr(pyo3::intern!(py, "password"))?
+                .extract::<pyo3::pybacked::PyBackedBytes>()?,
+        )
+    } else {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err("Unsupported encryption type"),
+        ));
+    };
+
+    if password.as_ref().is_some_and(|p| p.len() > 1023) {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "Passwords longer than 1023 bytes are not supported by this backend",
+            ),
+        ));
+    }
+
+    Ok(password)
+}
+
+pub(crate) fn openssh_private_bytes<'p>(
+    py: pyo3::Python<'p>,
+    key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
+    encoding: Encoding,
+    password: &[u8],
+    encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    if encoding != Encoding::PEM {
         return Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err(
                 "OpenSSH private key format can only be used with PEM encoding",
@@ -210,9 +225,30 @@ pub(crate) fn pkey_private_bytes<'p>(
         ));
     }
 
-    Err(CryptographyError::from(
-        pyo3::exceptions::PyValueError::new_err("format is invalid with this key"),
-    ))
+    let raw_bytes = types::SERIALIZE_SSH_PRIVATE_KEY
+        .get(py)?
+        .call1((key_obj, password, encryption_algorithm))?
+        .extract()?;
+    crate::asn1::encode_der_data(py, "OPENSSH PRIVATE KEY".to_string(), raw_bytes, encoding)
+}
+
+pub(crate) fn openssh_public_bytes<'p>(
+    py: pyo3::Python<'p>,
+    key_obj: &pyo3::Bound<'p, pyo3::PyAny>,
+    encoding: Encoding,
+) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+    if encoding != Encoding::OpenSSH {
+        return Err(CryptographyError::from(
+            pyo3::exceptions::PyValueError::new_err(
+                "OpenSSH format must be used with OpenSSH encoding",
+            ),
+        ));
+    }
+
+    Ok(types::SERIALIZE_SSH_PUBLIC_KEY
+        .get(py)?
+        .call1((key_obj,))?
+        .extract()?)
 }
 
 pub(crate) fn pkey_public_bytes<'p>(
@@ -279,18 +315,7 @@ pub(crate) fn pkey_public_bytes<'p>(
 
     // OpenSSH + OpenSSH
     if openssh_allowed && format == PublicFormat::OpenSSH {
-        if encoding == Encoding::OpenSSH {
-            return Ok(types::SERIALIZE_SSH_PUBLIC_KEY
-                .get(py)?
-                .call1((key_obj,))?
-                .extract()?);
-        }
-
-        return Err(CryptographyError::from(
-            pyo3::exceptions::PyValueError::new_err(
-                "OpenSSH format must be used with OpenSSH encoding",
-            ),
-        ));
+        return openssh_public_bytes(py, key_obj, encoding);
     }
 
     Err(CryptographyError::from(

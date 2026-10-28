@@ -861,6 +861,25 @@ class TestMLDSA44Ed25519:
             serialization.Encoding.Raw, serialization.PublicFormat.Raw
         )
 
+    def test_openssh_round_trip(self):
+        key = _generate_mldsa44_ed25519_key()
+        pem = key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.OpenSSH,
+            serialization.NoEncryption(),
+        )
+        loaded = serialization.load_ssh_private_key(pem, None)
+        assert isinstance(loaded, MLDSA44Ed25519PrivateKey)
+        assert loaded.private_bytes_raw() == key.private_bytes_raw()
+
+        openssh_pub = key.public_key().public_bytes(
+            serialization.Encoding.OpenSSH, serialization.PublicFormat.OpenSSH
+        )
+        assert openssh_pub.startswith(b"ssh-mldsa44-ed25519 ")
+        assert serialization.load_ssh_public_key(openssh_pub) == (
+            key.public_key()
+        )
+
     def test_invalid_private_bytes(self):
         key = _generate_mldsa44_ed25519_key()
         with pytest.raises(TypeError):
@@ -883,9 +902,15 @@ class TestMLDSA44Ed25519:
             )
         with pytest.raises(ValueError):
             key.private_bytes(
-                serialization.Encoding.PEM,
+                serialization.Encoding.DER,
                 serialization.PrivateFormat.OpenSSH,
                 serialization.NoEncryption(),
+            )
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.OpenSSH,
+                DummyKeySerializationEncryption(),
             )
         with pytest.raises(ValueError):
             key.private_bytes(
@@ -902,8 +927,7 @@ class TestMLDSA44Ed25519:
             )
         with pytest.raises(ValueError):
             pub.public_bytes(
-                serialization.Encoding.OpenSSH,
-                serialization.PublicFormat.OpenSSH,
+                serialization.Encoding.PEM, serialization.PublicFormat.OpenSSH
             )
         with pytest.raises(ValueError):
             pub.public_bytes(

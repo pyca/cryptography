@@ -4,6 +4,7 @@
 
 use pyo3::types::{PyAnyMethods, PyBytesMethods};
 
+use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::serialization::{Encoding, PrivateFormat, PublicFormat};
@@ -176,6 +177,17 @@ impl MlDsa44Ed25519PrivateKey {
             return slf.get().private_bytes_raw(py);
         }
 
+        if format == PrivateFormat::OpenSSH {
+            let password = utils::private_key_password(py, encryption_algorithm, format)?;
+            return utils::openssh_private_bytes(
+                py,
+                slf,
+                encoding,
+                password.as_deref().unwrap_or(b""),
+                encryption_algorithm,
+            );
+        }
+
         Err(CryptographyError::from(
             pyo3::exceptions::PyValueError::new_err("format is invalid with this key"),
         ))
@@ -312,6 +324,10 @@ impl MlDsa44Ed25519PublicKey {
                 ));
             }
             return slf.get().public_bytes_raw(py);
+        }
+
+        if format == PublicFormat::OpenSSH {
+            return utils::openssh_public_bytes(py, slf, encoding);
         }
 
         Err(CryptographyError::from(

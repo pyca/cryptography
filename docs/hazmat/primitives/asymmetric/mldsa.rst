@@ -66,7 +66,10 @@ Composite ML-DSA-44 and Ed25519
 :class:`MLDSA44Ed25519PrivateKey` combines an ML-DSA-44 key and an Ed25519 key
 into one signing key, using the ``id-MLDSA44-Ed25519-SHA512`` composite
 signature algorithm from `draft-ietf-lamps-pq-composite-sigs`_. A signature is
-only valid when both component signatures are.
+only valid when both component signatures are. OpenSSH uses this algorithm for
+its ``ssh-mldsa44-ed25519`` keys, which can be loaded with
+:func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key` and
+:func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`.
 
 .. doctest::
     :skipif: not _backend.mldsa_supported()
@@ -830,23 +833,30 @@ Key interfaces
 
     .. method:: private_bytes(encoding, format, encryption_algorithm)
 
-        Allows serialization of the key to bytes. Only
-        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
-        encoding and
+        Allows serialization of the key to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.PEM` or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`) and
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.OpenSSH`
+        or
         :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.Raw`
-        format are supported.
+        ) are chosen to define the exact serialization.
 
         :param encoding: A value from the
             :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
 
         :param format: A value from the
             :class:`~cryptography.hazmat.primitives.serialization.PrivateFormat`
-            enum.
+            enum. If the ``encoding`` is
+            :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
+            then ``format`` must be
+            :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.Raw`
+            , otherwise it must be
+            :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.OpenSSH`.
 
         :param encryption_algorithm: An instance of an object conforming to the
             :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
-            interface. It must be
-            :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
+            interface.
 
         :return bytes: Serialized key.
 
@@ -901,18 +911,29 @@ Key interfaces
 
     .. method:: public_bytes(encoding, format)
 
-        Allows serialization of the key to bytes. Only
-        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
-        encoding and
+        Allows serialization of the key to bytes. Encoding (
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.OpenSSH`
+        or
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`) and
+        format (
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.OpenSSH`
+        or
         :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.Raw`
-        format are supported.
+        ) are chosen to define the exact serialization.
 
         :param encoding: A value from the
             :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
 
         :param format: A value from the
             :class:`~cryptography.hazmat.primitives.serialization.PublicFormat`
-            enum.
+            enum. It must be
+            :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.Raw`
+            for
+            :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
+            and
+            :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.OpenSSH`
+            for
+            :attr:`~cryptography.hazmat.primitives.serialization.Encoding.OpenSSH`.
 
         :returns bytes: The public key bytes.
 

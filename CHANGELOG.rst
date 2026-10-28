@@ -31,7 +31,12 @@ Changelog
   and
   :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44Ed25519PublicKey`,
   composite ML-DSA-44 and Ed25519 signing keys from
-  ``draft-ietf-lamps-pq-composite-sigs``.
+  ``draft-ietf-lamps-pq-composite-sigs``. OpenSSH ``ssh-mldsa44-ed25519`` keys
+  can be loaded with
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key`
+  and
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`,
+  and serialized in the OpenSSH formats.
 
 .. _v50-0-2:
 

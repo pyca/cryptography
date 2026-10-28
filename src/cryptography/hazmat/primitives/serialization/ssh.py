@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
     ed25519,
+    mldsa,
     padding,
     rsa,
 )
@@ -61,6 +62,7 @@ _SSH_DSA = b"ssh-dss"
 _ECDSA_NISTP256 = b"ecdsa-sha2-nistp256"
 _ECDSA_NISTP384 = b"ecdsa-sha2-nistp384"
 _ECDSA_NISTP521 = b"ecdsa-sha2-nistp521"
+_SSH_MLDSA44_ED25519 = b"ssh-mldsa44-ed25519"
 _CERT_SUFFIX = b"-cert-v01@openssh.com"
 
 # U2F application string suffixed pubkey
@@ -80,6 +82,8 @@ _BCRYPT = b"bcrypt"
 _NONE = b"none"
 _DEFAULT_CIPHER = b"aes256-ctr"
 _DEFAULT_ROUNDS = 16
+
+_MLDSA44_PUBLIC_KEY_LENGTH = 1312
 
 # padding for max blocksize
 _PADDING = memoryview(bytearray(range(1, 1 + 16)))
@@ -148,6 +152,10 @@ def _get_ssh_key_type(key: SSHPrivateKeyTypes | SSHPublicKeyTypes) -> bytes:
         key, (ed25519.Ed25519PrivateKey, ed25519.Ed25519PublicKey)
     ):
         key_type = _SSH_ED25519
+    elif isinstance(
+        key, (mldsa.MLDSA44Ed25519PrivateKey, mldsa.MLDSA44Ed25519PublicKey)
+    ):
+        key_type = _SSH_MLDSA44_ED25519
     else:
         raise ValueError("Unsupported key type")
 
@@ -590,6 +598,75 @@ class _SSHFormatEd25519:
         f_priv.put_sshstr(f_keypair)
 
 
+class _SSHFormatMLDSA44Ed25519:
+    """Format for ML-DSA-44/Ed25519 composite keys.
+
+    Public:
+        bytes mldsa44_public_key || ed25519_public_key
+    Private:
+        bytes mldsa44_public_key || ed25519_public_key
+        bytes mldsa44_seed || ed25519_seed
+    """
+
+    def get_public(
+        self, data: memoryview
+    ) -> tuple[tuple[memoryview], memoryview]:
+        """ML-DSA-44/Ed25519 public fields"""
+        public, data = _get_sshstr(data)
+        return (public,), data
+
+    def load_public(
+        self, data: memoryview
+    ) -> tuple[mldsa.MLDSA44Ed25519PublicKey, memoryview]:
+        """Make ML-DSA-44/Ed25519 public key from data."""
+        (public,), data = self.get_public(data)
+        if len(public) != _MLDSA44_PUBLIC_KEY_LENGTH + 32:
+            raise ValueError("Corrupt data: invalid mldsa44-ed25519 key")
+        public_key = mldsa.MLDSA44Ed25519PublicKey(
+            mldsa.MLDSA44PublicKey.from_public_bytes(
+                public[:_MLDSA44_PUBLIC_KEY_LENGTH].tobytes()
+            ),
+            ed25519.Ed25519PublicKey.from_public_bytes(
+                public[_MLDSA44_PUBLIC_KEY_LENGTH:].tobytes()
+            ),
+        )
+        return public_key, data
+
+    def load_private(
+        self, data: memoryview, pubfields, unsafe_skip_rsa_key_validation: bool
+    ) -> tuple[mldsa.MLDSA44Ed25519PrivateKey, memoryview]:
+        """Make ML-DSA-44/Ed25519 private key from data."""
+        (public,), data = self.get_public(data)
+        seeds, data = _get_sshstr(data)
+        if (public,) != pubfields:
+            raise ValueError("Corrupt data: mldsa44-ed25519 field mismatch")
+        if len(seeds) != 64:
+            raise ValueError("Corrupt data: invalid mldsa44-ed25519 key")
+        private_key = mldsa.MLDSA44Ed25519PrivateKey(
+            mldsa.MLDSA44PrivateKey.from_seed_bytes(seeds[:32]),
+            ed25519.Ed25519PrivateKey.from_private_bytes(seeds[32:]),
+        )
+        if public != private_key.public_key().public_bytes_raw():
+            raise ValueError(
+                "Corrupt data: mldsa44-ed25519 public key does not match "
+                "private key"
+            )
+        return private_key, data
+
+    def encode_public(
+        self, public_key: mldsa.MLDSA44Ed25519PublicKey, f_pub: _FragList
+    ) -> None:
+        """Write ML-DSA-44/Ed25519 public key"""
+        f_pub.put_sshstr(public_key.public_bytes_raw())
+
+    def encode_private(
+        self, private_key: mldsa.MLDSA44Ed25519PrivateKey, f_priv: _FragList
+    ) -> None:
+        """Write ML-DSA-44/Ed25519 private key"""
+        self.encode_public(private_key.public_key(), f_priv)
+        f_priv.put_sshstr(private_key.private_bytes_raw())
+
+
 def load_application(data) -> tuple[memoryview, memoryview]:
     """
     U2F application strings
@@ -661,6 +738,7 @@ _KEY_FORMATS = {
     _ECDSA_NISTP256: _SSHFormatECDSA(b"nistp256", ec.SECP256R1()),
     _ECDSA_NISTP384: _SSHFormatECDSA(b"nistp384", ec.SECP384R1()),
     _ECDSA_NISTP521: _SSHFormatECDSA(b"nistp521", ec.SECP521R1()),
+    _SSH_MLDSA44_ED25519: _SSHFormatMLDSA44Ed25519(),
     _SK_SSH_ED25519: _SSHFormatSKEd25519(),
     _SK_SSH_ECDSA_NISTP256: _SSHFormatSKECDSA(),
 }
@@ -680,6 +758,7 @@ SSHPrivateKeyTypes = typing.Union[
     rsa.RSAPrivateKey,
     dsa._DSAPrivateKey,
     ed25519.Ed25519PrivateKey,
+    mldsa.MLDSA44Ed25519PrivateKey,
 ]
 
 
@@ -887,6 +966,7 @@ SSHPublicKeyTypes = typing.Union[
     rsa.RSAPublicKey,
     dsa._DSAPublicKey,
     ed25519.Ed25519PublicKey,
+    mldsa.MLDSA44Ed25519PublicKey,
 ]
 
 SSHCertPublicKeyTypes = typing.Union[
@@ -984,7 +1064,9 @@ class SSHCertificate:
     def extensions(self) -> dict[bytes, bytes]:
         return self._extensions
 
-    def signature_key(self) -> SSHCertPublicKeyTypes:
+    def signature_key(
+        self,
+    ) -> SSHCertPublicKeyTypes | mldsa.MLDSA44Ed25519PublicKey:
         sigformat = _lookup_kformat(self._sig_type)
         signature_key, sigkey_rest = sigformat.load_public(self._sig_key)
         _check_empty(sigkey_rest)
@@ -999,7 +1081,10 @@ class SSHCertificate:
 
     def verify_cert_signature(self) -> None:
         signature_key = self.signature_key()
-        if isinstance(signature_key, ed25519.Ed25519PublicKey):
+        if isinstance(
+            signature_key,
+            (ed25519.Ed25519PublicKey, mldsa.MLDSA44Ed25519PublicKey),
+        ):
             signature_key.verify(
                 bytes(self._signature), bytes(self._tbs_cert_body)
             )
