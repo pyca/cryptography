@@ -60,6 +60,26 @@ message is large or only available as a stream.
     >>> signature = private_key.sign_mu(mu)
     >>> public_key.verify_mu(signature, mu)
 
+Composite ML-DSA-44 and Ed25519
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:class:`MLDSA44Ed25519PrivateKey` combines an ML-DSA-44 key and an Ed25519 key
+into one signing key, using the ``id-MLDSA44-Ed25519-SHA512`` composite
+signature algorithm from `draft-ietf-lamps-pq-composite-sigs`_. A signature is
+only valid when both component signatures are.
+
+.. doctest::
+    :skipif: not _backend.mldsa_supported()
+
+    >>> from cryptography.hazmat.primitives.asymmetric import ed25519, mldsa
+    >>> private_key = mldsa.MLDSA44Ed25519PrivateKey(
+    ...     mldsa.MLDSA44PrivateKey.generate(),
+    ...     ed25519.Ed25519PrivateKey.generate(),
+    ... )
+    >>> signature = private_key.sign(b"my authenticated message")
+    >>> public_key = private_key.public_key()
+    >>> public_key.verify(signature, b"my authenticated message")
+
 Key interfaces
 ~~~~~~~~~~~~~~
 
@@ -774,4 +794,140 @@ Key interfaces
             has already been called.
 
 
+.. class:: MLDSA44Ed25519PrivateKey(mldsa_key, ed25519_key)
+
+    .. versionadded:: 51.0.0
+
+    A composite ML-DSA-44 and Ed25519 private key.
+
+    :param mldsa_key: The ML-DSA-44 private key component.
+    :type mldsa_key: :class:`MLDSA44PrivateKey`
+
+    :param ed25519_key: The Ed25519 private key component.
+    :type ed25519_key:
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+
+    :raises TypeError: If a component is not a key of the expected type.
+
+    .. method:: public_key()
+
+        :returns: :class:`MLDSA44Ed25519PublicKey`
+
+    .. method:: sign(data, context=None)
+
+        Sign the data. The signature is the ML-DSA-44 signature followed by
+        the Ed25519 signature, 2484 bytes in total.
+
+        :param data: The data to sign.
+        :type data: :term:`bytes-like`
+
+        :param context: An optional context string (up to 255 bytes).
+        :type context: :term:`bytes-like` or ``None``
+
+        :returns bytes: The 2484 byte signature.
+
+        :raises ValueError: If the context is longer than 255 bytes.
+
+    .. method:: private_bytes(encoding, format, encryption_algorithm)
+
+        Allows serialization of the key to bytes. Only
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
+        encoding and
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.Raw`
+        format are supported.
+
+        :param encoding: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+
+        :param format: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.PrivateFormat`
+            enum.
+
+        :param encryption_algorithm: An instance of an object conforming to the
+            :class:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryption`
+            interface. It must be
+            :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
+
+        :return bytes: Serialized key.
+
+    .. method:: private_bytes_raw()
+
+        Allows serialization of the key to raw bytes. This method is a
+        convenience shortcut for calling :meth:`private_bytes` with
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
+        encoding,
+        :attr:`~cryptography.hazmat.primitives.serialization.PrivateFormat.Raw`
+        format, and
+        :class:`~cryptography.hazmat.primitives.serialization.NoEncryption`.
+
+        :return bytes: The 32-byte ML-DSA-44 seed followed by the 32-byte
+            Ed25519 private key.
+
+.. class:: MLDSA44Ed25519PublicKey(mldsa_key, ed25519_key)
+
+    .. versionadded:: 51.0.0
+
+    A composite ML-DSA-44 and Ed25519 public key.
+
+    :param mldsa_key: The ML-DSA-44 public key component.
+    :type mldsa_key: :class:`MLDSA44PublicKey`
+
+    :param ed25519_key: The Ed25519 public key component.
+    :type ed25519_key:
+        :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+
+    :raises TypeError: If a component is not a key of the expected type.
+
+    .. method:: verify(signature, data, context=None)
+
+        Verify a composite signature. Both the ML-DSA-44 and the Ed25519
+        signature must be valid. If a context string was used during signing,
+        the same context must be provided for verification to succeed.
+
+        :param signature: The signature to verify.
+        :type signature: :term:`bytes-like`
+
+        :param data: The data to verify.
+        :type data: :term:`bytes-like`
+
+        :param context: An optional context string (up to 255 bytes) that was
+            used during signing.
+        :type context: :term:`bytes-like` or ``None``
+
+        :returns: None
+        :raises cryptography.exceptions.InvalidSignature: Raised when the
+            signature cannot be verified.
+        :raises ValueError: If the context is longer than 255 bytes.
+
+    .. method:: public_bytes(encoding, format)
+
+        Allows serialization of the key to bytes. Only
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
+        encoding and
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.Raw`
+        format are supported.
+
+        :param encoding: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.Encoding` enum.
+
+        :param format: A value from the
+            :class:`~cryptography.hazmat.primitives.serialization.PublicFormat`
+            enum.
+
+        :returns bytes: The public key bytes.
+
+    .. method:: public_bytes_raw()
+
+        Allows serialization of the key to raw bytes. This method is a
+        convenience shortcut for calling :meth:`public_bytes` with
+        :attr:`~cryptography.hazmat.primitives.serialization.Encoding.Raw`
+        encoding and
+        :attr:`~cryptography.hazmat.primitives.serialization.PublicFormat.Raw`
+        format.
+
+        :return bytes: The 1312-byte ML-DSA-44 public key followed by the
+            32-byte Ed25519 public key.
+
+
 .. _`FIPS 204`: https://csrc.nist.gov/pubs/fips/204/final
+.. _`draft-ietf-lamps-pq-composite-sigs`: https://datatracker.ietf.org/doc/draft-ietf-lamps-pq-composite-sigs/

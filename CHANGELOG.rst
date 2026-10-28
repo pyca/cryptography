@@ -26,6 +26,12 @@ Changelog
   empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
   RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
   applied to ``extendedKeyUsage``.
+* Added
+  :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44Ed25519PrivateKey`
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44Ed25519PublicKey`,
+  composite ML-DSA-44 and Ed25519 signing keys from
+  ``draft-ietf-lamps-pq-composite-sigs``.
 
 .. _v50-0-2:
 
