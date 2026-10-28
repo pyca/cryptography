@@ -45,6 +45,13 @@ def pytest_addoption(parser):
     parser.addoption("--enable-fips", default=False)
 
 
+def pytest_collection_modifyitems(items):
+    # pytest-benchmark reads the private `Node._nodeid` attribute, which was
+    # removed in pytest 9.2. Restore it until pytest-benchmark is fixed.
+    for item in items:
+        item._nodeid = item.nodeid
+
+
 def pytest_runtest_setup(item):
     if openssl_backend._fips_enabled:
         for marker in item.iter_markers(name="skip_fips"):
