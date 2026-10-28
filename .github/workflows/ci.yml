@@ -377,8 +377,8 @@ jobs:
             PATH: paramiko
           - DOWNSTREAM: pyopenssl
             REPO: pyca/pyopenssl
-            # Latest commit on the pyopenssl main branch, as of Oct 15, 2026.
-            REF: da581a400cb3974453fc26a713ea3af8184ea2d1
+            # Latest commit on the pyopenssl main branch, as of Oct 28, 2026.
+            REF: 1487da3773b0db3977353c9e379ad74124002c43
             PATH: pyopenssl
           - DOWNSTREAM: pyopenssl-release
             REPO: pyca/pyopenssl
@@ -397,8 +397,8 @@ jobs:
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Oct 22, 2026.
-            REF: 0b98752f94bc07edaebc10567a3b04cb532f6021
+            # Latest commit on the certbot main branch, as of Oct 28, 2026.
+            REF: 033614f1166835b3edb0620ed028db2796e4ad77
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -407,8 +407,8 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Oct 27, 2026.
-            REF: 8050b1b00ef3d40f327719184263c7c7fc4fed6e
+            # Latest commit on the mitmproxy main branch, as of Oct 28, 2026.
+            REF: df14a28624b0e813b4a26b3b33921c1991f20eba
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
