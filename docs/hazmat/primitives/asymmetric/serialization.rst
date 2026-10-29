@@ -419,7 +419,7 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
         release.
 
     Deserialize a public key from OpenSSH (:rfc:`4253` and
-    `PROTOCOL.certkeys`_) encoded data to an
+    `SSH Certificate Format`_) encoded data to an
     instance of the public key type.
 
     :param data: The OpenSSH encoded key data.
@@ -541,7 +541,7 @@ OpenSSH Certificate
 ~~~~~~~~~~~~~~~~~~~
 
 The format used by OpenSSH for certificates, as specified in
-`PROTOCOL.certkeys`_.
+`SSH Certificate Format`_.
 
 .. data:: SSHCertPublicKeyTypes
 
@@ -2002,4 +2002,4 @@ Serialization Encryption Types
 .. _`PKCS3`: https://www.teletrust.de/fileadmin/files/oid/oid_pkcs-3v1-4.pdf
 .. _`SEC 1 v2.0`: https://www.secg.org/sec1-v2.pdf
 .. _`PROTOCOL.key`: https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key
-.. _`PROTOCOL.certkeys`: https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.certkeys
+.. _`SSH Certificate Format`: https://datatracker.ietf.org/doc/draft-ietf-sshm-cert/
