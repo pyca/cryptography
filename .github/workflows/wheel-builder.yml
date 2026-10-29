@@ -39,7 +39,7 @@ jobs:
           ref: ${{ github.event.inputs.version || github.ref }}
           persist-credentials: false
 
-      - uses: astral-sh/setup-uv@18d369b23da25a81e9458561248e1aafff6a70fa # v10.3.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version-file: ${{ env.UV_VERSION_FILE }}
           python-version: "3.14"
@@ -211,7 +211,7 @@ jobs:
             .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
       - name: Setup python
-        uses: astral-sh/setup-uv@18d369b23da25a81e9458561248e1aafff6a70fa # v10.3.1
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           version-file: ${{ env.UV_VERSION_FILE }}
           python-version: ${{ matrix.PYTHON.VERSION }}
