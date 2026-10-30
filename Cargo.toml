@@ -26,7 +26,7 @@ base64 = "0.23"
 cc = "1.2.63"
 cfg-if = "1"
 foreign-types = "0.3"
-foreign-types-shared = "0.1"
+foreign-types-shared = "0.3"
 openssl = "0.10.80"
 openssl-sys = "0.9.116"
 pem = { version = "4", default-features = false }
