@@ -624,6 +624,16 @@ class TestCertificateRevocationList:
         with pytest.raises(ValueError):
             x509.load_der_x509_crl(data)
 
+    def test_crl_issuer_invalid_numeric_string(self):
+        data = _load_cert(
+            os.path.join(
+                "x509", "custom", "crl_issuer_invalid_numeric_string.der"
+            ),
+            lambda v: v,
+        )
+        with pytest.raises(ValueError):
+            x509.load_der_x509_crl(data)
+
 
 class TestRevokedCertificate:
     def test_revoked_basics(self):
@@ -3835,6 +3845,33 @@ class TestCertificateBuilder:
         cert = builder.sign(private_key, hashes.SHA256())
         assert cert.issuer == issuer
         assert cert.subject == subject
+
+    def test_build_cert_with_numericstring_name(
+        self, rsa_key_2048: rsa.RSAPrivateKey
+    ):
+        private_key = rsa_key_2048
+        name = x509.Name(
+            [
+                x509.NameAttribute(
+                    NameOID.SERIAL_NUMBER,
+                    "1234 5678",
+                    _ASN1Type.NumericString,
+                ),
+            ]
+        )
+        builder = x509.CertificateBuilder()
+        builder = (
+            builder.subject_name(name)
+            .issuer_name(name)
+            .serial_number(1)
+            .public_key(private_key.public_key())
+            .not_valid_before(datetime.datetime(2002, 1, 1, 12, 1))
+            .not_valid_after(datetime.datetime(2032, 1, 1, 12, 1))
+        )
+        cert = builder.sign(private_key, hashes.SHA256())
+        assert cert.subject == name
+        attr = cert.subject.get_attributes_for_oid(NameOID.SERIAL_NUMBER)[0]
+        assert attr._type == _ASN1Type.NumericString
 
     def test_build_cert_with_ed25519(self):
         issuer_private_key = ed25519.Ed25519PrivateKey.generate()
