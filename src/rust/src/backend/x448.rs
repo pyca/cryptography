@@ -5,6 +5,7 @@
 use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::CryptographyResult;
+use pyo3::types::PyAnyMethods;
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.x448")]
 pub(crate) struct X448PrivateKey {
@@ -98,13 +99,24 @@ impl X448PrivateKey {
         Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
     }
 
+    #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
+    #[allow(unused_variables)]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+        comment: Option<&pyo3::Bound<'p, pyo3::types::PyBytes>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        // Intercept raw requests and route them to private_bytes_raw:
+        if encoding == crate::serialization::Encoding::Raw
+            && format == crate::serialization::PrivateFormat::Raw
+            && encryption_algorithm.is_instance(&crate::types::NO_ENCRYPTION.get(py)?)?
+        {
+            return slf.borrow().private_bytes_raw(py);
+        }
+
         utils::pkey_private_bytes(
             py,
             slf,
@@ -113,7 +125,8 @@ impl X448PrivateKey {
             format,
             encryption_algorithm,
             false,
-            true,
+            false,
+            None,
         )
     }
 

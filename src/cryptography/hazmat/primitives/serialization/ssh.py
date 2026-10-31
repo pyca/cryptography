@@ -683,14 +683,17 @@ SSHPrivateKeyTypes = typing.Union[
 ]
 
 
-def load_ssh_private_key(
+def load_ssh_private_key_with_comment(
     data: utils.Buffer,
     password: bytes | None,
     backend: typing.Any = None,
     *,
     unsafe_skip_rsa_key_validation: bool = False,
-) -> SSHPrivateKeyTypes:
-    """Load private key from OpenSSH custom encoding."""
+) -> tuple[SSHPrivateKeyTypes, bytes]:
+    """
+    Load private key from OpenSSH custom encoding and
+    return (key, comment).
+    """
     utils._check_byteslike("data", data)
     if password is not None:
         utils._check_bytes("password", password)
@@ -786,8 +789,9 @@ def load_ssh_private_key(
         pubfields,
         unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation,
     )
-    # We don't use the comment
-    _, edata = _get_sshstr(edata)
+
+    # Capture the comment instead of discarding it with _
+    comment, edata = _get_sshstr(edata)
 
     # yes, SSH does padding check *after* all other parsing is done.
     # need to follow as it writes zero-byte padding too.
@@ -802,6 +806,23 @@ def load_ssh_private_key(
             stacklevel=2,
         )
 
+    return private_key, comment.tobytes()
+
+
+def load_ssh_private_key(
+    data: utils.Buffer,
+    password: bytes | None,
+    backend: typing.Any = None,
+    *,
+    unsafe_skip_rsa_key_validation: bool = False,
+) -> SSHPrivateKeyTypes:
+    """Load private key from OpenSSH custom encoding."""
+    private_key, _ = load_ssh_private_key_with_comment(
+        data,
+        password,
+        backend,
+        unsafe_skip_rsa_key_validation=unsafe_skip_rsa_key_validation,
+    )
     return private_key
 
 
@@ -809,13 +830,15 @@ def _serialize_ssh_private_key(
     private_key: SSHPrivateKeyTypes,
     password: bytes,
     encryption_algorithm: KeySerializationEncryption,
+    comment: bytes = b"",
 ) -> bytes:
     """Serialize private key with OpenSSH custom encoding."""
     utils._check_bytes("password", password)
+    utils._check_bytes("comment", comment)  # <-- Add validation here
     if isinstance(private_key, dsa._DSAPrivateKey):
         warnings.warn(
-            "SSH DSA key support is deprecated and will be "
-            "removed in a future release",
+            "SSH DSA key support is deprecated and will be removed in a "
+            "future release",
             utils.DeprecatedIn40,
             stacklevel=4,
         )
@@ -845,7 +868,9 @@ def _serialize_ssh_private_key(
         ciph = None
     nkeys = 1
     checkval = os.urandom(4)
-    comment = b""
+    # To this (split into two shorter lines):
+    # comment is passed in as a parameter now, so we don't
+    # overwrite it with b"" unless default is used
 
     # encode public and private parts together
     f_public_key = _FragList()
@@ -855,7 +880,7 @@ def _serialize_ssh_private_key(
     f_secrets = _FragList([checkval, checkval])
     f_secrets.put_sshstr(key_type)
     kformat.encode_private(private_key, f_secrets)
-    f_secrets.put_sshstr(comment)
+    f_secrets.put_sshstr(comment)  # <-- Uses the passed comment parameter here
     f_secrets.put_raw(_PADDING[: blklen - (f_secrets.size() % blklen)])
 
     # top-level structure
