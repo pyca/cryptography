@@ -236,7 +236,7 @@ class TestSequenceAPI:
         with pytest.raises(
             TypeError, match="got an unexpected keyword argument 'bar'"
         ):
-            Example(bar=3)  # type: ignore[call-arg]
+            Example(bar=3)  # type: ignore[call-arg]  # ty: ignore[missing-argument, unknown-argument]
 
     def test_fail_init_missing_field_name(self) -> None:
         @asn1.sequence
@@ -250,7 +250,7 @@ class TestSequenceAPI:
         )
 
         with pytest.raises(TypeError, match=expected_err):
-            Example()  # type: ignore[call-arg]
+            Example()  # type: ignore[call-arg]  # ty: ignore[missing-argument]
 
     def test_fail_positional_field_initialization(self) -> None:
         @asn1.sequence
@@ -529,7 +529,7 @@ class TestSequenceAPI:
             class Example:
                 foo: typing.Union[
                     Annotated[
-                        asn1.Variant[int, str],
+                        asn1.Variant[int, str],  # ty: ignore[invalid-type-arguments]
                         asn1.Implicit(0),
                     ],
                     Annotated[
@@ -596,7 +596,7 @@ class TestSetAPI:
         with pytest.raises(
             TypeError, match="got an unexpected keyword argument 'bar'"
         ):
-            Example(bar=3)  # type: ignore[call-arg]
+            Example(bar=3)  # type: ignore[call-arg]  # ty: ignore[missing-argument, unknown-argument]
 
     def test_fail_init_missing_field_name(self) -> None:
         @asn1.set
@@ -610,7 +610,7 @@ class TestSetAPI:
         )
 
         with pytest.raises(TypeError, match=expected_err):
-            Example()  # type: ignore[call-arg]
+            Example()  # type: ignore[call-arg]  # ty: ignore[missing-argument]
 
     def test_fail_positional_field_initialization(self) -> None:
         @asn1.set
