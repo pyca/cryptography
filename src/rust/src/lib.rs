@@ -224,6 +224,8 @@ mod _rust {
         #[pymodule_export]
         use crate::backend::cmac::cmac;
         #[pymodule_export]
+        use crate::backend::composite::composite;
+        #[pymodule_export]
         use crate::backend::dh::dh;
         #[pymodule_export]
         use crate::backend::dsa::dsa;
