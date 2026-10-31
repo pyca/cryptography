@@ -26,6 +26,14 @@ Changelog
   empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
   RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
   applied to ``extendedKeyUsage``.
+* The AEAD ``decrypt_into`` methods (and the :doc:`/cobblestone` decryptors'
+  ``update_into``) now zero the output buffer when authentication fails.
+  Previously, :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCM`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.ChaCha20Poly1305`,
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESGCMSIV`, and
+  :class:`~cryptography.hazmat.primitives.ciphers.aead.AESOCB3` could leave
+  unauthenticated plaintext in the buffer after raising
+  :class:`~cryptography.exceptions.InvalidTag`.
 
 .. _v50-0-2:
 
