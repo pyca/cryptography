@@ -405,8 +405,15 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
+    ,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
     , or
-    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`.
+    :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44Ed25519PublicKey`.
+
+    .. versionchanged:: 51.0.0
+
+        Added
+        :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44Ed25519PublicKey`.
 
 
 .. function:: load_ssh_public_key(data)
@@ -491,8 +498,15 @@ An example ECDSA key in OpenSSH format::
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+    ,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
     or
-    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`.
+    :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44Ed25519PrivateKey`.
+
+    .. versionchanged:: 51.0.0
+
+        Added
+        :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44Ed25519PrivateKey`.
 
 
 .. function:: load_ssh_private_key(data, password, *, unsafe_skip_rsa_key_validation=False)
@@ -678,7 +692,8 @@ The format used by OpenSSH for certificates, as specified in
     .. method:: signature_key()
 
         The public key used to sign the certificate, one of
-        :data:`SSHCertPublicKeyTypes`.
+        :data:`SSHCertPublicKeyTypes` or
+        :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44Ed25519PublicKey`.
 
     .. method:: verify_cert_signature()
 

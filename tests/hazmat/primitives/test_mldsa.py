@@ -7,6 +7,7 @@ import binascii
 import copy
 import dataclasses
 import hashlib
+import json
 import os
 import typing
 
@@ -21,6 +22,8 @@ from cryptography.exceptions import (
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ed25519, mldsa
 from cryptography.hazmat.primitives.asymmetric.mldsa import (
+    MLDSA44Ed25519PrivateKey,
+    MLDSA44Ed25519PublicKey,
     MLDSA44PrivateKey,
     MLDSA44PublicKey,
     MLDSA65PrivateKey,
@@ -713,3 +716,221 @@ def test_mldsa65_private_key_no_seed():
     )
     with pytest.raises(ValueError):
         serialization.load_der_private_key(pkcs8_der, password=None)
+
+
+def _generate_mldsa44_ed25519_key() -> MLDSA44Ed25519PrivateKey:
+    return MLDSA44Ed25519PrivateKey(
+        MLDSA44PrivateKey.generate(), ed25519.Ed25519PrivateKey.generate()
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mldsa_supported(),
+    skip_message="Requires a backend with ML-DSA support",
+)
+class TestMLDSA44Ed25519:
+    def test_invalid_component_types(self):
+        mldsa_key = MLDSA44PrivateKey.generate()
+        ed25519_key = ed25519.Ed25519PrivateKey.generate()
+        with pytest.raises(TypeError):
+            MLDSA44Ed25519PrivateKey(
+                ed25519_key,  # type: ignore[arg-type]
+                ed25519_key,
+            )
+        with pytest.raises(TypeError):
+            MLDSA44Ed25519PrivateKey(
+                mldsa_key,
+                mldsa_key,  # type: ignore[arg-type]
+            )
+        with pytest.raises(TypeError):
+            MLDSA44Ed25519PublicKey(
+                mldsa_key,  # type: ignore[arg-type]
+                ed25519_key.public_key(),
+            )
+        with pytest.raises(TypeError):
+            MLDSA44Ed25519PublicKey(
+                mldsa_key.public_key(),
+                ed25519_key,  # type: ignore[arg-type]
+            )
+
+    @pytest.mark.parametrize("ctx", [None, b"", b"ctx", b"x" * 255])
+    def test_sign_verify(self, ctx):
+        key = _generate_mldsa44_ed25519_key()
+        pub = key.public_key()
+        sig = key.sign(b"message", ctx)
+        assert len(sig) == 2420 + 64
+        pub.verify(sig, b"message", ctx)
+
+    def test_empty_context_equivalence(self):
+        key = _generate_mldsa44_ed25519_key()
+        pub = key.public_key()
+        pub.verify(key.sign(b"message"), b"message", b"")
+        pub.verify(key.sign(b"message", b""), b"message")
+
+    def test_context_too_long(self):
+        key = _generate_mldsa44_ed25519_key()
+        sig = key.sign(b"message")
+        with pytest.raises(ValueError):
+            key.sign(b"message", b"x" * 256)
+        with pytest.raises(ValueError):
+            key.public_key().verify(sig, b"message", b"x" * 256)
+
+    def test_invalid_signature(self):
+        key = _generate_mldsa44_ed25519_key()
+        pub = key.public_key()
+        sig = key.sign(b"message", b"ctx")
+        with pytest.raises(InvalidSignature):
+            pub.verify(sig, b"other message", b"ctx")
+        with pytest.raises(InvalidSignature):
+            pub.verify(sig, b"message", b"other ctx")
+        with pytest.raises(InvalidSignature):
+            pub.verify(sig, b"message")
+        with pytest.raises(InvalidSignature):
+            pub.verify(sig[:-1], b"message", b"ctx")
+        with pytest.raises(InvalidSignature):
+            pub.verify(sig + b"\x00", b"message", b"ctx")
+
+    def test_component_signatures_are_both_checked(self):
+        key = _generate_mldsa44_ed25519_key()
+        pub = key.public_key()
+        sig = key.sign(b"message")
+        other_sig = key.sign(b"other message")
+        # ML-DSA-44 signature of another message, Ed25519 one of this one
+        with pytest.raises(InvalidSignature):
+            pub.verify(other_sig[:2420] + sig[2420:], b"message")
+        # and the other way around
+        with pytest.raises(InvalidSignature):
+            pub.verify(sig[:2420] + other_sig[2420:], b"message")
+
+    def test_kat_vector(self):
+        # id-MLDSA44-Ed25519-SHA512 from draft-ietf-lamps-pq-composite-sigs
+        vector = load_vectors_from_file(
+            os.path.join(
+                "asymmetric", "MLDSA", "composite-mldsa44-ed25519-sha512.json"
+            ),
+            json.load,
+        )
+        message = binascii.a2b_base64(vector["m"])
+        ctx = binascii.a2b_base64(vector["ctx"])
+        sk = binascii.a2b_base64(vector["sk"])
+        key = MLDSA44Ed25519PrivateKey(
+            MLDSA44PrivateKey.from_seed_bytes(sk[:32]),
+            ed25519.Ed25519PrivateKey.from_private_bytes(sk[32:]),
+        )
+        assert key.private_bytes_raw() == sk
+        pub = key.public_key()
+        assert pub.public_bytes_raw() == binascii.a2b_base64(vector["pk"])
+        pub.verify(binascii.a2b_base64(vector["s"]), message)
+        pub.verify(binascii.a2b_base64(vector["sWithContext"]), message, ctx)
+        with pytest.raises(InvalidSignature):
+            pub.verify(binascii.a2b_base64(vector["s"]), message, ctx)
+
+    def test_public_key_equality(self):
+        key = _generate_mldsa44_ed25519_key()
+        pub = key.public_key()
+        same = MLDSA44Ed25519PublicKey(
+            MLDSA44PublicKey.from_public_bytes(pub.public_bytes_raw()[:1312]),
+            ed25519.Ed25519PublicKey.from_public_bytes(
+                pub.public_bytes_raw()[1312:]
+            ),
+        )
+        assert pub == same
+        assert pub == key.public_key()
+        assert pub != _generate_mldsa44_ed25519_key().public_key()
+        assert pub != object()
+
+    def test_raw_bytes(self):
+        mldsa_key = MLDSA44PrivateKey.generate()
+        ed25519_key = ed25519.Ed25519PrivateKey.generate()
+        key = MLDSA44Ed25519PrivateKey(mldsa_key, ed25519_key)
+        raw = key.private_bytes_raw()
+        assert raw == (
+            mldsa_key.private_bytes_raw() + ed25519_key.private_bytes_raw()
+        )
+        assert raw == key.private_bytes(
+            serialization.Encoding.Raw,
+            serialization.PrivateFormat.Raw,
+            serialization.NoEncryption(),
+        )
+        pub = key.public_key()
+        assert pub.public_bytes_raw() == (
+            mldsa_key.public_key().public_bytes_raw()
+            + ed25519_key.public_key().public_bytes_raw()
+        )
+        assert pub.public_bytes_raw() == pub.public_bytes(
+            serialization.Encoding.Raw, serialization.PublicFormat.Raw
+        )
+
+    def test_openssh_round_trip(self):
+        key = _generate_mldsa44_ed25519_key()
+        pem = key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.OpenSSH,
+            serialization.NoEncryption(),
+        )
+        loaded = serialization.load_ssh_private_key(pem, None)
+        assert isinstance(loaded, MLDSA44Ed25519PrivateKey)
+        assert loaded.private_bytes_raw() == key.private_bytes_raw()
+
+        openssh_pub = key.public_key().public_bytes(
+            serialization.Encoding.OpenSSH, serialization.PublicFormat.OpenSSH
+        )
+        assert openssh_pub.startswith(b"ssh-mldsa44-ed25519 ")
+        assert serialization.load_ssh_public_key(openssh_pub) == (
+            key.public_key()
+        )
+
+    def test_invalid_private_bytes(self):
+        key = _generate_mldsa44_ed25519_key()
+        with pytest.raises(TypeError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.OpenSSH,
+                None,  # type: ignore[arg-type]
+            )
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.Raw,
+                serialization.PrivateFormat.Raw,
+                serialization.BestAvailableEncryption(b"password"),
+            )
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.Raw,
+                serialization.NoEncryption(),
+            )
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.DER,
+                serialization.PrivateFormat.OpenSSH,
+                serialization.NoEncryption(),
+            )
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.OpenSSH,
+                DummyKeySerializationEncryption(),
+            )
+        with pytest.raises(ValueError):
+            key.private_bytes(
+                serialization.Encoding.PEM,
+                serialization.PrivateFormat.PKCS8,
+                serialization.NoEncryption(),
+            )
+
+    def test_invalid_public_bytes(self):
+        pub = _generate_mldsa44_ed25519_key().public_key()
+        with pytest.raises(ValueError):
+            pub.public_bytes(
+                serialization.Encoding.PEM, serialization.PublicFormat.Raw
+            )
+        with pytest.raises(ValueError):
+            pub.public_bytes(
+                serialization.Encoding.PEM, serialization.PublicFormat.OpenSSH
+            )
+        with pytest.raises(ValueError):
+            pub.public_bytes(
+                serialization.Encoding.PEM,
+                serialization.PublicFormat.SubjectPublicKeyInfo,
+            )
