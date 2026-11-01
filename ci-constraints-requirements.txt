@@ -157,7 +157,7 @@ pytest==8.4.2 ; python_full_version < '3.10'
     #   pytest-cov
     #   pytest-randomly
     #   pytest-xdist
-pytest==9.1.1 ; python_full_version >= '3.10'
+pytest==9.2.0 ; python_full_version >= '3.10'
     # via
     #   cryptography (pyproject.toml:dev)
     #   pytest-benchmark
