@@ -166,7 +166,7 @@ pytest==9.1.1 ; python_full_version >= '3.10'
     #   pytest-xdist
 pytest-benchmark==5.2.3 ; python_full_version < '3.10'
     # via cryptography (pyproject.toml:dev)
-pytest-benchmark==5.3.0 ; python_full_version >= '3.10'
+pytest-benchmark==5.3.1 ; python_full_version >= '3.10'
     # via cryptography (pyproject.toml:dev)
 pytest-cov==7.1.0
     # via cryptography (pyproject.toml:dev)
