@@ -26,6 +26,9 @@ Changelog
   empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
   RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
   applied to ``extendedKeyUsage``.
+* Added the :meth:`PolicyBuilder.extended_key_usage
+  <cryptography.x509.verification.PolicyBuilder.extended_key_usage>` method to
+  configure the Extended Key Usage checked by X.509 verification policies.
 
 .. _v50-0-2:
 
