@@ -265,8 +265,15 @@ pub(crate) fn create_x509_csr(
         rsa_padding.clone(),
     )?;
 
-    let spki_bytes = private_key
-        .call_method0(pyo3::intern!(py, "public_key"))?
+    let py_public_key = builder.getattr(pyo3::intern!(py, "_public_key"))?;
+
+    let public_key = if py_public_key.is_none() {
+        private_key.call_method0(pyo3::intern!(py, "public_key"))?
+    } else {
+        py_public_key
+    };
+
+    let spki_bytes = public_key
         .call_method1(
             pyo3::intern!(py, "public_bytes"),
             (
@@ -308,8 +315,8 @@ pub(crate) fn create_x509_csr(
             Option<u8>,
         ) = py_attr?.extract()?;
         let oid = py_oid_to_oid(py_oid)?;
-        let tag = if let Some(tag) = tag {
-            asn1::Tag::from_bytes(&[tag])?.0
+        let tag = if let Some(tag_num) = tag {
+            asn1::Tag::from_bytes(&[tag_num])?.0
         } else {
             if std::str::from_utf8(&value).is_err() {
                 return Err(CryptographyError::from(
