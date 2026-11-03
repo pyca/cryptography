@@ -387,8 +387,8 @@ jobs:
             PATH: pyopenssl
           - DOWNSTREAM: twisted
             REPO: twisted/twisted
-            # Latest commit on the twisted trunk branch, as of Nov 01, 2026.
-            REF: ebfb002777b7676068f0b4cf1098f15c61b57483
+            # Latest commit on the twisted trunk branch, as of Nov 03, 2026.
+            REF: 88c6e070a57f387e9b9ec34459c8cb7df56b78e0
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
@@ -412,13 +412,13 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Nov 02, 2026.
-            REF: d6d6d5e55375e0c21f9c898ee88fb9b8d94509c3
+            # Latest commit on the scapy master branch, as of Nov 03, 2026.
+            REF: 31f11a7464bef4fd8f9054d38bcc9a12976b85be
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Oct 27, 2026.
-            REF: 19b8aec7063e62c718efd327f5a45582472c3b3c
+            # Latest commit on the sigstore-python main branch, as of Nov 03, 2026.
+            REF: 233dbd7c3af190ff185c5a4a4830a5ddcf6d12ec
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
