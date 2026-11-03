@@ -258,6 +258,9 @@ fn parse_name_attribute<'p>(
         AttributeValue::PrintableString(printable_string) => {
             pyo3::types::PyString::new(py, printable_string.as_str()).into_any()
         }
+        AttributeValue::NumericString(numeric_string) => {
+            pyo3::types::PyString::new(py, numeric_string.as_str()).into_any()
+        }
         AttributeValue::UniversalString(universal_string) => {
             let py_bytes = pyo3::types::PyBytes::new(py, universal_string.as_utf32_be_bytes());
             py_bytes.call_method1(pyo3::intern!(py, "decode"), ("utf_32_be",))?
