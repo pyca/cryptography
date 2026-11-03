@@ -44,6 +44,7 @@ Decapsulate
 Decapsulation
 declaratively
 decrypt
+decryptor
 Decryptor
 decrypts
 Decrypts
