@@ -14,7 +14,7 @@ import pytest
 from cryptography import x509
 from cryptography.hazmat._oid import ExtendedKeyUsageOID
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from cryptography.x509 import ExtensionType
 from cryptography.x509.general_name import DNSName, IPAddress
 from cryptography.x509.oid import NameOID
@@ -1012,3 +1012,81 @@ class TestNameConstraints:
             nc_critical=False,
         )
         self._verifier(ca).verify(leaf, [])
+
+
+class TestRSAKeySize:
+    @pytest.mark.parametrize("key_size", [2040, 2047])
+    def test_undersized_rsa_issuer_rejected(self, key_size):
+        # The DER encoding of these moduli is 256 bytes long (2040 bits
+        # with a leading zero byte), so the key size check must count
+        # bits rather than encoded bytes.
+        ca_key = rsa.generate_private_key(65537, key_size)
+        leaf_key = ec.generate_private_key(ec.SECP256R1())
+
+        not_before = datetime.datetime(2024, 1, 1)
+        not_after = datetime.datetime(2034, 1, 1)
+
+        ca_name = x509.Name(
+            [x509.NameAttribute(NameOID.COMMON_NAME, "Test CA")]
+        )
+        ca = (
+            x509.CertificateBuilder()
+            .subject_name(ca_name)
+            .issuer_name(ca_name)
+            .public_key(ca_key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(not_before)
+            .not_valid_after(not_after)
+            .add_extension(
+                x509.BasicConstraints(ca=True, path_length=None),
+                critical=True,
+            )
+            .add_extension(
+                x509.KeyUsage(
+                    digital_signature=False,
+                    content_commitment=False,
+                    key_encipherment=False,
+                    data_encipherment=False,
+                    key_agreement=False,
+                    key_cert_sign=True,
+                    crl_sign=True,
+                    encipher_only=False,
+                    decipher_only=False,
+                ),
+                critical=True,
+            )
+            .sign(ca_key, hashes.SHA256())
+        )
+        leaf = (
+            x509.CertificateBuilder()
+            .subject_name(
+                x509.Name(
+                    [x509.NameAttribute(NameOID.COMMON_NAME, "example.com")]
+                )
+            )
+            .issuer_name(ca_name)
+            .public_key(leaf_key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(not_before)
+            .not_valid_after(not_after)
+            .add_extension(
+                x509.SubjectAlternativeName([x509.DNSName("example.com")]),
+                critical=False,
+            )
+            .add_extension(
+                x509.AuthorityKeyIdentifier.from_issuer_public_key(
+                    ca_key.public_key()
+                ),
+                critical=False,
+            )
+            .sign(ca_key, hashes.SHA256())
+        )
+
+        verifier = (
+            PolicyBuilder()
+            .store(Store([ca]))
+            .time(datetime.datetime(2025, 1, 1))
+            .build_client_verifier()
+        )
+        with pytest.raises(VerificationError, match="RSA key is too weak"):
+            verifier.verify(leaf, [])
