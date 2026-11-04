@@ -26,6 +26,11 @@ Changelog
   empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
   RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
   applied to ``extendedKeyUsage``.
+* :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers.private_key`
+  now raises ``ValueError`` when ``private_value`` is not smaller than the
+  curve's order, matching
+  :func:`~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key` and
+  the private key loading functions.
 
 .. _v50-0-2:
 
