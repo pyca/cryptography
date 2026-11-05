@@ -22,16 +22,16 @@ OpenSSL build behaves exactly as before.
 ## Results
 
 Full test suite, with Wycheproof (`--wycheproof-root`), on x86-64 with OpenSSL
-3.0.13:
+3.0.13, as of 2026-11-05 (cryptography `main` and verified-garbage `d646f721`):
 
 | Build | Passed | Skipped | Failed |
 |---|---|---|---|
-| verified-garbage | 4647 | 86 | 0 |
-| OpenSSL | 4241 | 491 | 0 |
-| OpenSSL, without Wycheproof (the baseline command) | 4109 | 630 | 0 |
+| verified-garbage | 4650 | 86 | 0 |
+| OpenSSL | 4251 | 491 | 0 |
+| OpenSSL, without Wycheproof (the baseline command) | 4112 | 630 | 0 |
 
-The last row is the pre-branch baseline (4102 passed, 630 skipped) plus 7 new
-regression tests.
+The last row is upstream's own suite plus the 7 regression tests this branch
+adds.
 
 The built VG extension links only libc and libgcc, and exports or imports no
 OpenSSL symbols.
@@ -66,6 +66,198 @@ python3 .github/bin/vg_bench_compare.py res-awslc-1.json res-awslc-2.json -- res
 Each figure is the faster of the two passes, each pass the median of 7
 rounds. Cloud VMs are noisy: treat differences within about 15% as ties,
 especially for rows marked †.
+
+### 2026-11-05: verified-garbage `d646f721`, AWS-LC v5.11.0, a CPU without IFMA
+
+cryptography `6d2b51e` (`vg-backend` rebased on `main`). **This run was on a
+different CPU, not comparable with the entries below:** an older Intel Xeon at
+2.8 GHz with AVX-512F, AVX-512VL, AVX2, AES-NI, BMI2 and ADX, but no AVX-512
+IFMA, VAES, VPCLMULQDQ or SHA-NI. On it VG cannot use its IFMA code (RSA,
+X25519, Poly1305), its VAES and VPCLMULQDQ code (the AES modes and GHASH) or
+its SHA-NI code. (VG's run-time detection works: an RSA-2048 private operation
+takes 713 µs with the features it finds and 2.0 ms with none.) The machine was
+also very noisy: 101 of 139 rows differed by more than 10% between passes.
+
+**VG faster:**
+* ECDSA signing on P-384 (3×) and P-521 (1.6×).
+* secp256k1 verification (2.2×) and signing (1.3×).
+* ML-KEM (1.5–2×).
+* Poly1305 on 1 MiB (2.4×).
+* ChaCha20-Poly1305 on 1 MiB (1.4×).
+* AES-GCM on small messages (1.3–2.9×).
+* PBKDF2 (1.4×).
+* RSA verification (1.2–1.4×).
+
+**Roughly a tie:**
+* RSA private operations and key loading.
+* AES-GCM encryption and AES-XTS on 1 MiB.
+* Ed25519 signing.
+* SHA-2 and HMAC.
+
+**VG slower:**
+* AES-GCM-SIV on 1 MiB (2.2×) and AES-CBC encryption (1.5×).
+* AES-CTR (1.3×) and AES-GCM decryption (1.2×) on 1 MiB.
+* X25519 exchange (1.4×), which needs IFMA to beat AWS-LC.
+* ML-DSA verification (1.65×).
+* X.509 signature verification (1.3×).
+* Loading EC public numbers (28×) and EC private numbers (5.6×), as before.
+
+**VG changes visible despite the different CPU** (VG's own times, on a slower
+host):
+* secp256k1 verification went from 472 µs to 111 µs.
+* ML-DSA-44 signing went from 135 µs to 101 µs.
+
+To track progress against the earlier entries, rerun on a CPU with AVX-512
+IFMA, VAES and SHA-NI (e.g. Ice Lake or newer).
+
+<details>
+<summary>All results</summary>
+
+| Benchmark | AWS-LC 5.11.0 | verified-garbage | VG vs AWS-LC 5.11.0 |
+|---|---|---|---|
+| `hash/sha256/64B` | 1.71 us (37 MB/s) | 1.58 us (41 MB/s) | 1.09x faster † |
+| `hash/sha256/1KiB` | 6.65 us (154 MB/s) | 4.18 us (245 MB/s) | 1.59x faster † |
+| `hash/sha256/1MiB` | 3.84 ms (273 MB/s) | 3.11 ms (337 MB/s) | 1.24x faster † |
+| `hash/sha512/64B` | 1.47 us (44 MB/s) | 1.48 us (43 MB/s) | 1.01x slower † |
+| `hash/sha512/1KiB` | 3.5 us (292 MB/s) | 3.66 us (280 MB/s) | 1.05x slower † |
+| `hash/sha512/1MiB` | 2.36 ms (444 MB/s) | 2.68 ms (392 MB/s) | 1.13x slower † |
+| `hash/sha3-256/64B` | 2.86 us (22 MB/s) | 2.71 us (24 MB/s) | 1.06x faster |
+| `hash/sha3-256/1KiB` | 5.33 us (192 MB/s) | 3.98 us (257 MB/s) | 1.34x faster † |
+| `hash/sha3-256/1MiB` | 2.86 ms (366 MB/s) | 3.42 ms (307 MB/s) | 1.19x slower † |
+| `hash/blake2b/64B` | n/a | 1.41 us (45 MB/s) | — |
+| `hash/blake2b/1KiB` | n/a | 2.95 us (347 MB/s) | — |
+| `hash/blake2b/1MiB` | n/a | 1 ms (1,044 MB/s) | — |
+| `hmac/sha256/64B` | 2.56 us (25 MB/s) | 3.26 us (20 MB/s) | 1.27x slower † |
+| `poly1305/64B` | 481 ns (133 MB/s) | 828 ns (77 MB/s) | 1.72x slower † |
+| `hmac/sha256/1KiB` | 4.95 us (207 MB/s) | 6.41 us (160 MB/s) | 1.30x slower † |
+| `poly1305/1KiB` | 853 ns (1,200 MB/s) | 848 ns (1,207 MB/s) | 1.01x faster † |
+| `hmac/sha256/1MiB` | 3.11 ms (337 MB/s) | 2.92 ms (359 MB/s) | 1.07x faster † |
+| `poly1305/1MiB` | 329 us (3,184 MB/s) | 138 us (7,600 MB/s) | 2.39x faster † |
+| `cmac/aes128/64B` | 1.82 us (35 MB/s) | 1.8 us (36 MB/s) | 1.01x faster † |
+| `cmac/aes128/1KiB` | 2.65 us (386 MB/s) | 2.56 us (400 MB/s) | 1.03x faster † |
+| `cmac/aes128/1MiB` | 796 us (1,317 MB/s) | 717 us (1,462 MB/s) | 1.11x faster † |
+| `aead/aesgcm-128/encrypt/64B` | 730 ns (88 MB/s) | 561 ns (114 MB/s) | 1.30x faster † |
+| `aead/aesgcm-128/decrypt/64B` | 1.32 us (49 MB/s) | 454 ns (141 MB/s) | 2.90x faster † |
+| `aead/aesgcm-128/encrypt/1KiB` | 981 ns (1,044 MB/s) | 753 ns (1,361 MB/s) | 1.30x faster † |
+| `aead/aesgcm-128/decrypt/1KiB` | 941 ns (1,088 MB/s) | 691 ns (1,483 MB/s) | 1.36x faster † |
+| `aead/aesgcm-128/encrypt/1MiB` | 211 us (4,979 MB/s) | 218 us (4,809 MB/s) | 1.04x slower † |
+| `aead/aesgcm-128/decrypt/1MiB` | 216 us (4,861 MB/s) | 263 us (3,984 MB/s) | 1.22x slower † |
+| `aead/aesgcm-256/encrypt/64B` | 720 ns (89 MB/s) | 677 ns (95 MB/s) | 1.06x faster † |
+| `aead/aesgcm-256/decrypt/64B` | 715 ns (90 MB/s) | 701 ns (91 MB/s) | 1.02x faster † |
+| `aead/aesgcm-256/encrypt/1KiB` | 1.07 us (956 MB/s) | 755 ns (1,356 MB/s) | 1.42x faster † |
+| `aead/aesgcm-256/decrypt/1KiB` | 962 ns (1,064 MB/s) | 920 ns (1,113 MB/s) | 1.05x faster † |
+| `aead/aesgcm-256/encrypt/1MiB` | 266 us (3,940 MB/s) | 245 us (4,279 MB/s) | 1.09x faster † |
+| `aead/aesgcm-256/decrypt/1MiB` | 253 us (4,152 MB/s) | 313 us (3,348 MB/s) | 1.24x slower † |
+| `aead/chacha20poly1305/encrypt/64B` | 680 ns (94 MB/s) | 720 ns (89 MB/s) | 1.06x slower † |
+| `aead/chacha20poly1305/decrypt/64B` | 547 ns (117 MB/s) | 604 ns (106 MB/s) | 1.10x slower |
+| `aead/chacha20poly1305/encrypt/1KiB` | 1.21 us (847 MB/s) | 1.36 us (752 MB/s) | 1.13x slower † |
+| `aead/chacha20poly1305/decrypt/1KiB` | 1.78 us (575 MB/s) | 1.27 us (805 MB/s) | 1.40x faster † |
+| `aead/chacha20poly1305/encrypt/1MiB` | 600 us (1,747 MB/s) | 427 us (2,457 MB/s) | 1.41x faster † |
+| `aead/chacha20poly1305/decrypt/1MiB` | 692 us (1,516 MB/s) | 458 us (2,287 MB/s) | 1.51x faster |
+| `aead/aesccm-128/encrypt/64B` | 997 ns (64 MB/s) | 569 ns (113 MB/s) | 1.75x faster † |
+| `aead/aesccm-128/decrypt/64B` | 943 ns (68 MB/s) | 491 ns (130 MB/s) | 1.92x faster † |
+| `aead/aesccm-128/encrypt/1KiB` | 2.6 us (393 MB/s) | 1.53 us (668 MB/s) | 1.70x faster † |
+| `aead/aesccm-128/decrypt/1KiB` | 2.25 us (455 MB/s) | 1.29 us (792 MB/s) | 1.74x faster † |
+| `aead/aesccm-128/encrypt/1MiB` | 1.35 ms (775 MB/s) | 858 us (1,222 MB/s) | 1.58x faster † |
+| `aead/aesccm-128/decrypt/1MiB` | 1.44 ms (731 MB/s) | 1.02 ms (1,025 MB/s) | 1.40x faster † |
+| `aead/aesgcmsiv-256/encrypt/64B` | 619 ns (103 MB/s) | 629 ns (102 MB/s) | 1.02x slower † |
+| `aead/aesgcmsiv-256/decrypt/64B` | 593 ns (108 MB/s) | 659 ns (97 MB/s) | 1.11x slower † |
+| `aead/aesgcmsiv-256/encrypt/1KiB` | 798 ns (1,283 MB/s) | 1.37 us (745 MB/s) | 1.72x slower † |
+| `aead/aesgcmsiv-256/decrypt/1KiB` | 1.14 us (900 MB/s) | 1.63 us (628 MB/s) | 1.43x slower |
+| `aead/aesgcmsiv-256/encrypt/1MiB` | 305 us (3,439 MB/s) | 672 us (1,560 MB/s) | 2.20x slower † |
+| `aead/aesgcmsiv-256/decrypt/1MiB` | 250 us (4,201 MB/s) | 615 us (1,706 MB/s) | 2.46x slower † |
+| `aead/aesocb3-128/encrypt/64B` | n/a | 894 ns (72 MB/s) | — |
+| `aead/aesocb3-128/decrypt/64B` | n/a | 902 ns (71 MB/s) | — |
+| `aead/aesocb3-128/encrypt/1KiB` | n/a | 1.04 us (989 MB/s) | — |
+| `aead/aesocb3-128/decrypt/1KiB` | n/a | 1.29 us (795 MB/s) | — |
+| `aead/aesocb3-128/encrypt/1MiB` | n/a | 404 us (2,594 MB/s) | — |
+| `aead/aesocb3-128/decrypt/1MiB` | n/a | 459 us (2,283 MB/s) | — |
+| `aead/aessiv-256/encrypt/64B` | n/a | 749 ns (85 MB/s) | — |
+| `aead/aessiv-256/decrypt/64B` | n/a | 603 ns (106 MB/s) | — |
+| `aead/aessiv-256/encrypt/1KiB` | n/a | 1.37 us (747 MB/s) | — |
+| `aead/aessiv-256/decrypt/1KiB` | n/a | 1.91 us (535 MB/s) | — |
+| `aead/aessiv-256/encrypt/1MiB` | n/a | 967 us (1,084 MB/s) | — |
+| `aead/aessiv-256/decrypt/1MiB` | n/a | 1 ms (1,045 MB/s) | — |
+| `cipher/aes128-ctr/encrypt/64B` | 2.87 us (22 MB/s) | 2.68 us (24 MB/s) | 1.07x faster † |
+| `cipher/aes128-ctr/encrypt/1KiB` | 4 us (256 MB/s) | 3.46 us (296 MB/s) | 1.16x faster † |
+| `cipher/aes128-ctr/encrypt/1MiB` | 169 us (6,186 MB/s) | 214 us (4,891 MB/s) | 1.26x slower † |
+| `cipher/aes128-cbc/encrypt/64B` | 2.76 us (23 MB/s) | 3.75 us (17 MB/s) | 1.36x slower |
+| `cipher/aes128-cbc/encrypt/1KiB` | 3.63 us (282 MB/s) | 5.25 us (195 MB/s) | 1.45x slower |
+| `cipher/aes128-cbc/encrypt/1MiB` | 1.77 ms (592 MB/s) | 2.59 ms (405 MB/s) | 1.46x slower |
+| `cipher/aes256-xts/encrypt/64B` | 3.31 us (19 MB/s) | 4.08 us (16 MB/s) | 1.23x slower † |
+| `cipher/aes256-xts/encrypt/1KiB` | 2.94 us (348 MB/s) | 3.95 us (259 MB/s) | 1.34x slower † |
+| `cipher/aes256-xts/encrypt/1MiB` | 251 us (4,184 MB/s) | 265 us (3,963 MB/s) | 1.06x slower † |
+| `cipher/chacha20/encrypt/64B` | n/a | 2.69 us (24 MB/s) | — |
+| `cipher/chacha20/encrypt/1KiB` | n/a | 4.89 us (209 MB/s) | — |
+| `cipher/chacha20/encrypt/1MiB` | n/a | 311 us (3,370 MB/s) | — |
+| `kdf/pbkdf2-sha256/100000` | 55.8 ms | 39.3 ms | 1.42x faster † |
+| `kdf/scrypt/n=2^14,r=8,p=1` | 37.6 ms | 50 ms | 1.33x slower † |
+| `kdf/argon2id/m=64MiB,t=3,p=4` | n/a | 159 ms | — |
+| `kdf/hkdf-sha256/32B` | 4.78 us | 3.58 us | 1.33x faster † |
+| `fernet/encrypt/1KiB` | 10.2 us (100 MB/s) | 7.74 us (132 MB/s) | 1.32x faster † |
+| `fernet/decrypt/1KiB` | 5.42 us (189 MB/s) | 5 us (205 MB/s) | 1.08x faster † |
+| `ed25519/keygen` | 10.9 us | 10.9 us | 1.00x slower † |
+| `ed25519/sign` | 10.9 us | 10.9 us | 1.00x faster † |
+| `ed25519/verify` | 47 us | 38.3 us | 1.23x faster † |
+| `ed448/sign` | n/a | 124 us | — |
+| `ed448/verify` | n/a | 326 us | — |
+| `x25519/keygen` | 14 us | 13.6 us | 1.03x faster † |
+| `x25519/exchange` | 29 us | 41.3 us | 1.42x slower † |
+| `x448/exchange` | n/a | 169 us | — |
+| `ecdsa/p256/keygen` | 12.2 us | 15.2 us | 1.25x slower † |
+| `ecdsa/p256/sign` | 27.6 us | 22 us | 1.26x faster |
+| `ecdsa/p256/verify` | 89.7 us | 76.1 us | 1.18x faster † |
+| `ecdh/p256/exchange` | 74.3 us | 49.9 us | 1.49x faster † |
+| `ecdsa/p384/keygen` | 61.9 us | 31.5 us | 1.96x faster † |
+| `ecdsa/p384/sign` | 137 us | 45.9 us | 2.99x faster † |
+| `ecdsa/p384/verify` | 259 us | 183 us | 1.41x faster † |
+| `ecdh/p384/exchange` | 186 us | 197 us | 1.06x slower † |
+| `ecdsa/p521/keygen` | 87.4 us | 109 us | 1.24x slower † |
+| `ecdsa/p521/sign` | 212 us | 134 us | 1.58x faster † |
+| `ecdsa/p521/verify` | 379 us | 328 us | 1.16x faster † |
+| `ecdh/p521/exchange` | 239 us | 389 us | 1.63x slower |
+| `ecdsa/secp256k1/keygen` | 353 us | 196 us | 1.80x faster † |
+| `ecdsa/secp256k1/sign` | 247 us | 197 us | 1.26x faster † |
+| `ecdsa/secp256k1/verify` | 241 us | 111 us | 2.17x faster † |
+| `ecdh/secp256k1/exchange` | 311 us | 254 us | 1.22x faster † |
+| `rsa/2048/sign-pss` | 707 us | 843 us | 1.19x slower † |
+| `rsa/2048/sign-pkcs1v15` | 828 us | 856 us | 1.03x slower † |
+| `rsa/2048/verify-pss` | 31.6 us | 22 us | 1.44x faster † |
+| `rsa/2048/encrypt-oaep` | 22.4 us | 21.5 us | 1.04x faster † |
+| `rsa/2048/decrypt-oaep` | 722 us | 713 us | 1.01x faster † |
+| `rsa/3072/sign-pss` | 2.27 ms | 3.09 ms | 1.36x slower † |
+| `rsa/3072/sign-pkcs1v15` | 1.98 ms | 2.15 ms | 1.09x slower † |
+| `rsa/3072/verify-pss` | 48.9 us | 49.7 us | 1.02x slower † |
+| `rsa/3072/encrypt-oaep` | 54.9 us | 48.1 us | 1.14x faster |
+| `rsa/3072/decrypt-oaep` | 2.3 ms | 2.44 ms | 1.06x slower † |
+| `rsa/4096/sign-pss` | 6.44 ms | 5.7 ms | 1.13x faster |
+| `rsa/4096/sign-pkcs1v15` | 5.21 ms | 4.81 ms | 1.08x faster |
+| `rsa/4096/verify-pss` | 80.1 us | 67.7 us | 1.18x faster † |
+| `rsa/4096/encrypt-oaep` | 71.4 us | 68.3 us | 1.05x faster † |
+| `rsa/4096/decrypt-oaep` | 4.61 ms | 4.87 ms | 1.06x slower † |
+| `rsa/2048/keygen` | 77.9 ms | 93 ms | 1.19x slower † |
+| `rsa/2048/load-pem-private-key` | 181 us | 209 us | 1.15x slower † |
+| `mlkem768/keygen` | 17.8 us | 14.7 us | 1.22x faster |
+| `mlkem768/encapsulate` | 19.2 us | 13.3 us | 1.45x faster |
+| `mlkem768/decapsulate` | 23.9 us | 11.8 us | 2.03x faster † |
+| `mlkem1024/keygen` | 25.7 us | 27.1 us | 1.06x slower |
+| `mlkem1024/encapsulate` | 29.9 us | 19.3 us | 1.55x faster † |
+| `mlkem1024/decapsulate` | 38.5 us | 15.3 us | 2.52x faster † |
+| `mldsa44/keygen` | 41.3 us | 73.5 us | 1.78x slower † |
+| `mldsa44/sign` | 142 us | 101 us | 1.41x faster † |
+| `mldsa44/verify` | 32 us | 30.9 us | 1.03x faster † |
+| `mldsa65/keygen` | 67.5 us | 130 us | 1.92x slower † |
+| `mldsa65/sign` | 160 us | 178 us | 1.11x slower † |
+| `mldsa65/verify` | 46.1 us | 75.9 us | 1.65x slower |
+| `mldsa87/keygen` | 88.1 us | 176 us | 2.00x slower † |
+| `mldsa87/sign` | 201 us | 245 us | 1.22x slower † |
+| `mldsa87/verify` | 103 us | 120 us | 1.17x slower † |
+| `x509/load-der` | 2.64 us | 3.55 us | 1.34x slower † |
+| `x509/verify-directly-issued-by` | 47.5 us | 61.1 us | 1.29x slower † |
+
+† passes differed by more than 10% (101 benchmarks)
+
+</details>
 
 ### 2026-10-29: verified-garbage `c4d37d29`, AWS-LC v5.11.0
 
