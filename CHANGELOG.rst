@@ -31,6 +31,12 @@ Changelog
   curve's order, matching
   :func:`~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key` and
   the private key loading functions.
+* Added
+  :class:`~cryptography.hazmat.primitives.serialization.MLDSA44Ed25519PrivateKey`
+  and
+  :class:`~cryptography.hazmat.primitives.serialization.MLDSA44Ed25519PublicKey`,
+  composite ML-DSA-44 and Ed25519 keys for OpenSSH ``ssh-mldsa44-ed25519``
+  keys.
 
 .. _v50-0-2:
 

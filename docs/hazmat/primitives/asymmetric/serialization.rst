@@ -536,6 +536,42 @@ An example ECDSA key in OpenSSH format::
     :raises cryptography.exceptions.UnsupportedAlgorithm: If the serialized
         key is of a type that is not supported.
 
+.. class:: MLDSA44Ed25519PrivateKey(mldsa_key, ed25519_key)
+
+    .. versionadded:: 51.0.0
+
+    An OpenSSH ``ssh-mldsa44-ed25519`` private key. Combines an
+    :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44PrivateKey`
+    and an
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+    into a single composite key.
+
+    :param mldsa_key: The ML-DSA-44 private key component.
+    :type mldsa_key: :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44PrivateKey`
+
+    :param ed25519_key: The Ed25519 private key component.
+    :type ed25519_key: :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+
+    .. method:: public_key()
+
+        :returns: :class:`MLDSA44Ed25519PublicKey`
+
+.. class:: MLDSA44Ed25519PublicKey(mldsa_key, ed25519_key)
+
+    .. versionadded:: 51.0.0
+
+    An OpenSSH ``ssh-mldsa44-ed25519`` public key. Combines an
+    :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44PublicKey`
+    and an
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+    into a single composite key.
+
+    :param mldsa_key: The ML-DSA-44 public key component.
+    :type mldsa_key: :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44PublicKey`
+
+    :param ed25519_key: The Ed25519 public key component.
+    :type ed25519_key: :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+
 
 OpenSSH Certificate
 ~~~~~~~~~~~~~~~~~~~

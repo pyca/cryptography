@@ -21,12 +21,15 @@ from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
     ed25519,
+    mldsa,
     rsa,
 )
 from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption,
     Encoding,
     KeySerializationEncryption,
+    MLDSA44Ed25519PrivateKey,
+    MLDSA44Ed25519PublicKey,
     NoEncryption,
     PrivateFormat,
     PublicFormat,
@@ -1236,6 +1239,46 @@ class TestEd25519SSHSerialization:
         )
         with pytest.raises(ValueError):
             load_ssh_public_key(ssh_key)
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mldsa_supported(),
+    skip_message="Requires a backend with ML-DSA support",
+)
+class TestMLDSA44Ed25519SSHSerialization:
+    def test_public_key(self):
+        mldsa_key = mldsa.MLDSA44PrivateKey.generate()
+        ed25519_key = ed25519.Ed25519PrivateKey.generate()
+        public_key = MLDSA44Ed25519PrivateKey(
+            mldsa_key, ed25519_key
+        ).public_key()
+        assert isinstance(public_key, MLDSA44Ed25519PublicKey)
+        assert public_key._mldsa_key == mldsa_key.public_key()
+        assert public_key._ed25519_key == ed25519_key.public_key()
+
+    def test_invalid_component_types(self):
+        mldsa_key = mldsa.MLDSA44PrivateKey.generate()
+        ed25519_key = ed25519.Ed25519PrivateKey.generate()
+        with pytest.raises(TypeError):
+            MLDSA44Ed25519PrivateKey(
+                ed25519_key,  # type: ignore[arg-type]
+                ed25519_key,
+            )
+        with pytest.raises(TypeError):
+            MLDSA44Ed25519PrivateKey(
+                mldsa_key,
+                mldsa_key,  # type: ignore[arg-type]
+            )
+        with pytest.raises(TypeError):
+            MLDSA44Ed25519PublicKey(
+                mldsa_key,  # type: ignore[arg-type]
+                ed25519_key.public_key(),
+            )
+        with pytest.raises(TypeError):
+            MLDSA44Ed25519PublicKey(
+                mldsa_key.public_key(),
+                ed25519_key,  # type: ignore[arg-type]
+            )
 
 
 class TestSSHCertificate:
