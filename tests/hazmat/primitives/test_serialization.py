@@ -1524,6 +1524,27 @@ class TestPEMSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=b"password")
 
+    @pytest.mark.parametrize(
+        ("cipher", "iv_len"),
+        [
+            ("AES-128-CBC", 8),
+            ("AES-128-CBC", 15),
+            ("AES-256-CBC", 17),
+            ("DES-EDE3-CBC", 9),
+        ],
+    )
+    def test_pem_encryption_wrong_iv_length(self, cipher, iv_len):
+        data = textwrap.dedent(f"""\
+        -----BEGIN RSA PRIVATE KEY-----
+        Proc-Type: 4,ENCRYPTED
+        DEK-Info: {cipher},{"00" * iv_len}
+
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+        -----END RSA PRIVATE KEY-----
+        """).encode()
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=b"password")
+
     def test_pkcs8_key_with_wrong_pem_delimiter(self):
         data = load_vectors_from_file(
             os.path.join(
