@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
     ed25519,
+    mldsa,
     padding,
     rsa,
 )
@@ -588,6 +589,43 @@ class _SSHFormatEd25519:
 
         self.encode_public(public_key, f_priv)
         f_priv.put_sshstr(f_keypair)
+
+
+class MLDSA44Ed25519PrivateKey:
+    """An OpenSSH ``ssh-mldsa44-ed25519`` composite private key."""
+
+    def __init__(
+        self,
+        mldsa_key: mldsa.MLDSA44PrivateKey,
+        ed25519_key: ed25519.Ed25519PrivateKey,
+    ) -> None:
+        if not isinstance(mldsa_key, mldsa.MLDSA44PrivateKey):
+            raise TypeError("Expected MLDSA44PrivateKey for mldsa_key")
+        if not isinstance(ed25519_key, ed25519.Ed25519PrivateKey):
+            raise TypeError("Expected Ed25519PrivateKey for ed25519_key")
+        self._mldsa_key = mldsa_key
+        self._ed25519_key = ed25519_key
+
+    def public_key(self) -> MLDSA44Ed25519PublicKey:
+        return MLDSA44Ed25519PublicKey(
+            self._mldsa_key.public_key(), self._ed25519_key.public_key()
+        )
+
+
+class MLDSA44Ed25519PublicKey:
+    """An OpenSSH ``ssh-mldsa44-ed25519`` composite public key."""
+
+    def __init__(
+        self,
+        mldsa_key: mldsa.MLDSA44PublicKey,
+        ed25519_key: ed25519.Ed25519PublicKey,
+    ) -> None:
+        if not isinstance(mldsa_key, mldsa.MLDSA44PublicKey):
+            raise TypeError("Expected MLDSA44PublicKey for mldsa_key")
+        if not isinstance(ed25519_key, ed25519.Ed25519PublicKey):
+            raise TypeError("Expected Ed25519PublicKey for ed25519_key")
+        self._mldsa_key = mldsa_key
+        self._ed25519_key = ed25519_key
 
 
 def load_application(data) -> tuple[memoryview, memoryview]:
