@@ -385,4 +385,57 @@ name = "verified-garbage"
 version = "0.0.0"
 dependencies = [
  "getrandom",
+ "verified-garbage-asm-aarch64",
+ "verified-garbage-asm-arm",
+ "verified-garbage-asm-powerpc64le",
+ "verified-garbage-asm-riscv64",
+ "verified-garbage-asm-x86",
+ "verified-garbage-asm-x86_64",
+ "verified-garbage-cpu",
 ]
+
+[[package]]
+name = "verified-garbage-asm-aarch64"
+version = "0.0.0"
+dependencies = [
+ "verified-garbage-cpu",
+]
+
+[[package]]
+name = "verified-garbage-asm-arm"
+version = "0.0.0"
+dependencies = [
+ "verified-garbage-cpu",
+]
+
+[[package]]
+name = "verified-garbage-asm-powerpc64le"
+version = "0.0.0"
+dependencies = [
+ "verified-garbage-cpu",
+]
+
+[[package]]
+name = "verified-garbage-asm-riscv64"
+version = "0.0.0"
+dependencies = [
+ "verified-garbage-cpu",
+]
+
+[[package]]
+name = "verified-garbage-asm-x86"
+version = "0.0.0"
+dependencies = [
+ "verified-garbage-cpu",
+]
+
+[[package]]
+name = "verified-garbage-asm-x86_64"
+version = "0.0.0"
+dependencies = [
+ "verified-garbage-cpu",
+]
+
+[[package]]
+name = "verified-garbage-cpu"
+version = "0.0.0"
