@@ -948,6 +948,9 @@ Custom X.509 OCSP Test Vectors
 * ``x509/ocsp/resp-invalid-version.der`` - ``resp-sha256.der`` modified so the
   ``tbsResponseData`` carries an explicit version of 1, which is not defined by
   RFC 6960.
+* ``x509/ocsp/resp-unsuccessful-response-bytes.der`` - ``resp-sha256.der``
+  modified so the ``responseStatus`` is ``tryLater`` while the
+  ``responseBytes`` are kept, which is not allowed by RFC 6960.
 
 Custom PKCS12 Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
