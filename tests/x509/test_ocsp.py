@@ -1643,19 +1643,13 @@ class TestOCSPResponse:
             )
 
     def test_response_bytes_present_unsuccessful(self):
-        data = bytearray(
-            load_vectors_from_file(
-                os.path.join("x509", "ocsp", "resp-sha256.der"),
-                lambda f: f.read(),
-                mode="rb",
-            )
-        )
-        # Change the responseStatus from successful (0) to tryLater (3),
-        # leaving the BasicOCSPResponse in place.
-        assert data[4:7] == b"\x0a\x01\x00"
-        data[6] = 3
         with pytest.raises(ValueError):
-            ocsp.load_der_ocsp_response(bytes(data))
+            _load_data(
+                os.path.join(
+                    "x509", "ocsp", "resp-unsuccessful-response-bytes.der"
+                ),
+                ocsp.load_der_ocsp_response,
+            )
 
     def test_unknown_response_status(self):
         with pytest.raises(ValueError):
