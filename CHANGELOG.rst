@@ -31,6 +31,10 @@ Changelog
   curve's order, matching
   :func:`~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key` and
   the private key loading functions.
+* :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
+  now raises ``ValueError`` for an encrypted traditional PEM whose
+  ``DEK-Info`` IV does not match the cipher's IV length. Previously, some
+  lengths raised ``PanicException``.
 * Added
   :class:`~cryptography.hazmat.primitives.serialization.MLDSA44Ed25519PrivateKey`
   and
