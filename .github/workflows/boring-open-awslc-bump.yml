@@ -12,11 +12,19 @@ jobs:
   bump:
     if: github.repository_owner == 'pyca'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Used to sign the commit with gitsign, so that
+      # auto-merge-bumps.yml can verify it came from this workflow.
+      id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Needed so we can push back to the repo
           persist-credentials: true
+      - uses: ./.github/actions/setup-gitsign
+        with:
+          sign-commits: true
       - id: bump-boringssl
         run: |
           python3 .github/bin/bump_dependency.py \
