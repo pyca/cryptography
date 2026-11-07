@@ -1456,6 +1456,22 @@ class TestSSHCertificate:
         with pytest.raises(ValueError):
             load_ssh_public_identity(data)
 
+    @pytest.mark.parametrize(
+        "filename",
+        [
+            "p256-p256-nul-key-id.pub",
+            "p256-p256-nul-principal.pub",
+        ],
+    )
+    def test_nul_in_key_id_or_principal(self, filename):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "certs", filename),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError, match="NUL"):
+            load_ssh_public_identity(data)
+
     def test_invalid_line_format(self):
         with pytest.raises(ValueError):
             load_ssh_public_identity(b"whaaaaaaaaaaat")
@@ -1596,6 +1612,8 @@ class TestSSHCertificateBuilder:
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
             builder.key_id(typing.cast(typing.Any, "not bytes"))
+        with pytest.raises(ValueError, match="NUL"):
+            builder.key_id(b"test\x00")
         builder = builder.key_id(b"test")
         with pytest.raises(ValueError):
             builder.key_id(b"test")
@@ -1610,6 +1628,8 @@ class TestSSHCertificateBuilder:
             )
         with pytest.raises(TypeError):
             builder.valid_principals([])
+        with pytest.raises(ValueError, match="NUL"):
+            builder.valid_principals([b"test", b"root\x00"])
         with pytest.raises(ValueError):
             builder.valid_principals(
                 [b"test"] * (ssh._SSHKEY_CERT_MAX_PRINCIPALS + 1)
