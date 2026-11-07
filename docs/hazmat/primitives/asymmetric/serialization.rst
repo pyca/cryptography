@@ -405,8 +405,13 @@ DSA keys look almost identical but begin with ``ssh-dss`` rather than
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`
-    , or
-    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`.
+    ,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+    , or :class:`MLDSA44Ed25519PublicKey`.
+
+    .. versionchanged:: 51.0.0
+
+        Added :class:`MLDSA44Ed25519PublicKey`.
 
 
 .. function:: load_ssh_public_key(data)
@@ -491,8 +496,13 @@ An example ECDSA key in OpenSSH format::
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
-    or
-    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`.
+    ,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey`
+    or :class:`MLDSA44Ed25519PrivateKey`.
+
+    .. versionchanged:: 51.0.0
+
+        Added :class:`MLDSA44Ed25519PrivateKey`.
 
 
 .. function:: load_ssh_private_key(data, password, *, unsafe_skip_rsa_key_validation=False)
@@ -556,6 +566,16 @@ An example ECDSA key in OpenSSH format::
 
         :returns: :class:`MLDSA44Ed25519PublicKey`
 
+    .. method:: private_bytes(encoding, format, encryption_algorithm)
+
+        Serialize the key in the OpenSSH private key format.
+
+        :param encoding: Must be :attr:`Encoding.PEM`.
+        :param format: Must be :attr:`PrivateFormat.OpenSSH`.
+        :param encryption_algorithm: An instance of an object conforming to
+            the :class:`KeySerializationEncryption` interface.
+        :return bytes: Serialized key.
+
 .. class:: MLDSA44Ed25519PublicKey(mldsa_key, ed25519_key)
 
     .. versionadded:: 51.0.0
@@ -571,6 +591,14 @@ An example ECDSA key in OpenSSH format::
 
     :param ed25519_key: The Ed25519 public key component.
     :type ed25519_key: :class:`~cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey`
+
+    .. method:: public_bytes(encoding, format)
+
+        Serialize the key in the OpenSSH public key format.
+
+        :param encoding: Must be :attr:`Encoding.OpenSSH`.
+        :param format: Must be :attr:`PublicFormat.OpenSSH`.
+        :return bytes: Serialized key.
 
 
 OpenSSH Certificate
