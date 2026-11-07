@@ -23,8 +23,6 @@ jobs:
           # Needed so we can push back to the repo
           persist-credentials: true
       - uses: ./.github/actions/setup-gitsign
-        with:
-          sign-commits: true
       - name: Parse downstream dependencies
         id: downstream-bump
         run: ./.github/bin/bump_downstreams.sh

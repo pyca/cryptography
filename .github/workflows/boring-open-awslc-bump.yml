@@ -23,8 +23,6 @@ jobs:
           # Needed so we can push back to the repo
           persist-credentials: true
       - uses: ./.github/actions/setup-gitsign
-        with:
-          sign-commits: true
       - id: bump-boringssl
         run: |
           python3 .github/bin/bump_dependency.py \

@@ -1,14 +1,8 @@
 name: Setup gitsign
 description: >-
-  Install gitsign (https://github.com/sigstore/gitsign), and optionally
-  configure git to sign commits with it, using the workflow's GitHub Actions
-  OIDC identity (requires `id-token: write`).
-
-inputs:
-  sign-commits:
-    description: "Configure git to sign all commits with gitsign"
-    required: false
-    default: "false"
+  Install gitsign (https://github.com/sigstore/gitsign), and configure git to
+  sign commits with it, using the workflow's GitHub Actions OIDC identity.
+  Signing requires the `id-token: write` permission.
 
 runs:
   using: "composite"
@@ -35,14 +29,9 @@ runs:
         "${install_dir}/gitsign" version
 
     - name: Configure git to sign commits with gitsign
-      if: inputs.sign-commits == 'true'
       shell: bash
       run: |
         set -euo pipefail
-        if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
-          echo "Signing with gitsign requires the 'id-token: write' permission" >&2
-          exit 1
-        fi
         git config --global gpg.format x509
         git config --global gpg.x509.program gitsign
         git config --global commit.gpgsign true
