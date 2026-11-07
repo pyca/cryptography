@@ -29,11 +29,11 @@ pub(crate) fn group_to_curve_oid(
         openssl::nid::Nid::SECP384R1 => Some(cryptography_x509::oid::EC_SECP384R1),
         openssl::nid::Nid::SECP521R1 => Some(cryptography_x509::oid::EC_SECP521R1),
         openssl::nid::Nid::SECP256K1 => Some(cryptography_x509::oid::EC_SECP256K1),
-        #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         openssl::nid::Nid::BRAINPOOL_P256R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP256R1),
-        #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         openssl::nid::Nid::BRAINPOOL_P384R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP384R1),
-        #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         openssl::nid::Nid::BRAINPOOL_P512R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP512R1),
         _ => None,
     }
@@ -53,11 +53,11 @@ pub(crate) fn ec_params_to_group(
 
                 &cryptography_x509::oid::EC_SECP256K1 => openssl::nid::Nid::SECP256K1,
 
-                #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
                 &cryptography_x509::oid::EC_BRAINPOOLP256R1 => openssl::nid::Nid::BRAINPOOL_P256R1,
-                #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
                 &cryptography_x509::oid::EC_BRAINPOOLP384R1 => openssl::nid::Nid::BRAINPOOL_P384R1,
-                #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
                 &cryptography_x509::oid::EC_BRAINPOOLP512R1 => openssl::nid::Nid::BRAINPOOL_P512R1,
 
                 _ => return Err(KeyParsingError::UnsupportedEllipticCurve(curve_oid.clone())),
@@ -68,12 +68,9 @@ pub(crate) fn ec_params_to_group(
         }
         EcParameters::SpecifiedCurve(params) => {
             // We do not support arbitrary explicit curves. Instead we map values
-            // to named curves. This currently supports only P256, P384,
-            // and P521. No binary curves are supported. Everything must
-            // match, except the seed may be omitted on NIST curves since OpenSSL
-            // has supported a -no_seed option for over 20 years and I don't want to
-            // figure out whether anyone uses that or not. No one should be using
-            // explicit curve encoding anyway. Curves were meant to be named!
+            // to named curves. No binary curves are supported. Everything must
+            // match, except the seed may be omitted since OpenSSL has supported
+            // a -no_seed option for over 20 years. Curves were meant to be named!
             let (curve_nid, oid) = match params {
                 &ec_constants::P256_DOMAIN | &ec_constants::P256_DOMAIN_NO_SEED => (
                     openssl::nid::Nid::X9_62_PRIME256V1,
@@ -87,6 +84,26 @@ pub(crate) fn ec_params_to_group(
                     openssl::nid::Nid::SECP521R1,
                     cryptography_x509::oid::EC_SECP521R1,
                 ),
+                // NO-COVERAGE-START
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+                &ec_constants::BRAINPOOLP256R1_DOMAIN
+                | &ec_constants::BRAINPOOLP256R1_DOMAIN_NO_SEED => (
+                    openssl::nid::Nid::BRAINPOOL_P256R1,
+                    cryptography_x509::oid::EC_BRAINPOOLP256R1,
+                ),
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+                &ec_constants::BRAINPOOLP384R1_DOMAIN
+                | &ec_constants::BRAINPOOLP384R1_DOMAIN_NO_SEED => (
+                    openssl::nid::Nid::BRAINPOOL_P384R1,
+                    cryptography_x509::oid::EC_BRAINPOOLP384R1,
+                ),
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+                &ec_constants::BRAINPOOLP512R1_DOMAIN
+                | &ec_constants::BRAINPOOLP512R1_DOMAIN_NO_SEED => (
+                    openssl::nid::Nid::BRAINPOOL_P512R1,
+                    cryptography_x509::oid::EC_BRAINPOOLP512R1,
+                ),
+                // NO-COVERAGE-END
                 _ => return Err(KeyParsingError::ExplicitCurveUnsupported),
             };
             Ok(openssl::ec::EcGroup::from_curve_name(curve_nid)
