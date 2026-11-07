@@ -15,10 +15,6 @@ runs:
         GITSIGN_SHA256: "2bc625472a08fea3bb6a57982c7d8b4978d1032251d305ceef3bf2ded0ca4483"
       run: |
         set -euo pipefail
-        if [ "${RUNNER_OS}" != "Linux" ] || [ "${RUNNER_ARCH}" != "X64" ]; then
-          echo "setup-gitsign only supports Linux x86-64 runners" >&2
-          exit 1
-        fi
         install_dir="${RUNNER_TEMP}/gitsign-bin"
         mkdir -p "${install_dir}"
         curl -fsSL --retry 3 -o "${install_dir}/gitsign" \
