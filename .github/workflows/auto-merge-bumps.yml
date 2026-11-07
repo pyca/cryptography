@@ -10,6 +10,8 @@ on:
         type: boolean
         default: false
   workflow_run:
+    # These must be workflow `name:`s, workflow_run can't match on filenames.
+    # They correspond to BUMP_WORKFLOWS in .github/bin/auto_merge_bump_prs.py.
     workflows:
       - "Bump BoringSSL, OpenSSL, AWS-LC"
       - "Bump downstream dependencies"
