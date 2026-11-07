@@ -47,19 +47,19 @@ jobs:
           - {VERSION: "3.15", NOXSESSION: "tests-ssh", OPENSSL: {TYPE: "openssl", VERSION: "3.6.5"}}
           - {VERSION: "3.15", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.3.4"}}
           - {VERSION: "3.15", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "libressl", VERSION: "4.4.0"}}
-          # Latest commit on the BoringSSL main branch, as of Nov 06, 2026.
-          - {VERSION: "3.15", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "b69a6175320af9b6fca7295fdbb4fb130f4804a2"}}
-          # Latest tag of AWS-LC main branch, as of Oct 24, 2026.
-          - {VERSION: "3.15", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.12.0"}}
-          # Latest commit on the OpenSSL master branch, as of Nov 06, 2026.
-          - {VERSION: "3.15", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "674760c25dba6337c88ebf26484ca4a301e0c728"}}
+          # Latest commit on the BoringSSL main branch, as of Nov 07, 2026.
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "boringssl", VERSION: "0131ae9d78e42fcc2c1811315e62410ad96d8230"}}
+          # Latest tag of AWS-LC main branch, as of Nov 07, 2026.
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.13.0"}}
+          # Latest commit on the OpenSSL master branch, as of Nov 07, 2026.
+          - {VERSION: "3.15", NOXSESSION: "tests", OPENSSL: {TYPE: "openssl", VERSION: "9262a4302140c6cf01e02ab7517f85239def938c"}}
           # Builds with various Rust versions. Includes MSRV and next
           # potential future MSRV.
           # - 1.85: 2024 edition
           # - 1.95: cfg_select
           - {VERSION: "3.15", NOXSESSION: "rust,tests", RUST: "1.83.0"}
-          - {VERSION: "3.15", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.12.0"}}
-          - {VERSION: "3.15", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "b69a6175320af9b6fca7295fdbb4fb130f4804a2"}}
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "aws-lc", VERSION: "v5.13.0"}}
+          - {VERSION: "3.15", NOXSESSION: "rust,tests", RUST: "1.83.0", OPENSSL: {TYPE: "boringssl", VERSION: "0131ae9d78e42fcc2c1811315e62410ad96d8230"}}
           - {VERSION: "3.15", NOXSESSION: "rust,tests", RUST: "beta"}
           - {VERSION: "3.15", NOXSESSION: "rust,tests", RUST: "nightly"}
           - {VERSION: "3.15", NOXSESSION: "tests-rust-debug"}
