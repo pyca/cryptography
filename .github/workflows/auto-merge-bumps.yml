@@ -9,8 +9,6 @@ on:
         description: "Only report what would be done"
         type: boolean
         default: false
-  schedule:
-    - cron: "37 */4 * * *"
   workflow_run:
     workflows:
       - "Bump BoringSSL, OpenSSL, AWS-LC"
