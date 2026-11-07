@@ -1115,11 +1115,17 @@ def _load_ssh_public_identity(
     if with_cert:
         serial, rest = _get_u64(rest)
         cctype, rest = _get_u32(rest)
+        # OpenSSH reads the key ID and principals as C strings: it drops a
+        # trailing NUL and rejects the certificate for any other NUL.
         key_id, rest = _get_sshstr(rest)
+        if b"\x00" in bytes(key_id):
+            raise ValueError("Invalid NUL byte in key id")
         principals, rest = _get_sshstr(rest)
         valid_principals = []
         while principals:
             principal, principals = _get_sshstr(principals)
+            if b"\x00" in bytes(principal):
+                raise ValueError("Invalid NUL byte in principal")
             valid_principals.append(bytes(principal))
         valid_after, rest = _get_u64(rest)
         valid_before, rest = _get_u64(rest)
@@ -1372,6 +1378,9 @@ class SSHCertificateBuilder:
     def key_id(self, key_id: bytes) -> SSHCertificateBuilder:
         if not isinstance(key_id, bytes):
             raise TypeError("key_id must be bytes")
+        # OpenSSH reads the key ID as a C string.
+        if b"\x00" in key_id:
+            raise ValueError("key_id must not contain NUL bytes")
         if self._key_id is not None:
             raise ValueError("key_id already set")
 
@@ -1403,6 +1412,9 @@ class SSHCertificateBuilder:
             raise TypeError(
                 "principals must be a list of bytes and can't be empty"
             )
+        # OpenSSH reads principals as C strings, so b"root\x00" is "root".
+        if any(b"\x00" in x for x in valid_principals):
+            raise ValueError("principals must not contain NUL bytes")
         if self._valid_principals:
             raise ValueError("valid_principals already set")
 
