@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Fixed legacy cipher support detection when a loaded OpenSSL provider does not
+  implement every legacy algorithm.
 * Require CFFI 2.1.1 or newer on Python 3.15 to avoid an ABI issue in
   earlier CFFI releases.
 * :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
