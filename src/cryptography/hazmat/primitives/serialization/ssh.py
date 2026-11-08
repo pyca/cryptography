@@ -1118,13 +1118,13 @@ def _load_ssh_public_identity(
         # OpenSSH reads the key ID and principals as C strings: it drops a
         # trailing NUL and rejects the certificate for any other NUL.
         key_id, rest = _get_sshstr(rest)
-        if b"\x00" in bytes(key_id):
+        if 0 in key_id:
             raise ValueError("Invalid NUL byte in key id")
         principals, rest = _get_sshstr(rest)
         valid_principals = []
         while principals:
             principal, principals = _get_sshstr(principals)
-            if b"\x00" in bytes(principal):
+            if 0 in principal:
                 raise ValueError("Invalid NUL byte in principal")
             valid_principals.append(bytes(principal))
         valid_after, rest = _get_u64(rest)
