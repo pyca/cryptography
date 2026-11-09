@@ -76,7 +76,20 @@ class PSS(AsymmetricPadding):
 
 
 class OAEP(AsymmetricPadding):
+    """
+    Optimal Asymmetric Encryption Padding (OAEP) for RSA encryption.
+
+    .. warning::
+        **Post-Quantum Security Advisory:**
+        RSA-OAEP relies on the hardness of integer factorization, which can be
+        broken in polynomial time by Shor's algorithm on a cryptographically
+        relevant quantum computer (CRQC). Applications transmitting symmetric
+        keys should transition to NIST Post-Quantum Standards such as
+        ML-KEM (FIPS 203), available in
+        `cryptography.hazmat.primitives.asymmetric.mlkem`.
+    """
     name = "EME-OAEP"
+    is_quantum_safe = False
 
     def __init__(
         self,
