@@ -297,6 +297,7 @@ def mlkem_hybrid_encrypt(
     """
     import os
     import struct
+
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
     from cryptography.hazmat.primitives.kdf.hkdf import HKDF
@@ -329,10 +330,11 @@ def mlkem_hybrid_decrypt(
     """
     Quantum-safe drop-in replacement for RSA-OAEP private key decryption.
 
-    Recovers the shared secret via ML-KEM decapsulation, derives the AES-256 key,
-    and decrypts the authenticated ciphertext with AES-256-GCM.
+    Recovers the shared secret via ML-KEM decapsulation, derives the
+    AES-256 key, and decrypts the authenticated ciphertext with AES-256-GCM.
     """
     import struct
+
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
     from cryptography.hazmat.primitives.kdf.hkdf import HKDF
@@ -358,4 +360,3 @@ def mlkem_hybrid_decrypt(
 
     aesgcm = AESGCM(derived_key)
     return aesgcm.decrypt(nonce, aead_ciphertext, associated_data)
-

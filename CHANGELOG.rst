@@ -8,6 +8,12 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added post-quantum security advisory to
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` and added
+  :func:`~cryptography.hazmat.primitives.asymmetric.mlkem.mlkem_hybrid_encrypt`
+  and
+  :func:`~cryptography.hazmat.primitives.asymmetric.mlkem.mlkem_hybrid_decrypt`
+  for quantum-safe hybrid key encapsulation with ML-KEM.
 * Require CFFI 2.1.1 or newer on Python 3.15 to avoid an ABI issue in
   earlier CFFI releases.
 * :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
