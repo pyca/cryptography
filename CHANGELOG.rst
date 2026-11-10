@@ -16,6 +16,12 @@ Changelog
 * :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7SignatureBuilder`
   now retains additional certificates when ``set_data`` or ``add_signer`` is
   called after ``add_certificate``.
+* Added
+  :meth:`~cryptography.x509.CertificateSigningRequestBuilder.public_key`
+  to allow setting the ``subjectPublicKeyInfo`` of a CSR explicitly. This
+  enables CSRs for encryption-only public keys (such as ML-KEM and X25519)
+  that are signed with a different, signature-capable private key, as
+  described in :rfc:`9883`.
 * Require CFFI 2.1.1 or newer on Python 3.15 to avoid an ABI issue in
   earlier CFFI releases.
 * X.509 names now reject IA5String attributes containing non-ASCII
