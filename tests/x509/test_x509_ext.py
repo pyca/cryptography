@@ -1436,6 +1436,10 @@ class TestExtendedKeyUsage:
         with pytest.raises(TypeError):
             x509.ExtendedKeyUsage([typing.cast(typing.Any, "notoid")])
 
+    def test_empty_list(self):
+        with pytest.raises(ValueError):
+            x509.ExtendedKeyUsage([])
+
     def test_iter_len(self):
         eku = x509.ExtendedKeyUsage(
             [
@@ -2454,6 +2458,10 @@ class TestGeneralNames:
 
 
 class TestIssuerAlternativeName:
+    def test_empty_list(self):
+        with pytest.raises(ValueError):
+            x509.IssuerAlternativeName([])
+
     def test_get_values_for_type(self):
         san = x509.IssuerAlternativeName([x509.DNSName("cryptography.io")])
         names = san.get_values_for_type(x509.DNSName)
@@ -2579,6 +2587,10 @@ class TestCRLNumber:
 
 
 class TestSubjectAlternativeName:
+    def test_empty_list(self):
+        with pytest.raises(ValueError):
+            x509.SubjectAlternativeName([])
+
     def test_get_values_for_type(self):
         san = x509.SubjectAlternativeName([x509.DNSName("cryptography.io")])
         names = san.get_values_for_type(x509.DNSName)
