@@ -6918,6 +6918,36 @@ class TestName:
             b"b060355040a0c0450794341"
         )
 
+    def test_ia5string_bytes(self):
+        name = x509.Name(
+            [
+                x509.NameAttribute(
+                    NameOID.EMAIL_ADDRESS,
+                    "dev@example.com",
+                )
+            ]
+        )
+        data = binascii.unhexlify(
+            b"3020311e301c06092a864886f70d010901160f646576406578616d706c652"
+            b"e636f6d"
+        )
+
+        assert name.public_bytes() == data
+        assert x509.Name.from_bytes(data) == name
+
+    def test_invalid_ia5string_bytes(self):
+        name = x509.Name(
+            [
+                x509.NameAttribute(
+                    NameOID.EMAIL_ADDRESS,
+                    "deploy\U0001f680",
+                )
+            ]
+        )
+
+        with pytest.raises(ValueError, match="valid IA5String"):
+            name.public_bytes()
+
     def test_from_bytes(self):
         data = binascii.unhexlify(
             b"30293118301606035504030c0f63727970746f6772617068792e696f310d"
@@ -6945,6 +6975,10 @@ class TestName:
             binascii.unhexlify(b"300000"),
             # RDN with a UTF8String value that is not valid UTF-8.
             binascii.unhexlify(b"300c310a300806035504030c01ff"),
+            # RDN with an IA5String value containing non-ASCII UTF-8.
+            binascii.unhexlify(
+                b"301b3119301706092a864886f70d010901160a6465706c6f79f09f9a80"
+            ),
         ],
     )
     def test_from_bytes_invalid(self, data):
