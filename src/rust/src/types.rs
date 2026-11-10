@@ -240,6 +240,8 @@ pub static ASN1_TYPE_TO_ENUM: LazyPyImport =
     LazyPyImport::new("cryptography.x509.name", &["_ASN1_TYPE_TO_ENUM"]);
 pub static ASN1_TYPE_BIT_STRING: LazyPyImport =
     LazyPyImport::new("cryptography.x509.name", &["_ASN1Type", "BitString"]);
+pub static ASN1_TYPE_IA5_STRING: LazyPyImport =
+    LazyPyImport::new("cryptography.x509.name", &["_ASN1Type", "IA5String"]);
 pub static ASN1_TYPE_BMP_STRING: LazyPyImport =
     LazyPyImport::new("cryptography.x509.name", &["_ASN1Type", "BMPString"]);
 pub static ASN1_TYPE_UNIVERSAL_STRING: LazyPyImport =
