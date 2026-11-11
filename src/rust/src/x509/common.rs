@@ -68,6 +68,18 @@ pub(crate) fn encode_name_entry<'p>(
             asn1::BitString::TAG,
             ka.add(raw_value.extract()?),
         ))
+    } else if attr_type.is(&types::ASN1_TYPE_IA5_STRING.get(py)?) {
+        let encoded: pyo3::pybacked::PyBackedBytes = raw_value
+            .call_method1(pyo3::intern!(py, "encode"), ("utf8",))?
+            .extract()?;
+        let encoded = ka.add(encoded);
+        let value =
+            std::str::from_utf8(encoded).expect("Python str encoded as UTF-8 must be valid UTF-8");
+        AttributeValue::IA5String(asn1::IA5String::new(value).ok_or_else(|| {
+            pyo3::exceptions::PyValueError::new_err(
+                "Name attribute value must be a valid IA5String",
+            )
+        })?)
     } else if attr_type.is(&types::ASN1_TYPE_BMP_STRING.get(py)?) {
         AttributeValue::BmpString(
             asn1::BMPString::new(
@@ -258,6 +270,9 @@ fn parse_name_attribute<'p>(
         AttributeValue::PrintableString(printable_string) => {
             pyo3::types::PyString::new(py, printable_string.as_str()).into_any()
         }
+        AttributeValue::IA5String(ia5_string) => {
+            pyo3::types::PyString::new(py, ia5_string.as_str()).into_any()
+        }
         AttributeValue::UniversalString(universal_string) => {
             let py_bytes = pyo3::types::PyBytes::new(py, universal_string.as_utf32_be_bytes());
             py_bytes.call_method1(pyo3::intern!(py, "decode"), ("utf_32_be",))?
@@ -336,9 +351,9 @@ pub(crate) fn parse_general_name<'p>(
     Ok(py_gn)
 }
 
-pub(crate) fn parse_general_names<'a>(
+pub(crate) fn parse_general_names<'a, const MINIMUM_LEN: usize>(
     py: pyo3::Python<'a>,
-    gn_seq: &asn1::SequenceOf<'a, GeneralName<'a>>,
+    gn_seq: &asn1::SequenceOf<'a, GeneralName<'a>, MINIMUM_LEN>,
 ) -> CryptographyResult<pyo3::Bound<'a, pyo3::PyAny>> {
     let gns = pyo3::types::PyList::empty(py);
     for gn in gn_seq.clone() {

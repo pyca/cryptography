@@ -3,11 +3,18 @@
 # for complete details.
 
 
-from cryptography.hazmat.primitives.asymmetric.dsa import (
-    DSAParameterNumbers,
-    DSAPrivateNumbers,
-    DSAPublicNumbers,
-)
+import warnings
+
+from cryptography import utils
+from cryptography.hazmat.primitives.asymmetric import dsa
+
+# This module is imported at test collection time; suppress the DSA
+# deprecation warning so it doesn't appear in the warning summary.
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", utils.DeprecatedIn51)
+    DSAParameterNumbers = dsa.DSAParameterNumbers
+    DSAPrivateNumbers = dsa.DSAPrivateNumbers
+    DSAPublicNumbers = dsa.DSAPublicNumbers
 
 DSA_KEY_1024 = DSAPrivateNumbers(
     public_numbers=DSAPublicNumbers(

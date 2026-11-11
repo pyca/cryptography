@@ -42,12 +42,13 @@ has support for implementing key rotation via :class:`MultiFernet`.
         Encrypts data passed. The result of this encryption is known as a
         "Fernet token" and has strong privacy and authenticity guarantees.
 
-        :param bytes data: The message you would like to encrypt.
+        :param data: The message you would like to encrypt.
+        :type data: :term:`bytes-like`
         :returns bytes: A secure message that cannot be read or altered
                         without the key. It is URL-safe base64-encoded. This is
                         referred to as a "Fernet token".
         :raises TypeError: This exception is raised if ``data`` is not
-                           ``bytes``.
+                           :term:`bytes-like`.
 
         .. note::
 
@@ -270,7 +271,7 @@ Specifically it uses:
   :class:`~cryptography.hazmat.primitives.padding.PKCS7` padding.
 * :class:`~cryptography.hazmat.primitives.hmac.HMAC` using
   :class:`~cryptography.hazmat.primitives.hashes.SHA256` for authentication.
-* Initialization vectors are generated using ``os.urandom()``.
+* Initialization vectors are generated using a CSPRNG.
 
 For complete details consult the `specification`_.
 

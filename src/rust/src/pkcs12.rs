@@ -572,8 +572,10 @@ fn decode_p12(
         // same.
         ""
     };
-    let parsed = p12
-        .parse2(password)
+    // PKCS12_parse runs the MAC and PBE KDFs for however many iterations
+    // the bundle specifies, which can take a while, so don't hold the GIL.
+    let parsed = py
+        .detach(|| p12.parse2(password))
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid password or PKCS12 data"))?;
 
     if let Err(e) = asn1::parse_single::<cryptography_x509::pkcs12::Pfx<'_>>(data.as_bytes()) {

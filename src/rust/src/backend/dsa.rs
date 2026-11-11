@@ -7,7 +7,13 @@ use pyo3::types::PyAnyMethods;
 use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
-use crate::{error, exceptions};
+use crate::{error, exceptions, types};
+
+fn warn_dsa_deprecated(py: pyo3::Python<'_>) -> pyo3::PyResult<()> {
+    let warning_cls = types::DEPRECATED_IN_51.get(py)?;
+    let message = c"DSA is deprecated and support will be removed in a future release. Use a more modern signature algorithm.";
+    pyo3::PyErr::warn(py, &warning_cls, message, 1)
+}
 
 #[pyo3::pyclass(
     frozen,
@@ -37,19 +43,23 @@ struct DsaParameters {
 }
 
 pub(crate) fn private_key_from_pkey(
+    py: pyo3::Python<'_>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Private>,
-) -> DsaPrivateKey {
-    DsaPrivateKey {
+) -> CryptographyResult<DsaPrivateKey> {
+    warn_dsa_deprecated(py)?;
+    Ok(DsaPrivateKey {
         pkey: pkey.to_owned(),
-    }
+    })
 }
 
 pub(crate) fn public_key_from_pkey(
+    py: pyo3::Python<'_>,
     pkey: &openssl::pkey::PKeyRef<openssl::pkey::Public>,
-) -> DsaPublicKey {
-    DsaPublicKey {
+) -> CryptographyResult<DsaPublicKey> {
+    warn_dsa_deprecated(py)?;
+    Ok(DsaPublicKey {
         pkey: pkey.to_owned(),
-    }
+    })
 }
 
 #[pyo3::pyfunction]

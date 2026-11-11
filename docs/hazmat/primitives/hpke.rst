@@ -20,6 +20,8 @@ context (e.g., "MyApp-v1-UserMessages"). Per :rfc:`9180#section-8.1`,
 applications using single-shot APIs should use the ``info`` parameter for
 specifying auxiliary authenticated information.
 
+.. versionadded:: 47.0.0
+
 .. code-block:: python
 
     from cryptography.hazmat.primitives.hpke import Suite, KEM, KDF, AEAD
@@ -156,8 +158,6 @@ specifying auxiliary authenticated information.
 
 .. class:: MLKEM768X25519PrivateKey(mlkem_key, x25519_key)
 
-    .. versionadded:: 47.0.0
-
     A hybrid ML-KEM-768 / X25519 private key for use with
     :attr:`KEM.MLKEM768_X25519`. Combines an
     :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PrivateKey`
@@ -177,8 +177,6 @@ specifying auxiliary authenticated information.
 
 .. class:: MLKEM768X25519PublicKey(mlkem_key, x25519_key)
 
-    .. versionadded:: 47.0.0
-
     A hybrid ML-KEM-768 / X25519 public key for use with
     :attr:`KEM.MLKEM768_X25519`. Combines an
     :class:`~cryptography.hazmat.primitives.asymmetric.mlkem.MLKEM768PublicKey`
@@ -193,8 +191,6 @@ specifying auxiliary authenticated information.
     :type x25519_key: :class:`~cryptography.hazmat.primitives.asymmetric.x25519.X25519PublicKey`
 
 .. class:: MLKEM1024P384PrivateKey(mlkem_key, p384_key)
-
-    .. versionadded:: 47.0.0
 
     A hybrid ML-KEM-1024 / P-384 private key for use with
     :attr:`KEM.MLKEM1024_P384`. Combines an
@@ -214,8 +210,6 @@ specifying auxiliary authenticated information.
         :returns: :class:`MLKEM1024P384PublicKey`
 
 .. class:: MLKEM1024P384PublicKey(mlkem_key, p384_key)
-
-    .. versionadded:: 47.0.0
 
     A hybrid ML-KEM-1024 / P-384 public key for use with
     :attr:`KEM.MLKEM1024_P384`. Combines an

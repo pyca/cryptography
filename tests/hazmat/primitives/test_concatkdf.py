@@ -143,6 +143,14 @@ class TestConcatKDFHash:
         with pytest.raises(ValueError, match="buffer must be"):
             ckdf.derive_into(b"key", buf)
 
+    def test_derive_into_overlapping_buffer(self):
+        buf = bytearray(48)
+        ckdf = ConcatKDFHash(hashes.SHA256(), 48, b"info")
+        with pytest.raises(ValueError, match="must not overlap"):
+            ckdf.derive_into(buf, buf)
+        with pytest.raises(ValueError, match="must not overlap"):
+            ckdf.derive_into(memoryview(buf)[:32], buf)
+
     def test_derive_into_already_finalized(self):
         ckdf = ConcatKDFHash(hashes.SHA256(), 16, None)
         buf = bytearray(16)
@@ -334,6 +342,12 @@ class TestConcatKDFHMAC:
         buf = bytearray(buflen)
         with pytest.raises(ValueError, match="buffer must be"):
             ckdf.derive_into(b"key", buf)
+
+    def test_derive_into_overlapping_buffer(self):
+        buf = bytearray(48)
+        ckdf = ConcatKDFHMAC(hashes.SHA256(), 48, b"salt", b"info")
+        with pytest.raises(ValueError, match="must not overlap"):
+            ckdf.derive_into(buf, buf)
 
     def test_derive_into_already_finalized(self):
         ckdf = ConcatKDFHMAC(hashes.SHA512(), 32, None, None)

@@ -18,10 +18,10 @@ if [[ "${TYPE}" == "openssl" ]]; then
   sed -i "s/^SHLIB_VERSION=.*/SHLIB_VERSION=100/" VERSION.dat
 
   # CONFIG_FLAGS is a global coming from a previous step
-  ./config ${CONFIG_FLAGS} -fPIC --prefix="${OSSL_PATH}"
+  ./config ${CONFIG_FLAGS} no-tests -fPIC --prefix="${OSSL_PATH}"
 
   make depend
-  make -j"$(nproc)"
+  make -j"$(nproc)" build_sw
   # avoid installing the docs (for performance)
   # https://github.com/openssl/openssl/issues/6685#issuecomment-403838728
   make install_sw install_ssldirs
@@ -44,7 +44,7 @@ elif [[ "${TYPE}" == "libressl" ]]; then
   curl -LO "https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${VERSION}.tar.gz"
   tar zxf "libressl-${VERSION}.tar.gz"
   pushd "libressl-${VERSION}"
-  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DLIBRESSL_APPS=OFF -DLIBRESSL_TESTS=OFF -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   ninja -C build install
   # delete binaries, libtls, and docs we don't need. can't skip install/compile sadly
   rm -rf "${OSSL_PATH}/bin"
@@ -55,7 +55,7 @@ elif [[ "${TYPE}" == "boringssl" ]]; then
   git clone https://boringssl.googlesource.com/boringssl
   pushd boringssl
   git checkout "${VERSION}"
-  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  cmake -GNinja -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=RelWithAsserts -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   ninja -C build install
   # delete binaries we don't need
   rm -rf "${OSSL_PATH}/bin"
@@ -65,7 +65,7 @@ elif [[ "${TYPE}" == "aws-lc" ]]; then
   git clone https://github.com/aws/aws-lc.git
   pushd aws-lc
   git checkout "${VERSION}"
-  cmake -GNinja -B build -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
+  cmake -GNinja -B build -DBUILD_TESTING=OFF -DBUILD_TOOL=OFF -DCMAKE_BUILD_TYPE=RelWithAsserts -DCMAKE_INSTALL_PREFIX="${OSSL_PATH}"
   ninja -C build install
   # delete binaries we don't need
   rm -rf "${OSSL_PATH:?}/bin"

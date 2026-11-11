@@ -14,7 +14,9 @@ case "${1}" in
         # to errors. We can probably remove this when acme gets split into
         # its own repo
         pytest -Wignore certbot
-        pytest acme
+        # pyOpenSSL references cryptography's DSA types at import time,
+        # which now emits a deprecation warning.
+        pytest -W "ignore:DSA is deprecated:cryptography.utils.CryptographyDeprecationWarning" acme
         ;;
     *)
         exit 1

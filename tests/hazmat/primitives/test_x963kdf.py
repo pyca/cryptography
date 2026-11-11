@@ -125,6 +125,12 @@ class TestX963KDF:
         with pytest.raises(ValueError, match="buffer must be"):
             xkdf.derive_into(b"key", buf)
 
+    def test_derive_into_overlapping_buffer(self):
+        buf = bytearray(48)
+        xkdf = X963KDF(hashes.SHA256(), 48, b"info")
+        with pytest.raises(ValueError, match="must not overlap"):
+            xkdf.derive_into(buf, buf)
+
     def test_derive_into_already_finalized(self):
         xkdf = X963KDF(hashes.SHA256(), 16, None)
         buf = bytearray(16)

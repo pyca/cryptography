@@ -220,6 +220,7 @@ pub enum AttributeValue<'a> {
     UniversalString(asn1::UniversalString<'a>),
     BmpString(asn1::BMPString<'a>),
     PrintableString(asn1::PrintableString<'a>),
+    IA5String(asn1::IA5String<'a>),
 
     // Must be last, because enums parse things in order.
     AnyString(RawTlv<'a>),
@@ -230,6 +231,7 @@ impl AttributeValue<'_> {
         match self {
             AttributeValue::AnyString(tlv) => tlv.tag(),
             AttributeValue::PrintableString(_) => asn1::PrintableString::TAG,
+            AttributeValue::IA5String(_) => asn1::IA5String::TAG,
             AttributeValue::UniversalString(_) => asn1::UniversalString::TAG,
             AttributeValue::BmpString(_) => asn1::BMPString::TAG,
         }

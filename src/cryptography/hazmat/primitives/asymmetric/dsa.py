@@ -7,10 +7,16 @@ from __future__ import annotations
 import abc
 import typing
 
+from cryptography import utils
 from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import _serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import utils as asym_utils
 from cryptography.utils import Buffer
+
+_DSA_DEPRECATION_MSG = (
+    "DSA is deprecated and support will be removed in a future release. "
+    "Use a more modern signature algorithm."
+)
 
 
 class DSAParameters(metaclass=abc.ABCMeta):
@@ -175,5 +181,107 @@ def generate_parameters(
 def generate_private_key(
     key_size: int, backend: typing.Any = None
 ) -> DSAPrivateKey:
-    parameters = generate_parameters(key_size)
+    parameters = _generate_parameters(key_size)
     return parameters.generate_private_key()
+
+
+# Aliases that do not emit the deprecation warning on attribute access, for
+# internal use (e.g. the unions in
+# cryptography.hazmat.primitives.asymmetric.types, which are evaluated at
+# import time, and isinstance checks in the serialization and X.509 code).
+# `utils.deprecated` replaces the public names in this module's namespace, so
+# `generate_private_key` must go through the alias too.
+_generate_parameters = generate_parameters
+_DSAPublicKey = DSAPublicKey
+_DSAPrivateKey = DSAPrivateKey
+_DSAPrivateNumbers = DSAPrivateNumbers
+_DSAPublicNumbers = DSAPublicNumbers
+_DSAParameterNumbers = DSAParameterNumbers
+
+utils.deprecated(
+    generate_parameters,
+    __name__,
+    _DSA_DEPRECATION_MSG,
+    utils.DeprecatedIn51,
+    name="generate_parameters",
+)
+
+utils.deprecated(
+    generate_private_key,
+    __name__,
+    _DSA_DEPRECATION_MSG,
+    utils.DeprecatedIn51,
+    name="generate_private_key",
+)
+
+utils.deprecated(
+    DSAPrivateNumbers,
+    __name__,
+    _DSA_DEPRECATION_MSG,
+    utils.DeprecatedIn51,
+    name="DSAPrivateNumbers",
+)
+
+utils.deprecated(
+    DSAPublicNumbers,
+    __name__,
+    _DSA_DEPRECATION_MSG,
+    utils.DeprecatedIn51,
+    name="DSAPublicNumbers",
+)
+
+utils.deprecated(
+    DSAParameterNumbers,
+    __name__,
+    _DSA_DEPRECATION_MSG,
+    utils.DeprecatedIn51,
+    name="DSAParameterNumbers",
+)
+
+utils.deprecated(
+    DSAParameters,
+    __name__,
+    _DSA_DEPRECATION_MSG,
+    utils.DeprecatedIn51,
+    name="DSAParameters",
+)
+
+utils.deprecated(
+    DSAParameters,
+    __name__,
+    _DSA_DEPRECATION_MSG,
+    utils.DeprecatedIn51,
+    name="DSAParametersWithNumbers",
+)
+
+utils.deprecated(
+    DSAPrivateKey,
+    __name__,
+    _DSA_DEPRECATION_MSG,
+    utils.DeprecatedIn51,
+    name="DSAPrivateKey",
+)
+
+utils.deprecated(
+    DSAPrivateKey,
+    __name__,
+    _DSA_DEPRECATION_MSG,
+    utils.DeprecatedIn51,
+    name="DSAPrivateKeyWithSerialization",
+)
+
+utils.deprecated(
+    DSAPublicKey,
+    __name__,
+    _DSA_DEPRECATION_MSG,
+    utils.DeprecatedIn51,
+    name="DSAPublicKey",
+)
+
+utils.deprecated(
+    DSAPublicKey,
+    __name__,
+    _DSA_DEPRECATION_MSG,
+    utils.DeprecatedIn51,
+    name="DSAPublicKeyWithSerialization",
+)

@@ -2128,6 +2128,14 @@ class TestRSACertificateRequest:
 
         assert exc.value.oid == ExtensionOID.BASIC_CONSTRAINTS
 
+    def test_multiple_extension_requests(self):
+        request = _load_cert(
+            os.path.join("x509", "requests", "two-extension-requests.pem"),
+            x509.load_pem_x509_csr,
+        )
+        with pytest.raises(ValueError):
+            request.extensions
+
     def test_unsupported_critical_extension(self):
         request = _load_cert(
             os.path.join(
@@ -3624,8 +3632,9 @@ class TestCertificateBuilder:
 
         assert cert.version is x509.Version.v3
         assert cert.signature_algorithm_oid == hashalg_oid
-        public_key = cert.public_key()
-        assert isinstance(public_key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = cert.public_key()
+            assert isinstance(public_key, dsa.DSAPublicKey)
         assert cert.public_key_algorithm_oid == PublicKeyAlgorithmOID.DSA
         _check_cert_times(
             cert,
@@ -5422,8 +5431,9 @@ class TestCertificateSigningRequestBuilder:
         )
 
         assert isinstance(request.signature_hash_algorithm, hashes.SHA256)
-        public_key = request.public_key()
-        assert isinstance(public_key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = request.public_key()
+            assert isinstance(public_key, dsa.DSAPublicKey)
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
@@ -5902,8 +5912,9 @@ class TestDSACertificate:
             x509.load_pem_x509_certificate,
         )
         assert isinstance(cert.signature_hash_algorithm, hashes.SHA1)
-        public_key = cert.public_key()
-        assert isinstance(public_key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = cert.public_key()
+            assert isinstance(public_key, dsa.DSAPublicKey)
         assert cert.signature_algorithm_parameters is None
         num = public_key.public_numbers()
         assert num.y == int(
@@ -6022,8 +6033,9 @@ class TestDSACertificate:
             b"0b2142f86300c0603551d13040530030101ff"
         )
         assert cert.signature_hash_algorithm is not None
-        public_key = cert.public_key()
-        assert isinstance(public_key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = cert.public_key()
+            assert isinstance(public_key, dsa.DSAPublicKey)
         public_key.verify(
             cert.signature,
             cert.tbs_certificate_bytes,
@@ -6036,7 +6048,8 @@ class TestDSACertificate:
         ca, cert = _generate_ca_and_leaf(
             issuer_private_key, subject_private_key
         )
-        cert.verify_directly_issued_by(ca)
+        with pytest.warns(utils.DeprecatedIn51):
+            cert.verify_directly_issued_by(ca)
 
     def test_verify_directly_issued_by_dsa_bad_sig(self):
         issuer_private_key = DSA_KEY_3072.private_key()
@@ -6046,7 +6059,8 @@ class TestDSACertificate:
         )
         cert_bad_sig = _break_cert_sig(cert)
         with pytest.raises(InvalidSignature):
-            cert_bad_sig.verify_directly_issued_by(ca)
+            with pytest.warns(utils.DeprecatedIn51):
+                cert_bad_sig.verify_directly_issued_by(ca)
 
 
 @pytest.mark.supported(
@@ -6074,8 +6088,9 @@ class TestDSACertificateRequest:
     def test_load_dsa_request(self, path, loader_func):
         request = _load_cert(path, loader_func)
         assert isinstance(request.signature_hash_algorithm, hashes.SHA1)
-        public_key = request.public_key()
-        assert isinstance(public_key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = request.public_key()
+            assert isinstance(public_key, dsa.DSAPublicKey)
         subject = request.subject
         assert isinstance(subject, x509.Name)
         assert list(subject) == [
@@ -6121,8 +6136,9 @@ class TestDSACertificateRequest:
             b"fa140342bc4a3bba16bd0681c8a6a2dbbb7efe6ce2b8463b170ba000"
         )
         assert request.signature_hash_algorithm is not None
-        public_key = request.public_key()
-        assert isinstance(public_key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            public_key = request.public_key()
+            assert isinstance(public_key, dsa.DSAPublicKey)
         public_key.verify(
             request.signature,
             request.tbs_certrequest_bytes,
@@ -6418,6 +6434,26 @@ class TestOtherCertificate:
 
         with pytest.raises(ValueError, match="InvalidSize"):
             cert.extensions.get_extension_for_class(ExtendedKeyUsage)
+
+    def test_invalid_empty_subject_alternative_name(self):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "empty-san.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        with pytest.raises(ValueError, match="InvalidSize"):
+            cert.extensions.get_extension_for_class(
+                x509.SubjectAlternativeName
+            )
+
+    def test_invalid_empty_issuer_alternative_name(self):
+        cert = _load_cert(
+            os.path.join("x509", "custom", "empty-ian.pem"),
+            x509.load_pem_x509_certificate,
+        )
+
+        with pytest.raises(ValueError, match="InvalidSize"):
+            cert.extensions.get_extension_for_class(x509.IssuerAlternativeName)
 
 
 class TestNameAttribute:
@@ -6882,6 +6918,36 @@ class TestName:
             b"b060355040a0c0450794341"
         )
 
+    def test_ia5string_bytes(self):
+        name = x509.Name(
+            [
+                x509.NameAttribute(
+                    NameOID.EMAIL_ADDRESS,
+                    "dev@example.com",
+                )
+            ]
+        )
+        data = binascii.unhexlify(
+            b"3020311e301c06092a864886f70d010901160f646576406578616d706c652"
+            b"e636f6d"
+        )
+
+        assert name.public_bytes() == data
+        assert x509.Name.from_bytes(data) == name
+
+    def test_invalid_ia5string_bytes(self):
+        name = x509.Name(
+            [
+                x509.NameAttribute(
+                    NameOID.EMAIL_ADDRESS,
+                    "deploy\U0001f680",
+                )
+            ]
+        )
+
+        with pytest.raises(ValueError, match="valid IA5String"):
+            name.public_bytes()
+
     def test_from_bytes(self):
         data = binascii.unhexlify(
             b"30293118301606035504030c0f63727970746f6772617068792e696f310d"
@@ -6909,6 +6975,10 @@ class TestName:
             binascii.unhexlify(b"300000"),
             # RDN with a UTF8String value that is not valid UTF-8.
             binascii.unhexlify(b"300c310a300806035504030c01ff"),
+            # RDN with an IA5String value containing non-ASCII UTF-8.
+            binascii.unhexlify(
+                b"301b3119301706092a864886f70d010901160a6465706c6f79f09f9a80"
+            ),
         ],
     )
     def test_from_bytes_invalid(self, data):
