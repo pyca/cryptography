@@ -1,0 +1,38 @@
+name: Setup gitsign
+description: >-
+  Install gitsign (https://github.com/sigstore/gitsign), and configure git to
+  sign commits with it, using the workflow's GitHub Actions OIDC identity.
+  Signing requires the `id-token: write` permission.
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Install gitsign
+      shell: bash
+      env:
+        GITSIGN_VERSION: "0.18.0"
+        GITSIGN_SHA256: "2bc625472a08fea3bb6a57982c7d8b4978d1032251d305ceef3bf2ded0ca4483"
+      run: |
+        set -euo pipefail
+        install_dir="${RUNNER_TEMP}/gitsign-bin"
+        mkdir -p "${install_dir}"
+        curl -fsSL --retry 3 -o "${install_dir}/gitsign" \
+          "https://github.com/sigstore/gitsign/releases/download/v${GITSIGN_VERSION}/gitsign_${GITSIGN_VERSION}_linux_amd64"
+        echo "${GITSIGN_SHA256}  ${install_dir}/gitsign" | sha256sum --check --strict
+        chmod +x "${install_dir}/gitsign"
+        echo "${install_dir}" >> "${GITHUB_PATH}"
+        "${install_dir}/gitsign" version
+
+    - name: Configure git to sign commits with gitsign
+      shell: bash
+      run: |
+        set -euo pipefail
+        git config --global gpg.format x509
+        git config --global gpg.x509.program gitsign
+        git config --global commit.gpgsign true
+        # Always use the workflow's OIDC identity, never an interactive flow.
+        git config --global gitsign.tokenProvider github-actions
+        # Embed the Rekor inclusion proof in the signature itself, so
+        # verification doesn't depend on an online Rekor lookup.
+        git config --global gitsign.rekorMode offline

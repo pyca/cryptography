@@ -10,7 +10,9 @@ case "${1}" in
         ;;
     run)
         cd josepy
-        pytest tests
+        # josepy's tests load a DSA key, which now emits a deprecation
+        # warning.
+        pytest -W "ignore:DSA is deprecated:cryptography.utils.CryptographyDeprecationWarning" tests
         ;;
     *)
         exit 1

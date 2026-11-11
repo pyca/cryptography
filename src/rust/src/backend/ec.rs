@@ -568,6 +568,12 @@ impl EllipticCurvePrivateNumbers {
             public_key.public_key(),
         )
         .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid EC key."))?;
+        // The comparison above can't catch a private value outside the
+        // group order (e.g. n + d gives the same point as d), so validate
+        // the key as `derive_private_key` and the key loaders do.
+        private_key
+            .check_key()
+            .map_err(|_| pyo3::exceptions::PyValueError::new_err("Invalid EC key."))?;
 
         let pkey = openssl::pkey::PKey::from_ec_key(private_key)?;
 

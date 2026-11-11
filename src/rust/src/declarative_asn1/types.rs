@@ -537,7 +537,32 @@ impl SetOf {
     }
 
     fn __eq__(&self, py: pyo3::Python<'_>, other: pyo3::PyRef<'_, Self>) -> pyo3::PyResult<bool> {
-        (**self.inner.bind(py)).eq(other.inner.bind(py))
+        // SET OF is unordered, so two values are equal if they contain the
+        // same elements in any order. Elements needn't be hashable or
+        // orderable, so pair them up with `==` (this is quadratic, but
+        // these are small).
+        let this = self.inner.bind(py);
+        let other = other.inner.bind(py);
+        if this.len() != other.len() {
+            return Ok(false);
+        }
+        let mut unmatched: Vec<pyo3::Bound<'_, pyo3::PyAny>> = other.iter().collect();
+        for item in this.iter() {
+            let mut found = None;
+            for (i, candidate) in unmatched.iter().enumerate() {
+                if item.eq(candidate)? {
+                    found = Some(i);
+                    break;
+                }
+            }
+            match found {
+                Some(i) => {
+                    unmatched.swap_remove(i);
+                }
+                None => return Ok(false),
+            }
+        }
+        Ok(true)
     }
 
     fn __repr__(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<String> {

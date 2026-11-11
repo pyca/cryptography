@@ -21,12 +21,15 @@ from cryptography.hazmat.primitives.asymmetric import (
     dsa,
     ec,
     ed25519,
+    mldsa,
     rsa,
 )
 from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption,
     Encoding,
     KeySerializationEncryption,
+    MLDSA44Ed25519PrivateKey,
+    MLDSA44Ed25519PublicKey,
     NoEncryption,
     PrivateFormat,
     PublicFormat,
@@ -48,6 +51,15 @@ from .test_ec import _skip_curve_unsupported
 from .test_rsa import rsa_key_2048
 
 __all__ = ["rsa_key_2048"]
+
+# A nistp256 private scalar and its matching uncompressed public point, used
+# as the default key in TestOpenSSHSerialization.make_file.
+_EC_SECRET = b"\x7f" * 32
+_EC_POINT = (
+    ec.derive_private_key(int.from_bytes(_EC_SECRET, "big"), ec.SECP256R1())
+    .public_key()
+    .public_bytes(Encoding.X962, PublicFormat.UncompressedPoint)
+)
 
 
 class TestOpenSSHSerialization:
@@ -411,10 +423,10 @@ class TestOpenSSHSerialization:
         pub_type=b"ecdsa-sha2-nistp256",
         pub_fields=(
             b"nistp256",
-            b"\x04" * 65,
+            _EC_POINT,
         ),
         priv_type=None,
-        priv_fields=(b"nistp256", b"\x04" * 65, b"\x7f" * 32),
+        priv_fields=(b"nistp256", _EC_POINT, _EC_SECRET),
         comment=b"comment",
         checkval1=b"1234",
         checkval2=b"1234",
@@ -580,6 +592,40 @@ class TestOpenSSHSerialization:
             ),
         )
         with pytest.raises(ValueError):
+            load_ssh_private_key(data, None)
+
+    def test_ssh_errors_public_key_not_derived_from_private(self):
+        # ecdsa: the public point is a valid point that both sections agree
+        # on, but it does not belong to the private scalar
+        other_point = (
+            ec.derive_private_key(1, ec.SECP256R1())
+            .public_key()
+            .public_bytes(Encoding.X962, PublicFormat.UncompressedPoint)
+        )
+        data = self.make_file(
+            pub_fields=(b"nistp256", other_point),
+            priv_fields=(b"nistp256", other_point, _EC_SECRET),
+        )
+        with pytest.raises(
+            ValueError, match="ecdsa public key does not match private key"
+        ):
+            load_ssh_private_key(data, None)
+
+        # ed25519: same, for the public key stored alongside the seed
+        sk = b"x" * 32
+        pk = (
+            ed25519.Ed25519PrivateKey.from_private_bytes(b"y" * 32)
+            .public_key()
+            .public_bytes(Encoding.Raw, PublicFormat.Raw)
+        )
+        data = self.make_file(
+            pub_type=b"ssh-ed25519",
+            pub_fields=(pk,),
+            priv_fields=(pk, sk + pk),
+        )
+        with pytest.raises(
+            ValueError, match="ed25519 public key does not match private key"
+        ):
             load_ssh_private_key(data, None)
 
     def test_ssh_errors_bad_wrapper(self):
@@ -750,12 +796,13 @@ class TestOpenSSHSerialization:
         ],
     )
     def test_dsa_private_key_sizes(self, key_path, supported):
-        key = load_vectors_from_file(
-            os.path.join("asymmetric", *key_path),
-            lambda pemfile: load_pem_private_key(pemfile.read(), None),
-            mode="rb",
-        )
-        assert isinstance(key, dsa.DSAPrivateKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            key = load_vectors_from_file(
+                os.path.join("asymmetric", *key_path),
+                lambda pemfile: load_pem_private_key(pemfile.read(), None),
+                mode="rb",
+            )
+            assert isinstance(key, dsa.DSAPrivateKey)
         if supported:
             with pytest.warns(utils.DeprecatedIn40):
                 res = key.private_bytes(
@@ -970,7 +1017,8 @@ class TestDSSSSHSerialization:
             key = load_ssh_public_key(ssh_key)
 
         assert key is not None
-        assert isinstance(key, dsa.DSAPublicKey)
+        with pytest.warns(utils.DeprecatedIn51):
+            assert isinstance(key, dsa.DSAPublicKey)
 
         numbers = key.public_numbers()
 
@@ -999,10 +1047,11 @@ class TestDSSSSHSerialization:
             "b656",
             16,
         )
-        expected = dsa.DSAPublicNumbers(
-            expected_y,
-            dsa.DSAParameterNumbers(expected_p, expected_q, expected_g),
-        )
+        with pytest.warns(utils.DeprecatedIn51):
+            expected = dsa.DSAPublicNumbers(
+                expected_y,
+                dsa.DSAParameterNumbers(expected_p, expected_q, expected_g),
+            )
 
         assert numbers == expected
 
@@ -1192,6 +1241,257 @@ class TestEd25519SSHSerialization:
             load_ssh_public_key(ssh_key)
 
 
+def _load_openssh_vector(filename: str) -> bytes:
+    return load_vectors_from_file(
+        os.path.join("asymmetric", "OpenSSH", filename),
+        lambda f: f.read(),
+        mode="rb",
+    )
+
+
+@pytest.mark.supported(
+    only_if=lambda backend: backend.mldsa_supported(),
+    skip_message="Requires a backend with ML-DSA support",
+)
+class TestMLDSA44Ed25519SSHSerialization:
+    def test_public_key(self):
+        mldsa_key = mldsa.MLDSA44PrivateKey.generate()
+        ed25519_key = ed25519.Ed25519PrivateKey.generate()
+        public_key = MLDSA44Ed25519PrivateKey(
+            mldsa_key, ed25519_key
+        ).public_key()
+        assert isinstance(public_key, MLDSA44Ed25519PublicKey)
+        assert public_key._mldsa_key == mldsa_key.public_key()
+        assert public_key._ed25519_key == ed25519_key.public_key()
+
+    def test_invalid_component_types(self):
+        mldsa_key = mldsa.MLDSA44PrivateKey.generate()
+        ed25519_key = ed25519.Ed25519PrivateKey.generate()
+        with pytest.raises(TypeError):
+            MLDSA44Ed25519PrivateKey(
+                ed25519_key,  # type: ignore[arg-type]
+                ed25519_key,
+            )
+        with pytest.raises(TypeError):
+            MLDSA44Ed25519PrivateKey(
+                mldsa_key,
+                mldsa_key,  # type: ignore[arg-type]
+            )
+        with pytest.raises(TypeError):
+            MLDSA44Ed25519PublicKey(
+                mldsa_key,  # type: ignore[arg-type]
+                ed25519_key.public_key(),
+            )
+        with pytest.raises(TypeError):
+            MLDSA44Ed25519PublicKey(
+                mldsa_key.public_key(),
+                ed25519_key,  # type: ignore[arg-type]
+            )
+
+    @pytest.mark.parametrize(
+        "key_file", ["mldsa44-ed25519-nopsw.key", "mldsa44-ed25519-psw.key"]
+    )
+    def test_load_ssh_private_key(self, key_file):
+        password = None
+        encryption: KeySerializationEncryption = NoEncryption()
+        if "-psw" in key_file:
+            if not ssh._bcrypt_supported:
+                pytest.skip("Requires bcrypt module")
+            password = b"password"
+            encryption = BestAvailableEncryption(password)
+        priv_data = _load_openssh_vector(key_file)
+        pub_data = _load_openssh_vector(key_file + ".pub")
+        nocomment_data = b" ".join(pub_data.split()[:2])
+
+        private_key = load_ssh_private_key(priv_data, password)
+        assert isinstance(private_key, MLDSA44Ed25519PrivateKey)
+        assert (
+            private_key.public_key().public_bytes(
+                Encoding.OpenSSH, PublicFormat.OpenSSH
+            )
+            == nocomment_data
+        )
+
+        # serialize with own code and reload
+        priv_data2 = private_key.private_bytes(
+            Encoding.PEM, PrivateFormat.OpenSSH, encryption
+        )
+        private_key2 = load_ssh_private_key(priv_data2, password)
+        assert isinstance(private_key2, MLDSA44Ed25519PrivateKey)
+        assert private_key2._mldsa_key.private_bytes_raw() == (
+            private_key._mldsa_key.private_bytes_raw()
+        )
+        assert private_key2._ed25519_key.private_bytes_raw() == (
+            private_key._ed25519_key.private_bytes_raw()
+        )
+
+    @pytest.mark.skipif(
+        not ssh._bcrypt_supported,
+        reason="Requires bcrypt module",
+    )
+    def test_serialize_private_key_encryption_builder(self):
+        private_key = load_ssh_private_key(
+            _load_openssh_vector("mldsa44-ed25519-nopsw.key"), None
+        )
+        assert isinstance(private_key, MLDSA44Ed25519PrivateKey)
+        encryption = (
+            PrivateFormat.OpenSSH.encryption_builder()
+            .kdf_rounds(2)
+            .build(b"password")
+        )
+        data = private_key.private_bytes(
+            Encoding.PEM, PrivateFormat.OpenSSH, encryption
+        )
+        private_key2 = load_ssh_private_key(data, b"password")
+        assert isinstance(private_key2, MLDSA44Ed25519PrivateKey)
+        assert private_key2._mldsa_key.private_bytes_raw() == (
+            private_key._mldsa_key.private_bytes_raw()
+        )
+
+    def test_serialize_private_key_errors(self):
+        private_key = MLDSA44Ed25519PrivateKey(
+            mldsa.MLDSA44PrivateKey.generate(),
+            ed25519.Ed25519PrivateKey.generate(),
+        )
+        with pytest.raises(TypeError):
+            private_key.private_bytes(
+                Encoding.PEM,
+                PrivateFormat.OpenSSH,
+                None,  # type: ignore[arg-type]
+            )
+        with pytest.raises(ValueError, match="format is invalid"):
+            private_key.private_bytes(
+                Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
+            )
+        with pytest.raises(ValueError, match="PEM encoding"):
+            private_key.private_bytes(
+                Encoding.DER, PrivateFormat.OpenSSH, NoEncryption()
+            )
+        with pytest.raises(ValueError, match="Unsupported encryption type"):
+            private_key.private_bytes(
+                Encoding.PEM,
+                PrivateFormat.OpenSSH,
+                DummyKeySerializationEncryption(),
+            )
+        with pytest.raises(ValueError, match="Unsupported encryption type"):
+            private_key.private_bytes(
+                Encoding.PEM,
+                PrivateFormat.OpenSSH,
+                PrivateFormat.PKCS12.encryption_builder().build(b"password"),
+            )
+
+    def test_load_ssh_public_key(self):
+        pub_data = _load_openssh_vector("mldsa44-ed25519-nopsw.key.pub")
+        nocomment_data = b" ".join(pub_data.split()[:2])
+        public_key = load_ssh_public_key(pub_data)
+        assert isinstance(public_key, MLDSA44Ed25519PublicKey)
+        assert ssh.serialize_ssh_public_key(public_key) == nocomment_data
+        assert (
+            public_key.public_bytes(Encoding.OpenSSH, PublicFormat.OpenSSH)
+            == nocomment_data
+        )
+        # ssh-keygen -l -E sha256
+        assert ssh_key_fingerprint(public_key, hashes.SHA256()) == (
+            base64.b64decode("MC2UrLrpkOtK5KFjcwvJwTgadXAH8EnzzM8XI/oMkzE=")
+        )
+
+    def test_serialize_public_key_errors(self):
+        public_key = load_ssh_public_key(
+            _load_openssh_vector("mldsa44-ed25519-nopsw.key.pub")
+        )
+        assert isinstance(public_key, MLDSA44Ed25519PublicKey)
+        with pytest.raises(ValueError, match="format is invalid"):
+            public_key.public_bytes(
+                Encoding.PEM, PublicFormat.SubjectPublicKeyInfo
+            )
+        with pytest.raises(ValueError, match="OpenSSH encoding"):
+            public_key.public_bytes(Encoding.PEM, PublicFormat.OpenSSH)
+
+    def test_load_ssh_public_key_invalid_length(self):
+        pub_data = _load_openssh_vector("mldsa44-ed25519-nopsw.key.pub")
+        blob = base64.b64decode(pub_data.split()[1])
+        f_pub = ssh._FragList()
+        f_pub.put_sshstr(b"ssh-mldsa44-ed25519")
+        f_pub.put_sshstr(blob[-1344:-1])
+        with pytest.raises(ValueError):
+            load_ssh_public_key(
+                b"ssh-mldsa44-ed25519 " + base64.b64encode(f_pub.tobytes())
+            )
+
+    def test_load_ssh_private_key_errors(self):
+        private_key = load_ssh_private_key(
+            _load_openssh_vector("mldsa44-ed25519-nopsw.key"), None
+        )
+        assert isinstance(private_key, MLDSA44Ed25519PrivateKey)
+        public = ssh._SSHFormatMLDSA44Ed25519()._public_bytes(
+            private_key.public_key()
+        )
+        seeds = (
+            private_key._mldsa_key.private_bytes_raw()
+            + private_key._ed25519_key.private_bytes_raw()
+        )
+        other = MLDSA44Ed25519PrivateKey(
+            mldsa.MLDSA44PrivateKey.generate(),
+            ed25519.Ed25519PrivateKey.generate(),
+        )
+        other_public = ssh._SSHFormatMLDSA44Ed25519()._public_bytes(
+            other.public_key()
+        )
+        other_seeds = (
+            other._mldsa_key.private_bytes_raw()
+            + other._ed25519_key.private_bytes_raw()
+        )
+        make_file = TestOpenSSHSerialization().make_file
+
+        data = make_file(
+            pub_type=b"ssh-mldsa44-ed25519",
+            pub_fields=(public,),
+            priv_fields=(public, seeds),
+        )
+        key = load_ssh_private_key(data, None)
+        assert isinstance(key, MLDSA44Ed25519PrivateKey)
+
+        # public key in the private section differs from the public section
+        data = make_file(
+            pub_type=b"ssh-mldsa44-ed25519",
+            pub_fields=(public,),
+            priv_fields=(other_public, seeds),
+        )
+        with pytest.raises(ValueError, match="field mismatch"):
+            load_ssh_private_key(data, None)
+
+        # seeds of the wrong length
+        data = make_file(
+            pub_type=b"ssh-mldsa44-ed25519",
+            pub_fields=(public,),
+            priv_fields=(public, seeds[:-1]),
+        )
+        with pytest.raises(ValueError, match="invalid mldsa44-ed25519 key"):
+            load_ssh_private_key(data, None)
+
+        # seeds of another key
+        data = make_file(
+            pub_type=b"ssh-mldsa44-ed25519",
+            pub_fields=(public,),
+            priv_fields=(public, other_seeds),
+        )
+        with pytest.raises(ValueError, match="does not match private key"):
+            load_ssh_private_key(data, None)
+
+    def test_cert_signed_with_mldsa44_ed25519(self):
+        cert = load_ssh_public_identity(
+            _load_openssh_vector(
+                os.path.join("certs", "p256-mldsa44-ed25519.pub")
+            )
+        )
+        assert isinstance(cert, SSHCertificate)
+        assert isinstance(cert.public_key(), ec.EllipticCurvePublicKey)
+        with raises_unsupported_algorithm(None):
+            cert.signature_key()
+        with raises_unsupported_algorithm(None):
+            cert.verify_cert_signature()
+
+
 class TestSSHCertificate:
     def test_loads_ssh_cert(self):
         # secp256r1 public key, ed25519 signing key
@@ -1367,6 +1667,22 @@ class TestSSHCertificate:
         with pytest.raises(ValueError):
             load_ssh_public_identity(data)
 
+    @pytest.mark.parametrize(
+        "filename",
+        [
+            "p256-p256-nul-key-id.pub",
+            "p256-p256-nul-principal.pub",
+        ],
+    )
+    def test_nul_in_key_id_or_principal(self, filename):
+        data = load_vectors_from_file(
+            os.path.join("asymmetric", "OpenSSH", "certs", filename),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError, match="NUL"):
+            load_ssh_public_identity(data)
+
     def test_invalid_line_format(self):
         with pytest.raises(ValueError):
             load_ssh_public_identity(b"whaaaaaaaaaaat")
@@ -1507,6 +1823,8 @@ class TestSSHCertificateBuilder:
         builder = SSHCertificateBuilder()
         with pytest.raises(TypeError):
             builder.key_id(typing.cast(typing.Any, "not bytes"))
+        with pytest.raises(ValueError, match="NUL"):
+            builder.key_id(b"test\x00")
         builder = builder.key_id(b"test")
         with pytest.raises(ValueError):
             builder.key_id(b"test")
@@ -1521,6 +1839,8 @@ class TestSSHCertificateBuilder:
             )
         with pytest.raises(TypeError):
             builder.valid_principals([])
+        with pytest.raises(ValueError, match="NUL"):
+            builder.valid_principals([b"test", b"root\x00"])
         with pytest.raises(ValueError):
             builder.valid_principals(
                 [b"test"] * (ssh._SSHKEY_CERT_MAX_PRINCIPALS + 1)

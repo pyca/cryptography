@@ -1,0 +1,59 @@
+name: Auto-merge bump PRs
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Only report what would be done"
+        type: boolean
+        default: false
+  workflow_run:
+    # These must be workflow `name:`s, workflow_run can't match on filenames.
+    # They correspond to BUMP_WORKFLOWS in .github/bin/auto_merge_bump_prs.py.
+    workflows:
+      - "Bump BoringSSL, OpenSSL, AWS-LC"
+      - "Bump downstream dependencies"
+      - "Bump x509-limbo and/or wycheproof"
+    types:
+      - completed
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  auto-merge:
+    if: github.repository_owner == 'pyca'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # To approve PRs as github-actions[bot]
+      pull-requests: write
+    steps:
+      # This only ever runs code from the default branch; PR contents are
+      # fetched solely so their commit signatures can be verified.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-gitsign
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: generate-token
+        with:
+          app-id: ${{ secrets.BORINGBOT_APP_ID }}
+          private-key: ${{ secrets.BORINGBOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          # The bump PRs modify workflow files
+          permission-workflows: write
+      - name: Approve and auto-merge signed bump PRs
+        run: python3 .github/bin/auto_merge_bump_prs.py --repo "${GITHUB_REPOSITORY}" ${DRY_RUN:+--dry-run}
+        env:
+          # Approvals come from github-actions[bot], since the PRs are
+          # authored by pyca-boringbot.
+          GH_TOKEN: ${{ github.token }}
+          # Auto-merge is enabled by pyca-boringbot, so that the eventual
+          # merge triggers `push` workflows (which GITHUB_TOKEN would not).
+          AUTO_MERGE_TOKEN: ${{ steps.generate-token.outputs.token }}
+          DRY_RUN: ${{ inputs.dry-run && 'true' || '' }}

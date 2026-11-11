@@ -36,7 +36,8 @@ class TestFernet:
         "generate.json",
     )
     def test_generate(self, secret, now, iv, src, token):
-        f = Fernet(secret.encode("ascii"))
+        # secret is a str here and bytes in test_verify.
+        f = Fernet(secret)
         actual_token = f._encrypt_from_parts(
             src.encode("ascii"),
             int(datetime.datetime.fromisoformat(now).timestamp()),

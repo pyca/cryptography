@@ -25,6 +25,8 @@ from cryptography.hazmat.primitives.serialization.base import (
     load_pem_public_key,
 )
 from cryptography.hazmat.primitives.serialization.ssh import (
+    MLDSA44Ed25519PrivateKey,
+    MLDSA44Ed25519PublicKey,
     SSHCertificate,
     SSHCertificateBuilder,
     SSHCertificateType,
@@ -42,6 +44,8 @@ __all__ = [
     "BestAvailableEncryption",
     "Encoding",
     "KeySerializationEncryption",
+    "MLDSA44Ed25519PrivateKey",
+    "MLDSA44Ed25519PublicKey",
     "NoEncryption",
     "ParameterFormat",
     "PrivateFormat",
