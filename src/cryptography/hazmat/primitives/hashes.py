@@ -255,7 +255,7 @@ class SHAKE128(HashAlgorithm, ExtendableOutputFunction):
         return self._digest_size
 
     @classmethod
-    def xof(cls):
+    def xof(cls) -> SHAKE128:
         return cls(sys.maxsize)
 
 
@@ -283,7 +283,7 @@ class SHAKE256(HashAlgorithm, ExtendableOutputFunction):
         return self._digest_size
 
     @classmethod
-    def xof(cls):
+    def xof(cls) -> SHAKE256:
         return cls(sys.maxsize)
 
 

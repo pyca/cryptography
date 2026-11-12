@@ -53,6 +53,12 @@ Changelog
   and
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`,
   and serialized in the OpenSSH formats.
+* Added missing return type hints to
+  :meth:`~cryptography.hazmat.primitives.serialization.SSHCertificateBuilder.valid_for_all_principals`,
+  :meth:`~cryptography.hazmat.primitives.hashes.SHAKE128.xof`,
+  :meth:`~cryptography.hazmat.primitives.hashes.SHAKE256.xof` and
+  :meth:`~cryptography.hazmat.asn1.TLV.parse`. Previously, type checkers
+  treated their return values as ``Any``.
 
 .. _v50-0-2:
 
