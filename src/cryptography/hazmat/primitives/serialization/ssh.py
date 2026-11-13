@@ -1575,7 +1575,7 @@ class SSHCertificateBuilder:
             _extensions=self._extensions,
         )
 
-    def valid_for_all_principals(self):
+    def valid_for_all_principals(self) -> SSHCertificateBuilder:
         if self._valid_principals:
             raise ValueError(
                 "valid_principals already set, can't set "
