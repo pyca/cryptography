@@ -265,8 +265,17 @@ pub(crate) fn create_x509_csr(
         rsa_padding.clone(),
     )?;
 
-    let spki_bytes = private_key
-        .call_method0(pyo3::intern!(py, "public_key"))?
+    // Use the explicitly supplied public key, if any, so that CSRs can be
+    // created for encryption-only public keys (e.g. ML-KEM, X25519) that are
+    // signed by a different, signature-capable private key. Otherwise fall
+    // back to the public key of the signing private key.
+    let public_key = builder.getattr(pyo3::intern!(py, "_public_key"))?;
+    let spki_source = if public_key.is_none() {
+        private_key.call_method0(pyo3::intern!(py, "public_key"))?
+    } else {
+        public_key
+    };
+    let spki_bytes = spki_source
         .call_method1(
             pyo3::intern!(py, "public_bytes"),
             (

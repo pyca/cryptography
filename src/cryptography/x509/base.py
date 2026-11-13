@@ -185,6 +185,7 @@ class CertificateSigningRequestBuilder:
         subject_name: Name | None = None,
         extensions: list[Extension[ExtensionType]] = [],
         attributes: list[tuple[ObjectIdentifier, bytes, int | None]] = [],
+        public_key: CertificatePublicKeyTypes | None = None,
     ):
         """
         Creates an empty X.509 certificate request (v1).
@@ -192,6 +193,7 @@ class CertificateSigningRequestBuilder:
         self._subject_name = subject_name
         self._extensions = extensions
         self._attributes = attributes
+        self._public_key = public_key
 
     def subject_name(self, name: Name) -> CertificateSigningRequestBuilder:
         """
@@ -202,7 +204,50 @@ class CertificateSigningRequestBuilder:
         if self._subject_name is not None:
             raise ValueError("The subject name may only be set once.")
         return CertificateSigningRequestBuilder(
-            name, self._extensions, self._attributes
+            name, self._extensions, self._attributes, self._public_key
+        )
+
+    def public_key(
+        self, key: CertificatePublicKeyTypes
+    ) -> CertificateSigningRequestBuilder:
+        """
+        Sets the requestor's public key (as found in the signing request).
+
+        This allows a CSR to carry a public key that cannot itself sign,
+        such as an ML-KEM or X25519 key. If no public key is set, the
+        public key of the private key passed to ``sign()`` is used.
+        """
+        if not isinstance(
+            key,
+            (
+                dsa._DSAPublicKey,
+                rsa.RSAPublicKey,
+                ec.EllipticCurvePublicKey,
+                ed25519.Ed25519PublicKey,
+                ed448.Ed448PublicKey,
+                mldsa.MLDSA44PublicKey,
+                mldsa.MLDSA65PublicKey,
+                mldsa.MLDSA87PublicKey,
+                mlkem.MLKEM768PublicKey,
+                mlkem.MLKEM1024PublicKey,
+                x25519.X25519PublicKey,
+                x448.X448PublicKey,
+            ),
+        ):
+            raise TypeError(
+                "Expecting one of DSAPublicKey, RSAPublicKey,"
+                " EllipticCurvePublicKey, Ed25519PublicKey,"
+                " Ed448PublicKey, MLDSA44PublicKey, MLDSA65PublicKey,"
+                " MLDSA87PublicKey, MLKEM768PublicKey, MLKEM1024PublicKey,"
+                " X25519PublicKey or X448PublicKey."
+            )
+        if self._public_key is not None:
+            raise ValueError("The public key may only be set once.")
+        return CertificateSigningRequestBuilder(
+            self._subject_name,
+            self._extensions,
+            self._attributes,
+            key,
         )
 
     def add_extension(
@@ -221,6 +266,7 @@ class CertificateSigningRequestBuilder:
             self._subject_name,
             [*self._extensions, extension],
             self._attributes,
+            self._public_key,
         )
 
     def add_attribute(
@@ -253,6 +299,7 @@ class CertificateSigningRequestBuilder:
             self._subject_name,
             self._extensions,
             [*self._attributes, (oid, value, tag)],
+            self._public_key,
         )
 
     def sign(
@@ -266,6 +313,11 @@ class CertificateSigningRequestBuilder:
     ) -> CertificateSigningRequest:
         """
         Signs the request using the requestor's private key.
+
+        The CSR's ``subjectPublicKeyInfo`` is taken from the public key set
+        with :meth:`public_key`, if any, and otherwise derived from
+        ``private_key``. This allows signing a CSR for a public key that
+        cannot sign itself, such as an ML-KEM or X25519 key.
         """
         if self._subject_name is None:
             raise ValueError("A CertificateSigningRequest must have a subject")
