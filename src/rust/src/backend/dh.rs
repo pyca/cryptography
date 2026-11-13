@@ -263,12 +263,15 @@ impl DHPrivateKey {
         })
     }
 
+    #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
+    #[allow(unused_variables)]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+        comment: Option<&pyo3::Bound<'p, pyo3::types::PyBytes>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
         if format != crate::serialization::PrivateFormat::PKCS8 {
             return Err(CryptographyError::from(
@@ -285,8 +288,9 @@ impl DHPrivateKey {
             encoding,
             format,
             encryption_algorithm,
-            true,
             false,
+            false,
+            None,
         )
     }
 
