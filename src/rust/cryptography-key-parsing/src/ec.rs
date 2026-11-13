@@ -86,20 +86,17 @@ pub(crate) fn ec_params_to_group(
                 ),
                 // NO-COVERAGE-START
                 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-                &ec_constants::BRAINPOOLP256R1_DOMAIN
-                | &ec_constants::BRAINPOOLP256R1_DOMAIN_NO_SEED => (
+                &ec_constants::BRAINPOOLP256R1_DOMAIN_NO_SEED => (
                     openssl::nid::Nid::BRAINPOOL_P256R1,
                     cryptography_x509::oid::EC_BRAINPOOLP256R1,
                 ),
                 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-                &ec_constants::BRAINPOOLP384R1_DOMAIN
-                | &ec_constants::BRAINPOOLP384R1_DOMAIN_NO_SEED => (
+                &ec_constants::BRAINPOOLP384R1_DOMAIN_NO_SEED => (
                     openssl::nid::Nid::BRAINPOOL_P384R1,
                     cryptography_x509::oid::EC_BRAINPOOLP384R1,
                 ),
                 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
-                &ec_constants::BRAINPOOLP512R1_DOMAIN
-                | &ec_constants::BRAINPOOLP512R1_DOMAIN_NO_SEED => (
+                &ec_constants::BRAINPOOLP512R1_DOMAIN_NO_SEED => (
                     openssl::nid::Nid::BRAINPOOL_P512R1,
                     cryptography_x509::oid::EC_BRAINPOOLP512R1,
                 ),

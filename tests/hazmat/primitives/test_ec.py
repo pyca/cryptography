@@ -1132,11 +1132,10 @@ class TestECSerialization:
             (ec.SECP384R1, "secp384r1-explicit-no-seed.pem"),
             (ec.SECP521R1, "secp521r1-explicit-seed.pem"),
             (ec.SECP521R1, "secp521r1-explicit-no-seed.pem"),
-            (ec.BrainpoolP256R1, "brainpoolP256r1-explicit-seed.pem"),
+            # Only the seedless encoding is supported for Brainpool: RFC 5639
+            # Section 4.2 recommends CAs omit the seed for these curves.
             (ec.BrainpoolP256R1, "brainpoolP256r1-explicit-no-seed.pem"),
-            (ec.BrainpoolP384R1, "brainpoolP384r1-explicit-seed.pem"),
             (ec.BrainpoolP384R1, "brainpoolP384r1-explicit-no-seed.pem"),
-            (ec.BrainpoolP512R1, "brainpoolP512r1-explicit-seed.pem"),
             (ec.BrainpoolP512R1, "brainpoolP512r1-explicit-no-seed.pem"),
         ],
     )
@@ -1161,11 +1160,10 @@ class TestECSerialization:
             (ec.SECP384R1, "secp384r1-pub-explicit-no-seed.pem"),
             (ec.SECP521R1, "secp521r1-pub-explicit-seed.pem"),
             (ec.SECP521R1, "secp521r1-pub-explicit-no-seed.pem"),
-            (ec.BrainpoolP256R1, "brainpoolP256r1-pub-explicit-seed.pem"),
+            # Only the seedless encoding is supported for Brainpool: RFC 5639
+            # Section 4.2 recommends CAs omit the seed for these curves.
             (ec.BrainpoolP256R1, "brainpoolP256r1-pub-explicit-no-seed.pem"),
-            (ec.BrainpoolP384R1, "brainpoolP384r1-pub-explicit-seed.pem"),
             (ec.BrainpoolP384R1, "brainpoolP384r1-pub-explicit-no-seed.pem"),
-            (ec.BrainpoolP512R1, "brainpoolP512r1-pub-explicit-seed.pem"),
             (ec.BrainpoolP512R1, "brainpoolP512r1-pub-explicit-no-seed.pem"),
         ],
     )
