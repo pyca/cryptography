@@ -38,7 +38,15 @@ pub(crate) fn load_der_ocsp_response(
         | INTERNAL_ERROR_RESPONSE
         | TRY_LATER_RESPONSE
         | SIG_REQUIRED_RESPONSE
-        | UNAUTHORIZED_RESPONSE => {}
+        | UNAUTHORIZED_RESPONSE => {
+            if response.response_bytes.is_some() {
+                return Err(CryptographyError::from(
+                    pyo3::exceptions::PyValueError::new_err(
+                        "Unsuccessful OCSP response contains a BasicResponse",
+                    ),
+                ));
+            }
+        }
         _ => {
             return Err(CryptographyError::from(
                 pyo3::exceptions::PyValueError::new_err("OCSP response has an unknown status code"),

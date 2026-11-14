@@ -1642,6 +1642,15 @@ class TestOCSPResponse:
                 ocsp.load_der_ocsp_response,
             )
 
+    def test_response_bytes_present_unsuccessful(self):
+        with pytest.raises(ValueError):
+            _load_data(
+                os.path.join(
+                    "x509", "ocsp", "resp-unsuccessful-response-bytes.der"
+                ),
+                ocsp.load_der_ocsp_response,
+            )
+
     def test_unknown_response_status(self):
         with pytest.raises(ValueError):
             _load_data(
