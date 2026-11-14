@@ -1472,6 +1472,19 @@ class TestPEMSerialization:
         with pytest.raises(ValueError):
             load_pem_private_key(data, password=None)
 
+    def test_dsa_private_key_inconsistent_public_key(self):
+        data = load_vectors_from_file(
+            os.path.join(
+                "asymmetric",
+                "Traditional_OpenSSL_Serialization",
+                "dsa-inconsistent-public-key.pem",
+            ),
+            lambda f: f.read(),
+            mode="rb",
+        )
+        with pytest.raises(ValueError):
+            load_pem_private_key(data, password=None)
+
     def test_pem_encryption_missing_dek_info(self):
         data = load_vectors_from_file(
             os.path.join(

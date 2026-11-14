@@ -303,6 +303,9 @@ Custom asymmetric vectors
 * ``asymmetric/Traditional_OpenSSL_Serialization/dsa-wrong-version.pem`` - A
   DSA key, encoded as a "traditional" ``DSA PRIVATE KEY`` PEM block, with an
   invalid version number.
+* ``asymmetric/Traditional_OpenSSL_Serialization/dsa-inconsistent-public-key.pem``
+  - A DSA key, encoded as a "traditional" ``DSA PRIVATE KEY`` PEM block, whose
+  public key does not correspond to its private key.
 * ``asymmetric/PKCS8/ec-inconsistent-curve.pem`` - A PKCS8 encoded EC key where
   the the curve OID in the parameters does not match the curve OID in the key.
 * ``asymmetric/PKCS8/ec-inconsistent-curve2.pem`` - A PKCS8 encoded EC key
