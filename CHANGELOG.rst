@@ -59,6 +59,11 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.hashes.SHAKE256.xof` and
   :meth:`~cryptography.hazmat.asn1.TLV.parse`. Previously, type checkers
   treated their return values as ``Any``.
+* :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
+  and :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
+  now raise ``ValueError`` for a traditional ``DSA PRIVATE KEY`` whose public
+  key does not correspond to its private key, matching the PKCS8 loader and
+  :meth:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateNumbers.private_key`.
 
 .. _v50-0-2:
 

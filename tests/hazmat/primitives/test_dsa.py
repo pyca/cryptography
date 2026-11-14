@@ -12,7 +12,6 @@ import pytest
 
 from cryptography import utils
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.bindings._rust import openssl as rust_openssl
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import dsa
 from cryptography.hazmat.primitives.asymmetric.utils import (
@@ -608,26 +607,16 @@ class TestDSASignature:
         with pytest.raises(ValueError):
             private_key.sign(digest, prehashed_alg)
 
-    @pytest.mark.supported(
-        only_if=lambda _: (
-            rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
-            or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
-            or rust_openssl.CRYPTOGRAPHY_IS_AWSLC
-            or rust_openssl.CRYPTOGRAPHY_OPENSSL_309_OR_GREATER
-        ),
-        skip_message="Requires OpenSSL 3.0.9+, LibreSSL, BoringSSL, or AWS-LC",
-    )
     def test_nilpotent(self):
-        key = load_vectors_from_file(
-            os.path.join("asymmetric", "DSA", "custom", "nilpotent.pem"),
-            lambda pemfile: serialization.load_pem_private_key(
-                pemfile.read().encode(), password=None
-            ),
-        )
-        assert isinstance(key, dsa.DSAPrivateKey)
-
+        # The generator is nilpotent, so g^x mod p is 0 and the stored public
+        # key (1) does not correspond to the private key.
         with pytest.raises(ValueError):
-            key.sign(b"anything", hashes.SHA256())
+            load_vectors_from_file(
+                os.path.join("asymmetric", "DSA", "custom", "nilpotent.pem"),
+                lambda pemfile: serialization.load_pem_private_key(
+                    pemfile.read().encode(), password=None
+                ),
+            )
 
 
 class TestDSANumbers:
