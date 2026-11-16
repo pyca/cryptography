@@ -488,9 +488,16 @@ impl EvpAead {
             b""
         };
 
-        self.ctx
+        if self
+            .ctx
             .decrypt(ciphertext, nonce.unwrap_or(b""), ad, buf)
-            .map_err(|_| exceptions::InvalidTag::new_err(()))?;
+            .is_err()
+        {
+            // EVP_AEAD_CTX_open already clears the output on failure, but
+            // don't rely on that.
+            buf.fill(0);
+            return Err(exceptions::InvalidTag::new_err(()).into());
+        }
 
         Ok(())
     }

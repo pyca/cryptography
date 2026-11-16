@@ -512,6 +512,9 @@ impl ChunkedDecryptor {
         let result = Self::update_impl(py, params, state, data, out);
         if result.is_err() {
             self.state = None;
+            // Earlier chunks in this call may already have been written;
+            // don't leave any output from a failed call behind.
+            out[..out_len].fill(0);
         }
         result
     }

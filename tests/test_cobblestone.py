@@ -367,6 +367,22 @@ class TestCobblestone:
         with pytest.raises(AlreadyFinalized):
             dec.finalize()
 
+    @pytest.mark.parametrize("chunk", [0, 1])
+    def test_update_into_invalid_tag_zeroes_buffer(self, variant, chunk):
+        encryptor_cls, decryptor_cls, _ = variant
+        key = encryptor_cls.generate_key()
+        plaintext = os.urandom(2 * CHUNK_SIZE + 100)
+        ciphertext = bytearray(
+            _encrypt_all(encryptor_cls, key, b"", plaintext)
+        )
+        ciphertext[HEADER_LEN + chunk * WIRE_CHUNK_SIZE] ^= 1
+
+        dec = decryptor_cls(key, b"")
+        buf = bytearray(2 * CHUNK_SIZE)
+        with pytest.raises(InvalidTag):
+            dec.update_into(bytes(ciphertext), buf)
+        assert buf == bytearray(len(buf))
+
     def test_finalize_only_decryptor_rejects_empty_stream(self, variant):
         encryptor_cls, decryptor_cls, _ = variant
         key = encryptor_cls.generate_key()
