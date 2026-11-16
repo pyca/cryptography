@@ -231,7 +231,6 @@ such functions; it is generally recommended to use
     >>> import base64
     >>> import os
     >>> from cryptography.fernet import Fernet
-    >>> from cryptography.hazmat.primitives import hashes
     >>> from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
     >>> password = b"password"
     >>> salt = os.urandom(16)
