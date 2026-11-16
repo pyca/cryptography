@@ -72,6 +72,36 @@ impl From<Cipher> for RegistryCipher {
     }
 }
 
+#[cfg(not(any(
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC
+)))]
+fn legacy_cipher(
+    name: &str,
+    _fallback: Option<&'static openssl::cipher::CipherRef>,
+) -> Option<RegistryCipher> {
+    // OpenSSL 3's static EVP_* accessors return a cipher object even when no
+    // loaded provider implements it, which then fails during cipher init.
+    // Fetching only succeeds when a loaded provider can actually create the
+    // cipher, so use it to decide whether to register the legacy cipher.
+    Cipher::fetch(None, name, None)
+        .ok()
+        .map(RegistryCipher::Owned)
+}
+
+#[cfg(any(
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC
+))]
+fn legacy_cipher(
+    _name: &str,
+    fallback: Option<&'static openssl::cipher::CipherRef>,
+) -> Option<RegistryCipher> {
+    fallback.map(RegistryCipher::Ref)
+}
+
 struct RegistryBuilder<'p> {
     py: pyo3::Python<'p>,
     m: HashMap<RegistryKey, RegistryCipher>,
@@ -101,6 +131,21 @@ impl<'p> RegistryBuilder<'p> {
             )?,
             cipher.into(),
         );
+
+        Ok(())
+    }
+
+    fn add_legacy(
+        &mut self,
+        algorithm: &pyo3::Bound<'_, pyo3::PyAny>,
+        mode: &pyo3::Bound<'_, pyo3::PyAny>,
+        key_size: Option<u16>,
+        name: &str,
+        fallback: Option<&'static openssl::cipher::CipherRef>,
+    ) -> CryptographyResult<()> {
+        if let Some(cipher) = legacy_cipher(name, fallback) {
+            self.add(algorithm, mode, key_size, cipher)?;
+        }
 
         Ok(())
     }
@@ -273,7 +318,10 @@ fn get_cipher_registry(
 
         // Don't register legacy ciphers if they're unavailable. In theory
         // this shouldn't be necessary but OpenSSL 3 will return an EVP_CIPHER
-        // even when the cipher is unavailable.
+        // even when the cipher is unavailable. When the legacy provider loads
+        // but only implements a subset of these algorithms (some distributions
+        // build it that way) fetching is the only reliable way to know what is
+        // actually usable.
         if cfg!(any(
             CRYPTOGRAPHY_IS_LIBRESSL,
             CRYPTOGRAPHY_IS_BORINGSSL,
@@ -282,43 +330,59 @@ fn get_cipher_registry(
         {
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_BF"))]
             {
-                m.add(&blowfish, &cbc, None, Cipher::bf_cbc())?;
-                m.add(&blowfish, &cfb, None, Cipher::bf_cfb64())?;
-                m.add(&blowfish, &ofb, None, Cipher::bf_ofb())?;
-                m.add(&blowfish, &ecb, None, Cipher::bf_ecb())?;
+                m.add_legacy(&blowfish, &cbc, None, "bf-cbc", Some(Cipher::bf_cbc()))?;
+                m.add_legacy(&blowfish, &cfb, None, "bf-cfb", Some(Cipher::bf_cfb64()))?;
+                m.add_legacy(&blowfish, &ofb, None, "bf-ofb", Some(Cipher::bf_ofb()))?;
+                m.add_legacy(&blowfish, &ecb, None, "bf-ecb", Some(Cipher::bf_ecb()))?;
             }
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_SEED"))]
             {
-                m.add(&seed, &cbc, Some(128), Cipher::seed_cbc())?;
-                m.add(&seed, &cfb, Some(128), Cipher::seed_cfb128())?;
-                m.add(&seed, &ofb, Some(128), Cipher::seed_ofb())?;
-                m.add(&seed, &ecb, Some(128), Cipher::seed_ecb())?;
+                m.add_legacy(&seed, &cbc, Some(128), "seed-cbc", Some(Cipher::seed_cbc()))?;
+                m.add_legacy(
+                    &seed,
+                    &cfb,
+                    Some(128),
+                    "seed-cfb",
+                    Some(Cipher::seed_cfb128()),
+                )?;
+                m.add_legacy(&seed, &ofb, Some(128), "seed-ofb", Some(Cipher::seed_ofb()))?;
+                m.add_legacy(&seed, &ecb, Some(128), "seed-ecb", Some(Cipher::seed_ecb()))?;
             }
 
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_CAST"))]
             {
-                m.add(&cast5, &cbc, None, Cipher::cast5_cbc())?;
-                m.add(&cast5, &ecb, None, Cipher::cast5_ecb())?;
-                m.add(&cast5, &ofb, None, Cipher::cast5_ofb())?;
-                m.add(&cast5, &cfb, None, Cipher::cast5_cfb64())?;
+                m.add_legacy(&cast5, &cbc, None, "cast5-cbc", Some(Cipher::cast5_cbc()))?;
+                m.add_legacy(&cast5, &ecb, None, "cast5-ecb", Some(Cipher::cast5_ecb()))?;
+                m.add_legacy(&cast5, &ofb, None, "cast5-ofb", Some(Cipher::cast5_ofb()))?;
+                m.add_legacy(&cast5, &cfb, None, "cast5-cfb", Some(Cipher::cast5_cfb64()))?;
             }
 
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_IDEA"))]
             {
-                m.add(&idea, &cbc, Some(128), Cipher::idea_cbc())?;
-                m.add(&idea, &ecb, Some(128), Cipher::idea_ecb())?;
-                m.add(&idea, &ofb, Some(128), Cipher::idea_ofb())?;
-                m.add(&idea, &cfb, Some(128), Cipher::idea_cfb64())?;
+                m.add_legacy(&idea, &cbc, Some(128), "idea-cbc", Some(Cipher::idea_cbc()))?;
+                m.add_legacy(&idea, &ecb, Some(128), "idea-ecb", Some(Cipher::idea_ecb()))?;
+                m.add_legacy(&idea, &ofb, Some(128), "idea-ofb", Some(Cipher::idea_ofb()))?;
+                m.add_legacy(
+                    &idea,
+                    &cfb,
+                    Some(128),
+                    "idea-cfb",
+                    Some(Cipher::idea_cfb64()),
+                )?;
             }
 
             #[cfg(not(CRYPTOGRAPHY_OSSLCONF = "OPENSSL_NO_RC4"))]
-            m.add(&arc4, none_type.as_any(), None, Cipher::rc4())?;
+            m.add_legacy(&arc4, none_type.as_any(), None, "rc4", Some(Cipher::rc4()))?;
 
-            m.add(&des, &cbc, Some(64), Cipher::des_cbc())?;
+            m.add_legacy(&des, &cbc, Some(64), "des-cbc", Some(Cipher::des_cbc()))?;
 
-            if let Some(rc2_cbc) = Cipher::from_nid(openssl::nid::Nid::RC2_CBC) {
-                m.add(&rc2, &cbc, Some(128), rc2_cbc)?;
-            }
+            m.add_legacy(
+                &rc2,
+                &cbc,
+                Some(128),
+                "rc2-cbc",
+                Cipher::from_nid(openssl::nid::Nid::RC2_CBC),
+            )?;
         }
 
         Ok(m.build())

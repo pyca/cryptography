@@ -4,6 +4,10 @@
 
 
 import itertools
+import os
+import subprocess
+import sys
+import textwrap
 
 import pytest
 
@@ -79,6 +83,85 @@ class TestOpenSSL:
             backend.cipher_supported(DummyCipherAlgorithm(), DummyMode())
             is False
         )
+
+    @pytest.mark.skipif(
+        rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
+        or rust_openssl.CRYPTOGRAPHY_IS_BORINGSSL
+        or rust_openssl.CRYPTOGRAPHY_IS_AWSLC,
+        reason="OpenSSL 3 providers are required",
+    )
+    def test_legacy_cipher_not_supported_when_provider_lacks_it(
+        self, tmp_path
+    ):
+        # Configure OpenSSL to load the legacy provider, but make all fetches
+        # exclude it. This simulates distributions whose legacy provider only
+        # implements a subset of the legacy algorithms.
+        config = tmp_path / "openssl.cnf"
+        config.write_text(
+            textwrap.dedent(
+                """
+                openssl_conf = openssl_init
+
+                [openssl_init]
+                alg_section = algorithm_sect
+
+                [algorithm_sect]
+                default_properties = provider!=legacy
+                """
+            )
+        )
+        script = textwrap.dedent(
+            """
+            from cryptography.exceptions import UnsupportedAlgorithm
+            from cryptography.hazmat.backends.openssl.backend import backend
+            from cryptography.hazmat.bindings._rust import openssl as \
+                rust_openssl
+            from cryptography.hazmat.decrepit.ciphers import algorithms
+            from cryptography.hazmat.primitives.ciphers import Cipher, modes
+
+            if not rust_openssl._legacy_provider_loaded:
+                raise SystemExit(77)
+
+            supported = [
+                (algorithms.ARC4(b"\\x00" * 16), None),
+                (
+                    algorithms.Blowfish(b"\\x00" * 16),
+                    modes.CBC(b"\\x00" * 8),
+                ),
+                (
+                    algorithms.CAST5(b"\\x00" * 16),
+                    modes.CBC(b"\\x00" * 8),
+                ),
+                (
+                    algorithms.RC2(b"\\x00" * 16),
+                    modes.CBC(b"\\x00" * 8),
+                ),
+            ]
+            for algorithm, mode in supported:
+                assert not backend.cipher_supported(algorithm, mode), (
+                    f"{algorithm.name} incorrectly reported as supported"
+                )
+                try:
+                    Cipher(algorithm, mode).encryptor()
+                except UnsupportedAlgorithm:
+                    pass
+                else:
+                    raise AssertionError(
+                        f"{algorithm.name} did not raise UnsupportedAlgorithm"
+                    )
+            """
+        )
+        env = os.environ.copy()
+        env["OPENSSL_CONF"] = str(config)
+        result = subprocess.run(
+            [sys.executable, "-c", script],
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 77:
+            pytest.skip("legacy provider is not available")
+        assert result.returncode == 0, result.stderr
 
     def test_openssl_assert(self):
         backend.openssl_assert(True)
