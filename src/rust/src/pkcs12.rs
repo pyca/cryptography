@@ -238,22 +238,20 @@ fn decode_encryption_algorithm<'a>(
             default_hmac_alg
         };
 
-        let cipher_kdf_iter = if let Some(v) = encryption_algorithm
+        let kdf_rounds: Option<u64> = encryption_algorithm
             .getattr(pyo3::intern!(py, "_kdf_rounds"))?
-            .extract()?
-        {
-            v
-        } else {
-            default_cipher_kdf_iter
-        };
+            .extract()?;
 
         Ok(KeySerializationEncryption {
             password: encryption_algorithm
                 .getattr(pyo3::intern!(py, "password"))?
                 .extract()?,
             mac_algorithm: hmac_alg,
-            mac_kdf_iter: default_hmac_kdf_iter,
-            cipher_kdf_iter,
+            // The MAC key is derived from the same password, so it must use
+            // the requested rounds too. Otherwise the MAC is a cheaper way to
+            // check password guesses than the encrypted bags.
+            mac_kdf_iter: kdf_rounds.unwrap_or(default_hmac_kdf_iter),
+            cipher_kdf_iter: kdf_rounds.unwrap_or(default_cipher_kdf_iter),
             encryption_algorithm: Some(cipher),
         })
     } else if encryption_algorithm.is_instance(&types::BEST_AVAILABLE_ENCRYPTION.get(py)?)? {

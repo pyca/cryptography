@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 import pytest
 
 from cryptography import utils, x509
+from cryptography.hazmat import asn1
 from cryptography.hazmat.decrepit.ciphers.algorithms import RC2
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import (
@@ -55,6 +56,21 @@ with warnings.catch_warnings():
             ":cryptography.utils.CryptographyDeprecationWarning"
         ),
     )
+
+
+# RFC 7292 Section 4: the parts of the PFX needed to read the MAC parameters.
+@asn1.sequence
+class _MacData:
+    mac: asn1.TLV
+    mac_salt: bytes
+    iterations: typing.Annotated[int, asn1.Default(1)]
+
+
+@asn1.sequence
+class _PFX:
+    version: int
+    auth_safe: asn1.TLV
+    mac_data: _MacData
 
 
 def _skip_curve_unsupported(backend, curve):
@@ -683,6 +699,10 @@ class TestPKCS12Creation:
             assert mac_alg_der in p12
         if iter_der is not None:
             assert iter_der in p12
+        # The MAC key is derived from the same password, so it must use the
+        # requested rounds as well.
+        mac_data = asn1.decode_der(_PFX, p12).mac_data
+        assert mac_data.iterations == (iters if iters is not None else 2048)
         parsed_key, parsed_cert, parsed_more_certs = load_key_and_certificates(
             p12, b"password"
         )
@@ -866,6 +886,8 @@ class TestPKCS12TrustStoreCreation:
             assert mac_alg_der in p12
         if iter_der is not None:
             assert iter_der in p12
+        mac_data = asn1.decode_der(_PFX, p12).mac_data
+        assert mac_data.iterations == (iters if iters is not None else 2048)
         _, _, parsed_more_certs = load_key_and_certificates(p12, b"password")
         assert parsed_more_certs == [cert]
 

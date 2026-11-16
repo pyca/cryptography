@@ -59,6 +59,11 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.hashes.SHAKE256.xof` and
   :meth:`~cryptography.hazmat.asn1.TLV.parse`. Previously, type checkers
   treated their return values as ``Any``.
+* When serializing PKCS12 with an encryption builder that sets
+  :meth:`~cryptography.hazmat.primitives.serialization.KeySerializationEncryptionBuilder.kdf_rounds`,
+  the MAC's key derivation now uses the same number of rounds. Previously the
+  MAC always used 2048 rounds, which made it a cheaper way to check password
+  guesses than the encrypted contents.
 
 .. _v50-0-2:
 
