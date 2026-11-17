@@ -247,6 +247,8 @@ Custom asymmetric vectors
   a ring and the generator of the multiplicative subgroup is actually
   nilpotent with low degree. Taken from BoringSSL (see
   ``TEST(DSATest, NilpotentGenerator)``).
+* ``asymmetric/DSA/custom/nilpotent-pkcs8.pem`` -- The above key encoded as an
+  unencrypted PKCS8 ``PRIVATE KEY``.
 * ``asymmetric/PKCS8/ec-invalid-private-scalar.pem`` - Contains a PKCS8 encoded
   PEM with a ``secp256r1`` OID and an invalid (very large) private scalar.
 * ``asymmetric/PKCS8/invalid-version.der`` - Contains a PKCS8 encoded DER with
