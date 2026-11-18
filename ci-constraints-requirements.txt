@@ -195,7 +195,7 @@ pytest-randomly==5.1.0 ; python_full_version >= '3.11'
     # via cryptography (pyproject.toml:dev)
 pytest-xdist==3.8.0
     # via cryptography (pyproject.toml:dev)
-python-discovery==1.9.5
+python-discovery==1.9.6
     # via
     #   nox
     #   virtualenv
