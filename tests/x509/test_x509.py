@@ -5007,6 +5007,114 @@ class TestCertificateSigningRequestBuilder:
         with pytest.raises(ValueError):
             builder.sign(private_key, hashes.SHA256())
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mlkem_supported(),
+        skip_message="Requires OpenSSL with ML-KEM support",
+    )
+    def test_build_request_with_mlkem_public_key(self, backend):
+        private_key = ed25519.Ed25519PrivateKey.generate()
+        mlkem_key = mlkem.MLKEM768PrivateKey.generate()
+
+        request = (
+            x509.CertificateSigningRequestBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "ML-KEM")])
+            )
+            .public_key(mlkem_key.public_key())
+            .sign(private_key, None)
+        )
+
+        assert isinstance(request.public_key(), mlkem.MLKEM768PublicKey)
+        assert request.public_key().public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        ) == mlkem_key.public_key().public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        assert request.signature_algorithm_oid == SignatureAlgorithmOID.ED25519
+        pem = request.public_bytes(serialization.Encoding.PEM)
+        der = request.public_bytes(serialization.Encoding.DER)
+        loaded_pem = x509.load_pem_x509_csr(pem)
+        loaded_der = x509.load_der_x509_csr(der)
+        assert loaded_pem.public_bytes(serialization.Encoding.DER) == der
+        assert loaded_der.public_bytes(serialization.Encoding.PEM) == pem
+        assert isinstance(loaded_pem.public_key(), mlkem.MLKEM768PublicKey)
+        assert isinstance(loaded_der.public_key(), mlkem.MLKEM768PublicKey)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.x25519_supported(),
+        skip_message="Requires OpenSSL with X25519 support",
+    )
+    def test_build_request_with_x25519_public_key(self, backend):
+        private_key = ec.generate_private_key(ec.SECP256R1())
+        x25519_key = x25519.X25519PrivateKey.generate()
+
+        request = (
+            x509.CertificateSigningRequestBuilder()
+            .subject_name(
+                x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "X25519")])
+            )
+            .public_key(x25519_key.public_key())
+            .sign(private_key, hashes.SHA256())
+        )
+
+        assert isinstance(request.public_key(), x25519.X25519PublicKey)
+        assert request.public_key().public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        ) == x25519_key.public_key().public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        assert (
+            request.signature_algorithm_oid
+            == SignatureAlgorithmOID.ECDSA_WITH_SHA256
+        )
+        pem = request.public_bytes(serialization.Encoding.PEM)
+        der = request.public_bytes(serialization.Encoding.DER)
+        loaded_pem = x509.load_pem_x509_csr(pem)
+        loaded_der = x509.load_der_x509_csr(der)
+        assert loaded_pem.public_bytes(serialization.Encoding.DER) == der
+        assert loaded_der.public_bytes(serialization.Encoding.PEM) == pem
+        assert isinstance(loaded_pem.public_key(), x25519.X25519PublicKey)
+        assert isinstance(loaded_der.public_key(), x25519.X25519PublicKey)
+
+    def test_public_key_invalid_type(self):
+        builder = x509.CertificateSigningRequestBuilder().subject_name(
+            x509.Name([])
+        )
+        with pytest.raises(TypeError):
+            builder.public_key(typing.cast(typing.Any, "notakey"))
+
+    def test_public_key_set_twice(self):
+        builder = (
+            x509.CertificateSigningRequestBuilder()
+            .subject_name(x509.Name([]))
+            .public_key(ed25519.Ed25519PrivateKey.generate().public_key())
+        )
+        with pytest.raises(ValueError):
+            builder.public_key(
+                ed25519.Ed25519PrivateKey.generate().public_key()
+            )
+
+    def test_sign_uses_private_key_public_key_by_default(
+        self, rsa_key_2048: rsa.RSAPrivateKey
+    ):
+        request = (
+            x509.CertificateSigningRequestBuilder()
+            .subject_name(x509.Name([]))
+            .sign(rsa_key_2048, hashes.SHA256())
+        )
+        assert request.public_key().public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        ) == rsa_key_2048.public_key().public_bytes(
+            serialization.Encoding.DER,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        assert request.is_signature_valid
+
     def test_build_ca_request_with_rsa(self, rsa_key_2048: rsa.RSAPrivateKey):
         private_key = rsa_key_2048
 
