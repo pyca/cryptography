@@ -392,8 +392,8 @@ jobs:
             PATH: twisted
           - DOWNSTREAM: aws-encryption-sdk-python
             REPO: awslabs/aws-encryption-sdk-python
-            # Latest commit on the aws-encryption-sdk-python master branch, as of Nov 12, 2026.
-            REF: 8136b2b57b72a05ce2c5f6361e5f244fec2be5aa
+            # Latest commit on the aws-encryption-sdk-python master branch, as of Nov 18, 2026.
+            REF: ba0e2352949c3dd4b72c3fe977f148d859d1c2f3
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
@@ -412,8 +412,8 @@ jobs:
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Nov 13, 2026.
-            REF: 0e2f6ba2669dc9c6487d7c0a4220b3c3dfd6d4ef
+            # Latest commit on the scapy master branch, as of Nov 18, 2026.
+            REF: 787e73f85d79b0e35cc51b82bffd8511dbf3ec91
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
