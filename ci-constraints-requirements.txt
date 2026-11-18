@@ -114,7 +114,7 @@ mypy-extensions==1.1.0 ; python_full_version < '3.10'
     # via mypy
 mypy-extensions==1.2.0 ; python_full_version >= '3.10'
     # via mypy
-nh3==0.3.7
+nh3==0.3.8
     # via readme-renderer
 nox==2026.4.10 ; python_full_version < '3.10'
     # via cryptography (pyproject.toml:dev)
