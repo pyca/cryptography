@@ -3,6 +3,7 @@
 // for complete details.
 
 use pyo3::types::PyAnyMethods;
+use pyo3::types::PyBytesMethods;
 
 use crate::backend::utils;
 use crate::buf::CffiBuf;
@@ -150,13 +151,20 @@ impl DsaPrivateKey {
         })
     }
 
+    #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+        comment: Option<&pyo3::Bound<'p, pyo3::types::PyBytes>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let comment_bytes = match comment {
+            Some(b) => b.as_bytes(),
+            None => b"",
+        };
+
         utils::pkey_private_bytes(
             py,
             slf,
@@ -166,6 +174,7 @@ impl DsaPrivateKey {
             encryption_algorithm,
             true,
             false,
+            Some(comment_bytes),
         )
     }
 

@@ -113,6 +113,8 @@ class EllipticCurvePrivateKey(metaclass=abc.ABCMeta):
         encoding: _serialization.Encoding,
         format: _serialization.PrivateFormat,
         encryption_algorithm: _serialization.KeySerializationEncryption,
+        *,
+        comment: bytes = b"",
     ) -> bytes:
         """
         Returns the key serialized as bytes.
