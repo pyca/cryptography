@@ -8,6 +8,11 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Legacy ciphers are now only registered when a loaded OpenSSL provider can
+  actually fetch them. Previously, a legacy provider that implemented only a
+  subset of the algorithms caused ``backend.cipher_supported()`` to report
+  unsupported ciphers as supported, and using those ciphers raised
+  ``InternalError`` instead of ``UnsupportedAlgorithm``.
 * Require CFFI 2.1.1 or newer on Python 3.15 to avoid an ABI issue in
   earlier CFFI releases.
 * X.509 names now reject IA5String attributes containing non-ASCII
