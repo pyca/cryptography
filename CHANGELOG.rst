@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added :class:`~cryptography.hazmat.primitives.asymmetric.ec.BrainpoolP320R1`,
+  a Brainpool curve specified in :rfc:`5639`.
 * Require CFFI 2.1.1 or newer on Python 3.15 to avoid an ABI issue in
   earlier CFFI releases.
 * X.509 names now reject IA5String attributes containing non-ASCII
