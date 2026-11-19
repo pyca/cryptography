@@ -407,13 +407,13 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Nov 15, 2026.
-            REF: f7701d5f6b69e103bcc4995a641447ae70574e99
+            # Latest commit on the mitmproxy main branch, as of Nov 19, 2026.
+            REF: 423328435b6a1e300badc17d3ec81837335d5d9e
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Nov 18, 2026.
-            REF: 787e73f85d79b0e35cc51b82bffd8511dbf3ec91
+            # Latest commit on the scapy master branch, as of Nov 19, 2026.
+            REF: 4cef323432a0e6409d80dd3201aaac500374f8c1
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
