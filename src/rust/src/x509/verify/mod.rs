@@ -462,6 +462,14 @@ fn build_subject<'a>(
 ) -> pyo3::PyResult<Subject<'a>> {
     match subject {
         SubjectOwner::DNSName(dns_name) => {
+            // An IP address literal is not a host name (RFC 1123 2.1). Matching
+            // one against DNS SANs would let e.g. `*.0.2.1` match `192.0.2.1`,
+            // and DNS SANs are not checked against IP name constraints.
+            if IPAddress::from_str(dns_name).is_some() {
+                return Err(pyo3::exceptions::PyValueError::new_err(
+                    "IP addresses must be passed as an IPAddress subject, not a DNSName",
+                ));
+            }
             let dns_name = DNSName::new(dns_name)
                 .ok_or_else(|| pyo3::exceptions::PyValueError::new_err("invalid domain name"))?;
 
