@@ -325,14 +325,14 @@ Custom asymmetric vectors
   DSA key, encoded as a "traditional" ``DSA PRIVATE KEY`` PEM block, with an
   invalid version number.
 * ``asymmetric/PKCS8/ec-inconsistent-curve.pem`` - A PKCS8 encoded EC key where
-  the the curve OID in the parameters does not match the curve OID in the key.
+  the curve OID in the parameters does not match the curve OID in the key.
 * ``asymmetric/PKCS8/ec-inconsistent-curve2.pem`` - A PKCS8 encoded EC key
-  where the the curve OID in the parameters does not match the curve OID in
+  where the curve OID in the parameters does not match the curve OID in
   the key (the OIDs are reversed from ``ec-inconsistent-curve.pem``).
 * ``asymmetric/EC/ec-missing-curve.pem`` - A PKCS#1 encoded EC key where the
   curve OID is missing.
 * ``asymmetric/PKCS8/ec-consistent-curve.pem`` - A PKCS8 encoded EC key where
-  the the curve OID in the parameters is the same as the curve OID in the key
+  the curve OID in the parameters is the same as the curve OID in the key
   (encoding the curve OID twice is duplicative, as the inner curve is
   optional).
 * ``asymmetric/PKCS8/ec-invalid-version.pem`` - A PKCS8 encoded EC key with an
@@ -969,6 +969,9 @@ Custom X.509 OCSP Test Vectors
 * ``x509/ocsp/resp-invalid-version.der`` - ``resp-sha256.der`` modified so the
   ``tbsResponseData`` carries an explicit version of 1, which is not defined by
   RFC 6960.
+* ``x509/ocsp/resp-unsuccessful-response-bytes.der`` - ``resp-sha256.der``
+  modified so the ``responseStatus`` is ``tryLater`` while the
+  ``responseBytes`` are kept, which is not allowed by RFC 6960.
 
 Custom PKCS12 Test Vectors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~

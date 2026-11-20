@@ -114,7 +114,7 @@ mypy-extensions==1.1.0 ; python_full_version < '3.10'
     # via mypy
 mypy-extensions==1.2.0 ; python_full_version >= '3.10'
     # via mypy
-nh3==0.3.7
+nh3==0.3.8
     # via readme-renderer
 nox==2026.4.10 ; python_full_version < '3.10'
     # via cryptography (pyproject.toml:dev)
@@ -195,7 +195,7 @@ pytest-randomly==5.1.0 ; python_full_version >= '3.11'
     # via cryptography (pyproject.toml:dev)
 pytest-xdist==3.8.0
     # via cryptography (pyproject.toml:dev)
-python-discovery==1.9.5
+python-discovery==1.9.6
     # via
     #   nox
     #   virtualenv
@@ -211,7 +211,7 @@ requests==2.34.2 ; python_full_version >= '3.10'
     #   sphinxcontrib-spelling
 roman-numerals==4.1.0 ; python_full_version >= '3.11'
     # via sphinx
-ruff==0.17.4
+ruff==0.17.5
     # via cryptography (pyproject.toml:dev)
 snowballstemmer==3.1.1
     # via sphinx
@@ -292,9 +292,9 @@ urllib3==2.6.3 ; python_full_version < '3.10'
     # via requests
 urllib3==2.8.0 ; python_full_version >= '3.10'
     # via requests
-uv==0.13.7
+uv==0.13.9
     # via nox
-virtualenv==21.15.6
+virtualenv==21.15.9
     # via nox
 zipp==3.23.1 ; python_full_version < '3.10'
     # via importlib-metadata

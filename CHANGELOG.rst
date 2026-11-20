@@ -8,6 +8,8 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added :class:`~cryptography.hazmat.primitives.asymmetric.ec.BrainpoolP320R1`,
+  a Brainpool curve specified in :rfc:`5639`.
 * Added support for loading elliptic curve keys that contain explicit encodings
   of the curves ``brainpoolP256r1``, ``brainpoolP384r1``, and
   ``brainpoolP512r1``.
@@ -56,6 +58,12 @@ Changelog
   and
   :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`,
   and serialized in the OpenSSH formats.
+* Added missing return type hints to
+  :meth:`~cryptography.hazmat.primitives.serialization.SSHCertificateBuilder.valid_for_all_principals`,
+  :meth:`~cryptography.hazmat.primitives.hashes.SHAKE128.xof`,
+  :meth:`~cryptography.hazmat.primitives.hashes.SHAKE256.xof` and
+  :meth:`~cryptography.hazmat.asn1.TLV.parse`. Previously, type checkers
+  treated their return values as ``Any``.
 
 .. _v50-0-2:
 

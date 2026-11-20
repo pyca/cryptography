@@ -32,6 +32,8 @@ pub(crate) fn group_to_curve_oid(
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         openssl::nid::Nid::BRAINPOOL_P256R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP256R1),
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+        openssl::nid::Nid::BRAINPOOL_P320R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP320R1),
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         openssl::nid::Nid::BRAINPOOL_P384R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP384R1),
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         openssl::nid::Nid::BRAINPOOL_P512R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP512R1),
@@ -55,6 +57,8 @@ pub(crate) fn ec_params_to_group(
 
                 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
                 &cryptography_x509::oid::EC_BRAINPOOLP256R1 => openssl::nid::Nid::BRAINPOOL_P256R1,
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+                &cryptography_x509::oid::EC_BRAINPOOLP320R1 => openssl::nid::Nid::BRAINPOOL_P320R1,
                 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
                 &cryptography_x509::oid::EC_BRAINPOOLP384R1 => openssl::nid::Nid::BRAINPOOL_P384R1,
                 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
