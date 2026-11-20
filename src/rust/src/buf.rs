@@ -72,8 +72,11 @@ fn _extract_buffer_length<'p>(
     let ptrval = types::FFI_CAST
         .get(py)?
         .call1((pyo3::intern!(py, "uintptr_t"), bufobj.clone()))?
-        .call_method0(pyo3::intern!(py, "__int__"))?
-        .extract::<usize>()?;
+        .call_method0(pyo3::intern!(py, "__int__"))?;
+    // This is a separate statement, rather than the end of the chain above,
+    // because Rust 1.100+ coverage doesn't map an argument-less method call
+    // on a chain continuation line, leaving only its (untaken) `?` branch.
+    let ptrval = ptrval.extract::<usize>()?;
     let len = bufobj.len()?;
     Ok((bufobj, ptrval, len))
 }
