@@ -70,15 +70,23 @@ pub(crate) fn pkey_private_bytes<'p>(
         return Ok(pyo3::types::PyBytes::new(py, &raw_bytes));
     }
 
+    let is_matching_builder =
+        if encryption_algorithm.is_instance(&types::ENCRYPTION_BUILDER.get(py)?)? {
+            let builder_format = encryption_algorithm.getattr(pyo3::intern!(py, "_format"))?;
+            // This is a separate statement, rather than the end of a chain,
+            // because Rust 1.100+ coverage doesn't map an argument-less method
+            // call on a chain continuation line, leaving only its (untaken) `?`
+            // branch.
+            builder_format.extract::<PrivateFormat>()? == format
+        } else {
+            false
+        };
+
     let py_password;
     let password = if encryption_algorithm.is_instance(&types::NO_ENCRYPTION.get(py)?)? {
         b"" as &[u8]
     } else if encryption_algorithm.is_instance(&types::BEST_AVAILABLE_ENCRYPTION.get(py)?)?
-        || (encryption_algorithm.is_instance(&types::ENCRYPTION_BUILDER.get(py)?)?
-            && encryption_algorithm
-                .getattr(pyo3::intern!(py, "_format"))?
-                .extract::<PrivateFormat>()?
-                == format)
+        || is_matching_builder
     {
         py_password = encryption_algorithm
             .getattr(pyo3::intern!(py, "password"))?
