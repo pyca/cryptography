@@ -16,6 +16,7 @@ pub mod spki;
 pub(crate) mod utils;
 
 pub const MIN_DH_MODULUS_SIZE: u32 = 512;
+pub const MAX_DSA_MODULUS_SIZE: u32 = 4096;
 
 pub enum KeyParsingError {
     InvalidKey,
