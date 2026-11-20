@@ -76,7 +76,7 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
             }
             cryptography_key_parsing::KeyParsingError::ExplicitCurveUnsupported => {
                 CryptographyError::Py(exceptions::UnsupportedAlgorithm::new_err((
-                    "ECDSA keys with explicit parameters are only supported when they map to secp256r1, secp384r1, or secp521r1. No custom curves are supported.",
+                    "ECDSA keys with explicit parameters are only supported when they map to secp256r1, secp384r1, secp521r1, brainpoolP256r1, brainpoolP384r1, or brainpoolP512r1. No custom curves are supported.",
                     exceptions::Reasons::UNSUPPORTED_ELLIPTIC_CURVE,
                 )))
             }
