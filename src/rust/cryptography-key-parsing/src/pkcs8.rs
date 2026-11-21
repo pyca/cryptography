@@ -10,7 +10,10 @@ use cryptography_x509::pkcs8::EncryptedPrivateKeyInfo;
 
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use crate::MIN_DH_MODULUS_SIZE;
-use crate::{ec, pbe, rsa, KeyParsingError, KeyParsingResult, ParsedPrivateKey, ParsedPublicKey};
+use crate::{
+    ec, pbe, rsa, KeyParsingError, KeyParsingResult, ParsedPrivateKey, ParsedPublicKey,
+    MAX_DSA_MODULUS_SIZE,
+};
 
 // RFC 5208 Section 5 (PrivateKeyInfo), extended by RFC 5958 Section 2
 // (OneAsymmetricKey), which adds version v2 and an optional public key.
@@ -97,6 +100,20 @@ fn parse_private_key_inner(k: &PrivateKeyInfo<'_>) -> KeyParsingResult<ParsedPri
             let p = openssl::bn::BigNum::from_slice(dsa_params.p.as_bytes())?;
             let q = openssl::bn::BigNum::from_slice(dsa_params.q.as_bytes())?;
             let g = openssl::bn::BigNum::from_slice(dsa_params.g.as_bytes())?;
+
+            // The modular exponentiation below is super-linear in the
+            // size of the parameters, which are not yet validated at
+            // this point, so reject oversized parameters before
+            // performing it on attacker-controlled input. 4096 bits is
+            // the largest DSA modulus supported elsewhere in this
+            // library (see `check_dsa_parameters`), and in a valid key
+            // both `g` and the private key are smaller than `p`.
+            if p.num_bits() > MAX_DSA_MODULUS_SIZE as i32
+                || g.num_bits() > p.num_bits()
+                || dsa_private_key.num_bits() > p.num_bits()
+            {
+                return Err(KeyParsingError::InvalidKey);
+            }
 
             let mut bn_ctx = openssl::bn::BigNumContext::new()?;
             let mut pub_key = openssl::bn::BigNum::new()?;
@@ -661,8 +678,9 @@ pub fn serialize_encrypted_private_key(
 
 #[cfg(test)]
 mod tests {
-    use super::serialize_private_key;
-    use crate::ParsedPrivateKey;
+    use super::{parse_private_key, serialize_private_key, PrivateKeyInfo};
+    use crate::{ParsedPrivateKey, MAX_DSA_MODULUS_SIZE};
+    use cryptography_x509::common::{AlgorithmIdentifier, AlgorithmParameters, DssParams};
 
     #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
     #[test]
@@ -672,5 +690,40 @@ mod tests {
         let parsed = ParsedPrivateKey::Pkey(pkey);
         // Expected to panic
         _ = serialize_private_key(&parsed);
+    }
+
+    #[test]
+    fn test_parse_dsa_private_key_oversized_modulus() {
+        // A DSA key whose modulus exceeds MAX_DSA_MODULUS_SIZE must be
+        // rejected before the public key is computed with a modular
+        // exponentiation over the unvalidated parameters.
+        // Note: the byte strings are the DER contents octets of the
+        // INTEGERs, so values with the high bit set carry a leading
+        // zero byte. The modulus is 4104 bits, just over the limit.
+        let mut p_bytes = vec![0x00];
+        p_bytes.extend_from_slice(&[0xFF; (MAX_DSA_MODULUS_SIZE / 8 + 1) as usize]);
+        let mut q_bytes = vec![0x00];
+        q_bytes.extend_from_slice(&[0xFF; 32]);
+        let g_bytes = [0x02];
+        let private_key_bytes = asn1::write_single(&asn1::BigUint::new(&[0x03]).unwrap()).unwrap();
+        let key = PrivateKeyInfo {
+            version: 0,
+            algorithm: AlgorithmIdentifier {
+                oid: asn1::DefinedByMarker::marker(),
+                params: AlgorithmParameters::Dsa(DssParams {
+                    p: asn1::BigUint::new(&p_bytes).unwrap(),
+                    q: asn1::BigUint::new(&q_bytes).unwrap(),
+                    g: asn1::BigUint::new(&g_bytes).unwrap(),
+                }),
+            },
+            private_key: &private_key_bytes,
+            attributes: None,
+            public_key: None,
+        };
+        let der = asn1::write_single(&key).unwrap();
+        assert!(matches!(
+            parse_private_key(&der),
+            Err(crate::KeyParsingError::InvalidKey)
+        ));
     }
 }
