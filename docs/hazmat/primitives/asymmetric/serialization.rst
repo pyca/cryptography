@@ -2033,7 +2033,9 @@ Serialization Encryption Types
     .. method:: kdf_rounds(rounds)
 
         Set the number of rounds the Key Derivation Function should use. The
-        meaning of the number of rounds varies on the KDF being used.
+        meaning of the number of rounds varies on the KDF being used. For
+        PKCS12, the rounds are used both for encrypting the key and
+        certificates and for the MAC.
 
         :param int rounds: Number of rounds.
 
