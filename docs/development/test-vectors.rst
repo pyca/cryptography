@@ -432,7 +432,7 @@ Key exchange
   ``privateValueLength`` field, which must not be confused with an X9.42
   subprime ``q``.
 
-* ``vectors/cryptoraphy_vectors/asymmetric/ECDH/brainpool.txt`` contains
+* ``vectors/cryptography_vectors/asymmetric/ECDH/brainpool.txt`` contains
   Brainpool vectors from :rfc:`7027`.
 
 * ``vectors/cryptography_vectors/asymmetric/DH/dhpub_cryptography_old.pem``
