@@ -53,6 +53,20 @@ pub(crate) fn encode_name<'p>(
     ))
 }
 
+/// If `tag` is a string type with a restricted character set and `value`
+/// contains a character outside of that set, returns the name of the type.
+fn invalid_restricted_string(tag: asn1::Tag, value: &str) -> Option<&'static str> {
+    if tag == asn1::PrintableString::TAG && asn1::PrintableString::new(value).is_none() {
+        Some("PrintableString")
+    } else if tag == asn1::NumericString::TAG && asn1::NumericString::new(value).is_none() {
+        Some("NumericString")
+    } else if tag == asn1::VisibleString::TAG && asn1::VisibleString::new(value).is_none() {
+        Some("VisibleString")
+    } else {
+        None
+    }
+}
+
 pub(crate) fn encode_name_entry<'p>(
     py: pyo3::Python<'_>,
     ka: &'p cryptography_keepalive::KeepAlive<pyo3::pybacked::PyBackedBytes>,
@@ -103,14 +117,22 @@ pub(crate) fn encode_name_entry<'p>(
             .unwrap(),
         )
     } else {
-        AttributeValue::AnyString(RawTlv::new(
-            asn1::Tag::from_bytes(&[tag])?.0,
-            ka.add(
-                raw_value
-                    .call_method1(pyo3::intern!(py, "encode"), ("utf8",))?
-                    .extract()?,
-            ),
-        ))
+        let tag = asn1::Tag::from_bytes(&[tag])?.0;
+        let encoded: &[u8] = ka.add(
+            raw_value
+                .call_method1(pyo3::intern!(py, "encode"), ("utf8",))?
+                .extract()?,
+        );
+        let value =
+            std::str::from_utf8(encoded).expect("Python str encoded as UTF-8 must be valid UTF-8");
+        if let Some(type_name) = invalid_restricted_string(tag, value) {
+            return Err(CryptographyError::from(
+                pyo3::exceptions::PyValueError::new_err(format!(
+                    "Name attribute value must be a valid {type_name}"
+                )),
+            ));
+        }
+        AttributeValue::AnyString(RawTlv::new(tag, encoded))
     };
     let py_oid = py_name_entry.getattr(pyo3::intern!(py, "oid"))?;
     let oid = py_oid_to_oid(py_oid)?;
