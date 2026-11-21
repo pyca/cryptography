@@ -608,6 +608,17 @@ class TestDSASignature:
         with pytest.raises(ValueError):
             private_key.sign(digest, prehashed_alg)
 
+    def test_nilpotent_traditional(self):
+        # The generator is nilpotent, so g^x mod p is 0 and the stored public
+        # key (1) does not correspond to the private key.
+        with pytest.raises(ValueError):
+            load_vectors_from_file(
+                os.path.join("asymmetric", "DSA", "custom", "nilpotent.pem"),
+                lambda pemfile: serialization.load_pem_private_key(
+                    pemfile.read().encode(), password=None
+                ),
+            )
+
     @pytest.mark.supported(
         only_if=lambda _: (
             rust_openssl.CRYPTOGRAPHY_IS_LIBRESSL
@@ -618,8 +629,10 @@ class TestDSASignature:
         skip_message="Requires OpenSSL 3.0.9+, LibreSSL, BoringSSL, or AWS-LC",
     )
     def test_nilpotent(self):
+        # PKCS8 derives the public key from the private key, so this loads
+        # and the nilpotent generator is only rejected when signing.
         key = load_vectors_from_file(
-            os.path.join("asymmetric", "DSA", "custom", "nilpotent.pem"),
+            os.path.join("asymmetric", "DSA", "custom", "nilpotent-pkcs8.pem"),
             lambda pemfile: serialization.load_pem_private_key(
                 pemfile.read().encode(), password=None
             ),

@@ -268,6 +268,8 @@ Custom asymmetric vectors
   a ring and the generator of the multiplicative subgroup is actually
   nilpotent with low degree. Taken from BoringSSL (see
   ``TEST(DSATest, NilpotentGenerator)``).
+* ``asymmetric/DSA/custom/nilpotent-pkcs8.pem`` -- The above key encoded as an
+  unencrypted PKCS8 ``PRIVATE KEY``.
 * ``asymmetric/PKCS8/ec-invalid-private-scalar.pem`` - Contains a PKCS8 encoded
   PEM with a ``secp256r1`` OID and an invalid (very large) private scalar.
 * ``asymmetric/PKCS8/invalid-version.der`` - Contains a PKCS8 encoded DER with
@@ -324,6 +326,9 @@ Custom asymmetric vectors
 * ``asymmetric/Traditional_OpenSSL_Serialization/dsa-wrong-version.pem`` - A
   DSA key, encoded as a "traditional" ``DSA PRIVATE KEY`` PEM block, with an
   invalid version number.
+* ``asymmetric/Traditional_OpenSSL_Serialization/dsa-inconsistent-public-key.pem``
+  - A DSA key, encoded as a "traditional" ``DSA PRIVATE KEY`` PEM block, whose
+  public key does not correspond to its private key.
 * ``asymmetric/PKCS8/ec-inconsistent-curve.pem`` - A PKCS8 encoded EC key where
   the curve OID in the parameters does not match the curve OID in the key.
 * ``asymmetric/PKCS8/ec-inconsistent-curve2.pem`` - A PKCS8 encoded EC key
