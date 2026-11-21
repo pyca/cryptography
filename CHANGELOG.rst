@@ -64,6 +64,13 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.hashes.SHAKE256.xof` and
   :meth:`~cryptography.hazmat.asn1.TLV.parse`. Previously, type checkers
   treated their return values as ``Any``.
+* :meth:`~cryptography.x509.verification.PolicyBuilder.build_server_verifier`
+  now raises ``ValueError`` when given a
+  :class:`~cryptography.x509.DNSName` that is an IP address. Previously, the
+  address was matched against the DNS names in the ``subjectAltName``
+  extension, so a wildcard such as ``*.0.2.1`` matched ``192.0.2.1`` and IP
+  name constraints did not apply. IP addresses must be passed as an
+  :class:`~cryptography.x509.IPAddress`.
 
 .. _v50-0-2:
 

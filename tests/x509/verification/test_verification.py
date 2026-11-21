@@ -71,6 +71,12 @@ class TestPolicyBuilder:
         )
         assert verifier.policy.subject == DNSName("cryptography.io")
 
+    def test_dnsname_subject_ip_address(self):
+        with pytest.raises(ValueError, match="IPAddress subject"):
+            PolicyBuilder().store(dummy_store()).build_server_verifier(
+                DNSName("192.0.2.1")
+            )
+
     def test_subject_bad_types(self):
         # Subject must be a supported GeneralName type
         with pytest.raises(TypeError):
