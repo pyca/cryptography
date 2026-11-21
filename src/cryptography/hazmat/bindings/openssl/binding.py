@@ -36,7 +36,7 @@ def build_conditional_library(
     conditional_names: Mapping[str, Callable[[], list[str]]],
 ) -> typing.Any:
     conditional_lib = types.ModuleType("lib")
-    conditional_lib._original_lib = lib  # type: ignore[attr-defined]
+    conditional_lib._original_lib = lib  # type: ignore[attr-defined]  # ty: ignore[unresolved-attribute]
     excluded_names = set()
     for condition, names_cb in conditional_names.items():
         if not getattr(lib, condition):
