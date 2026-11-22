@@ -796,11 +796,11 @@ Custom X.509 Request Vectors
   for an RSA 2048 bit key containing two basic constraints extensions. The
   signature on this CSR is invalid.
 * ``unsupported_extension.pem`` - A certificate signing request
-  for an RSA 2048 bit key containing containing an unsupported
+  for an RSA 2048 bit key containing an unsupported
   extension type. The OID was encoded as "1.2.3.4" with an
   ``extnValue`` of "value". The signature on this CSR is invalid.
 * ``unsupported_extension_critical.pem`` - A certificate signing
-  request for an RSA 2048 bit key containing containing an unsupported
+  request for an RSA 2048 bit key containing an unsupported
   extension type marked critical. The OID was encoded as "1.2.3.4"
   with an ``extnValue`` of "value". The signature on this CSR is invalid.
 * ``basic_constraints.pem`` - A certificate signing request for an RSA
