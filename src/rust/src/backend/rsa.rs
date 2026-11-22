@@ -355,7 +355,7 @@ impl RsaPrivateKey {
         // Everything from this line onwards is written with the goal of being
         // as constant-time as is practical given the constraints of
         // rust-openssl and our API. See Bleichenbacher's '98 attack on RSA,
-        // and its many many variants. As such, you should not attempt to
+        // and its many variants. As such, you should not attempt to
         // change this (particularly to "clean it up") without understanding
         // why it was written this way (see Chesterton's Fence), and without
         // measuring to verify you have not introduced observable time
