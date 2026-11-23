@@ -6,7 +6,7 @@ alabaster==1.0.0 ; python_full_version >= '3.10'
     # via sphinx
 argcomplete==3.7.0 ; python_full_version < '3.10'
     # via nox
-argcomplete==3.7.2 ; python_full_version >= '3.10'
+argcomplete==3.8.0 ; python_full_version >= '3.10'
     # via nox
 ast-serialize==0.13.1 ; python_full_version >= '3.10'
     # via mypy
