@@ -10,6 +10,12 @@ Changelog
 
 * Added :class:`~cryptography.hazmat.primitives.asymmetric.ec.BrainpoolP320R1`,
   a Brainpool curve specified in :rfc:`5639`.
+* Added support for signing PKCS7 messages with ML-DSA keys
+  (:class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44PrivateKey`,
+  :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA65PrivateKey`,
+  and
+  :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA87PrivateKey`)
+  via :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7SignatureBuilder`.
 * Added support for loading elliptic curve keys that contain explicit encodings
   of the curves ``brainpoolP256r1``, ``brainpoolP384r1``, and
   ``brainpoolP512r1``.

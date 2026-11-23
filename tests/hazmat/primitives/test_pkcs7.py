@@ -4,7 +4,9 @@
 
 
 import contextlib
+import datetime
 import email.parser
+import hashlib
 import os
 import typing
 from email.message import EmailMessage, Message
@@ -20,7 +22,12 @@ from cryptography.hazmat.bindings._rust import (
     test_support,
 )
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
+from cryptography.hazmat.primitives.asymmetric import (
+    ed25519,
+    mldsa,
+    padding,
+    rsa,
+)
 from cryptography.hazmat.primitives.ciphers import algorithms
 from cryptography.hazmat.primitives.serialization import pkcs7
 from tests.doubles import DummyRSAPrivateKey
@@ -173,6 +180,164 @@ def _load_cert_key():
         os.path.join("x509", "custom", "ca", "ca.pem"),
         loader=lambda pemfile: x509.load_pem_x509_certificate(pemfile.read()),
         mode="rb",
+    )
+    return cert, key
+
+
+def _read_der_tlv(data: bytes, offset: int) -> tuple[int, int, int]:
+    tag = data[offset]
+    offset += 1
+    length = data[offset]
+    offset += 1
+    if length & 0x80:
+        num_bytes = length & 0x7F
+        length = int.from_bytes(data[offset : offset + num_bytes], "big")
+        offset += num_bytes
+    return tag, offset, offset + length
+
+
+def _der_length_bytes(length: int) -> bytes:
+    if length < 128:
+        return bytes([length])
+    encoded = length.to_bytes((length.bit_length() + 7) // 8, "big")
+    return bytes([0x80 | len(encoded)]) + encoded
+
+
+def _verify_pkcs7_mldsa_signature(
+    sig_der: bytes,
+    data: bytes,
+    cert: x509.Certificate,
+    mldsa_oid: bytes,
+) -> None:
+    """Verify an ML-DSA PKCS7 signature by parsing the SignedData
+    structure and checking the signature over the authenticated
+    attributes with the signer's public key.
+
+    OpenSSL's PKCS7_verify cannot be used here: it initialises
+    verification with the digest algorithm from the SignerInfo, which
+    the ML-DSA provider rejects (ML-DSA is a pure signature scheme and
+    must be initialised with no digest). The CMS verification path in
+    OpenSSL handles this correctly.
+    """
+    # ContentInfo ::= SEQ { OID, [0] SignedData }
+    tag, value_start, _ = _read_der_tlv(sig_der, 0)
+    assert tag == 0x30
+    tag, _, oid_end = _read_der_tlv(sig_der, value_start)
+    assert tag == 0x06
+    tag, sd_start, _ = _read_der_tlv(sig_der, oid_end)
+    assert tag == 0xA0
+    tag, sd_seq_start, _ = _read_der_tlv(sig_der, sd_start)
+    assert tag == 0x30
+
+    offset = sd_seq_start
+    # version
+    _, _, offset = _read_der_tlv(sig_der, offset)
+    # digestAlgorithms
+    _, _, offset = _read_der_tlv(sig_der, offset)
+    # contentInfo
+    _, _, offset = _read_der_tlv(sig_der, offset)
+    # optional [0] certificates
+    tag, _, next_offset = _read_der_tlv(sig_der, offset)
+    if tag == 0xA0:
+        offset = next_offset
+    # signerInfos SET
+    tag, si_start, _ = _read_der_tlv(sig_der, offset)
+    assert tag == 0x31
+    tag, s_info_start, _ = _read_der_tlv(sig_der, si_start)
+    assert tag == 0x30
+
+    offset = s_info_start
+    # version
+    _, _, offset = _read_der_tlv(sig_der, offset)
+    # issuerAndSerialNumber
+    _, _, offset = _read_der_tlv(sig_der, offset)
+    # digestAlgorithm: must be SHA-256
+    tag, d_start, d_end = _read_der_tlv(sig_der, offset)
+    offset = d_end
+    assert tag == 0x30
+    tag, o_start, o_end = _read_der_tlv(sig_der, d_start)
+    assert tag == 0x06
+    assert sig_der[o_start:o_end] == bytes.fromhex("608648016503040201")
+    # authenticatedAttributes [0]
+    tag, attr_start, attr_end = _read_der_tlv(sig_der, offset)
+    offset = attr_end
+    assert tag == 0xA0
+    # digestEncryptionAlgorithm: must be the ML-DSA OID
+    tag, de_start, de_end = _read_der_tlv(sig_der, offset)
+    offset = de_end
+    assert tag == 0x30
+    tag, o_start, o_end = _read_der_tlv(sig_der, de_start)
+    assert tag == 0x06
+    assert sig_der[o_start:o_end] == mldsa_oid
+    # encryptedDigest
+    tag, sig_start, sig_end = _read_der_tlv(sig_der, offset)
+    assert tag == 0x04
+    signature = sig_der[sig_start:sig_end]
+
+    # The signature covers the DER encoding of the authenticated
+    # attributes as a SET OF (tag 0x31 replaces the [0] tag).
+    attrs = sig_der[attr_start:attr_end]
+    signed_attrs = b"\x31" + _der_length_bytes(len(attrs)) + attrs
+    public_key = cert.public_key()
+    assert isinstance(
+        public_key,
+        (
+            mldsa.MLDSA44PublicKey,
+            mldsa.MLDSA65PublicKey,
+            mldsa.MLDSA87PublicKey,
+        ),
+    )
+    public_key.verify(signature, signed_attrs)
+
+    # The messageDigest attribute must be SHA-256 of the content.
+    # (The test data contains no newlines, so S/MIME canonicalisation
+    # leaves it unchanged.)
+    attr_offset = attr_start
+    found_digest = False
+    while attr_offset < attr_end:
+        tag, a_start, a_end = _read_der_tlv(sig_der, attr_offset)
+        assert tag == 0x30
+        tag, o_start, o_end = _read_der_tlv(sig_der, a_start)
+        attr_oid = sig_der[o_start:o_end]
+        tag, v_start, _ = _read_der_tlv(sig_der, o_end)
+        assert tag == 0x31
+        # 1.2.840.113549.1.9.4 (messageDigest)
+        if attr_oid == bytes.fromhex("2a864886f70d010904"):
+            tag, md_start, md_end = _read_der_tlv(sig_der, v_start)
+            assert tag == 0x04
+            assert sig_der[md_start:md_end] == hashlib.sha256(data).digest()
+            found_digest = True
+        attr_offset = a_end
+    assert found_digest
+
+
+def _load_mldsa_cert_key(priv_key_cls):
+    key = priv_key_cls.generate()
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(
+            x509.Name(
+                [
+                    x509.NameAttribute(
+                        x509.oid.NameOID.COMMON_NAME, "ML-DSA Test"
+                    )
+                ]
+            )
+        )
+        .issuer_name(
+            x509.Name(
+                [
+                    x509.NameAttribute(
+                        x509.oid.NameOID.COMMON_NAME, "ML-DSA Test"
+                    )
+                ]
+            )
+        )
+        .serial_number(1)
+        .public_key(key.public_key())
+        .not_valid_before(datetime.datetime(2025, 1, 1))
+        .not_valid_after(datetime.datetime(2035, 1, 1))
+        .sign(key, None)
     )
     return cert, key
 
@@ -445,6 +610,73 @@ class TestPKCS7SignatureBuilder:
         # When in detached signature mode the hash algorithm is stored as a
         # byte string like "sha-384".
         assert expected_value in sig
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    @pytest.mark.parametrize(
+        ("priv_key_cls", "mldsa_oid"),
+        [
+            (
+                mldsa.MLDSA44PrivateKey,
+                # 2.16.840.1.101.3.4.3.17
+                bytes.fromhex("608648016503040311"),
+            ),
+            (
+                mldsa.MLDSA65PrivateKey,
+                # 2.16.840.1.101.3.4.3.18
+                bytes.fromhex("608648016503040312"),
+            ),
+            (
+                mldsa.MLDSA87PrivateKey,
+                # 2.16.840.1.101.3.4.3.19
+                bytes.fromhex("608648016503040313"),
+            ),
+        ],
+    )
+    def test_sign_mldsa_detached(self, priv_key_cls, mldsa_oid):
+        data = b"hello world"
+        cert, key = _load_mldsa_cert_key(priv_key_cls)
+        options = [pkcs7.PKCS7Options.DetachedSignature]
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA256())
+        )
+
+        sig = builder.sign(serialization.Encoding.SMIME, options)
+        sig_binary = builder.sign(serialization.Encoding.DER, options)
+        # The signature algorithm must be the ML-DSA OID, while the
+        # message digest still uses SHA-256.
+        assert b"\x06\x09" + mldsa_oid in sig_binary
+        assert b"\x06\t`\x86H\x01e\x03\x04\x02\x01" in sig_binary
+        assert data not in sig_binary
+        assert b"sha-256" in sig
+        _verify_pkcs7_mldsa_signature(sig_binary, data, cert, mldsa_oid)
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    def test_sign_mldsa_attached(self):
+        data = b"hello world"
+        cert, key = _load_mldsa_cert_key(mldsa.MLDSA65PrivateKey)
+        options: list[pkcs7.PKCS7Options] = []
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA256())
+        )
+
+        sig_binary = builder.sign(serialization.Encoding.DER, options)
+        assert data in sig_binary
+        _verify_pkcs7_mldsa_signature(
+            sig_binary,
+            data,
+            cert,
+            bytes.fromhex("608648016503040312"),
+        )
 
     def test_sign_attached(self):
         data = b"hello world"

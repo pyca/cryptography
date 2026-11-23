@@ -684,6 +684,21 @@ fn compute_pkcs7_signature_algorithm<'p>(
             oid: asn1::DefinedByMarker::marker(),
             params: common::AlgorithmParameters::Rsa(Some(())),
         })
+    } else if matches!(
+        key_type,
+        x509::sign::KeyType::MlDsa44 | x509::sign::KeyType::MlDsa65 | x509::sign::KeyType::MlDsa87
+    ) {
+        // ML-DSA is a pure signature scheme: the hash algorithm is only
+        // used for the messageDigest authenticated attribute, the signature
+        // itself is computed over the authenticated attributes without a
+        // hash. Pass None so the ML-DSA signature algorithm OID is
+        // selected.
+        x509::sign::compute_signature_algorithm(
+            py,
+            private_key,
+            py.None().into_bound(py),
+            rsa_padding,
+        )
     } else {
         x509::sign::compute_signature_algorithm(py, private_key, hash_algorithm, rsa_padding)
     }
