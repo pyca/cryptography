@@ -49,10 +49,7 @@ _CURVES: dict[str, typing.Union[ec.EllipticCurve, None]] = {
 )
 def test_ecdh(backend, wycheproof):
     curve = _CURVES[wycheproof.testgroup["curve"]]
-    if curve is None:
-        pytest.skip(
-            "Unsupported curve ({})".format(wycheproof.testgroup["curve"])
-        )
+    assert isinstance(curve, ec.EllipticCurve)
     _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), curve)
     private_key = wycheproof.cache_value_to_group(
         f"private_key_{wycheproof.testcase['private']}",
