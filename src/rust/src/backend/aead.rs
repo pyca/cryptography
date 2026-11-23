@@ -412,8 +412,13 @@ impl EvpCipherAead {
             ciphertext_data.len() + aad_len,
             || -> CryptographyResult<()> {
                 Self::process_aad(&mut ctx, &aad)?;
-                Self::process_data(&mut ctx, ciphertext_data, buf, is_ccm)
-                    .map_err(|_| exceptions::InvalidTag::new_err(()))?;
+                if Self::process_data(&mut ctx, ciphertext_data, buf, is_ccm).is_err() {
+                    // OpenSSL writes the plaintext before it checks the tag,
+                    // so don't leave unauthenticated data in the caller's
+                    // buffer.
+                    buf.fill(0);
+                    return Err(exceptions::InvalidTag::new_err(()).into());
+                }
                 Ok(())
             },
         )?;
@@ -483,9 +488,16 @@ impl EvpAead {
             b""
         };
 
-        self.ctx
+        if self
+            .ctx
             .decrypt(ciphertext, nonce.unwrap_or(b""), ad, buf)
-            .map_err(|_| exceptions::InvalidTag::new_err(()))?;
+            .is_err()
+        {
+            // EVP_AEAD_CTX_open already clears the output on failure, but
+            // don't rely on that.
+            buf.fill(0);
+            return Err(exceptions::InvalidTag::new_err(()).into());
+        }
 
         Ok(())
     }
