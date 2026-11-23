@@ -8,11 +8,13 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added :class:`~cryptography.hazmat.primitives.asymmetric.ec.BrainpoolP224R1`,
+  a Brainpool curve specified in :rfc:`5639`.
 * Added :class:`~cryptography.hazmat.primitives.asymmetric.ec.BrainpoolP320R1`,
   a Brainpool curve specified in :rfc:`5639`.
 * Added support for loading elliptic curve keys that contain explicit encodings
-  of the curves ``brainpoolP256r1``, ``brainpoolP384r1``, and
-  ``brainpoolP512r1``.
+  of the curves ``brainpoolP224r1``, ``brainpoolP256r1``, ``brainpoolP320r1``,
+  ``brainpoolP384r1``, and ``brainpoolP512r1``.
 * Require CFFI 2.1.1 or newer on Python 3.15 to avoid an ABI issue in
   earlier CFFI releases.
 * X.509 names now reject IA5String attributes containing non-ASCII

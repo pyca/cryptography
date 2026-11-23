@@ -21,7 +21,7 @@ _CURVES: dict[str, typing.Union[ec.EllipticCurve, None]] = {
     "secp521r1": ec.SECP521R1(),
     "secp224k1": None,
     "secp256k1": ec.SECP256K1(),
-    "brainpoolP224r1": None,
+    "brainpoolP224r1": ec.BrainpoolP224R1(),
     "brainpoolP256r1": ec.BrainpoolP256R1(),
     "brainpoolP320r1": ec.BrainpoolP320R1(),
     "brainpoolP384r1": ec.BrainpoolP384R1(),

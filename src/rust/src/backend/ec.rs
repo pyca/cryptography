@@ -48,6 +48,8 @@ fn curve_from_py_curve(
         "secp256k1" => openssl::nid::Nid::SECP256K1,
 
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+        "brainpoolP224r1" => openssl::nid::Nid::BRAINPOOL_P224R1,
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         "brainpoolP256r1" => openssl::nid::Nid::BRAINPOOL_P256R1,
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         "brainpoolP320r1" => openssl::nid::Nid::BRAINPOOL_P320R1,
