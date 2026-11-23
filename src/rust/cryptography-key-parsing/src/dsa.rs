@@ -46,6 +46,18 @@ pub fn parse_pkcs1_private_key(
     let g = openssl::bn::BigNum::from_slice(dsa_private_key.g.as_bytes())?;
     let priv_key = openssl::bn::BigNum::from_slice(dsa_private_key.priv_key.as_bytes())?;
     let pub_key = openssl::bn::BigNum::from_slice(dsa_private_key.pub_key.as_bytes())?;
+
+    // The public key is stored alongside the private key, so check that it
+    // actually corresponds to it (y == g^x mod p).
+    let mut bn_ctx = openssl::bn::BigNumContext::new()?;
+    let mut expected_pub_key = openssl::bn::BigNum::new()?;
+    expected_pub_key
+        .mod_exp(&g, &priv_key, &p, &mut bn_ctx)
+        .map_err(|_| crate::KeyParsingError::InvalidKey)?;
+    if expected_pub_key != pub_key {
+        return Err(crate::KeyParsingError::InvalidKey);
+    }
+
     let dsa = openssl::dsa::Dsa::from_private_components(p, q, g, priv_key, pub_key)?;
     Ok(openssl::pkey::PKey::from_dsa(dsa)?)
 }
