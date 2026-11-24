@@ -21,3 +21,10 @@ def pkcs7_verify(
     certs: list[x509.Certificate],
     options: list[pkcs7.PKCS7Options],
 ) -> None: ...
+def cms_verify(
+    encoding: serialization.Encoding,
+    sig: bytes,
+    msg: Buffer | None,
+    certs: list[x509.Certificate],
+    options: list[pkcs7.PKCS7Options],
+) -> None: ...

@@ -6,7 +6,6 @@
 import contextlib
 import datetime
 import email.parser
-import hashlib
 import os
 import typing
 from email.message import EmailMessage, Message
@@ -182,133 +181,6 @@ def _load_cert_key():
         mode="rb",
     )
     return cert, key
-
-
-def _read_der_tlv(data: bytes, offset: int) -> tuple[int, int, int]:
-    tag = data[offset]
-    offset += 1
-    length = data[offset]
-    offset += 1
-    if length & 0x80:
-        num_bytes = length & 0x7F
-        length = int.from_bytes(data[offset : offset + num_bytes], "big")
-        offset += num_bytes
-    return tag, offset, offset + length
-
-
-def _der_length_bytes(length: int) -> bytes:
-    if length < 128:
-        return bytes([length])
-    encoded = length.to_bytes((length.bit_length() + 7) // 8, "big")
-    return bytes([0x80 | len(encoded)]) + encoded
-
-
-def _verify_pkcs7_mldsa_signature(
-    sig_der: bytes,
-    data: bytes,
-    cert: x509.Certificate,
-    mldsa_oid: bytes,
-) -> None:
-    """Verify an ML-DSA PKCS7 signature by parsing the SignedData
-    structure and checking the signature over the authenticated
-    attributes with the signer's public key.
-
-    OpenSSL's PKCS7_verify cannot be used here: it initialises
-    verification with the digest algorithm from the SignerInfo, which
-    the ML-DSA provider rejects (ML-DSA is a pure signature scheme and
-    must be initialised with no digest). The CMS verification path in
-    OpenSSL handles this correctly.
-    """
-    # ContentInfo ::= SEQ { OID, [0] SignedData }
-    tag, value_start, _ = _read_der_tlv(sig_der, 0)
-    assert tag == 0x30
-    tag, _, oid_end = _read_der_tlv(sig_der, value_start)
-    assert tag == 0x06
-    tag, sd_start, _ = _read_der_tlv(sig_der, oid_end)
-    assert tag == 0xA0
-    tag, sd_seq_start, _ = _read_der_tlv(sig_der, sd_start)
-    assert tag == 0x30
-
-    offset = sd_seq_start
-    # version
-    _, _, offset = _read_der_tlv(sig_der, offset)
-    # digestAlgorithms
-    _, _, offset = _read_der_tlv(sig_der, offset)
-    # contentInfo
-    _, _, offset = _read_der_tlv(sig_der, offset)
-    # optional [0] certificates
-    tag, _, next_offset = _read_der_tlv(sig_der, offset)
-    if tag == 0xA0:
-        offset = next_offset
-    # signerInfos SET
-    tag, si_start, _ = _read_der_tlv(sig_der, offset)
-    assert tag == 0x31
-    tag, s_info_start, _ = _read_der_tlv(sig_der, si_start)
-    assert tag == 0x30
-
-    offset = s_info_start
-    # version
-    _, _, offset = _read_der_tlv(sig_der, offset)
-    # issuerAndSerialNumber
-    _, _, offset = _read_der_tlv(sig_der, offset)
-    # digestAlgorithm: must be SHA-256
-    tag, d_start, d_end = _read_der_tlv(sig_der, offset)
-    offset = d_end
-    assert tag == 0x30
-    tag, o_start, o_end = _read_der_tlv(sig_der, d_start)
-    assert tag == 0x06
-    assert sig_der[o_start:o_end] == bytes.fromhex("608648016503040201")
-    # authenticatedAttributes [0]
-    tag, attr_start, attr_end = _read_der_tlv(sig_der, offset)
-    offset = attr_end
-    assert tag == 0xA0
-    # digestEncryptionAlgorithm: must be the ML-DSA OID
-    tag, de_start, de_end = _read_der_tlv(sig_der, offset)
-    offset = de_end
-    assert tag == 0x30
-    tag, o_start, o_end = _read_der_tlv(sig_der, de_start)
-    assert tag == 0x06
-    assert sig_der[o_start:o_end] == mldsa_oid
-    # encryptedDigest
-    tag, sig_start, sig_end = _read_der_tlv(sig_der, offset)
-    assert tag == 0x04
-    signature = sig_der[sig_start:sig_end]
-
-    # The signature covers the DER encoding of the authenticated
-    # attributes as a SET OF (tag 0x31 replaces the [0] tag).
-    attrs = sig_der[attr_start:attr_end]
-    signed_attrs = b"\x31" + _der_length_bytes(len(attrs)) + attrs
-    public_key = cert.public_key()
-    assert isinstance(
-        public_key,
-        (
-            mldsa.MLDSA44PublicKey,
-            mldsa.MLDSA65PublicKey,
-            mldsa.MLDSA87PublicKey,
-        ),
-    )
-    public_key.verify(signature, signed_attrs)
-
-    # The messageDigest attribute must be SHA-256 of the content.
-    # (The test data contains no newlines, so S/MIME canonicalisation
-    # leaves it unchanged.)
-    attr_offset = attr_start
-    found_digest = False
-    while attr_offset < attr_end:
-        tag, a_start, a_end = _read_der_tlv(sig_der, attr_offset)
-        assert tag == 0x30
-        tag, o_start, o_end = _read_der_tlv(sig_der, a_start)
-        attr_oid = sig_der[o_start:o_end]
-        tag, v_start, _ = _read_der_tlv(sig_der, o_end)
-        assert tag == 0x31
-        # 1.2.840.113549.1.9.4 (messageDigest)
-        if attr_oid == bytes.fromhex("2a864886f70d010904"):
-            tag, md_start, md_end = _read_der_tlv(sig_der, v_start)
-            assert tag == 0x04
-            assert sig_der[md_start:md_end] == hashlib.sha256(data).digest()
-            found_digest = True
-        attr_offset = a_end
-    assert found_digest
 
 
 def _load_mldsa_cert_key(priv_key_cls):
@@ -653,7 +525,15 @@ class TestPKCS7SignatureBuilder:
         assert b"\x06\t`\x86H\x01e\x03\x04\x02\x01" in sig_binary
         assert data not in sig_binary
         assert b"sha-256" in sig
-        _verify_pkcs7_mldsa_signature(sig_binary, data, cert, mldsa_oid)
+        # Verify through OpenSSL's CMS API, which handles ML-DSA
+        # (unlike PKCS7_verify, which cannot initialise a pure
+        # signature scheme with a digest).
+        test_support.cms_verify(
+            serialization.Encoding.DER, sig_binary, data, [cert], options
+        )
+        test_support.cms_verify(
+            serialization.Encoding.SMIME, sig, data, [cert], options
+        )
 
     @pytest.mark.supported(
         only_if=lambda backend: backend.mldsa_supported(),
@@ -671,11 +551,8 @@ class TestPKCS7SignatureBuilder:
 
         sig_binary = builder.sign(serialization.Encoding.DER, options)
         assert data in sig_binary
-        _verify_pkcs7_mldsa_signature(
-            sig_binary,
-            data,
-            cert,
-            bytes.fromhex("608648016503040312"),
+        test_support.cms_verify(
+            serialization.Encoding.DER, sig_binary, None, [cert], options
         )
 
     def test_sign_attached(self):
