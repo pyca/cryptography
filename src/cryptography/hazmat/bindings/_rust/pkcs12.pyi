@@ -3,7 +3,7 @@
 # for complete details.
 
 import typing
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 
 from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric.types import PrivateKeyTypes
@@ -40,7 +40,7 @@ def load_pkcs12(
     backend: typing.Any = None,
 ) -> PKCS12KeyAndCertificates: ...
 def serialize_java_truststore(
-    pkcs12_certs: Sequence[PKCS12Certificate],
+    certs: Iterable[PKCS12Certificate],
     encryption_algorithm: KeySerializationEncryption,
 ) -> bytes: ...
 def serialize_key_and_certificates(
