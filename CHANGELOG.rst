@@ -64,6 +64,9 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.hashes.SHAKE256.xof` and
   :meth:`~cryptography.hazmat.asn1.TLV.parse`. Previously, type checkers
   treated their return values as ``Any``.
+* :meth:`~cryptography.x509.Name.from_rfc4514_string` now recognizes attribute
+  names such as ``cn`` regardless of case, including names supplied in
+  ``attr_name_overrides``.
 
 .. _v50-0-2:
 
