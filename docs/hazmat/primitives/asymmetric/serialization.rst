@@ -1049,7 +1049,7 @@ file suffix.
         ...     b"friendlyname", key, cert, None, encryption
         ... )
 
-.. function:: serialize_java_truststore(pkcs12_certs, encryption_algorithm)
+.. function:: serialize_java_truststore(certs, encryption_algorithm)
 
     .. versionadded:: 45.0.0
 
@@ -1065,7 +1065,7 @@ file suffix.
     :param certs: A set of certificates to also include in the structure.
     :type certs:
 
-        A list of :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12Certificate`
+        A non-empty iterable of :class:`~cryptography.hazmat.primitives.serialization.pkcs12.PKCS12Certificate`
         instances.
 
     :param encryption_algorithm: The encryption algorithm that should be used

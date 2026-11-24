@@ -788,13 +788,11 @@ class TestPKCS12TrustStoreCreation:
         )
         cert2 = _load_cert(os.path.join("x509", "letsencryptx3.pem"))
         encryption = serialization.NoEncryption()
-        p12 = serialize_java_truststore(
-            [
-                PKCS12Certificate(cert1, b"cert1"),
-                PKCS12Certificate(cert2, None),
-            ],
-            encryption,
-        )
+        certs = [
+            PKCS12Certificate(cert1, b"cert1"),
+            PKCS12Certificate(cert2, None),
+        ]
+        p12 = serialize_java_truststore(iter(certs), encryption)
 
         p12_cert = load_pkcs12(p12, None)
         cas = p12_cert.additional_certs
@@ -877,9 +875,10 @@ class TestPKCS12TrustStoreCreation:
                 serialization.NoEncryption(),
             )
 
-    def test_generate_empty_certs(self):
+    @pytest.mark.parametrize("certs", [[], iter(())])
+    def test_generate_empty_certs(self, certs):
         with pytest.raises(ValueError) as exc:
-            serialize_java_truststore([], serialization.NoEncryption())
+            serialize_java_truststore(certs, serialization.NoEncryption())
         assert str(exc.value) == ("You must supply at least one cert")
 
     def test_generate_unsupported_encryption_type(self):
