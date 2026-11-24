@@ -102,7 +102,11 @@ fn pkcs7_verify(
     Ok(())
 }
 
-#[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+#[cfg(not(any(
+    CRYPTOGRAPHY_IS_LIBRESSL,
+    CRYPTOGRAPHY_IS_BORINGSSL,
+    CRYPTOGRAPHY_IS_AWSLC
+)))]
 #[pyo3::pyfunction]
 #[pyo3(signature = (encoding, sig, msg, certs, options))]
 fn cms_verify(
@@ -151,7 +155,11 @@ fn cms_verify(
 
 #[pyo3::pymodule(gil_used = false)]
 pub(crate) mod test_support {
-    #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
+    #[cfg(not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    )))]
     #[pymodule_export]
     use super::cms_verify;
     #[cfg(not(any(CRYPTOGRAPHY_IS_BORINGSSL, CRYPTOGRAPHY_IS_AWSLC)))]
