@@ -555,6 +555,69 @@ class TestPKCS7SignatureBuilder:
             serialization.Encoding.DER, sig_binary, None, [cert], options
         )
 
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    def test_sign_mldsa_pem(self):
+        data = b"hello world"
+        cert, key = _load_mldsa_cert_key(mldsa.MLDSA65PrivateKey)
+        options: list[pkcs7.PKCS7Options] = []
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA256())
+        )
+
+        sig = builder.sign(serialization.Encoding.PEM, options)
+        test_support.cms_verify(
+            serialization.Encoding.PEM,
+            sig,
+            None,
+            [cert],
+            options,
+        )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    def test_sign_mldsa_text(self):
+        data = b"hello world"
+        cert, key = _load_mldsa_cert_key(mldsa.MLDSA65PrivateKey)
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA256())
+        )
+
+        options = [
+            pkcs7.PKCS7Options.Text,
+            pkcs7.PKCS7Options.DetachedSignature,
+        ]
+        sig_pem = builder.sign(serialization.Encoding.SMIME, options)
+        # The text option adds text/plain headers to the S/MIME message
+        # These headers are only relevant in SMIME mode, not binary, which is
+        # just the PKCS7 structure itself.
+        assert sig_pem.count(b"text/plain") == 1
+        assert b"Content-Type: text/plain\r\n\r\nhello world\r\n" in sig_pem
+        # Parse the message to get the signed data, which is the
+        # first payload in the message
+        message = email.parser.BytesParser().parsebytes(sig_pem)
+        payload = message.get_payload()
+        assert isinstance(payload, list)
+        assert isinstance(payload[0], Message)
+        signed_data = payload[0].as_bytes(
+            policy=message.policy.clone(linesep="\r\n")
+        )
+        test_support.cms_verify(
+            serialization.Encoding.SMIME,
+            sig_pem,
+            signed_data,
+            [cert],
+            options,
+        )
+
     def test_sign_attached(self):
         data = b"hello world"
         cert, key = _load_cert_key()
