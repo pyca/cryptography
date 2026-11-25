@@ -72,6 +72,10 @@ Changelog
 * :meth:`~cryptography.x509.Name.from_rfc4514_string` now recognizes attribute
   names such as ``cn`` regardless of case, including names supplied in
   ``attr_name_overrides``.
+* RSA encryption and decryption with
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` no longer
+  implicitly fetches SHA-1 when using OpenSSL. This allows OAEP with SHA-2
+  digests to work in OpenSSL configurations where SHA-1 is unavailable.
 
 .. _v50-0-2:
 
