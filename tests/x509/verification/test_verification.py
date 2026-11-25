@@ -1015,6 +1015,7 @@ class TestNameConstraints:
 
 
 class TestRSAKeySize:
+    @pytest.mark.skip_fips(reason="Unsupported key size in FIPS mode.")
     @pytest.mark.parametrize("key_size", [2040, 2047])
     def test_undersized_rsa_issuer_rejected(self, key_size):
         # The DER encoding of these moduli is 256 bytes long (2040 bits
