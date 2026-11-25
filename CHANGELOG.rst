@@ -15,6 +15,9 @@ Changelog
 * Added support for loading elliptic curve keys that contain explicit encodings
   of the curves ``brainpoolP224r1``, ``brainpoolP256r1``, ``brainpoolP320r1``,
   ``brainpoolP384r1``, and ``brainpoolP512r1``.
+* :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7SignatureBuilder`
+  now retains additional certificates when ``set_data`` or ``add_signer`` is
+  called after ``add_certificate``.
 * Require CFFI 2.1.1 or newer on Python 3.15 to avoid an ABI issue in
   earlier CFFI releases.
 * X.509 names now reject IA5String attributes containing non-ASCII
@@ -31,6 +34,8 @@ Changelog
   ``derive_into``) now raise ``ValueError`` if the input and output buffers
   overlap. Previously, overlapping buffers could silently produce incorrect
   output.
+* :func:`~cryptography.hazmat.primitives.serialization.pkcs12.serialize_java_truststore`
+  now accepts iterators of certificates, matching its ``Iterable`` annotation.
 * Parsing a ``subjectAltName`` or ``issuerAltName`` extension now rejects an
   empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
   RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
@@ -66,6 +71,13 @@ Changelog
   :meth:`~cryptography.hazmat.primitives.hashes.SHAKE256.xof` and
   :meth:`~cryptography.hazmat.asn1.TLV.parse`. Previously, type checkers
   treated their return values as ``Any``.
+* :meth:`~cryptography.x509.Name.from_rfc4514_string` now recognizes attribute
+  names such as ``cn`` regardless of case, including names supplied in
+  ``attr_name_overrides``.
+* RSA encryption and decryption with
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` no longer
+  implicitly fetches SHA-1 when using OpenSSL. This allows OAEP with SHA-2
+  digests to work in OpenSSL configurations where SHA-1 is unavailable.
 
 .. _v50-0-2:
 

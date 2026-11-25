@@ -74,7 +74,7 @@ jobs:
           persist-credentials: false
       - name: Setup python
         id: setup-python
-        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           version-file: ci-constraints-requirements.txt
           python-version: ${{ matrix.PYTHON.VERSION }}
@@ -277,7 +277,7 @@ jobs:
           persist-credentials: false
       - name: Setup python
         id: setup-python
-        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           version-file: ci-constraints-requirements.txt
           python-version: ${{ matrix.PYTHON.VERSION }}
@@ -397,8 +397,8 @@ jobs:
             PATH: aws-encryption-sdk-python
           - DOWNSTREAM: certbot
             REPO: certbot/certbot
-            # Latest commit on the certbot main branch, as of Nov 21, 2026.
-            REF: 9d5c9d44e57df4c070287e99338e49029cc45cba
+            # Latest commit on the certbot main branch, as of Nov 25, 2026.
+            REF: ea2c98272d65645d205077e138bbb7a3300345da
             PATH: certbot
           - DOWNSTREAM: certbot-josepy
             REPO: certbot/josepy
@@ -407,18 +407,18 @@ jobs:
             PATH: josepy
           - DOWNSTREAM: mitmproxy
             REPO: mitmproxy/mitmproxy
-            # Latest commit on the mitmproxy main branch, as of Nov 20, 2026.
-            REF: c491986978a6280c29977482cb18698d6523a662
+            # Latest commit on the mitmproxy main branch, as of Nov 24, 2026.
+            REF: 046618526875cad96d23043bef78b3ffd422b033
             PATH: mitmproxy
           - DOWNSTREAM: scapy
             REPO: secdev/scapy
-            # Latest commit on the scapy master branch, as of Nov 22, 2026.
-            REF: 3813c08c414a30c686136e50c6e80dd9b3b29663
+            # Latest commit on the scapy master branch, as of Nov 24, 2026.
+            REF: ac50dbb011300c74454eafde21ba901ab79d27cd
             PATH: scapy
           - DOWNSTREAM: sigstore-python
             REPO: sigstore/sigstore-python
-            # Latest commit on the sigstore-python main branch, as of Nov 20, 2026.
-            REF: 113257f07246f06e5b27aad378096b1730bbea04
+            # Latest commit on the sigstore-python main branch, as of Nov 25, 2026.
+            REF: cee376355556d4624da1e426598e174f305141a7
             PATH: sigstore-python
     name: "Downstream tests for ${{ matrix.DOWNSTREAM }}"
     timeout-minutes: 15
@@ -439,7 +439,7 @@ jobs:
         uses: ./.github/actions/cache
         timeout-minutes: 2
       - name: Setup python
-        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           version-file: ci-constraints-requirements.txt
           python-version: '3.14'
