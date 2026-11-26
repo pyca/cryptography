@@ -1081,6 +1081,8 @@ class ExtendedKeyUsage(ExtensionType):
             raise TypeError(
                 "Every item in the usages list must be an ObjectIdentifier"
             )
+        if not usages:
+            raise ValueError("usages must be a non-empty list")
 
         self._usages = usages
 
@@ -1665,6 +1667,10 @@ class SubjectAlternativeName(ExtensionType):
     oid = ExtensionOID.SUBJECT_ALTERNATIVE_NAME
 
     def __init__(self, general_names: Iterable[GeneralName]) -> None:
+        general_names = list(general_names)
+        if not general_names:
+            raise ValueError("general_names must be a non-empty list")
+
         self._general_names = GeneralNames(general_names)
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")
@@ -1737,6 +1743,10 @@ class IssuerAlternativeName(ExtensionType):
     oid = ExtensionOID.ISSUER_ALTERNATIVE_NAME
 
     def __init__(self, general_names: Iterable[GeneralName]) -> None:
+        general_names = list(general_names)
+        if not general_names:
+            raise ValueError("general_names must be a non-empty list")
+
         self._general_names = GeneralNames(general_names)
 
     __len__, __iter__, __getitem__ = _make_sequence_methods("_general_names")

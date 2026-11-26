@@ -55,7 +55,7 @@ class TestRFC4514:
             ),
             ("ST=", Name([NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, "")])),
             (
-                "OU=Sales+CN=J.  Smith,DC=example,DC=net",
+                "OU=Sales+cN=J.  Smith,dc=example,DC=net",
                 Name(
                     [
                         RelativeDistinguishedName(
@@ -190,7 +190,7 @@ class TestRFC4514:
         )
 
         assert Name.from_rfc4514_string(
-            "CN=Santa Claus", {"CN": NameOID.EMAIL_ADDRESS}
+            "cN=Santa Claus", {"Cn": NameOID.EMAIL_ADDRESS}
         ) == Name(
             [
                 NameAttribute(NameOID.EMAIL_ADDRESS, "Santa Claus"),

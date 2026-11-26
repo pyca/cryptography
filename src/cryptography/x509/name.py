@@ -413,7 +413,9 @@ class _RFC4514NameParser:
         self._data = data
         self._idx = 0
 
-        self._attr_name_overrides = attr_name_overrides
+        self._attr_name_overrides = {
+            name.upper(): oid for name, oid in attr_name_overrides.items()
+        }
 
     def _has_data(self) -> bool:
         return self._idx < len(self._data)
@@ -469,7 +471,7 @@ class _RFC4514NameParser:
         try:
             oid_value = self._read_re(self._OID_RE)
         except ValueError:
-            name = self._read_re(self._DESCR_RE)
+            name = self._read_re(self._DESCR_RE).upper()
             oid = self._attr_name_overrides.get(
                 name, _NAME_TO_NAMEOID.get(name)
             )

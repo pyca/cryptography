@@ -72,8 +72,11 @@ fn _extract_buffer_length<'p>(
     let ptrval = types::FFI_CAST
         .get(py)?
         .call1((pyo3::intern!(py, "uintptr_t"), bufobj.clone()))?
-        .call_method0(pyo3::intern!(py, "__int__"))?
-        .extract::<usize>()?;
+        .call_method0(pyo3::intern!(py, "__int__"))?;
+    // This is a separate statement, rather than the end of the chain above,
+    // because Rust 1.100+ coverage doesn't map an argument-less method call
+    // on a chain continuation line, leaving only its (untaken) `?` branch.
+    let ptrval = ptrval.extract::<usize>()?;
     let len = bufobj.len()?;
     Ok((bufobj, ptrval, len))
 }
@@ -189,4 +192,24 @@ impl<'p> pyo3::conversion::FromPyObject<'_, 'p> for CffiMutBuf<'p> {
             buf,
         })
     }
+}
+
+/// Returns an error if `data` and `buf` share any bytes of memory. The
+/// `*_into` methods require their input and output buffers to be disjoint:
+/// with overlapping buffers, output can be written over input that hasn't
+/// been read yet, silently producing incorrect results.
+pub(crate) fn check_no_overlap(data: &[u8], buf: &[u8]) -> pyo3::PyResult<()> {
+    if data.is_empty() || buf.is_empty() {
+        return Ok(());
+    }
+    let data_start = data.as_ptr() as usize;
+    let data_end = data_start + data.len();
+    let buf_start = buf.as_ptr() as usize;
+    let buf_end = buf_start + buf.len();
+    if data_start < buf_end && buf_start < data_end {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            "data and buf must not overlap",
+        ));
+    }
+    Ok(())
 }

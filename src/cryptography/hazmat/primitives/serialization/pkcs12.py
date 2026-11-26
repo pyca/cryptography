@@ -124,6 +124,7 @@ def serialize_java_truststore(
     certs: Iterable[PKCS12Certificate],
     encryption_algorithm: serialization.KeySerializationEncryption,
 ) -> bytes:
+    certs = list(certs)
     if not certs:
         raise ValueError("You must supply at least one cert")
 

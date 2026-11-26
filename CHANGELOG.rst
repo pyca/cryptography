@@ -8,13 +8,86 @@ Changelog
 
 .. note:: This version is not yet released and is under active development.
 
+* Added :class:`~cryptography.hazmat.primitives.asymmetric.ec.BrainpoolP320R1`,
+  a Brainpool curve specified in :rfc:`5639`.
+* Added support for loading elliptic curve keys that contain explicit encodings
+  of the curves ``brainpoolP256r1``, ``brainpoolP384r1``, and
+  ``brainpoolP512r1``.
+* :class:`~cryptography.hazmat.primitives.serialization.pkcs7.PKCS7SignatureBuilder`
+  now retains additional certificates when ``set_data`` or ``add_signer`` is
+  called after ``add_certificate``.
+* Require CFFI 2.1.1 or newer on Python 3.15 to avoid an ABI issue in
+  earlier CFFI releases.
+* X.509 names now reject IA5String attributes containing non-ASCII
+  characters when parsing and serializing.
+* :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`
+  and :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
+  now accept :rfc:`5958` ``OneAsymmetricKey`` (PKCS8 version 2).
 * Deprecated DSA. Everything DSA is deprecated, including the types in
   ``cryptography.hazmat.primitives.asymmetric.dsa`` and loading DSA keys with
   the key loading APIs (including from X.509 certificates and certificate
   signing requests). Users should migrate to a more modern signature
   algorithm.
+* The ``*_into`` methods (e.g. ``encrypt_into``, ``update_into``, and
+  ``derive_into``) now raise ``ValueError`` if the input and output buffers
+  overlap. Previously, overlapping buffers could silently produce incorrect
+  output.
+* :func:`~cryptography.hazmat.primitives.serialization.pkcs12.serialize_java_truststore`
+  now accepts iterators of certificates, matching its ``Iterable`` annotation.
+* Parsing a ``subjectAltName`` or ``issuerAltName`` extension now rejects an
+  empty ``GeneralNames`` sequence, matching the ``SIZE (1..MAX)`` constraint
+  RFC 5280 4.2.1.6/4.2.1.7 places on the field and the strictness already
+  applied to ``extendedKeyUsage``.
+* :class:`~cryptography.x509.ExtendedKeyUsage`,
+  :class:`~cryptography.x509.SubjectAlternativeName` and
+  :class:`~cryptography.x509.IssuerAlternativeName` now raise ``ValueError``
+  when constructed with an empty list. Building a certificate with one of
+  these produced an extension that the parser rejects, since RFC 5280
+  4.2.1.6/4.2.1.7/4.2.1.12 constrain all three fields to ``SIZE (1..MAX)``.
+* :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers.private_key`
+  now raises ``ValueError`` when ``private_value`` is not smaller than the
+  curve's order, matching
+  :func:`~cryptography.hazmat.primitives.asymmetric.ec.derive_private_key` and
+  the private key loading functions.
+* :func:`~cryptography.hazmat.primitives.serialization.load_pem_private_key`
+  now raises ``ValueError`` for an encrypted traditional PEM whose
+  ``DEK-Info`` IV does not match the cipher's IV length. Previously, some
+  lengths raised ``PanicException``.
+* Added
+  :class:`~cryptography.hazmat.primitives.serialization.MLDSA44Ed25519PrivateKey`
+  and
+  :class:`~cryptography.hazmat.primitives.serialization.MLDSA44Ed25519PublicKey`,
+  composite ML-DSA-44 and Ed25519 keys for OpenSSH ``ssh-mldsa44-ed25519``
+  keys. These keys can be loaded with
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_private_key`
+  and
+  :func:`~cryptography.hazmat.primitives.serialization.load_ssh_public_key`,
+  and serialized in the OpenSSH formats.
+* Added missing return type hints to
+  :meth:`~cryptography.hazmat.primitives.serialization.SSHCertificateBuilder.valid_for_all_principals`,
+  :meth:`~cryptography.hazmat.primitives.hashes.SHAKE128.xof`,
+  :meth:`~cryptography.hazmat.primitives.hashes.SHAKE256.xof` and
+  :meth:`~cryptography.hazmat.asn1.TLV.parse`. Previously, type checkers
+  treated their return values as ``Any``.
+* :meth:`~cryptography.x509.Name.from_rfc4514_string` now recognizes attribute
+  names such as ``cn`` regardless of case, including names supplied in
+  ``attr_name_overrides``.
+* RSA encryption and decryption with
+  :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` no longer
+  implicitly fetches SHA-1 when using OpenSSL. This allows OAEP with SHA-2
+  digests to work in OpenSSL configurations where SHA-1 is unavailable.
 * Added :class:`~cryptography.x509.CustomExtensionType` which can be used to
   parse and generate X.509 extensions using :mod:`cryptography.hazmat.asn1`.
+
+.. _v50-0-2:
+
+50.0.2 - 2026-09-30
+~~~~~~~~~~~~~~~~~~~
+
+* Updated Windows, macOS, and Linux wheels to be compiled with OpenSSL 4.0.3.
+* Added ``abi3.abi3t`` wheels for free-threaded CPython 3.15 and later.
+* Updated to PyO3 0.29.2, which fixes building ``cryptography`` on Cygwin and
+  MSYS2.
 
 .. _v50-0-1:
 

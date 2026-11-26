@@ -78,10 +78,10 @@ that mandate 256-bit keys).
         :type data: :term:`bytes-like`
         :param buf: A writable buffer to write the ciphertext into. A
             buffer of ``len(data) + len(data) // 1024 + 16456`` bytes
-            is always large enough.
+            is always large enough. ``buf`` must not overlap ``data``.
         :type buf: :term:`bytes-like`
         :return int: The number of bytes written to ``buf``.
-        :raises ValueError: If ``buf`` is too small.
+        :raises ValueError: If ``buf`` is too small or overlaps ``data``.
 
     .. method:: finalize()
 
@@ -142,10 +142,10 @@ that mandate 256-bit keys).
         :type data: :term:`bytes-like`
         :param buf: A writable buffer to write the plaintext into. A
             buffer of ``len(data) + 16400`` bytes is always large
-            enough.
+            enough. ``buf`` must not overlap ``data``.
         :type buf: :term:`bytes-like`
         :return int: The number of bytes written to ``buf``.
-        :raises ValueError: If ``buf`` is too small.
+        :raises ValueError: If ``buf`` is too small or overlaps ``data``.
         :raises cryptography.exceptions.InvalidTag: If the ciphertext
             was encrypted with a different key or context, or has been
             modified. Note that in this case unauthenticated data may

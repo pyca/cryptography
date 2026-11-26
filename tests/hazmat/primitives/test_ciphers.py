@@ -185,6 +185,25 @@ class TestCipherUpdateInto:
         assert res == len(pt)
         assert bytes(buf)[:res] == ct
 
+    @pytest.mark.parametrize("offset", [0, 1, 16])
+    def test_update_into_overlapping_buffer(self, offset):
+        key = b"\x00" * 16
+        iv = b"\x01" * 16
+        for mode in [modes.CBC(iv), modes.CTR(iv)]:
+            encryptor = ciphers.Cipher(
+                AES(key), typing.cast(modes.ModeWithNonce, mode)
+            ).encryptor()
+            buf = bytearray(64)
+            with pytest.raises(ValueError, match="must not overlap"):
+                encryptor.update_into(
+                    memoryview(buf)[:32], memoryview(buf)[offset:]
+                )
+            with pytest.raises(ValueError, match="must not overlap"):
+                encryptor.update_into(
+                    memoryview(buf)[offset : offset + 32],
+                    memoryview(buf)[:48],
+                )
+
     def test_update_into_buffer_too_small(self):
         key = b"\x00" * 16
         c = ciphers.Cipher(AES(key), modes.ECB())

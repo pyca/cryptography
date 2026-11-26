@@ -1627,6 +1627,10 @@ class TestExtendedKeyUsage:
         with pytest.raises(TypeError):
             x509.ExtendedKeyUsage([typing.cast(typing.Any, "notoid")])
 
+    def test_empty_list(self):
+        with pytest.raises(ValueError):
+            x509.ExtendedKeyUsage([])
+
     def test_iter_len(self):
         eku = x509.ExtendedKeyUsage(
             [
@@ -2645,6 +2649,10 @@ class TestGeneralNames:
 
 
 class TestIssuerAlternativeName:
+    def test_empty_list(self):
+        with pytest.raises(ValueError):
+            x509.IssuerAlternativeName([])
+
     def test_get_values_for_type(self):
         san = x509.IssuerAlternativeName([x509.DNSName("cryptography.io")])
         names = san.get_values_for_type(x509.DNSName)
@@ -2770,6 +2778,10 @@ class TestCRLNumber:
 
 
 class TestSubjectAlternativeName:
+    def test_empty_list(self):
+        with pytest.raises(ValueError):
+            x509.SubjectAlternativeName([])
+
     def test_get_values_for_type(self):
         san = x509.SubjectAlternativeName([x509.DNSName("cryptography.io")])
         names = san.get_values_for_type(x509.DNSName)
@@ -6327,6 +6339,24 @@ class TestPrecertificateSignedCertificateTimestampsExtension:
             x509.PrecertificateSignedCertificateTimestamps(
                 [typing.cast(typing.Any, object())]
             )
+
+    def test_public_bytes_oversized_list(self):
+        sct = (
+            _load_cert(
+                os.path.join("x509", "badssl-sct.pem"),
+                x509.load_pem_x509_certificate,
+            )
+            .extensions.get_extension_for_class(
+                x509.PrecertificateSignedCertificateTimestamps
+            )
+            .value[0]
+        )
+        # The serialized list must fit in a 16-bit length prefix.
+        scts = [sct] * 1000
+        with pytest.raises(ValueError, match="too large"):
+            x509.PrecertificateSignedCertificateTimestamps(scts).public_bytes()
+        with pytest.raises(ValueError, match="too large"):
+            x509.SignedCertificateTimestamps(scts).public_bytes()
 
     def test_repr(self):
         assert repr(x509.PrecertificateSignedCertificateTimestamps([])) == (

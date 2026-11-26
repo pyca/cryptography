@@ -861,9 +861,9 @@ class TestPKCS7SignatureBuilder:
         )
         builder = (
             pkcs7.PKCS7SignatureBuilder()
+            .add_certificate(rsa_cert)
             .set_data(data)
             .add_signer(cert, key, hashes.SHA384())
-            .add_certificate(rsa_cert)
         )
         options: list[pkcs7.PKCS7Options] = []
         sig = builder.sign(serialization.Encoding.DER, options)
