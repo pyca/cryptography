@@ -144,7 +144,8 @@ Each of the classes constructors and parameters are the same; only details of Ar
         :raises TypeError: This exception is raised if ``key_material`` is not
                            ``bytes``.
         :raises ValueError: This exception is raised if the buffer is too small
-                           for the derived key.
+                           for the derived key, or if it overlaps
+                           ``key_material``.
         :raises MemoryError: This exception is raised if there is insufficient
                              memory to derive the key with the chosen
                              ``memory_cost``.
@@ -332,7 +333,8 @@ PBKDF2
         :raises TypeError: This exception is raised if ``key_material`` is not
                            ``bytes``.
         :raises ValueError: This exception is raised if the buffer is too small
-                           for the derived key.
+                           for the derived key, or if it overlaps
+                           ``key_material``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
                                                           :meth:`derive`,
                                                           :meth:`derive_into`,
@@ -463,7 +465,8 @@ Scrypt
         :type buffer: :term:`bytes-like`
         :return int: the number of bytes written to the buffer.
         :raises ValueError: This exception is raised if the buffer length does
-                           not match the specified ``length``.
+                           not match the specified ``length``, or if it
+                           overlaps ``key_material``.
         :raises TypeError: This exception is raised if ``key_material`` or
                            ``buffer`` is not ``bytes``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
@@ -580,7 +583,8 @@ ConcatKDF
         :type buffer: :term:`bytes-like`
         :return int: the number of bytes written to the buffer.
         :raises ValueError: This exception is raised if the buffer length does
-                           not match the specified ``length``.
+                           not match the specified ``length``, or if it
+                           overlaps ``key_material``.
         :raises TypeError: This exception is raised if ``key_material`` or
                            ``buffer`` is not ``bytes``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
@@ -695,7 +699,8 @@ ConcatKDF
         :type buffer: :term:`bytes-like`
         :return int: the number of bytes written to the buffer.
         :raises ValueError: This exception is raised if the buffer length does
-                           not match the specified ``length``.
+                           not match the specified ``length``, or if it
+                           overlaps ``key_material``.
         :raises TypeError: This exception is raised if ``key_material`` or
                            ``buffer`` is not ``bytes``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
@@ -849,7 +854,8 @@ HKDF
         :raises TypeError: This exception is raised if ``key_material`` is not
                            ``bytes``.
         :raises ValueError: This exception is raised if the buffer is too small
-                           for the derived key.
+                           for the derived key, or if it overlaps
+                           ``key_material``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
                                                           :meth:`derive`,
                                                           :meth:`derive_into`,
@@ -958,7 +964,8 @@ HKDF
         :raises TypeError: This exception is raised if ``key_material`` is not
                            ``bytes``.
         :raises ValueError: This exception is raised if the buffer is too small
-                           for the derived key.
+                           for the derived key, or if it overlaps
+                           ``key_material``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
                                                           :meth:`derive`,
                                                           :meth:`derive_into`,
@@ -1116,7 +1123,8 @@ KBKDF
         :type buffer: :term:`bytes-like`
         :return int: the number of bytes written to the buffer.
         :raises ValueError: This exception is raised if the buffer length does
-                           not match the specified ``length``.
+                           not match the specified ``length``, or if it
+                           overlaps ``key_material``.
         :raises TypeError: This exception is raised if ``key_material`` or
                            ``buffer`` is not ``bytes``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
@@ -1281,9 +1289,9 @@ KBKDF
                        constructor.
         :return int: the number of bytes written to the buffer.
         :raises ValueError: This exception is raised if the buffer length does
-                           not match the specified ``length``, or if
-                           ``key_material`` is not a valid key for ``algorithm``
-                           passed to
+                           not match the specified ``length``, if the buffer
+                           overlaps ``key_material``, or if ``key_material``
+                           is not a valid key for ``algorithm`` passed to
                            :class:`~cryptography.hazmat.primitives.kdf.kbkdf.KBKDFCMAC`
                            constructor.
         :raises TypeError: This exception is raised if ``key_material`` or
@@ -1433,7 +1441,8 @@ X963KDF
         :type buffer: :term:`bytes-like`
         :return int: the number of bytes written to the buffer.
         :raises ValueError: This exception is raised if the buffer length does
-                           not match the specified ``length``.
+                           not match the specified ``length``, or if it
+                           overlaps ``key_material``.
         :raises TypeError: This exception is raised if ``key_material`` or
                            ``buffer`` is not ``bytes``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when
@@ -1506,7 +1515,8 @@ Interface
         :param buffer: A writable buffer to write the derived key into.
         :return int: the number of bytes written to the buffer.
         :raises ValueError: This exception is raised if the buffer length does
-                           not match the expected key length.
+                           not match the expected key length, or if the buffer
+                           overlaps ``key_material``.
         :raises TypeError: This exception is raised if ``key_material`` or
                            ``buffer`` is not ``bytes``.
         :raises cryptography.exceptions.AlreadyFinalized: This is raised when

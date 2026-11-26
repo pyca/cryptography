@@ -44,14 +44,14 @@ pub fn decrypt_pem<'a>(
 
             let iv = cryptography_crypto::encoding::hex_decode(iv)
                 .ok_or(KeyParsingError::PemInvalidIv)?;
+            if Some(iv.len()) != cipher.iv_len() {
+                return Err(KeyParsingError::PemInvalidIv);
+            }
 
             let key = cryptography_crypto::pbkdf1::openssl_kdf(
                 openssl::hash::MessageDigest::md5(),
                 password,
-                iv.get(..8)
-                    .ok_or(KeyParsingError::PemInvalidIv)?
-                    .try_into()
-                    .unwrap(),
+                iv[..8].try_into().unwrap(),
                 cipher.key_len(),
             )
             .map_err(|_| KeyParsingError::PemUnableToDeriveKey)?;

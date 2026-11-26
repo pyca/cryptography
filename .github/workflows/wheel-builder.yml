@@ -39,7 +39,7 @@ jobs:
           ref: ${{ github.event.inputs.version || github.ref }}
           persist-credentials: false
 
-      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           version-file: ${{ env.UV_VERSION_FILE }}
           python-version: "3.14"
@@ -50,11 +50,11 @@ jobs:
         run: uv build --build-constraint=$BUILD_REQUIREMENTS_PATH --require-hashes --sdist
       - name: Make sdist and wheel (vectors)
         run: uv build --build-constraint=$BUILD_REQUIREMENTS_PATH --require-hashes vectors/
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: "cryptography-sdist"
           path: dist/cryptography*
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: "vectors-sdist-wheel"
           path: vectors/dist/cryptography*
@@ -89,8 +89,8 @@ jobs:
 
           - { NAME: "manylinux_2_31_armv7l", CONTAINER: "cryptography-manylinux_2_31:armv7l", RUNNER: "ubuntu-24.04-arm" }
 
-          - { NAME: "manylinux_2_28_ppc64le", CONTAINER: "cryptography-manylinux_2_28:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
-          - { NAME: "manylinux_2_34_ppc64le", CONTAINER: "cryptography-manylinux_2_34:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
+          - { NAME: "manylinux_2_28_ppc64le", CONTAINER: "cryptography-manylinux_2_28:ppc64le", RUNNER: "ubuntu-24.04-ppc64le-p10" }
+          - { NAME: "manylinux_2_34_ppc64le", CONTAINER: "cryptography-manylinux_2_34:ppc64le", RUNNER: "ubuntu-24.04-ppc64le-p10" }
 
         exclude:
           # There are no readily available musllinux PyPy distributions
@@ -111,9 +111,9 @@ jobs:
 
           # No PyPy on ppc64le
           - PYTHON: { VERSION: "pp311-pypy311_pp73" }
-            MANYLINUX: { NAME: "manylinux_2_34_ppc64le", CONTAINER: "cryptography-manylinux_2_34:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
+            MANYLINUX: { NAME: "manylinux_2_34_ppc64le", CONTAINER: "cryptography-manylinux_2_34:ppc64le", RUNNER: "ubuntu-24.04-ppc64le-p10" }
           - PYTHON: { VERSION: "pp311-pypy311_pp73" }
-            MANYLINUX: { NAME: "manylinux_2_28_ppc64le", CONTAINER: "cryptography-manylinux_2_28:ppc64le", RUNNER: "ubuntu-24.04-ppc64le" }
+            MANYLINUX: { NAME: "manylinux_2_28_ppc64le", CONTAINER: "cryptography-manylinux_2_28:ppc64le", RUNNER: "ubuntu-24.04-ppc64le-p10" }
 
     name: "${{ matrix.PYTHON.VERSION }} for ${{ matrix.MANYLINUX.NAME }}"
     steps:
@@ -140,7 +140,7 @@ jobs:
             .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
 
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: cryptography-sdist
       - run: mkdir tmpwheelhouse
@@ -176,7 +176,7 @@ jobs:
           build-requirements-path: ${{ env.BUILD_REQUIREMENTS_PATH }}
           test-pip: ${{ startsWith(matrix.PYTHON.VERSION, 'cp') }}
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.MANYLINUX.NAME }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
           path: wheelhouse/
@@ -191,7 +191,7 @@ jobs:
           - {VERSION: '3.14', ABI_VERSION: 'abi3-py39'}
           - {VERSION: '3.14', ABI_VERSION: 'abi3-py311'}
           - {VERSION: '3.14t'}
-          - {VERSION: '3.15.0rc2t', ABI_VERSION: 'abi3t-py315'}
+          - {VERSION: '3.15t', ABI_VERSION: 'abi3t-py315'}
           - {VERSION: 'pypy3.11'}
     name: "${{ matrix.PYTHON.VERSION }} ABI ${{ matrix.PYTHON.ABI_VERSION }} macOS -arch arm64"
     # Always build with uv's python-build-standalone interpreter, not
@@ -211,13 +211,13 @@ jobs:
             .github/actions/wheel-smoketest/
           sparse-checkout-cone-mode: false
       - name: Setup python
-        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           version-file: ${{ env.UV_VERSION_FILE }}
           python-version: ${{ matrix.PYTHON.VERSION }}
           enable-cache: false
         timeout-minutes: 3
-      - uses: dawidd6/action-download-artifact@d63b86af1b34672e53c440b1b83979861906bad7 # v24
+      - uses: dawidd6/action-download-artifact@a92c7ae74cf1df8810783758581e485ac3aaa309 # v28
         with:
           repo: pyca/infra
           workflow: build-macos-openssl.yml
@@ -226,10 +226,10 @@ jobs:
           name: openssl-macos-arm64
           path: "../openssl-macos-arm64/"
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
         with:
           toolchain: stable
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: cryptography-sdist
 
@@ -255,7 +255,7 @@ jobs:
 
       - run: |
           echo "CRYPTOGRAPHY_WHEEL_NAME=$(basename $(ls wheelhouse/cryptography*.whl))" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: "${{ env.CRYPTOGRAPHY_WHEEL_NAME }}"
           path: wheelhouse/
@@ -273,7 +273,7 @@ jobs:
           - {VERSION: "3.14", "ABI_VERSION": "abi3-py39"}
           - {VERSION: "3.14", "ABI_VERSION": "abi3-py311"}
           - {VERSION: "3.14t"}
-          - {VERSION: "3.15.0rc2t", "ABI_VERSION": "abi3t-py315"}
+          - {VERSION: "3.15t", "ABI_VERSION": "abi3t-py315"}
           - {VERSION: "pypy3.11"}
         include:
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
@@ -281,7 +281,7 @@ jobs:
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
             PYTHON: {VERSION: "3.14t"}
           - WINDOWS: {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc', RUNNER: 'windows-11-arm'}
-            PYTHON: {VERSION: "3.15.0rc2t", "ABI_VERSION": "abi3t-py315"}
+            PYTHON: {VERSION: "3.15t", "ABI_VERSION": "abi3t-py315"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     # Always build with uv's python-build-standalone interpreter, not
     # whichever Python the runner image happens to ship.

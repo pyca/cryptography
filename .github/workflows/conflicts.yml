@@ -1,0 +1,43 @@
+name: Conflicts
+
+# After each merge to main, comments on every open pull request that now
+# conflicts with its base branch.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Only print the pull requests it would comment on
+        type: boolean
+        default: true
+
+permissions: {}
+
+# Each run checks every open pull request against the latest main, so a newer
+# merge supersedes a run still waiting for GitHub to work out mergeability.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  comment:
+    if: github.repository_owner == 'pyca'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/bin/conflict_comments.py
+          sparse-checkout-cone-mode: false
+      - name: Comment on newly conflicting pull requests
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: python3 -u .github/bin/conflict_comments.py "$REPO" "$SHA" $DRY_RUN

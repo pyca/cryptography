@@ -381,6 +381,13 @@ All named curves are instances of :class:`EllipticCurve`.
     Brainpool curve specified in :rfc:`5639`. These curves are discouraged
     for new systems.
 
+.. class:: BrainpoolP320R1
+
+    .. versionadded:: 51.0.0
+
+    Brainpool curve specified in :rfc:`5639`. These curves are discouraged
+    for new systems.
+
 .. class:: BrainpoolP384R1
 
     .. versionadded:: 2.2
@@ -738,6 +745,12 @@ Elliptic Curve Object Identifiers
         .. versionadded:: 2.5
 
         Corresponds to the dotted string ``"1.3.36.3.3.2.8.1.1.7"``.
+
+    .. attribute:: BRAINPOOLP320R1
+
+        .. versionadded:: 51.0.0
+
+        Corresponds to the dotted string ``"1.3.36.3.3.2.8.1.1.9"``.
 
     .. attribute:: BRAINPOOLP384R1
 

@@ -415,6 +415,22 @@ class TestECDSAVectors:
         with pytest.raises(ValueError):
             numbers.private_key(backend)
 
+    def test_load_ec_key_from_numbers_scalar_out_of_range(self, backend):
+        _skip_curve_unsupported(backend, ec.SECP256R1())
+
+        # n + 1 maps to the generator, the same public point as 1.
+        n = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
+        numbers = ec.EllipticCurvePrivateNumbers(
+            n + 1,
+            ec.EllipticCurvePublicNumbers(
+                0x6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296,
+                0x4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5,
+                ec.SECP256R1(),
+            ),
+        )
+        with pytest.raises(ValueError):
+            numbers.private_key(backend)
+
     def test_load_invalid_public_ec_key_from_numbers(self, backend):
         _skip_curve_unsupported(backend, ec.SECP521R1())
 
@@ -1116,6 +1132,11 @@ class TestECSerialization:
             (ec.SECP384R1, "secp384r1-explicit-no-seed.pem"),
             (ec.SECP521R1, "secp521r1-explicit-seed.pem"),
             (ec.SECP521R1, "secp521r1-explicit-no-seed.pem"),
+            # Only the seedless encoding is supported for Brainpool: RFC 5639
+            # Section 4.2 recommends CAs omit the seed for these curves.
+            (ec.BrainpoolP256R1, "brainpoolP256r1-explicit-no-seed.pem"),
+            (ec.BrainpoolP384R1, "brainpoolP384r1-explicit-no-seed.pem"),
+            (ec.BrainpoolP512R1, "brainpoolP512r1-explicit-no-seed.pem"),
         ],
     )
     def test_load_private_key_explicit_parameters(self, curve, file, backend):
@@ -1139,6 +1160,11 @@ class TestECSerialization:
             (ec.SECP384R1, "secp384r1-pub-explicit-no-seed.pem"),
             (ec.SECP521R1, "secp521r1-pub-explicit-seed.pem"),
             (ec.SECP521R1, "secp521r1-pub-explicit-no-seed.pem"),
+            # Only the seedless encoding is supported for Brainpool: RFC 5639
+            # Section 4.2 recommends CAs omit the seed for these curves.
+            (ec.BrainpoolP256R1, "brainpoolP256r1-pub-explicit-no-seed.pem"),
+            (ec.BrainpoolP384R1, "brainpoolP384r1-pub-explicit-no-seed.pem"),
+            (ec.BrainpoolP512R1, "brainpoolP512r1-pub-explicit-no-seed.pem"),
         ],
     )
     def test_load_public_key_explicit_parameters(self, curve, file, backend):

@@ -76,7 +76,7 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
             }
             cryptography_key_parsing::KeyParsingError::ExplicitCurveUnsupported => {
                 CryptographyError::Py(exceptions::UnsupportedAlgorithm::new_err((
-                    "ECDSA keys with explicit parameters are only supported when they map to secp256r1, secp384r1, or secp521r1. No custom curves are supported.",
+                    "ECDSA keys with explicit parameters are only supported when they map to secp256r1, secp384r1, secp521r1, brainpoolP256r1, brainpoolP384r1, or brainpoolP512r1. No custom curves are supported.",
                     exceptions::Reasons::UNSUPPORTED_ELLIPTIC_CURVE,
                 )))
             }
@@ -122,9 +122,11 @@ impl From<cryptography_key_parsing::KeyParsingError> for CryptographyError {
                     "Encrypted PEM's DEK-Info header is not valid.",
                 ))
             }
-            cryptography_key_parsing::KeyParsingError::PemInvalidIv => CryptographyError::Py(
-                pyo3::exceptions::PyValueError::new_err("DEK-Info IV is not valid hex"),
-            ),
+            cryptography_key_parsing::KeyParsingError::PemInvalidIv => {
+                CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
+                    "DEK-Info IV is not valid hex or has the wrong length",
+                ))
+            }
             cryptography_key_parsing::KeyParsingError::PemUnableToDeriveKey => {
                 CryptographyError::Py(pyo3::exceptions::PyValueError::new_err(
                     "Unable to derive key from password (are you in FIPS mode?)",

@@ -128,6 +128,16 @@ fn setup_encryption_ctx(
         ));
     };
 
+    // LibreSSL, BoringSSL and AWS-LC reject the OAEP digests and label until
+    // the padding is OAEP. OpenSSL 3 accepts them first; there the padding is
+    // set after them, below. With OpenSSL setting digests first, can avoid
+    // implicit redundant SHA-1 fetch. And it can also prevent runtime failure
+    // when SHA-1 is blocked for compliance reasons, and SHA-2 is intended
+    #[cfg(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    ))]
     ctx.set_rsa_padding(padding_enum)?;
 
     if padding_enum == openssl::rsa::Padding::PKCS1_OAEP {
@@ -163,6 +173,13 @@ fn setup_encryption_ctx(
             }
         }
     }
+
+    #[cfg(not(any(
+        CRYPTOGRAPHY_IS_LIBRESSL,
+        CRYPTOGRAPHY_IS_BORINGSSL,
+        CRYPTOGRAPHY_IS_AWSLC
+    )))]
+    ctx.set_rsa_padding(padding_enum)?;
 
     Ok(())
 }
@@ -355,7 +372,7 @@ impl RsaPrivateKey {
         // Everything from this line onwards is written with the goal of being
         // as constant-time as is practical given the constraints of
         // rust-openssl and our API. See Bleichenbacher's '98 attack on RSA,
-        // and its many many variants. As such, you should not attempt to
+        // and its many variants. As such, you should not attempt to
         // change this (particularly to "clean it up") without understanding
         // why it was written this way (see Chesterton's Fence), and without
         // measuring to verify you have not introduced observable time

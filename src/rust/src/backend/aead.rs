@@ -289,6 +289,7 @@ impl EvpCipherAead {
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
         check_length(plaintext)?;
+        crate::buf::check_no_overlap(plaintext, buf)?;
 
         let mut ctx = openssl::cipher_ctx::CipherCtx::new()?;
         let copied = match self.base_ctxs.for_encryption() {
@@ -354,6 +355,8 @@ impl EvpCipherAead {
         nonce: Option<&[u8]>,
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
+        crate::buf::check_no_overlap(ciphertext, buf)?;
+
         let tag;
         let ciphertext_data;
         if self.tag_first {
@@ -447,6 +450,7 @@ impl EvpAead {
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
         check_length(plaintext)?;
+        crate::buf::check_no_overlap(plaintext, buf)?;
 
         let ad = if let Some(Aad::Single(ad)) = &aad {
             check_length(ad.as_bytes())?;
@@ -469,6 +473,8 @@ impl EvpAead {
         nonce: Option<&[u8]>,
         buf: &mut [u8],
     ) -> CryptographyResult<()> {
+        crate::buf::check_no_overlap(ciphertext, buf)?;
+
         let ad = if let Some(Aad::Single(ad)) = &aad {
             check_length(ad.as_bytes())?;
             ad.as_bytes()

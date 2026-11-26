@@ -28,7 +28,7 @@ runs:
         wait "$wycheproof_pid"
         wait "$x509_limbo_pid"
       env:
-        # Latest commit on the wycheproof main branch, as of Sep 03, 2026.
-        WYCHEPROOF_REF: "3fa63dd0344abb611f1fb1d77e119938603ea230" # wycheproof-ref
-        # Latest commit on the x509-limbo main branch, as of Sep 15, 2026.
-        X509_LIMBO_REF: "118721335e675edde10015df89b138cf292d7554" # x509-limbo-ref
+        # Latest commit on the wycheproof main branch, as of Nov 12, 2026.
+        WYCHEPROOF_REF: "65ca494727a52944c204441c860b039e6786b99b" # wycheproof-ref
+        # Latest commit on the x509-limbo main branch, as of Nov 18, 2026.
+        X509_LIMBO_REF: "b12423782a88abead01141fa6582254e3eb49e74" # x509-limbo-ref
