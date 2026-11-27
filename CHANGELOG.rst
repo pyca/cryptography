@@ -80,6 +80,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` no longer
   implicitly fetches SHA-1 when using OpenSSL. This allows OAEP with SHA-2
   digests to work in OpenSSL configurations where SHA-1 is unavailable.
+* Parsing X.509 ``Name`` structures now rejects ``NumericString`` values that
+  contain characters other than digits and spaces.
 
 .. _v50-0-2:
 
