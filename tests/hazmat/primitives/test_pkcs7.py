@@ -183,7 +183,7 @@ def _load_cert_key():
     return cert, key
 
 
-def _load_mldsa_cert_key(priv_key_cls):
+def _generate_mldsa_cert_key(priv_key_cls):
     key = priv_key_cls.generate()
     cert = (
         x509.CertificateBuilder()
@@ -509,7 +509,7 @@ class TestPKCS7SignatureBuilder:
     )
     def test_sign_mldsa_detached(self, priv_key_cls, mldsa_oid):
         data = b"hello world"
-        cert, key = _load_mldsa_cert_key(priv_key_cls)
+        cert, key = _generate_mldsa_cert_key(priv_key_cls)
         options = [pkcs7.PKCS7Options.DetachedSignature]
         builder = (
             pkcs7.PKCS7SignatureBuilder()
@@ -525,13 +525,13 @@ class TestPKCS7SignatureBuilder:
         assert b"\x06\t`\x86H\x01e\x03\x04\x02\x01" in sig_binary
         assert data not in sig_binary
         assert b"sha-256" in sig
-        # Verify through OpenSSL's CMS API, which handles ML-DSA
-        # (unlike PKCS7_verify, which cannot initialise a pure
-        # signature scheme with a digest).
-        test_support.cms_verify(
+        # Verify through pkcs7_verify, which goes through OpenSSL's
+        # CMS API and so handles ML-DSA (unlike PKCS7_verify, which
+        # cannot initialise a pure signature scheme with a digest).
+        test_support.pkcs7_verify(
             serialization.Encoding.DER, sig_binary, data, [cert], options
         )
-        test_support.cms_verify(
+        test_support.pkcs7_verify(
             serialization.Encoding.SMIME, sig, data, [cert], options
         )
 
@@ -541,7 +541,7 @@ class TestPKCS7SignatureBuilder:
     )
     def test_sign_mldsa_attached(self):
         data = b"hello world"
-        cert, key = _load_mldsa_cert_key(mldsa.MLDSA65PrivateKey)
+        cert, key = _generate_mldsa_cert_key(mldsa.MLDSA65PrivateKey)
         options: list[pkcs7.PKCS7Options] = []
         builder = (
             pkcs7.PKCS7SignatureBuilder()
@@ -551,7 +551,7 @@ class TestPKCS7SignatureBuilder:
 
         sig_binary = builder.sign(serialization.Encoding.DER, options)
         assert data in sig_binary
-        test_support.cms_verify(
+        test_support.pkcs7_verify(
             serialization.Encoding.DER, sig_binary, None, [cert], options
         )
 
@@ -561,7 +561,7 @@ class TestPKCS7SignatureBuilder:
     )
     def test_sign_mldsa_pem(self):
         data = b"hello world"
-        cert, key = _load_mldsa_cert_key(mldsa.MLDSA65PrivateKey)
+        cert, key = _generate_mldsa_cert_key(mldsa.MLDSA65PrivateKey)
         options: list[pkcs7.PKCS7Options] = []
         builder = (
             pkcs7.PKCS7SignatureBuilder()
@@ -570,7 +570,7 @@ class TestPKCS7SignatureBuilder:
         )
 
         sig = builder.sign(serialization.Encoding.PEM, options)
-        test_support.cms_verify(
+        test_support.pkcs7_verify(
             serialization.Encoding.PEM,
             sig,
             None,
@@ -584,7 +584,7 @@ class TestPKCS7SignatureBuilder:
     )
     def test_sign_mldsa_text(self):
         data = b"hello world"
-        cert, key = _load_mldsa_cert_key(mldsa.MLDSA65PrivateKey)
+        cert, key = _generate_mldsa_cert_key(mldsa.MLDSA65PrivateKey)
         builder = (
             pkcs7.PKCS7SignatureBuilder()
             .set_data(data)
@@ -610,7 +610,7 @@ class TestPKCS7SignatureBuilder:
         signed_data = payload[0].as_bytes(
             policy=message.policy.clone(linesep="\r\n")
         )
-        test_support.cms_verify(
+        test_support.pkcs7_verify(
             serialization.Encoding.SMIME,
             sig_pem,
             signed_data,
