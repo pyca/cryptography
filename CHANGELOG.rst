@@ -44,6 +44,10 @@ Changelog
   when constructed with an empty list. Building a certificate with one of
   these produced an extension that the parser rejects, since RFC 5280
   4.2.1.6/4.2.1.7/4.2.1.12 constrain all three fields to ``SIZE (1..MAX)``.
+* :class:`~cryptography.x509.CertificatePolicies` now raises ``ValueError``
+  when constructed with an empty ``policies`` list, matching the
+  ``SIZE (1..MAX)`` constraint RFC 5280 4.2.1.4 places on the field and the
+  check :class:`~cryptography.x509.ExtendedKeyUsage` already performs.
 * :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers.private_key`
   now raises ``ValueError`` when ``private_value`` is not smaller than the
   curve's order, matching
@@ -76,6 +80,8 @@ Changelog
   :class:`~cryptography.hazmat.primitives.asymmetric.padding.OAEP` no longer
   implicitly fetches SHA-1 when using OpenSSL. This allows OAEP with SHA-2
   digests to work in OpenSSL configurations where SHA-1 is unavailable.
+* Parsing X.509 ``Name`` structures now rejects ``NumericString`` values that
+  contain characters other than digits and spaces.
 * Added :class:`~cryptography.x509.CustomExtensionType` which can be used to
   parse and generate X.509 extensions using :mod:`cryptography.hazmat.asn1`.
 
