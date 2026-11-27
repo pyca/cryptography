@@ -136,6 +136,8 @@ pub static AUTHORITY_KEY_IDENTIFIER: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["AuthorityKeyIdentifier"]);
 pub static UNRECOGNIZED_EXTENSION: LazyPyImport =
     LazyPyImport::new("cryptography.x509", &["UnrecognizedExtension"]);
+pub static CUSTOM_EXTENSION_TYPE: LazyPyImport =
+    LazyPyImport::new("cryptography.x509", &["CustomExtensionType"]);
 pub static EXTENSION: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Extension"]);
 pub static EXTENSIONS: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Extensions"]);
 pub static NAME: LazyPyImport = LazyPyImport::new("cryptography.x509", &["Name"]);

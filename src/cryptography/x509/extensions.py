@@ -12,6 +12,8 @@ import typing
 from collections.abc import Iterable, Iterator
 
 from cryptography import utils
+from cryptography.hazmat.asn1.asn1 import decode_der as _decode_der
+from cryptography.hazmat.asn1.asn1 import encode_der as _encode_der
 from cryptography.hazmat.bindings._rust import asn1
 from cryptography.hazmat.bindings._rust import x509 as rust_x509
 from cryptography.hazmat.primitives import _serialization, constant_time
@@ -45,6 +47,10 @@ from cryptography.x509.oid import (
 
 ExtensionTypeVar = typing.TypeVar(
     "ExtensionTypeVar", bound="ExtensionType", covariant=True
+)
+_ValueT = typing.TypeVar("_ValueT")
+_CustomExtensionTypeVar = typing.TypeVar(
+    "_CustomExtensionTypeVar", bound="CustomExtensionType[typing.Any]"
 )
 
 
@@ -109,6 +115,77 @@ class ExtensionType(metaclass=abc.ABCMeta):
         )
 
 
+class CustomExtensionType(ExtensionType, typing.Generic[_ValueT]):
+    """
+    Base class for user-defined extension types. The extension's value is
+    parsed and serialized with :mod:`cryptography.hazmat.asn1`.
+
+    Subclasses must parameterize this class with the ASN.1 type of the
+    extension's value and define ``oid``::
+
+        class MyExtension(CustomExtensionType[MyValue]):
+            oid = ObjectIdentifier("1.2.3.4")
+    """
+
+    _asn1_type: typing.ClassVar[typing.Any]
+
+    def __init_subclass__(cls, **kwargs: typing.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        if len(cls.__bases__) != 1:
+            raise TypeError(
+                "CustomExtensionType subclasses cannot use multiple "
+                "inheritance"
+            )
+
+        # Record the ASN.1 type this class was parameterized with. Subclasses
+        # of an already-parameterized class inherit it.
+        (base,) = cls.__dict__.get("__orig_bases__", cls.__bases__)
+        if typing.get_origin(base) is CustomExtensionType:
+            (asn1_type,) = typing.get_args(base)
+            if not isinstance(asn1_type, typing.TypeVar):
+                cls._asn1_type = asn1_type
+
+        if not hasattr(cls, "_asn1_type"):
+            raise TypeError(
+                f"{cls.__name__} must subclass CustomExtensionType "
+                "parameterized with the ASN.1 type of the extension's value"
+            )
+        if not isinstance(getattr(cls, "oid", None), ObjectIdentifier):
+            raise TypeError(
+                f"{cls.__name__} must define an 'oid' class attribute that "
+                "is an ObjectIdentifier"
+            )
+
+    def __init__(self, value: _ValueT) -> None:
+        self._value = value
+
+    @property
+    def value(self) -> _ValueT:
+        return self._value
+
+    @classmethod
+    def _from_der(
+        cls: type[_CustomExtensionTypeVar], data: bytes
+    ) -> _CustomExtensionTypeVar:
+        return cls(_decode_der(cls._asn1_type, data))
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}(value={self.value!r})>"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, CustomExtensionType):
+            return NotImplemented
+
+        return self.__class__ is other.__class__ and self.value == other.value
+
+    def __hash__(self) -> int:
+        return hash((self.__class__, self.value))
+
+    def public_bytes(self) -> bytes:
+        return _encode_der(self.value)
+
+
 class Extensions:
     def __init__(self, extensions: Iterable[Extension[ExtensionType]]) -> None:
         self._extensions = list(extensions)
@@ -135,6 +212,16 @@ class Extensions:
         for ext in self:
             if isinstance(ext.value, extclass):
                 return ext
+            # Custom extension types are not known to the parser, so their
+            # extensions are present as `UnrecognizedExtension`. Parse the
+            # DER value with the custom type.
+            if (
+                issubclass(extclass, CustomExtensionType)
+                and isinstance(ext.value, UnrecognizedExtension)
+                and ext.oid == extclass.oid
+            ):
+                value = extclass._from_der(ext.value.value)
+                return Extension(ext.oid, ext.critical, value)
 
         raise ExtensionNotFound(
             f"No {extclass} extension was found", extclass.oid

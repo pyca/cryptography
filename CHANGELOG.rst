@@ -82,6 +82,8 @@ Changelog
   digests to work in OpenSSL configurations where SHA-1 is unavailable.
 * Parsing X.509 ``Name`` structures now rejects ``NumericString`` values that
   contain characters other than digits and spaces.
+* Added :class:`~cryptography.x509.CustomExtensionType` which can be used to
+  parse and generate X.509 extensions using :mod:`cryptography.hazmat.asn1`.
 
 .. _v50-0-2:
 
