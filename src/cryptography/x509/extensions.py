@@ -824,6 +824,8 @@ class CertificatePolicies(ExtensionType):
             raise TypeError(
                 "Every item in the policies list must be a PolicyInformation"
             )
+        if not policies:
+            raise ValueError("policies must be a non-empty list")
 
         self._policies = policies
 

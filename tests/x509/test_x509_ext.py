@@ -633,6 +633,10 @@ class TestPolicyInformation:
 
 
 class TestCertificatePolicies:
+    def test_empty_policies(self):
+        with pytest.raises(ValueError):
+            x509.CertificatePolicies([])
+
     def test_invalid_policies(self):
         pq = ["string"]
         pi = x509.PolicyInformation(x509.ObjectIdentifier("1.2.3"), pq)
