@@ -1558,6 +1558,26 @@ X.509 CSR (Certificate Signing Request) Builder Object
         :returns: A new
             :class:`~cryptography.x509.CertificateSigningRequestBuilder`.
 
+    .. method:: public_key(public_key)
+
+        .. versionadded:: 51.0.0
+
+        Sets the public key that will be stored in the request's
+        ``subjectPublicKeyInfo``. If no public key is set, the public key of
+        the private key passed to
+        :meth:`~cryptography.x509.CertificateSigningRequestBuilder.sign`
+        is used. Setting an explicit public key allows creating a request for
+        an encryption-only public key (such as an ML-KEM or X25519 key) that
+        is signed with a different, signature-capable private key, as
+        described in :rfc:`9883`.
+
+        :param public_key: The subject's public key. This can be one of
+            :data:`~cryptography.hazmat.primitives.asymmetric.types.CertificatePublicKeyTypes`.
+
+        :return: A new
+            :class:`~cryptography.x509.CertificateSigningRequestBuilder`
+            with the updated public key.
+
     .. method:: sign(private_key, algorithm, *, rsa_padding=None, ecdsa_deterministic=None)
 
         :param private_key: The private key
