@@ -13,3 +13,4 @@ their use is **strongly discouraged**.
 
     ciphers
     modes
+    dh

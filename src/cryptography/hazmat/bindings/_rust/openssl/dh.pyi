@@ -4,7 +4,7 @@
 
 import typing
 
-from cryptography.hazmat.primitives.asymmetric import dh
+from cryptography.hazmat.decrepit.asymmetric import dh
 
 MIN_MODULUS_SIZE: int
 

@@ -53,7 +53,7 @@ union type aliases can be used instead to reference a multitude of key types.
     .. versionadded:: 40.0.0
 
     Type alias: A union of all public key types supported:
-    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPublicKey`,
+    :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPublicKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPublicKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey`,
@@ -67,7 +67,7 @@ union type aliases can be used instead to reference a multitude of key types.
     .. versionadded:: 40.0.0
 
     Type alias: A union of all private key types supported:
-    :class:`~cryptography.hazmat.primitives.asymmetric.dh.DHPrivateKey`,
+    :class:`~cryptography.hazmat.decrepit.asymmetric.dh.DHPrivateKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.dsa.DSAPrivateKey`,
     :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
