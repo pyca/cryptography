@@ -6,6 +6,7 @@ use crate::backend::utils;
 use crate::buf::CffiBuf;
 use crate::error::{CryptographyError, CryptographyResult};
 use crate::exceptions;
+use pyo3::types::PyBytesMethods;
 
 #[pyo3::pyclass(frozen, module = "cryptography.hazmat.bindings._rust.openssl.ed25519")]
 pub(crate) struct Ed25519PrivateKey {
@@ -100,13 +101,20 @@ impl Ed25519PrivateKey {
         Ok(pyo3::types::PyBytes::new(py, &raw_bytes))
     }
 
+    #[pyo3(signature = (encoding, format, encryption_algorithm, *, comment = None))]
     fn private_bytes<'p>(
         slf: &pyo3::Bound<'p, Self>,
         py: pyo3::Python<'p>,
         encoding: crate::serialization::Encoding,
         format: crate::serialization::PrivateFormat,
         encryption_algorithm: &pyo3::Bound<'p, pyo3::PyAny>,
+        comment: Option<&pyo3::Bound<'p, pyo3::types::PyBytes>>,
     ) -> CryptographyResult<pyo3::Bound<'p, pyo3::types::PyBytes>> {
+        let comment_bytes = match comment {
+            Some(b) => b.as_bytes(),
+            None => b"",
+        };
+
         utils::pkey_private_bytes(
             py,
             slf,
@@ -116,6 +124,7 @@ impl Ed25519PrivateKey {
             encryption_algorithm,
             true,
             true,
+            Some(comment_bytes),
         )
     }
 

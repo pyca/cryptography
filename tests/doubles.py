@@ -127,6 +127,8 @@ class DummyRSAPrivateKey(rsa.RSAPrivateKey):
         encoding: serialization.Encoding,
         format: serialization.PrivateFormat,
         encryption_algorithm: serialization.KeySerializationEncryption,
+        *,
+        comment: bytes | None = None,
     ) -> bytes:
         raise NotImplementedError
 
