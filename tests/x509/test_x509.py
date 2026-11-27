@@ -6980,6 +6980,20 @@ class TestName:
         with pytest.raises(ValueError, match="valid IA5String"):
             name.public_bytes()
 
+    @pytest.mark.parametrize(
+        ("oid", "value", "asn1_type"),
+        [
+            (NameOID.SERIAL_NUMBER, "ab_c", _ASN1Type.PrintableString),
+            (NameOID.COMMON_NAME, "12a", _ASN1Type.NumericString),
+            (NameOID.COMMON_NAME, "caf\u00e9", _ASN1Type.VisibleString),
+        ],
+    )
+    def test_invalid_restricted_string_bytes(self, oid, value, asn1_type):
+        name = x509.Name([x509.NameAttribute(oid, value, asn1_type)])
+
+        with pytest.raises(ValueError, match=f"valid {asn1_type.name}"):
+            name.public_bytes()
+
     def test_from_bytes(self):
         data = binascii.unhexlify(
             b"30293118301606035504030c0f63727970746f6772617068792e696f310d"
