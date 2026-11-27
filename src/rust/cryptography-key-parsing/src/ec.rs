@@ -30,6 +30,8 @@ pub(crate) fn group_to_curve_oid(
         openssl::nid::Nid::SECP521R1 => Some(cryptography_x509::oid::EC_SECP521R1),
         openssl::nid::Nid::SECP256K1 => Some(cryptography_x509::oid::EC_SECP256K1),
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+        openssl::nid::Nid::BRAINPOOL_P224R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP224R1),
+        #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         openssl::nid::Nid::BRAINPOOL_P256R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP256R1),
         #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
         openssl::nid::Nid::BRAINPOOL_P320R1 => Some(cryptography_x509::oid::EC_BRAINPOOLP320R1),
@@ -55,6 +57,8 @@ pub(crate) fn ec_params_to_group(
 
                 &cryptography_x509::oid::EC_SECP256K1 => openssl::nid::Nid::SECP256K1,
 
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+                &cryptography_x509::oid::EC_BRAINPOOLP224R1 => openssl::nid::Nid::BRAINPOOL_P224R1,
                 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
                 &cryptography_x509::oid::EC_BRAINPOOLP256R1 => openssl::nid::Nid::BRAINPOOL_P256R1,
                 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
@@ -90,9 +94,19 @@ pub(crate) fn ec_params_to_group(
                 ),
                 // NO-COVERAGE-START
                 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+                &ec_constants::BRAINPOOLP224R1_DOMAIN_NO_SEED => (
+                    openssl::nid::Nid::BRAINPOOL_P224R1,
+                    cryptography_x509::oid::EC_BRAINPOOLP224R1,
+                ),
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
                 &ec_constants::BRAINPOOLP256R1_DOMAIN_NO_SEED => (
                     openssl::nid::Nid::BRAINPOOL_P256R1,
                     cryptography_x509::oid::EC_BRAINPOOLP256R1,
+                ),
+                #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
+                &ec_constants::BRAINPOOLP320R1_DOMAIN_NO_SEED => (
+                    openssl::nid::Nid::BRAINPOOL_P320R1,
+                    cryptography_x509::oid::EC_BRAINPOOLP320R1,
                 ),
                 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
                 &ec_constants::BRAINPOOLP384R1_DOMAIN_NO_SEED => (

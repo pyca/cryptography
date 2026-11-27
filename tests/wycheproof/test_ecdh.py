@@ -21,7 +21,7 @@ _CURVES: dict[str, typing.Union[ec.EllipticCurve, None]] = {
     "secp521r1": ec.SECP521R1(),
     "secp224k1": None,
     "secp256k1": ec.SECP256K1(),
-    "brainpoolP224r1": None,
+    "brainpoolP224r1": ec.BrainpoolP224R1(),
     "brainpoolP256r1": ec.BrainpoolP256R1(),
     "brainpoolP320r1": ec.BrainpoolP320R1(),
     "brainpoolP384r1": ec.BrainpoolP384R1(),
@@ -49,10 +49,7 @@ _CURVES: dict[str, typing.Union[ec.EllipticCurve, None]] = {
 )
 def test_ecdh(backend, wycheproof):
     curve = _CURVES[wycheproof.testgroup["curve"]]
-    if curve is None:
-        pytest.skip(
-            "Unsupported curve ({})".format(wycheproof.testgroup["curve"])
-        )
+    assert isinstance(curve, ec.EllipticCurve)
     _skip_exchange_algorithm_unsupported(backend, ec.ECDH(), curve)
     private_key = wycheproof.cache_value_to_group(
         f"private_key_{wycheproof.testcase['private']}",

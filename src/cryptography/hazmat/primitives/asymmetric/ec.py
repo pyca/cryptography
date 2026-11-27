@@ -22,6 +22,7 @@ class EllipticCurveOID:
     SECP256R1 = ObjectIdentifier("1.2.840.10045.3.1.7")
     SECP384R1 = ObjectIdentifier("1.3.132.0.34")
     SECP521R1 = ObjectIdentifier("1.3.132.0.35")
+    BRAINPOOLP224R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.5")
     BRAINPOOLP256R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.7")
     BRAINPOOLP320R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.9")
     BRAINPOOLP384R1 = ObjectIdentifier("1.3.36.3.3.2.8.1.1.11")
@@ -258,6 +259,12 @@ class SECP192R1(EllipticCurve):
     group_order = 0xFFFFFFFFFFFFFFFFFFFFFFFF99DEF836146BC9B1B4D22831
 
 
+class BrainpoolP224R1(EllipticCurve):
+    name = "brainpoolP224r1"
+    key_size = 224
+    group_order = 0xD7C134AA264366862A18302575D0FB98D116BC4B6DDEBCA3A5A7939F
+
+
 class BrainpoolP256R1(EllipticCurve):
     name = "brainpoolP256r1"
     key_size = 256
@@ -293,6 +300,7 @@ _CURVE_TYPES: dict[str, EllipticCurve] = {
     "secp384r1": SECP384R1(),
     "secp521r1": SECP521R1(),
     "secp256k1": SECP256K1(),
+    "brainpoolP224r1": BrainpoolP224R1(),
     "brainpoolP256r1": BrainpoolP256R1(),
     "brainpoolP320r1": BrainpoolP320R1(),
     "brainpoolP384r1": BrainpoolP384R1(),
@@ -361,6 +369,7 @@ _OID_TO_CURVE = {
     EllipticCurveOID.SECP256R1: SECP256R1,
     EllipticCurveOID.SECP384R1: SECP384R1,
     EllipticCurveOID.SECP521R1: SECP521R1,
+    EllipticCurveOID.BRAINPOOLP224R1: BrainpoolP224R1,
     EllipticCurveOID.BRAINPOOLP256R1: BrainpoolP256R1,
     EllipticCurveOID.BRAINPOOLP320R1: BrainpoolP320R1,
     EllipticCurveOID.BRAINPOOLP384R1: BrainpoolP384R1,

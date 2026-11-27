@@ -374,6 +374,13 @@ All named curves are instances of :class:`EllipticCurve`.
     SECG curve ``secp256k1``.
 
 
+.. class:: BrainpoolP224R1
+
+    .. versionadded:: 51.0.0
+
+    Brainpool curve specified in :rfc:`5639`. These curves are discouraged
+    for new systems.
+
 .. class:: BrainpoolP256R1
 
     .. versionadded:: 2.2
@@ -739,6 +746,12 @@ Elliptic Curve Object Identifiers
     .. attribute:: SECP521R1
 
         Corresponds to the dotted string ``"1.3.132.0.35"``.
+
+    .. attribute:: BRAINPOOLP224R1
+
+        .. versionadded:: 51.0.0
+
+        Corresponds to the dotted string ``"1.3.36.3.3.2.8.1.1.5"``.
 
     .. attribute:: BRAINPOOLP256R1
 

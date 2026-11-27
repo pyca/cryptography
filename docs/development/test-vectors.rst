@@ -175,6 +175,13 @@ Custom asymmetric vectors
 * ``asymmetric/EC/secp521r1-pub-explicit-seed.pem`` - A public key with the
   ``secp521r1`` curve explicitly encoded. This is the  public key for the
   private key ``asymmetric/EC/secp521r1-explicit-seed.pem``.
+* ``asymmetric/EC/brainpoolP224r1-explicit-no-seed.pem`` - An unencrypted PKCS8
+  private key with the ``brainpoolP224r1`` curve explicitly encoded and with the
+  seed omitted.
+* ``asymmetric/EC/brainpoolP224r1-pub-explicit-no-seed.pem`` - A public key with
+  the ``brainpoolP224r1`` curve explicitly encoded and with the seed omitted.
+  This is the public key for the private key
+  ``asymmetric/EC/brainpoolP224r1-explicit-no-seed.pem``.
 * ``asymmetric/EC/brainpoolP256r1-explicit-no-seed.pem`` - An unencrypted PKCS8
   private key with the ``brainpoolP256r1`` curve explicitly encoded and with the
   seed omitted.
@@ -182,6 +189,13 @@ Custom asymmetric vectors
   the ``brainpoolP256r1`` curve explicitly encoded and with the seed omitted.
   This is the public key for the private key
   ``asymmetric/EC/brainpoolP256r1-explicit-no-seed.pem``.
+* ``asymmetric/EC/brainpoolP320r1-explicit-no-seed.pem`` - An unencrypted PKCS8
+  private key with the ``brainpoolP320r1`` curve explicitly encoded and with the
+  seed omitted.
+* ``asymmetric/EC/brainpoolP320r1-pub-explicit-no-seed.pem`` - A public key with
+  the ``brainpoolP320r1`` curve explicitly encoded and with the seed omitted.
+  This is the public key for the private key
+  ``asymmetric/EC/brainpoolP320r1-explicit-no-seed.pem``.
 * ``asymmetric/EC/brainpoolP384r1-explicit-no-seed.pem`` - An unencrypted PKCS8
   private key with the ``brainpoolP384r1`` curve explicitly encoded and with the
   seed omitted.
