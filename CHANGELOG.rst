@@ -44,6 +44,10 @@ Changelog
   when constructed with an empty list. Building a certificate with one of
   these produced an extension that the parser rejects, since RFC 5280
   4.2.1.6/4.2.1.7/4.2.1.12 constrain all three fields to ``SIZE (1..MAX)``.
+* :class:`~cryptography.x509.CertificatePolicies` now raises ``ValueError``
+  when constructed with an empty ``policies`` list, matching the
+  ``SIZE (1..MAX)`` constraint RFC 5280 4.2.1.4 places on the field and the
+  check :class:`~cryptography.x509.ExtendedKeyUsage` already performs.
 * :meth:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateNumbers.private_key`
   now raises ``ValueError`` when ``private_value`` is not smaller than the
   curve's order, matching
