@@ -4,6 +4,7 @@
 
 
 import contextlib
+import datetime
 import email.parser
 import os
 import typing
@@ -20,7 +21,12 @@ from cryptography.hazmat.bindings._rust import (
     test_support,
 )
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
+from cryptography.hazmat.primitives.asymmetric import (
+    ed25519,
+    mldsa,
+    padding,
+    rsa,
+)
 from cryptography.hazmat.primitives.ciphers import algorithms
 from cryptography.hazmat.primitives.serialization import pkcs7
 from tests.doubles import DummyRSAPrivateKey
@@ -173,6 +179,37 @@ def _load_cert_key():
         os.path.join("x509", "custom", "ca", "ca.pem"),
         loader=lambda pemfile: x509.load_pem_x509_certificate(pemfile.read()),
         mode="rb",
+    )
+    return cert, key
+
+
+def _generate_mldsa_cert_key(priv_key_cls):
+    key = priv_key_cls.generate()
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(
+            x509.Name(
+                [
+                    x509.NameAttribute(
+                        x509.oid.NameOID.COMMON_NAME, "ML-DSA Test"
+                    )
+                ]
+            )
+        )
+        .issuer_name(
+            x509.Name(
+                [
+                    x509.NameAttribute(
+                        x509.oid.NameOID.COMMON_NAME, "ML-DSA Test"
+                    )
+                ]
+            )
+        )
+        .serial_number(1)
+        .public_key(key.public_key())
+        .not_valid_before(datetime.datetime(2025, 1, 1))
+        .not_valid_after(datetime.datetime(2035, 1, 1))
+        .sign(key, None)
     )
     return cert, key
 
@@ -445,6 +482,141 @@ class TestPKCS7SignatureBuilder:
         # When in detached signature mode the hash algorithm is stored as a
         # byte string like "sha-384".
         assert expected_value in sig
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    @pytest.mark.parametrize(
+        ("priv_key_cls", "mldsa_oid"),
+        [
+            (
+                mldsa.MLDSA44PrivateKey,
+                # 2.16.840.1.101.3.4.3.17
+                bytes.fromhex("608648016503040311"),
+            ),
+            (
+                mldsa.MLDSA65PrivateKey,
+                # 2.16.840.1.101.3.4.3.18
+                bytes.fromhex("608648016503040312"),
+            ),
+            (
+                mldsa.MLDSA87PrivateKey,
+                # 2.16.840.1.101.3.4.3.19
+                bytes.fromhex("608648016503040313"),
+            ),
+        ],
+    )
+    def test_sign_mldsa_detached(self, priv_key_cls, mldsa_oid):
+        data = b"hello world"
+        cert, key = _generate_mldsa_cert_key(priv_key_cls)
+        options = [pkcs7.PKCS7Options.DetachedSignature]
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA256())
+        )
+
+        sig = builder.sign(serialization.Encoding.SMIME, options)
+        sig_binary = builder.sign(serialization.Encoding.DER, options)
+        # The signature algorithm must be the ML-DSA OID, while the
+        # message digest still uses SHA-256.
+        assert b"\x06\x09" + mldsa_oid in sig_binary
+        assert b"\x06\t`\x86H\x01e\x03\x04\x02\x01" in sig_binary
+        assert data not in sig_binary
+        assert b"sha-256" in sig
+        # Verify through pkcs7_verify, which goes through OpenSSL's
+        # CMS API and so handles ML-DSA (unlike PKCS7_verify, which
+        # cannot initialise a pure signature scheme with a digest).
+        test_support.pkcs7_verify(
+            serialization.Encoding.DER, sig_binary, data, [cert], options
+        )
+        test_support.pkcs7_verify(
+            serialization.Encoding.SMIME, sig, data, [cert], options
+        )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    def test_sign_mldsa_attached(self):
+        data = b"hello world"
+        cert, key = _generate_mldsa_cert_key(mldsa.MLDSA65PrivateKey)
+        options: list[pkcs7.PKCS7Options] = []
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA256())
+        )
+
+        sig_binary = builder.sign(serialization.Encoding.DER, options)
+        assert data in sig_binary
+        test_support.pkcs7_verify(
+            serialization.Encoding.DER, sig_binary, None, [cert], options
+        )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    def test_sign_mldsa_pem(self):
+        data = b"hello world"
+        cert, key = _generate_mldsa_cert_key(mldsa.MLDSA65PrivateKey)
+        options: list[pkcs7.PKCS7Options] = []
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA256())
+        )
+
+        sig = builder.sign(serialization.Encoding.PEM, options)
+        test_support.pkcs7_verify(
+            serialization.Encoding.PEM,
+            sig,
+            None,
+            [cert],
+            options,
+        )
+
+    @pytest.mark.supported(
+        only_if=lambda backend: backend.mldsa_supported(),
+        skip_message="Requires a backend with ML-DSA support",
+    )
+    def test_sign_mldsa_text(self):
+        data = b"hello world"
+        cert, key = _generate_mldsa_cert_key(mldsa.MLDSA65PrivateKey)
+        builder = (
+            pkcs7.PKCS7SignatureBuilder()
+            .set_data(data)
+            .add_signer(cert, key, hashes.SHA256())
+        )
+
+        options = [
+            pkcs7.PKCS7Options.Text,
+            pkcs7.PKCS7Options.DetachedSignature,
+        ]
+        sig_pem = builder.sign(serialization.Encoding.SMIME, options)
+        # The text option adds text/plain headers to the S/MIME message
+        # These headers are only relevant in SMIME mode, not binary, which is
+        # just the PKCS7 structure itself.
+        assert sig_pem.count(b"text/plain") == 1
+        assert b"Content-Type: text/plain\r\n\r\nhello world\r\n" in sig_pem
+        # Parse the message to get the signed data, which is the
+        # first payload in the message
+        message = email.parser.BytesParser().parsebytes(sig_pem)
+        payload = message.get_payload()
+        assert isinstance(payload, list)
+        assert isinstance(payload[0], Message)
+        signed_data = payload[0].as_bytes(
+            policy=message.policy.clone(linesep="\r\n")
+        )
+        test_support.pkcs7_verify(
+            serialization.Encoding.SMIME,
+            sig_pem,
+            signed_data,
+            [cert],
+            options,
+        )
 
     def test_sign_attached(self):
         data = b"hello world"

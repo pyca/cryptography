@@ -70,17 +70,6 @@ fn pkcs7_verify(
     certs: Vec<pyo3::Py<PyCertificate>>,
     options: pyo3::Bound<'_, pyo3::types::PyList>,
 ) -> CryptographyResult<()> {
-    let p7 = match encoding {
-        crate::serialization::Encoding::DER => openssl::pkcs7::Pkcs7::from_der(sig)?,
-        crate::serialization::Encoding::PEM => openssl::pkcs7::Pkcs7::from_pem(sig)?,
-        _ => openssl::pkcs7::Pkcs7::from_smime(sig)?.0,
-    };
-
-    let mut flags = openssl::pkcs7::Pkcs7Flags::empty();
-    if options.contains(types::PKCS7_TEXT.get(py)?)? {
-        flags |= openssl::pkcs7::Pkcs7Flags::TEXT;
-    }
-
     let store = {
         let mut b = openssl::x509::store::X509StoreBuilder::new()?;
         for cert in &certs {
@@ -91,13 +80,53 @@ fn pkcs7_verify(
     };
     let certs = openssl::stack::Stack::new()?;
 
-    p7.verify(
-        &certs,
-        &store,
-        msg.as_ref().map(|m| m.as_bytes()),
-        None,
-        flags,
-    )?;
+    // Verify through OpenSSL's CMS API (CMS_verify). Unlike PKCS7_verify,
+    // CMS_verify handles signature algorithms that are pure signature
+    // schemes (such as ML-DSA), which must be initialised with no digest.
+    // The `openssl` crate does not expose its `cms` module when built
+    // against LibreSSL, so fall back to PKCS7_verify there.
+    #[cfg(not(CRYPTOGRAPHY_IS_LIBRESSL))]
+    {
+        let mut cms = match encoding {
+            crate::serialization::Encoding::DER => openssl::cms::CmsContentInfo::from_der(sig)?,
+            crate::serialization::Encoding::PEM => openssl::cms::CmsContentInfo::from_pem(sig)?,
+            _ => openssl::cms::CmsContentInfo::smime_read_cms(sig)?,
+        };
+
+        let mut flags = openssl::cms::CMSOptions::empty();
+        if options.contains(types::PKCS7_TEXT.get(py)?)? {
+            flags |= openssl::cms::CMSOptions::TEXT;
+        }
+
+        cms.verify(
+            Some(&certs),
+            Some(&store),
+            msg.as_ref().map(|m| m.as_bytes()),
+            None,
+            flags,
+        )?;
+    }
+    #[cfg(CRYPTOGRAPHY_IS_LIBRESSL)]
+    {
+        let p7 = match encoding {
+            crate::serialization::Encoding::DER => openssl::pkcs7::Pkcs7::from_der(sig)?,
+            crate::serialization::Encoding::PEM => openssl::pkcs7::Pkcs7::from_pem(sig)?,
+            _ => openssl::pkcs7::Pkcs7::from_smime(sig)?.0,
+        };
+
+        let mut flags = openssl::pkcs7::Pkcs7Flags::empty();
+        if options.contains(types::PKCS7_TEXT.get(py)?)? {
+            flags |= openssl::pkcs7::Pkcs7Flags::TEXT;
+        }
+
+        p7.verify(
+            &certs,
+            &store,
+            msg.as_ref().map(|m| m.as_bytes()),
+            None,
+            flags,
+        )?;
+    }
 
     Ok(())
 }

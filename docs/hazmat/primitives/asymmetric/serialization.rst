@@ -1175,8 +1175,11 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
     .. versionadded:: 40.0.0
 
     Type alias: A union of private key types supported for PKCS7 serialization:
-    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey` or
-    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+    :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44PrivateKey`,
+    :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA65PrivateKey`, or
+    :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA87PrivateKey`.
 
 .. function:: load_pem_pkcs7_certificates(data)
 
@@ -1370,8 +1373,11 @@ contain certificates, CRLs, and much more. PKCS7 files commonly have a ``p7b``,
         :param certificate: The :class:`~cryptography.x509.Certificate`.
 
         :param private_key: The
-            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey` or
-            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`
+            :class:`~cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA44PrivateKey`,
+            :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA65PrivateKey`, or
+            :class:`~cryptography.hazmat.primitives.asymmetric.mldsa.MLDSA87PrivateKey`
             associated with the certificate provided
             (matches :data:`PKCS7PrivateKeyTypes`).
 
