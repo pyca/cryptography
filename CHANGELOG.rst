@@ -18,6 +18,10 @@ Changelog
   called after ``add_certificate``.
 * Require CFFI 2.1.1 or newer on Python 3.15 to avoid an ABI issue in
   earlier CFFI releases.
+* Fixed a CPU denial-of-service when parsing DSA private keys in PKCS#8
+  format: the public key computation is no longer performed on
+  parameters with a modulus larger than 4096 bits, which are rejected
+  as invalid instead.
 * X.509 names now reject IA5String attributes containing non-ASCII
   characters when parsing and serializing.
 * :func:`~cryptography.hazmat.primitives.serialization.load_der_private_key`

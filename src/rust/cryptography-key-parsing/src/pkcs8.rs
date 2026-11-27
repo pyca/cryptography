@@ -10,7 +10,10 @@ use cryptography_x509::pkcs8::EncryptedPrivateKeyInfo;
 
 #[cfg(not(CRYPTOGRAPHY_IS_BORINGSSL))]
 use crate::MIN_DH_MODULUS_SIZE;
-use crate::{ec, pbe, rsa, KeyParsingError, KeyParsingResult, ParsedPrivateKey, ParsedPublicKey};
+use crate::{
+    ec, pbe, rsa, KeyParsingError, KeyParsingResult, ParsedPrivateKey, ParsedPublicKey,
+    MAX_DSA_MODULUS_SIZE,
+};
 
 // RFC 5208 Section 5 (PrivateKeyInfo), extended by RFC 5958 Section 2
 // (OneAsymmetricKey), which adds version v2 and an optional public key.
@@ -97,6 +100,20 @@ fn parse_private_key_inner(k: &PrivateKeyInfo<'_>) -> KeyParsingResult<ParsedPri
             let p = openssl::bn::BigNum::from_slice(dsa_params.p.as_bytes())?;
             let q = openssl::bn::BigNum::from_slice(dsa_params.q.as_bytes())?;
             let g = openssl::bn::BigNum::from_slice(dsa_params.g.as_bytes())?;
+
+            // The modular exponentiation below is super-linear in the
+            // size of the parameters, which are not yet validated at
+            // this point, so reject oversized parameters before
+            // performing it on attacker-controlled input. 4096 bits is
+            // the largest DSA modulus supported elsewhere in this
+            // library (see `check_dsa_parameters`), and in a valid key
+            // both `g` and the private key are smaller than `p`.
+            if p.num_bits() > MAX_DSA_MODULUS_SIZE as i32
+                || g.num_bits() > p.num_bits()
+                || dsa_private_key.num_bits() > p.num_bits()
+            {
+                return Err(KeyParsingError::InvalidKey);
+            }
 
             let mut bn_ctx = openssl::bn::BigNumContext::new()?;
             let mut pub_key = openssl::bn::BigNum::new()?;

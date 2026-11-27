@@ -176,6 +176,22 @@ class TestDERSerialization:
             assert isinstance(key, dsa.DSAPrivateKey)
         _check_dsa_private_numbers(key.private_numbers())
 
+    def test_load_der_dsa_private_key_oversized_modulus(self):
+        # A DSA key whose modulus exceeds the 4096-bit limit must be
+        # rejected before the public key is computed with a modular
+        # exponentiation over the unvalidated parameters (#16034).
+        # The vector is a PKCS#8 key with a 4104-bit modulus.
+        with pytest.raises(ValueError):
+            load_vectors_from_file(
+                os.path.join(
+                    "asymmetric",
+                    "DER_Serialization",
+                    "dsa-oversized-pkcs8.der",
+                ),
+                lambda derfile: load_der_private_key(derfile.read(), None),
+                mode="rb",
+            )
+
     @pytest.mark.parametrize(
         "key_path", [["DER_Serialization", "enc-rsa-pkcs8.der"]]
     )
